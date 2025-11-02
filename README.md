@@ -21,6 +21,7 @@ pip install -r requirements.txt
 ```
 ├── README.md
 ├── requirements.txt
+├── workload_card_template.yaml # metadata template, should be located in trace_collection/<workload> folder
 ├── scripts  # scripts to execute tools for different metrics
 ├── tools   # main.py, and various plug-ins for different metrics
 └── trace_collection # place to store temparary traces locally, which are downloaded from Google Drive.

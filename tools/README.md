@@ -1,5 +1,8 @@
 # Tool Development 
 
+Tool development: Byungsoo, Jamal
+Metric collection: Byungsoo, Jinkun
+
 ## Pipeline
 
 1. Locate target trace under `ccl-bench/trace_collection/<trace_name>`

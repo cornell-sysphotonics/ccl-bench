@@ -1,0 +1,55 @@
+# workload_template.yaml
+version: 1
+
+description: > # Description of the workload.
+
+hf_url: # huggingface model link, e.g., https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: # trace url, e.g., https://drive.google.com/file/d/1EK_YROAho2sBvYVn8idF6DbnaG3SZ0he/view
+
+workload:
+  model:
+    phase: training  # Training or inference phase, e.g., training, inference.
+    moe: false  # Mixture of Experts (MoE) enabled or not, e.g., true, false.
+    granularity: model_fwd_bwd_pass  # Granularity level, e.g., "model_fwd_bwd_pass", "model_fwd" "layer", "kernel".
+    model_family: llama-3.1-8b  # Model family name, e.g., "llama-3.1-8b".
+    precision: bf16  # Precision type, e.g., "fp32", "bf16".
+  data:
+    batch_size: 4  # Batch size, e.g., 4, 8, 16.
+    seq_len: 8192  # Sequence length, e.g., 512, 1024, 8192.
+    dataset: c4  # Dataset name, e.g., "c4", "wikitext".
+  hardware:
+    network_topo:
+      topology: slingshot  # Network topology, e.g., "slingshot", "fat-tree".
+      bandwidth_gbps:
+        - 200  # Scale-out bandwidth in Gbps, e.g., 100, 200.
+        - 2000  # Scale-up bandwidth in Gbps, e.g., 1000, 2000.
+    xpu_spec:
+      type: GPU  # Processing unit type, e.g., "GPU", "TPU".
+      model: nvidia_a100  # Processing unit model, e.g., "nvidia_a100", "tpu_v4".
+      total_count: 16  # Total number of processing units, e.g., 8, 16.
+      count_per_node: 4  # Number of processing units per node, e.g., 4, 8.
+    driver_version: cuda_12.4  # Driver version, e.g., "cuda_12.4", "rocm_5.6".
+  
+Model-executor:
+  framework: 
+    name: torchtitan  # Framework name, e.g., "torchtitan", "deepspeed".
+    compiler_tool_selection: plain_pytorch  # Compiler tool, e.g., "plain_pytorch", "triton".
+  model_plan_parallelization:
+    dp_replicate: 1 # Data parallel replication factor, e.g., 1, 2.
+    dp_shard: 2 # Data parallel sharding factor, e.g., 1, 2.
+    tp: 4 # Tensor parallelism factor, e.g., 2, 4.
+    pp: 2 # Pipeline parallelism factor, e.g., 1, 2.
+    cp: 1 # Context parallelism factor, e.g., 1, 2.
+  communication_library:
+    name:  # Communication library name, e.g., "NCCL", "Gloo".
+    env:
+      NCCL_IB_QPS_PER_CONNECTION:  # NCCL environment variable, e.g., 8, 16.
+  protocol_selection:
+    - rocev2 # Communication protocol for scale-out, e.g., "tcp", "rocev2".
+    - p2p # Another communication protocol for scake-up, e.g., "p2p", "memcpy".
+
+metric_source:
+  traces:
+    -  # trace type, e.g., "nsys", "torch_et", "kineto_trace".
+  metrics_specific_trace:
+    -  # metric specific trace type, e.g., "memory_trace", "accuracy_trace".
