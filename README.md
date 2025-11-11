@@ -18,16 +18,28 @@ pip install -r requirements.txt
 ## Process FLow
 1. Select a workload from `./workloads`
 2. Select suitable dataset, batch size, sequence length, etc., and specify the infrastructure (execution environment) listed in `workload_card_template.yaml`.
-3. Determine suitbale exeuction plan (parallelization strategy, communication backend selection, etc.) for the workload and framework selected, and specify those choices in `workload_card_template.yaml`.
-
-4. Profile and collect traces by following the guidelines in `trace_gen`
-5. Copy the workload card template, fill in the card, store it under `trace_collection/<workload_name>`, and upload the traces to [Google drive](https://drive.google.com/drive/u/0/folders/1shHsa3WvlGh9YRaX7iqYBYTLnwdDfLX6).
-6. Select or define metrics (which is stored in `tools` - "Current list of metrics"). This step may happen before step 3.
+3. Determine suitable exeuction plan (parallelization strategy, communication backend selection, etc.) for the workload and framework selected, and specify those choices in `workload_card_template.yaml`.
+4. Profile and collect traces by following the guidelines in `trace_gen`, and store it under `trace_collection/<workload_name>`
+5. Copy the workload card template, fill in the card, store it under `trace_collection/<workload_name>` (you should not upload the trace to github).
+6. Determine metrics (some are suggested in `tools/README.md`). You can also do this step before step 3.
 7. Develop tools, and store it under `tools`
 8. Calculate metrics
-9. Upload metrics
 
-There are READMEs inside each folder. Make sure you take a look at them.
+
+There are READMEs inside each folder. Take a look at them.
+
+## Final deliverables
+1. Traces. We expect you to upload traces you collected to Canvas (we will explore other methods if the traces are too large).
+2. Tools for metrics that you selected, and workload cards. We expect you to issue a pull request to the main branch containing the tools you developed, and workload metadata that is associated with the traces you collected.
+3. An Excel sheet with metric results and workload metadata (the result will of course be a single number for each metric-workload pair so that it can be presented on a datasheet). We expect you to upload this to Canvas as well.
+4. A project report explaining things you've done and the metrics you've collected, and also results that could not be presented on a datasheet such as graphs. The report should also contain introduction, background, discussion on the tools and metrics, execution details, evaluation on the results, and final conclusion and discussion. We expect you to upload this to Canvas.
+
+Naming of the workload and workload card:
+`<model>-<framework>-<platform>-<group_number>`
+
+Naming of the metrics and tools for the metrics:
+`<metric_name>-<group_number>`
+
 
 ## Layout
 ```
