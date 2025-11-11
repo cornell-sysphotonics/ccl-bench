@@ -20,8 +20,8 @@ pip install -r requirements.txt
 2. Select suitable dataset, batch size, sequence length, etc., and specify the infrastructure (execution environment) listed in `workload_card_template.yaml`.
 3. Determine suitable exeuction plan (parallelization strategy, communication backend selection, etc.) for the workload and framework selected, and specify those choices in `workload_card_template.yaml`.
 4. Profile and collect traces by following the guidelines in `trace_gen`, and store it under `trace_collection/<workload_name>`
-5. Copy the workload card template, fill in the card, store it under `trace_collection/<workload_name>`.
-6. Determine metrics (some are suggested in `tools/README.md`). You can do this step before step 3.
+5. Copy the workload card template, fill in the card, store it under `trace_collection/<workload_name>` (you should not upload the trace to github).
+6. Determine metrics (some are suggested in `tools/README.md`). You can also do this step before step 3.
 7. Develop tools, and store it under `tools`
 8. Calculate metrics
 
