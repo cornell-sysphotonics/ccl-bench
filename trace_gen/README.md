@@ -5,9 +5,10 @@ Trace definition: Arjun, Abhishek
 Trace collection method: Eric
 
 ## Current trace format
-1. torch_et_<rank>.json
-2. kineto_trace_<rank>.json
-3. nsys_<rank>.nsys-rep
+1. torch_et_\<rank>.json
+2. kineto_trace_\<rank>.json
+3. nsys_\<rank>.nsys-rep
+4. metric specific trace
 
 ## Trace collection method (from [Chakra Execution Trace Collection](https://github.com/mlcommons/chakra/wiki/Chakra-Execution-Trace-Collection-%E2%80%90-A-Comprehensive-Guide-on-Merging-PyTorch-and-Kineto-Traces) guide)
 
