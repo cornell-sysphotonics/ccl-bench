@@ -1,7 +1,12 @@
 # Trace collection
 Trace collection: Eric
 
-This folder only stores the metadata, i.e. workload card. The real trace should be uploaded to [Google drive](https://drive.google.com/drive/u/0/folders/1shHsa3WvlGh9YRaX7iqYBYTLnwdDfLX6)
+On github this folder should only store the metadata, i.e. workload card.
+
+You are going to upload your traces to Canvas.
+The real trace should be uploaded to 
+
+Sample traces are stored in the [Google drive](https://drive.google.com/drive/u/0/folders/1shHsa3WvlGh9YRaX7iqYBYTLnwdDfLX6)
 
 ## Current list of traces
 1. `llama3.1-8b-torchtitan-perlmutter`
