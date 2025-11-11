@@ -14,6 +14,6 @@ Mistral-7B: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2
 8. [preferred] DeepSeek-R1: https://huggingface.co/deepseek-ai/DeepSeek-R1
 
 ## List of datasets
-1. c4
-2. wikitext
+1. c4: https://huggingface.co/datasets/allenai/c4
+2. wikitext: https://huggingface.co/datasets/Salesforce/wikitext
 
