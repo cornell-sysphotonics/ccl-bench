@@ -89,3 +89,5 @@ def main():
     et.stop()
     et.unregister_callback()
 ```
+
+Note: to prevent the trace becoming too large, you could just profile three iterations within an epoch. You can adjust the number according to the metrics you want to measure.
