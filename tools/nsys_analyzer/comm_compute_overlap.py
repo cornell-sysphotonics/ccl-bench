@@ -52,16 +52,16 @@ def analyze_overlap_with_sweep(nsys_rep_file):
     
     if not os.path.exists(sqlite_file):
         # Need to export
-    sqlite_file = nsys_rep_file.replace('.nsys-rep', '_temp.sqlite')
+        sqlite_file = nsys_rep_file.replace('.nsys-rep', '_temp.sqlite')
         temp_sqlite = True
-    
-    try:
-        export_cmd = ["nsys", "export", "--type=sqlite", f"--output={sqlite_file}", 
-                     "--force-overwrite=true", nsys_rep_file]
-        result = subprocess.run(export_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
         
-        if not os.path.exists(sqlite_file):
-            print("  Failed to export SQLite, using stats-based estimation")
+        try:
+            export_cmd = ["nsys", "export", "--type=sqlite", f"--output={sqlite_file}", 
+                         "--force-overwrite=true", nsys_rep_file]
+            result = subprocess.run(export_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+            
+            if not os.path.exists(sqlite_file):
+                print("  Failed to export SQLite, using stats-based estimation")
                 return estimate_overlap_from_stats(nsys_rep_file)
         except subprocess.TimeoutExpired:
             print(f"  Timeout exporting SQLite")
@@ -87,12 +87,12 @@ def analyze_overlap_with_sweep(nsys_rep_file):
             print(f"  SQL query failed: {e}, using estimation")
             conn.close()
             if temp_sqlite and os.path.exists(sqlite_file):
-            os.remove(sqlite_file)
+                os.remove(sqlite_file)
             return estimate_overlap_from_stats(nsys_rep_file)
         
         conn.close()
         if temp_sqlite and os.path.exists(sqlite_file):
-        os.remove(sqlite_file)
+            os.remove(sqlite_file)
         
         if not kernels:
             print("  No kernel data found")
