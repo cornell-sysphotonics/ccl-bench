@@ -56,3 +56,6 @@ Sessionx.vim
 *.json
 *.nsys-rep
 *.sqlite
+
+# other
+.env
