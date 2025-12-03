@@ -8,6 +8,13 @@ dist/*
 .vscode
 .vs
 
+# uv / virtual environment
+.venv/
+uv.lock
+
+# Ruff cache
+.ruff_cache/
+
 # data
 data
 out

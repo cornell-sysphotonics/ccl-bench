@@ -1,0 +1,435 @@
+#:schema https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/pyproject.json
+
+[project]
+name = "ccl-torchtitan-train"
+version = "0.1.0"
+description = "CCL-Bench: A distributed ML training trace collection and analysis framework for TorchTitan workloads"
+readme = "README.md"
+requires-python = ">=3.10.12"
+keywords = [
+    "distributed-training",
+    "pytorch",
+    "torchtitan",
+    "benchmarking",
+    "trace-analysis",
+    "NCCL",
+    "collective-communication",
+]
+
+# Core dependencies for trace analysis tools
+dependencies = [
+    "huggingface-hub>=1.1.7",
+    "matplotlib>=3.7.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# PyTorch dependencies for GPU trace collection (CUDA)
+torch-cu124 = ["torch>=2.4.0", "torchvision>=0.19.0"]
+# PyTorch dependencies for CPU-only environments
+torch-cpu = ["torch>=2.4.0", "torchvision>=0.19.0"]
+# Development dependencies
+dev = ["pytest>=8.0.0", "pytest-cov>=4.0.0", "mypy>=1.8.0", "ruff>=0.4.0"]
+# Documentation
+docs = ["mkdocs>=1.5.0", "mkdocs-material>=9.5.0"]
+
+[project.scripts]
+ccl-metrics = "tools.main:main"
+
+[project.urls]
+Repository = "https://github.com/cornell-sysphotonics/ccl-bench"
+Issues = "https://github.com/cornell-sysphotonics/ccl-bench/issues"
+
+# ============================================================================
+# Build System Configuration
+# ============================================================================
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools"]
+
+# ============================================================================
+# uv Configuration
+# ============================================================================
+[tool.uv]
+# Managed by uv
+managed = true
+
+# Default dependency groups to include
+default-groups = ["dev"]
+
+# Declare conflicting optional dependencies
+conflicts = [[{ extra = "torch-cu124" }, { extra = "torch-cpu" }]]
+
+[tool.uv.sources]
+# PyTorch sources with platform-specific indexes
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
+    { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
+    { index = "pytorch-cpu", marker = "sys_platform == 'win32'" },
+]
+torchvision = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
+    { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
+    { index = "pytorch-cpu", marker = "sys_platform == 'win32'" },
+]
+
+# PyTorch indexes
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+# ============================================================================
+# Dependency Groups (PEP 735)
+# ============================================================================
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.4.0",
+    "pre-commit>=3.6.0",
+    "types-pyyaml>=6.0.12.20250915",
+]
+test = ["pytest>=8.0.0", "pytest-cov>=4.0.0"]
+lint = ["ruff>=0.4.0", "mypy>=1.8.0"]
+
+# ============================================================================
+# Ruff Configuration (Linter & Formatter)
+# ============================================================================
+[tool.ruff]
+# Target Python version (inferred from requires-python if not set)
+target-version = "py310"
+
+# Line length compatible with Black defaults, but slightly longer for readability
+line-length = 100
+
+# Indentation width (PEP 8 standard)
+indent-width = 4
+
+# Source directories for first-party imports
+src = ["tools", "scripts"]
+
+# Exclude common non-source directories
+extend-exclude = [
+    "trace_collection",
+    "trace_gen",
+    "workloads",
+    "assets",
+    "__pycache__",
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+# Respect .gitignore
+respect-gitignore = true
+
+# Show fixes in output
+show-fixes = true
+
+# Enable fix suggestions by default
+fix = true
+
+# ============================================================================
+# Ruff Linter Configuration
+# ============================================================================
+[tool.ruff.lint]
+select = [
+    # Core Python
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # Pyflakes - undefined names, unused imports, etc.
+    # Code quality
+    "B",   # flake8-bugbear - common bugs and design problems
+    "C4",  # flake8-comprehensions - better comprehensions
+    "SIM", # flake8-simplify - simplify code
+    "UP",  # pyupgrade - modern Python syntax
+
+    # Import organization
+    "I",   # isort - import sorting
+    "TID", # flake8-tidy-imports - import hygiene
+
+    # Type annotations
+    "TC",  # flake8-type-checking - type-checking imports
+    "ANN", # flake8-annotations - type annotation presence
+
+    # Documentation
+    "D", # pydocstyle - docstring conventions
+
+    # Naming conventions
+    "N", # pep8-naming - naming conventions
+
+    # Error handling
+    "EM",  # flake8-errmsg - error message formatting
+    "TRY", # tryceratops - exception handling best practices
+    "RSE", # flake8-raise - raise statement improvements
+
+    # Code complexity
+    "C90", # mccabe - cyclomatic complexity
+    "PLR", # Pylint refactor suggestions
+
+    # Security
+    "S", # flake8-bandit - security issues
+
+    # Performance
+    "PERF", # Perflint - performance anti-patterns
+
+    # Best practices
+    "RUF",  # Ruff-specific rules
+    "PL",   # Pylint rules
+    "PIE",  # flake8-pie - misc lints
+    "PT",   # flake8-pytest-style - pytest best practices
+    "Q",    # flake8-quotes - quote consistency
+    "RET",  # flake8-return - return statement issues
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib - prefer pathlib
+    "ERA",  # eradicate - commented out code
+    "PGH",  # pygrep-hooks - misc checks
+    "FLY",  # flynt - f-string conversion
+    "NPY",  # NumPy-specific rules
+    "PD",   # pandas-vet - pandas best practices
+    "FURB", # refurb - modern Python idioms
+    "LOG",  # flake8-logging - logging best practices
+    "G",    # flake8-logging-format - logging format strings
+
+    # Async
+    "ASYNC", # flake8-async - async best practices
+
+    # Testing
+    "FBT", # flake8-boolean-trap - boolean arguments
+
+    # Comments
+    "TD",  # flake8-todos - TODO comment format
+    "FIX", # flake8-fixme - FIXME/TODO/XXX comments
+]
+
+# Rules to ignore (with justification)
+ignore = [
+    # Line length handled by formatter
+    "E501", # line-too-long
+
+    # Documentation - relaxed for flexibility
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    "D107", # Missing docstring in __init__
+    "D203", # 1 blank line before class docstring (conflicts with D211)
+    "D213", # Multi-line summary second line (conflicts with D212)
+
+    # Annotations - allow gradual typing
+    "ANN401", # Dynamically typed expressions (Any)
+
+    # Complexity - allow reasonable complexity
+    "PLR0911", # Too many return statements
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value in comparison
+
+    # Style preferences
+    "B008", # Function call in default argument (common pattern)
+    "B905", # zip without strict= (Python 3.10+ feature)
+
+    # Conflicts with formatter
+    "W191",   # tab-indentation
+    "E111",   # indentation-with-invalid-multiple
+    "E114",   # indentation-with-invalid-multiple-comment
+    "E117",   # over-indented
+    "D206",   # docstring-tab-indentation
+    "D300",   # triple-single-quotes
+    "Q000",   # bad-quotes-inline-string
+    "Q001",   # bad-quotes-multiline-string
+    "Q002",   # bad-quotes-docstring
+    "Q003",   # avoidable-escaped-quote
+    "COM812", # missing-trailing-comma
+    "COM819", # prohibited-trailing-comma
+    "ISC001", # single-line-implicit-string-concatenation
+
+    # Project-specific relaxations
+    "S101",   # Use of assert (needed for tests and debugging)
+    "T201",   # print() found (acceptable in CLI tools)
+    "ARG001", # Unused function argument (common in callbacks)
+    "TRY003", # Long exception messages (acceptable for clarity)
+    "EM101",  # Exception must not use string literal
+    "EM102",  # Exception must not use f-string literal
+    "TD002",  # Missing author in TODO
+    "TD003",  # Missing issue link in TODO
+    "FIX002", # Line contains TODO
+
+    # Pandas/NumPy specific relaxations
+    "NPY002", # Legacy np.random (acceptable in existing code)
+]
+
+# Allow these rules to be fixed automatically
+fixable = ["ALL"]
+
+# Never try to fix these (manual review required)
+unfixable = [
+    "ERA",  # Don't auto-remove commented code
+    "F401", # Don't auto-remove unused imports (may be intentional)
+    "F841", # Don't auto-remove unused variables
+]
+
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?)|args|kwargs)$"
+
+# ============================================================================
+# Ruff Lint Plugin Configurations
+# ============================================================================
+
+[tool.ruff.lint.isort]
+# First-party modules
+known-first-party = ["tools"]
+# Third-party modules for this project
+known-third-party = ["torch", "numpy", "pandas", "matplotlib", "yaml"]
+# Combine as imports on the same line
+combine-as-imports = true
+# Force imports to be sorted within sections
+force-sort-within-sections = true
+# Lines after imports
+lines-after-imports = 2
+
+[tool.ruff.lint.pydocstyle]
+# Use Google-style docstrings
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+# Maximum cyclomatic complexity
+max-complexity = 15
+
+[tool.ruff.lint.pylint]
+# Maximum arguments for functions
+max-args = 8
+# Maximum local variables
+max-locals = 20
+# Maximum branches in a function
+max-branches = 15
+# Maximum statements in a function
+max-statements = 60
+
+[tool.ruff.lint.flake8-type-checking]
+# Strict mode for type checking imports
+strict = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+# Ban relative imports from parent modules
+ban-relative-imports = "parents"
+
+[tool.ruff.lint.flake8-unused-arguments]
+# Ignore unused *args and **kwargs
+ignore-variadic-names = true
+
+[tool.ruff.lint.flake8-pytest-style]
+# Prefer @pytest.fixture over @pytest.fixture()
+fixture-parentheses = false
+# Prefer @pytest.mark.parametrize over @pytest.mark.parametrize()
+mark-parentheses = false
+
+[tool.ruff.lint.flake8-quotes]
+# Use double quotes for strings
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
+
+[tool.ruff.lint.flake8-import-conventions]
+# Standard import aliases
+[tool.ruff.lint.flake8-import-conventions.aliases]
+numpy = "np"
+pandas = "pd"
+matplotlib = "mpl"
+"matplotlib.pyplot" = "plt"
+
+[tool.ruff.lint.per-file-ignores]
+# Allow unused imports in __init__.py (re-exports)
+"__init__.py" = ["F401", "F403", "E402"]
+# Scripts may have different requirements
+"scripts/*" = ["ARG", "T201", "S", "PLR", "D"]
+# Tests have different requirements
+"tests/*" = ["S101", "ARG", "D", "PLR", "ANN", "PT"]
+"test_*.py" = ["S101", "ARG", "D", "PLR", "ANN", "PT"]
+"*_test.py" = ["S101", "ARG", "D", "PLR", "ANN", "PT"]
+# Allow print in main CLI entry point
+"tools/main.py" = ["T201"]
+# Metric calculation modules may be simpler
+"tools/*/metric_*.py" = ["D", "PLR"]
+"tools/*/*.py" = ["D103"]            # Allow missing docstrings in nested modules
+
+# ============================================================================
+# Ruff Formatter Configuration
+# ============================================================================
+[tool.ruff.format]
+# Use double quotes (consistent with Black)
+quote-style = "double"
+
+# Use spaces for indentation (PEP 8)
+indent-style = "space"
+
+# Respect magic trailing commas
+skip-magic-trailing-comma = false
+
+# Auto-detect line endings
+line-ending = "auto"
+
+# Format code examples in docstrings
+docstring-code-format = true
+
+# Use dynamic line length for docstring code (respects main line-length)
+docstring-code-line-length = "dynamic"
+
+# ============================================================================
+# MyPy Configuration (Type Checking)
+# ============================================================================
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false        # Gradual typing
+ignore_missing_imports = true        # For external libs without stubs
+exclude = ["build", "dist", ".venv"]
+
+[[tool.mypy.overrides]]
+module = "tools.*"
+disallow_untyped_defs = true
+
+# ============================================================================
+# Pytest Configuration
+# ============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = ["-v", "--tb=short", "--strict-markers"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gpu: marks tests that require GPU",
+]
+
+# ============================================================================
+# Coverage Configuration
+# ============================================================================
+[tool.coverage.run]
+source = ["tools"]
+branch = true
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
