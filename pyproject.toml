@@ -1,20 +1,10 @@
 #:schema https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/pyproject.json
 
 [project]
-name = "ccl-torchtitan-train"
+name = "ccl-bench"
 version = "0.1.0"
-description = "CCL-Bench: A distributed ML training trace collection and analysis framework for TorchTitan workloads"
 readme = "README.md"
 requires-python = ">=3.10.12"
-keywords = [
-    "distributed-training",
-    "pytorch",
-    "torchtitan",
-    "benchmarking",
-    "trace-analysis",
-    "NCCL",
-    "collective-communication",
-]
 
 # Core dependencies for trace analysis tools
 dependencies = [
@@ -23,6 +13,7 @@ dependencies = [
     "numpy>=1.24.0",
     "pandas>=2.0.0",
     "pyyaml>=6.0",
+    "torchtitan>=0.2.0",
 ]
 
 [project.optional-dependencies]
@@ -56,38 +47,24 @@ packages = ["tools"]
 # uv Configuration
 # ============================================================================
 [tool.uv]
-# Managed by uv
 managed = true
+prerelease = "allow"
 
 # Default dependency groups to include
 default-groups = ["dev"]
 
-# Declare conflicting optional dependencies
-conflicts = [[{ extra = "torch-cu124" }, { extra = "torch-cpu" }]]
-
 [tool.uv.sources]
-# PyTorch sources with platform-specific indexes
-torch = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
-    { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
-    { index = "pytorch-cpu", marker = "sys_platform == 'win32'" },
-]
-torchvision = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
-    { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
-    { index = "pytorch-cpu", marker = "sys_platform == 'win32'" },
-]
-
-# PyTorch indexes
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
+torch = [{ index = "pytorch-nightly-cu124" }]
+torchvision = [{ index = "pytorch-nightly-cu124" }]
+torchaudio = [{ index = "pytorch-nightly-cu124" }]
+torchao = [{ index = "pytorch-nightly-cu124" }]
+torchao-nightly = [{ index = "pytorch-nightly-cu124" }]
 
 [[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
+name = "pytorch-nightly-cu124"
+url = "https://download.pytorch.org/whl/nightly/cu124"
 explicit = true
+
 
 # ============================================================================
 # Dependency Groups (PEP 735)

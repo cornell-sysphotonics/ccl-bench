@@ -25,7 +25,10 @@ NC='\033[0m' # No Color
 
 info() { echo -e "${BLUE}[INFO]${NC} $*"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
-error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
+error() {
+	echo -e "${RED}[ERROR]${NC} $*"
+	exit 1
+}
 success() { echo -e "${GREEN}[OK]${NC} $*"; }
 
 # =============================================================================
@@ -41,7 +44,7 @@ VENV_DIR="${PROJECT_ROOT}/.venv"
 TORCHTITAN_DIR="${SCRATCH:-$HOME}/torchtitan"
 
 # Python version requirement
-PYTHON_MIN_VERSION="3.10"
+PYTHON_MIN_VERSION="3.10.12"
 
 # PyTorch version (CUDA 12.4 for Perlmutter A100s)
 PYTORCH_INDEX="https://download.pytorch.org/whl/cu124"
@@ -49,16 +52,16 @@ PYTORCH_INDEX="https://download.pytorch.org/whl/cu124"
 # Parse arguments
 DOWNLOAD_MODELS=false
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --with-models)
-            DOWNLOAD_MODELS=true
-            shift
-            ;;
-        *)
-            warn "Unknown option: $1"
-            shift
-            ;;
-    esac
+	case $1 in
+		--with-models)
+			DOWNLOAD_MODELS=true
+			shift
+			;;
+		*)
+			warn "Unknown option: $1"
+			shift
+			;;
+	esac
 done
 
 # =============================================================================
@@ -69,18 +72,18 @@ info "Setting up CCL-Bench environment on Perlmutter..."
 info "Project root: ${PROJECT_ROOT}"
 
 # Check if we're on Perlmutter
-if [[ -n "${NERSC_HOST:-}" ]]; then
-    info "Detected NERSC host: ${NERSC_HOST}"
+if [[ -n ${NERSC_HOST:-} ]]; then
+	info "Detected NERSC host: ${NERSC_HOST}"
 else
-    warn "Not running on NERSC - some features may not work"
+	warn "Not running on NERSC - some features may not work"
 fi
 
 # Load required modules on Perlmutter
 if command -v module &> /dev/null; then
-    info "Loading Perlmutter modules..."
-    module load python 2>/dev/null || true
-    module load cudatoolkit 2>/dev/null || true
-    success "Modules loaded"
+	info "Loading Perlmutter modules..."
+	module load python 2> /dev/null || true
+	module load cudatoolkit 2> /dev/null || true
+	success "Modules loaded"
 fi
 
 # =============================================================================
@@ -88,93 +91,94 @@ fi
 # =============================================================================
 
 check_python_version() {
-    local python_cmd=$1
-    local version
-    version=$($python_cmd -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null)
-    if [[ -z "$version" ]]; then
-        return 1
-    fi
-    # Compare versions
-    if [[ "$(printf '%s\n' "$PYTHON_MIN_VERSION" "$version" | sort -V | head -n1)" == "$PYTHON_MIN_VERSION" ]]; then
-        return 0
-    fi
-    return 1
+	local python_cmd=$1
+	local version
+	version=$($python_cmd -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2> /dev/null)
+	if [[ -z $version ]]; then
+		return 1
+	fi
+	# Compare versions
+	if [[ "$(printf '%s\n' "$PYTHON_MIN_VERSION" "$version" | sort -V | head -n1)" == "$PYTHON_MIN_VERSION" ]]; then
+		return 0
+	fi
+	return 1
 }
 
 setup_with_uv() {
-    info "Setting up environment with uv..."
+	info "Setting up environment with uv..."
 
-    # Check if uv is available
-    if ! command -v uv &> /dev/null; then
-        info "Installing uv..."
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        export PATH="$HOME/.local/bin:$PATH"
-    fi
+	# Check if uv is available
+	if ! command -v uv &> /dev/null; then
+		info "Installing uv..."
+		curl -LsSf https://astral.sh/uv/install.sh | sh
+		export PATH="$HOME/.local/bin:$PATH"
+	fi
 
-    success "uv version: $(uv --version)"
+	success "uv version: $(uv --version)"
 
-    # Create venv and install dependencies
-    cd "$PROJECT_ROOT"
+	# Create venv and install dependencies
+	cd "$PROJECT_ROOT"
 
-    info "Creating virtual environment with uv..."
-    uv venv "$VENV_DIR" --python "$PYTHON_MIN_VERSION"
+	info "Creating virtual environment with uv..."
+	uv venv "$VENV_DIR" --python "$PYTHON_MIN_VERSION"
 
-    info "Installing project dependencies..."
-    # Install with CUDA PyTorch on Linux (Perlmutter)
-    uv sync --extra torch-cu124
+	# shellcheck disable=SC1091
+	source "$VENV_DIR/bin/activate"
 
-    success "uv environment setup complete"
+	uv sync
+
+	success "Environment setup complete via uv."
 }
 
 setup_with_venv() {
-    info "Setting up environment with standard venv..."
+	info "Setting up environment with standard venv..."
 
-    # Find suitable Python
-    local python_cmd=""
-    for cmd in python3.10 python3.11 python3; do
-        if command -v "$cmd" &> /dev/null && check_python_version "$cmd"; then
-            python_cmd="$cmd"
-            break
-        fi
-    done
+	# Find suitable Python
+	local python_cmd=""
+	for cmd in python3.10 python3.11 python3; do
+		if command -v "$cmd" &> /dev/null && check_python_version "$cmd"; then
+			python_cmd="$cmd"
+			break
+		fi
+	done
 
-    if [[ -z "$python_cmd" ]]; then
-        error "No suitable Python >= ${PYTHON_MIN_VERSION} found"
-    fi
+	if [[ -z $python_cmd ]]; then
+		error "No suitable Python >= ${PYTHON_MIN_VERSION} found"
+	fi
 
-    info "Using Python: $python_cmd ($($python_cmd --version))"
+	info "Using Python: $python_cmd ($($python_cmd --version))"
 
-    # Create virtual environment
-    info "Creating virtual environment..."
-    $python_cmd -m venv "$VENV_DIR"
+	# Create virtual environment
+	info "Creating virtual environment..."
+	$python_cmd -m venv "$VENV_DIR"
 
-    # Activate and install
-    source "$VENV_DIR/bin/activate"
+	# Activate and install
+	source "$VENV_DIR/bin/activate"
 
-    info "Upgrading pip..."
-    pip install --upgrade pip
+	info "Upgrading pip..."
+	pip install --upgrade pip
 
-    info "Installing PyTorch with CUDA 12.4..."
-    pip install torch torchvision --index-url "$PYTORCH_INDEX"
+	info "Installing PyTorch with CUDA 12.4..."
+	pip install torch torchvision --index-url "$PYTORCH_INDEX"
 
-    info "Installing project dependencies..."
-    pip install -e "$PROJECT_ROOT"
+	info "Installing project dependencies..."
+	pip install -e "$PROJECT_ROOT"
 
-    success "venv environment setup complete"
+	success "venv environment setup complete"
 }
 
 # Try uv first, fall back to venv
 if command -v uv &> /dev/null || [[ -f "$HOME/.local/bin/uv" ]]; then
-    setup_with_uv
+	setup_with_uv
 else
-    warn "uv not found, attempting to install..."
-    if curl -LsSf https://astral.sh/uv/install.sh | sh 2>/dev/null; then
-        export PATH="$HOME/.local/bin:$PATH"
-        setup_with_uv
-    else
-        warn "Could not install uv, falling back to standard venv"
-        setup_with_venv
-    fi
+	warn "uv not found, attempting to install..."
+	if curl -LsSf https://astral.sh/uv/install.sh | sh 2> /dev/null; then
+		export PATH="$HOME/.local/bin:$PATH"
+		setup_with_uv
+	else
+		warn "Could not install uv, falling back to standard venv"
+		setup_with_venv
+	fi
 fi
 
 # =============================================================================
@@ -183,13 +187,13 @@ fi
 
 info "Setting up TorchTitan..."
 
-if [[ -d "$TORCHTITAN_DIR" ]]; then
-    info "TorchTitan directory exists, updating..."
-    cd "$TORCHTITAN_DIR"
-    git pull origin main 2>/dev/null || warn "Could not update TorchTitan"
+if [[ -d $TORCHTITAN_DIR ]]; then
+	info "TorchTitan directory exists, updating..."
+	cd "$TORCHTITAN_DIR"
+	git pull origin main 2> /dev/null || warn "Could not update TorchTitan"
 else
-    info "Cloning TorchTitan..."
-    git clone https://github.com/pytorch/torchtitan.git "$TORCHTITAN_DIR"
+	info "Cloning TorchTitan..."
+	git clone https://github.com/pytorch/torchtitan.git "$TORCHTITAN_DIR"
 fi
 
 # Install TorchTitan in the environment
@@ -197,10 +201,10 @@ source "$VENV_DIR/bin/activate"
 cd "$TORCHTITAN_DIR"
 
 info "Installing TorchTitan dependencies..."
-pip install -r requirements.txt 2>/dev/null || warn "Some TorchTitan deps may have failed"
+pip install -r requirements.txt 2> /dev/null || warn "Some TorchTitan deps may have failed"
 
 # Install TorchTitan itself
-pip install -e . 2>/dev/null || warn "TorchTitan editable install may have failed"
+pip install -e . 2> /dev/null || warn "TorchTitan editable install may have failed"
 
 success "TorchTitan setup complete at: ${TORCHTITAN_DIR}"
 
@@ -208,72 +212,54 @@ success "TorchTitan setup complete at: ${TORCHTITAN_DIR}"
 # Model Weights Download (Optional)
 # =============================================================================
 
-if [[ "$DOWNLOAD_MODELS" == true ]]; then
-    info "Downloading model weights..."
+if [[ $DOWNLOAD_MODELS == true ]]; then
+	info "Downloading model weights..."
 
-    ASSETS_DIR="${PROJECT_ROOT}/assets/hf"
-    mkdir -p "$ASSETS_DIR"
+	ASSETS_DIR="${PROJECT_ROOT}/assets/hf"
+	mkdir -p "$ASSETS_DIR"
 
-    # Check for HuggingFace CLI
-    if command -v huggingface-cli &> /dev/null; then
-        info "Downloading LLaMA-3.1-8B..."
-        huggingface-cli download meta-llama/Llama-3.1-8B --local-dir "$ASSETS_DIR/Llama-3.1-8B" || warn "LLaMA download failed (may need HF token)"
+	# Determine which HF CLI to use (prefer uvx hf, then hf, then huggingface-cli)
+	HF_CLI=""
+	if command -v uv &> /dev/null; then
+		HF_CLI="uvx hf"
+		info "Using: uvx hf (recommended)"
+	elif command -v hf &> /dev/null; then
+		HF_CLI="hf"
+		info "Using: hf CLI"
+	elif command -v huggingface-cli &> /dev/null; then
+		HF_CLI="huggingface-cli"
+		info "Using: huggingface-cli (legacy)"
+	fi
 
-        info "Downloading DeepSeek-V2-Lite..."
-        huggingface-cli download deepseek-ai/DeepSeek-V2-Lite --local-dir "$ASSETS_DIR/DeepSeek-V2-Lite" || warn "DeepSeek download failed"
+	if [[ -n $HF_CLI ]]; then
+		# Check if logged in
+		if ! $HF_CLI auth whoami &> /dev/null; then
+			warn "Not logged in to Hugging Face. Run: $HF_CLI auth login"
+			warn "Some models (like LLaMA) require authentication."
+		fi
 
-        info "Downloading Qwen3-32B..."
-        huggingface-cli download Qwen/Qwen3-32B --local-dir "$ASSETS_DIR/Qwen3-32B" || warn "Qwen download failed"
-    else
-        warn "huggingface-cli not found. Install with: pip install huggingface_hub[cli]"
-        warn "Then run: huggingface-cli login"
-    fi
+		info "Downloading LLaMA-3.1-8B..."
+		$HF_CLI download meta-llama/Llama-3.1-8B --local-dir "$ASSETS_DIR/Llama-3.1-8B" || warn "LLaMA download failed (may need HF token and model access)"
+
+		info "Downloading DeepSeek-V2-Lite..."
+		$HF_CLI download deepseek-ai/DeepSeek-V2-Lite --local-dir "$ASSETS_DIR/DeepSeek-V2-Lite" || warn "DeepSeek download failed"
+
+		info "Downloading Qwen3-32B..."
+		$HF_CLI download Qwen/Qwen3-32B --local-dir "$ASSETS_DIR/Qwen3-32B" || warn "Qwen download failed"
+	else
+		warn "No Hugging Face CLI found."
+		warn "Install with one of:"
+		warn "  curl -LsSf https://hf.co/cli/install.sh | bash  (recommended)"
+		warn "  pip install huggingface_hub"
+		warn "Then run: hf auth login"
+	fi
 fi
-
-# =============================================================================
-# Create Activation Script
-# =============================================================================
-
-ACTIVATE_SCRIPT="${PROJECT_ROOT}/perlmutter/activate.sh"
-cat > "$ACTIVATE_SCRIPT" << 'EOF'
-#!/bin/bash
-# Source this file to activate the CCL-Bench environment
-# Usage: source perlmutter/activate.sh
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-# Load Perlmutter modules
-if command -v module &> /dev/null; then
-    module load python 2>/dev/null || true
-    module load cudatoolkit 2>/dev/null || true
-fi
-
-# Activate virtual environment
-if [[ -f "$PROJECT_ROOT/.venv/bin/activate" ]]; then
-    source "$PROJECT_ROOT/.venv/bin/activate"
-    echo "Activated CCL-Bench environment"
-else
-    echo "Error: Virtual environment not found at $PROJECT_ROOT/.venv"
-    echo "Run: ./perlmutter/setup_env.sh"
-    return 1
-fi
-
-# Set useful environment variables
-export CCL_BENCH_HOME="$PROJECT_ROOT"
-export TORCHTITAN_HOME="${SCRATCH:-$HOME}/torchtitan"
-export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
-
-echo "CCL_BENCH_HOME=$CCL_BENCH_HOME"
-echo "TORCHTITAN_HOME=$TORCHTITAN_HOME"
-EOF
-
-chmod +x "$ACTIVATE_SCRIPT"
-success "Created activation script: ${ACTIVATE_SCRIPT}"
 
 # =============================================================================
 # Summary
 # =============================================================================
+
+ACTIVATE_SCRIPT="${PROJECT_ROOT}/perlmutter/activate.sh"
 
 echo ""
 echo "============================================================================="
@@ -292,9 +278,9 @@ echo ""
 echo "To analyze traces:"
 echo "  ccl-metrics --trace <trace_dir> --metric <metric_name>"
 echo ""
-if [[ "$DOWNLOAD_MODELS" == false ]]; then
-    echo -e "${YELLOW}Note: Model weights were not downloaded.${NC}"
-    echo "Run with --with-models to download, or manually place weights in:"
-    echo "  ${PROJECT_ROOT}/assets/hf/"
-    echo ""
+if [[ $DOWNLOAD_MODELS == false ]]; then
+	echo -e "${YELLOW}Note: Model weights were not downloaded.${NC}"
+	echo "Run with --with-models to download, or manually place weights in:"
+	echo "  ${PROJECT_ROOT}/assets/hf/"
+	echo ""
 fi
