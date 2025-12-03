@@ -1,0 +1,74 @@
+# =============================================================================
+# DeepSeek-V2-Lite (16B MoE) DP + TP Parallelism
+# =============================================================================
+# Matching workload card: deepseek-v2-lite-torchtitan-perlmutter-16/workload_card_dp_tp.yaml
+#
+# world_size = 8 (nnodes=2, nproc_per_node=4)
+# Parallelism: dp_replicate=2, dp_shard=2, tp=2, pp=1, cp=1
+# Verification: 2 × 2 × 2 × 1 × 1 = 8 ✓
+#
+# Launch command:
+#   torchrun --nnodes=2 --nproc_per_node=4 \
+#     -m torchtitan.train --job.config_file train_configs/deepseek_v2_lite_dp_tp.toml
+# =============================================================================
+
+[job]
+dump_folder = "./outputs/deepseek_v2_lite_dp_tp"
+description = "DeepSeek-V2-Lite (16B MoE) training with DP+TP (dp=2, fsdp=2, tp=2)"
+
+[profiling]
+enable_profiling = true
+save_traces_folder = "profile_trace"
+profile_freq = 50  # Profile every 50 steps for trace collection
+
+[metrics]
+log_freq = 10
+enable_tensorboard = true
+save_tb_folder = "tb"
+
+[model]
+name = "deepseek_v2_lite"
+flavor = "16B"
+hf_assets_path = "./assets/hf/DeepSeek-V2-Lite"
+
+[optimizer]
+name = "AdamW"
+lr = 3e-4
+eps = 1e-8
+
+[lr_scheduler]
+warmup_steps = 20  # Reduced for short profiling runs
+
+[training]
+local_batch_size = 1  # Conservative for MoE model on A100 40GB
+seq_len = 8192        # From workload card
+max_norm = 1.0        # Gradient norm clipping
+steps = 100           # Short run for profiling/trace collection
+dataset = "c4"        # From workload card
+
+[parallelism]
+data_parallel_replicate_degree = 2  # 2 DP replicas
+data_parallel_shard_degree = 2      # FSDP sharding degree 2
+tensor_parallel_degree = 2          # 2-way tensor parallelism
+pipeline_parallel_degree = 1
+context_parallel_degree = 1
+
+[checkpoint]
+enable = false  # Disabled for profiling runs
+folder = "checkpoint"
+interval = 500
+last_save_model_only = true
+export_dtype = "float32"
+async_mode = "disabled"
+
+[compile]
+# torch.compile disabled for simpler profiling; enable for potential speedups
+enable = false
+components = ["model", "loss"]
+
+[activation_checkpoint]
+mode = "full"  # Full activation checkpointing for large MoE model
+selective_ac_option = "op"
+
+[validation]
+enable = false

@@ -1,0 +1,74 @@
+# =============================================================================
+# LLaMA-3.1-8B Pure Pipeline Parallelism (PP=4)
+# =============================================================================
+# Matching workload card: llama-3.1-8b-torchtitan-perlmutter-16/workload_card_pp.yaml
+#
+# world_size = 4 (nnodes=1, nproc_per_node=4)
+# Parallelism: dp_replicate=1, dp_shard=1, tp=1, pp=4, cp=1
+# Verification: 1 × 1 × 1 × 4 × 1 = 4 ✓
+#
+# Launch command:
+#   torchrun --nnodes=1 --nproc_per_node=4 \
+#     -m torchtitan.train --job.config_file train_configs/llama3_8b_pp.toml
+# =============================================================================
+
+[job]
+dump_folder = "./outputs/llama3_8b_pp"
+description = "LLaMA-3.1-8B training with Pure Pipeline Parallelism (PP=4)"
+
+[profiling]
+enable_profiling = true
+save_traces_folder = "profile_trace"
+profile_freq = 50  # Profile every 50 steps for trace collection
+
+[metrics]
+log_freq = 10
+enable_tensorboard = true
+save_tb_folder = "tb"
+
+[model]
+name = "llama3"
+flavor = "8B"
+hf_assets_path = "./assets/hf/Llama-3.1-8B"
+
+[optimizer]
+name = "AdamW"
+lr = 3e-4
+eps = 1e-8
+
+[lr_scheduler]
+warmup_steps = 20  # Reduced for short profiling runs
+
+[training]
+local_batch_size = 1  # Conservative for A100 40GB with PP
+seq_len = 8192        # From workload card
+max_norm = 1.0        # Gradient norm clipping
+steps = 100           # Short run for profiling/trace collection
+dataset = "c4"        # From workload card
+
+[parallelism]
+data_parallel_replicate_degree = 1
+data_parallel_shard_degree = 1
+tensor_parallel_degree = 1
+pipeline_parallel_degree = 4   # Pure PP=4 (model split into 4 stages)
+context_parallel_degree = 1
+
+[checkpoint]
+enable = false  # Disabled for profiling runs
+folder = "checkpoint"
+interval = 500
+last_save_model_only = true
+export_dtype = "float32"
+async_mode = "disabled"
+
+[compile]
+# torch.compile disabled for simpler profiling; enable for potential speedups
+enable = false
+components = ["model", "loss"]
+
+[activation_checkpoint]
+mode = "selective"  # Selective activation checkpointing for memory efficiency
+selective_ac_option = "op"
+
+[validation]
+enable = false
