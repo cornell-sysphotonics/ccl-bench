@@ -19,7 +19,8 @@ description = "LLaMA-3.1-8B training with Pure Pipeline Parallelism (PP=4)"
 [profiling]
 enable_profiling = true
 save_traces_folder = "profile_trace"
-profile_freq = 50  # Profile every 50 steps for trace collection
+profile_freq = 50  # TorchTitan internal profiler frequency (set to 1 for denser traces)
+# Note: NSys profiling is controlled externally via `nsys profile ...`
 
 [metrics]
 log_freq = 10
@@ -54,12 +55,7 @@ pipeline_parallel_degree = 4   # Pure PP=4 (model split into 4 stages)
 context_parallel_degree = 1
 
 [checkpoint]
-enable = false  # Disabled for profiling runs
-folder = "checkpoint"
-interval = 500
-last_save_model_only = true
-export_dtype = "float32"
-async_mode = "disabled"
+enable = false  # Disabled for short profiling runs
 
 [compile]
 # torch.compile disabled for simpler profiling; enable for potential speedups

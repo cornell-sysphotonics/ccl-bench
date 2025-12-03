@@ -19,7 +19,8 @@ description = "Qwen3-32B training with DP+PP (dp=4, pp=2)"
 [profiling]
 enable_profiling = true
 save_traces_folder = "profile_trace"
-profile_freq = 50  # Profile every 50 steps for trace collection
+profile_freq = 50  # TorchTitan internal profiler frequency (set to 1 for denser traces)
+# Note: NSys profiling is controlled externally via `nsys profile ...`
 
 [metrics]
 log_freq = 10
@@ -33,7 +34,7 @@ hf_assets_path = "./assets/hf/Qwen3-32B"
 
 [optimizer]
 name = "AdamW"
-lr = 8e-4
+lr = 3e-4  # Normalized across all models for consistent profiling
 eps = 1e-8
 
 [lr_scheduler]
@@ -48,19 +49,13 @@ dataset = "c4"        # From workload card
 
 [parallelism]
 data_parallel_replicate_degree = 4  # 4 DP replicas
-data_parallel_shard_degree = 1      # No FSDP sharding
-fsdp_reshard_after_forward = "default"
+data_parallel_shard_degree = 1      # No FSDP sharding (pure DDP)
 tensor_parallel_degree = 1
 pipeline_parallel_degree = 2        # 2-stage pipeline parallelism
 context_parallel_degree = 1
 
 [checkpoint]
-enable = false  # Disabled for profiling runs
-folder = "checkpoint"
-interval = 500
-last_save_model_only = false
-export_dtype = "float16"
-async_mode = "disabled"
+enable = false  # Disabled for short profiling runs
 
 [compile]
 # torch.compile disabled for simpler profiling; enable for potential speedups
