@@ -19,7 +19,7 @@ description = "LLaMA-3.1-8B training with Pure Pipeline Parallelism (PP=4)"
 [profiling]
 enable_profiling = true
 save_traces_folder = "profile_trace"
-profile_freq = 50  # TorchTitan internal profiler frequency (set to 1 for denser traces)
+profile_freq = 1  # TorchTitan internal profiler frequency (set to 1 for denser traces)
 # Note: NSys profiling is controlled externally via `nsys profile ...`
 
 [metrics]
@@ -44,7 +44,7 @@ warmup_steps = 20  # Reduced for short profiling runs
 local_batch_size = 1  # Conservative for A100 40GB with PP
 seq_len = 8192        # From workload card
 max_norm = 1.0        # Gradient norm clipping
-steps = 100           # Short run for profiling/trace collection
+steps = 20           # Short run for profiling/trace collection
 dataset = "c4"        # From workload card
 
 [parallelism]
