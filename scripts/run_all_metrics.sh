@@ -11,19 +11,19 @@ OUTPUT_CSV="$PROJECT_ROOT/metrics_all_workloads.csv"
 
 # Workloads to process
 WORKLOADS=(
-    "llama-3.1-8b-torchtitan-perlmutter-16"
-    "deepseek-v2-lite-torchtitan-perlmutter-16"
-    "qwen-32b-torchtitan-perlmutter-16"
+	"llama-3.1-8b-torchtitan-perlmutter-16"
+	"deepseek-v2-lite-torchtitan-perlmutter-16"
+	"qwen-32b-torchtitan-perlmutter-16"
 )
 
 # Available metrics
 METRICS=(
-    "coll_call_num"
-    "throughput_tokens"
-    "iter_time"
-    "comm_comp_overlap"
-    "pipeline_bubble"
-    "straggler_lag"
+	"coll_call_num"
+	"throughput_tokens"
+	"iter_time"
+	"comm_comp_overlap"
+	"pipeline_bubble"
+	"straggler_lag"
 )
 
 echo "CCL-Bench Metrics - All Workloads"
@@ -36,22 +36,22 @@ echo "workload,metric,value" > "$OUTPUT_CSV"
 cd "$TOOLS_DIR"
 
 for workload in "${WORKLOADS[@]}"; do
-    TRACE_DIR="$PROJECT_ROOT/trace_collection/$workload"
-    echo "Processing: $workload"
-    echo "  Trace directory: $TRACE_DIR"
+	TRACE_DIR="$PROJECT_ROOT/trace_collection/$workload"
+	echo "Processing: $workload"
+	echo "  Trace directory: $TRACE_DIR"
 
-    # Check if trace directory exists
-    if [ ! -d "$TRACE_DIR" ]; then
-        echo "  Warning: Trace directory not found, skipping..."
-        continue
-    fi
+	# Check if trace directory exists
+	if [ ! -d "$TRACE_DIR" ]; then
+		echo "  Warning: Trace directory not found, skipping..."
+		continue
+	fi
 
-    for metric in "${METRICS[@]}"; do
-        echo "  Calculating: $metric"
-        value=$(python main.py --trace "$TRACE_DIR" --metric "$metric" 2>/dev/null || echo "N/A")
-        echo "$workload,$metric,$value" >> "$OUTPUT_CSV"
-    done
-    echo ""
+	for metric in "${METRICS[@]}"; do
+		echo "  Calculating: $metric"
+		value=$(python main.py --trace "$TRACE_DIR" --metric "$metric" 2> /dev/null || echo "N/A")
+		echo "$workload,$metric,$value" >> "$OUTPUT_CSV"
+	done
+	echo ""
 done
 
 echo "Results saved to: $OUTPUT_CSV"
