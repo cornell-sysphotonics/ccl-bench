@@ -79,10 +79,13 @@ else
 fi
 
 # Load required modules on Perlmutter
+# Note: Temporarily disable 'set -u' because module/conda scripts have unbound variables
 if command -v module &> /dev/null; then
 	info "Loading Perlmutter modules..."
+	set +u  # Disable unbound variable check for module commands
 	module load python 2> /dev/null || true
 	module load cudatoolkit 2> /dev/null || true
+	set -u  # Re-enable unbound variable check
 	success "Modules loaded"
 fi
 

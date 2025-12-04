@@ -44,8 +44,17 @@ export TRAIN_CONFIG_DIR="${CCL_BENCH_HOME}/train_configs"
 
 setup_environment() {
 	# Load required modules
+	# Note: Temporarily disable 'set -u' if active, because module/conda scripts have unbound variables
+	local u_was_set=false
+	if [[ $- == *u* ]]; then
+		u_was_set=true
+		set +u
+	fi
 	module load python 2> /dev/null || true
 	module load cudatoolkit 2> /dev/null || true
+	if [[ $u_was_set == true ]]; then
+		set -u
+	fi
 
 	# Activate virtual environment
 	if [[ -f "${VENV_DIR}/bin/activate" ]]; then
