@@ -49,13 +49,25 @@ List all available metrics:
 python main.py --list-metrics
 ```
 
+### Profile Mode
+
+The `--profile-mode` option specifies the type of profiling traces:
+- `torch`: PyTorch/Kineto profiler traces (default)
+- `nsys`: NVIDIA Nsight Systems traces
+- `auto`: Automatically detect trace type
+
+```bash
+# Explicitly specify torch profiler mode
+python main.py --trace <dir> --metric iter_time --profile-mode torch
+```
+
 ### Examples
 
 ```bash
 # Calculate number of communication calls
 python main.py --trace ../trace_collection/llama-3.1-8b-torchtitan-perlmutter-16 --metric coll_call_num
 
-# Calculate throughput in tokens/sec
+# Calculate throughput in tokens/sec (returns structured JSON)
 python main.py --trace ../trace_collection/llama-3.1-8b-torchtitan-perlmutter-16 --metric throughput_tokens
 
 # Get traffic distribution as JSON
@@ -82,42 +94,63 @@ Use the helper scripts in `scripts/` to run all metrics at once:
 
 ## Metrics
 
+### NVTX Dependency
+
+Some metrics can work without NVTX instrumentation, while others require or benefit from it:
+
+| Metric | NVTX Dependency | Notes |
+|--------|-----------------|-------|
+| coll_call_num | ❌ None | Works from kernel events only |
+| throughput_tokens | ❌ None | Uses config + trace timing |
+| iter_time | ❌ None | Uses ProfilerStep# events (no NVTX needed) |
+| comm_comp_overlap | ❌ None | Classifies kernels by name pattern |
+| pipeline_bubble | ⚠️ Partial | Heuristic mode without NVTX (less accurate) |
+| traffic_distribution | ⚠️ Partial | Heuristic mode without NVTX (DP/TP ambiguous) |
+| straggler_lag | ❌ None | Compares NCCL kernel times across ranks |
+
 ### Implemented Metrics
 
-1. **`coll_call_num`**: Number of NCCL communication calls from one GPU in one iteration
+1. **`coll_call_num`**: Number of NCCL communication calls
    - Source: Kineto trace (`kineto_trace_*.json`)
-   - Output: Integer count
-   - Counts: AllReduce, ReduceScatter, AllGather, Broadcast, Reduce, SendRecv
+   - Output: Dict with `total_calls`, `calls_per_rank`, `calls_by_type`
+   - Counts: AllReduce, ReduceScatter, AllGather, Broadcast, Reduce, SendRecv, AllToAll
+   - NVTX: Not required
 
 2. **`throughput_tokens`**: Throughput measured in tokens per second
    - Source: Workload card + Kineto/Torch ET trace timing
-   - Output: Float (tokens/sec)
+   - Output: Dict with `throughput_tokens_per_s`, `total_tokens`, `measured_duration_s`, etc.
    - Formula: `(batch_size × seq_len × iterations) / total_time`
+   - NVTX: Not required (uses ProfilerStep# for iteration detection)
 
 3. **`iter_time`**: Average iteration wall-clock time
-   - Source: Kineto trace (NVTX ranges or ProfilerStep markers)
-   - Output: Float (milliseconds)
-   - Looks for: iteration markers, ProfilerStep events
+   - Source: Kineto trace (ProfilerStep# markers)
+   - Output: Dict with `avg_iter_time_ms`, `min_iter_time_ms`, `max_iter_time_ms`, `std_iter_time_ms`
+   - Uses ProfilerStep# events (automatically added by PyTorch Profiler, no NVTX needed)
+   - NVTX: Not required
 
-4. **`comm_comp_overlap`**: Overlap percentage between communication and computation phases
+4. **`comm_comp_overlap`**: Overlap ratio between communication and computation phases
    - Source: Kineto trace (kernel events)
-   - Output: Float (0-1 ratio)
-   - Formula: `overlapping_time / total_comm_time`
+   - Output: Dict with `comm_time_ms`, `comp_time_ms`, `overlap_time_ms`, `overlap_ratio_of_comm`, `overlap_ratio_of_comp`
+   - Classifies kernels by name: NCCL = comm, matmul/gemm/attention = comp
+   - NVTX: Not required
 
 5. **`pipeline_bubble`**: Size of idle time (bubble) in pipeline parallelism
    - Source: Kineto trace (kernel timelines)
-   - Output: Float (0-1 ratio)
-   - Formula: `idle_time / total_iteration_time`
+   - Output: Dict with `bubble_ratio`, `bubble_time_ms`, `total_time_ms`, `method`
+   - NVTX: Partial (heuristic mode uses gaps between kernels, NVTX mode uses stage markers)
+   - Warning: Heuristic mode may be inaccurate without proper stage tagging
 
 6. **`traffic_distribution`**: Distribution of traffic across different parallelization types
    - Source: Kineto trace (NVTX ranges + kernel names)
-   - Output: Dict with DP/TP/PP/EP traffic durations
+   - Output: Dict with `dp_bytes`, `tp_bytes`, `pp_bytes`, `ep_bytes`, `fractions`, `mode`
    - Categories: DP, TP, PP, EP, unknown
+   - NVTX: Partial (uses heuristics without NVTX, PP/EP are reliable, DP/TP may be ambiguous)
 
 7. **`straggler_lag`**: Relative lag of the slowest device in a communication group
    - Source: Multi-rank Kineto traces
-   - Output: Float (normalized lag)
-   - Formula: `(max_end_time - min_end_time) / avg_iteration_time`
+   - Output: Dict with `mean_lag_us`, `p50_lag_us`, `p95_lag_us`, `max_lag_us`, `num_collectives`
+   - Groups NCCL kernels by position (k-th kernel) across ranks
+   - NVTX: Not required
 
 ### Planned Metrics
 
@@ -170,21 +203,27 @@ To add a new metric:
 2. Create `__init__.py` that exports `metric_cal`
 3. Create `<metric_name>.py` with:
    ```python
-   def metric_cal(directory: str) -> float | int | dict:
+   from typing import Any
+
+   def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
        """
        Calculate the metric from trace data.
 
        Args:
            directory: Path to trace directory
+           profile_mode: Profile mode - 'torch', 'nsys', or 'auto'
 
        Returns:
-           Metric value (numeric or dict for complex metrics)
+           Dictionary with metric values and metadata
        """
        # Implementation
-       pass
+       return {
+           "metric_value": ...,
+           "units": "...",
+           # ... other relevant fields
+       }
    ```
-4. Add the metric name to `AVAILABLE_METRICS` list in `main.py`
-5. Add import logic in `get_metric_function()` in `main.py`
+4. Register the metric in `_METRIC_MODULES` dict in `main.py`
 
 ## Trace Requirements
 

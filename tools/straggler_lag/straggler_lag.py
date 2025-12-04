@@ -3,76 +3,102 @@
 Measures the relative lag of the slowest device/process in a communication group.
 This indicates load imbalance and synchronization overhead.
 
-Straggler lag = (max_end_time - min_end_time) / avg_iteration_time
+NVTX Dependency: None
+This metric works purely from NCCL kernel events across ranks.
 
-Higher values indicate more imbalance.
+Grouping Strategy:
+- Group NCCL kernels across ranks by matching the k-th kernel of each rank
+- For each collective instance, compute the lag between earliest and latest start time
+- Optionally uses ProfilerStep# events to compute per-iteration straggler metrics
 """
 
+from __future__ import annotations
+
 import json
+import sys
 from pathlib import Path
+from typing import Any
 
 
-def metric_cal(directory: str) -> float:
+# NCCL operator-level event names (from TorchTitan/PyTorch profiler traces)
+_NCCL_OPERATOR_NAMES = (
+    "nccl:all_reduce",
+    "nccl:reduce_scatter",
+    "nccl:all_gather",
+    "nccl:broadcast",
+    "nccl:reduce",
+    "nccl:send",
+    "nccl:recv",
+    "nccl:coalesced",
+    "nccl:all_to_all",
+    # c10d distributed operations
+    "c10d::allreduce_",
+    "c10d::reduce_scatter_",
+    "c10d::allgather_",
+    "c10d::broadcast_",
+    "c10d::reduce_",
+    "c10d::send",
+    "c10d::recv_",
+    "c10d::alltoall",
+)
+
+
+def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     """Calculate straggler lag from multi-rank trace data.
 
     Args:
-        directory (str): Path to the trace directory containing trace files.
+        directory: Path to the trace directory containing trace files.
+        profile_mode: Profile mode - 'torch', 'nsys', or 'auto' (detect).
 
     Returns:
-        float: Normalized straggler lag (0 = perfect balance).
+        Dictionary with straggler lag metrics:
+            - mean_lag_us: Mean lag across all collectives in microseconds
+            - p50_lag_us: Median (P50) lag
+            - p95_lag_us: 95th percentile lag
+            - max_lag_us: Maximum lag observed
+            - min_lag_us: Minimum lag observed
+            - num_collectives: Number of collective operations analyzed
+            - num_ranks: Number of ranks found
+            - normalized_lag: Mean lag normalized by avg iteration time (if available)
+            - per_rank_end_times_us: End times per rank (for debugging)
     """
     # Find all rank traces
     rank_traces = _find_rank_traces(directory)
 
     if len(rank_traces) <= 1:
-        print("Warning: Single rank or no traces found, straggler lag = 0")
-        return 0.0
+        print("Warning: Single rank or no traces found, straggler lag = 0", file=sys.stderr)
+        return {
+            "mean_lag_us": 0.0,
+            "p50_lag_us": 0.0,
+            "p95_lag_us": 0.0,
+            "max_lag_us": 0.0,
+            "min_lag_us": 0.0,
+            "num_collectives": 0,
+            "num_ranks": len(rank_traces),
+            "normalized_lag": 0.0,
+            "per_rank_end_times_us": {},
+        }
 
-    # Analyze iteration end times per rank
-    rank_end_times = {}
-    iteration_times = []
+    # Analyze NCCL kernels across ranks
+    result = _analyze_straggler_lag(rank_traces)
 
-    for rank, trace_path in rank_traces.items():
-        end_time, iter_time = _analyze_rank_trace(trace_path)
-        if end_time > 0:
-            rank_end_times[rank] = end_time
-            if iter_time > 0:
-                iteration_times.append(iter_time)
-
-    if len(rank_end_times) <= 1:
-        return 0.0
-
-    # Calculate straggler lag
-    end_times = list(rank_end_times.values())
-    max_end = max(end_times)
-    min_end = min(end_times)
-    lag_us = max_end - min_end
-
-    # Normalize by average iteration time
-    if iteration_times:
-        avg_iter_time = sum(iteration_times) / len(iteration_times)
-        normalized_lag = lag_us / avg_iter_time if avg_iter_time > 0 else 0
-    else:
-        # Normalize by average end time as fallback
-        avg_end = sum(end_times) / len(end_times)
-        normalized_lag = lag_us / avg_end if avg_end > 0 else 0
-
-    import sys
+    # Print summary
     print("Straggler Analysis:", file=sys.stderr)
-    print(f"  Ranks analyzed: {len(rank_end_times)}", file=sys.stderr)
-    max_rank = max(rank_end_times.keys(), key=lambda k: rank_end_times[k])
-    min_rank = min(rank_end_times.keys(), key=lambda k: rank_end_times[k])
-    print(f"  Max end time: {max_end:.2f} us (rank {max_rank})", file=sys.stderr)
-    print(f"  Min end time: {min_end:.2f} us (rank {min_rank})", file=sys.stderr)
-    print(f"  Lag: {lag_us:.2f} us", file=sys.stderr)
-    print(f"  Normalized lag: {normalized_lag:.4f}", file=sys.stderr)
+    print(f"  Ranks analyzed: {result['num_ranks']}", file=sys.stderr)
+    print(f"  Collectives analyzed: {result['num_collectives']}", file=sys.stderr)
+    print(f"  Mean lag: {result['mean_lag_us']:.2f} us", file=sys.stderr)
+    print(f"  P50 lag: {result['p50_lag_us']:.2f} us", file=sys.stderr)
+    print(f"  P95 lag: {result['p95_lag_us']:.2f} us", file=sys.stderr)
+    print(f"  Max lag: {result['max_lag_us']:.2f} us", file=sys.stderr)
+    if result['normalized_lag'] > 0:
+        print(f"  Normalized lag: {result['normalized_lag']:.4f}", file=sys.stderr)
 
-    return normalized_lag
+    return result
 
 
 def _find_rank_traces(directory: str) -> dict[int, str]:
     """Find trace files organized by rank."""
-    rank_traces = {}
+    rank_traces: dict[int, str] = {}
     trace_dir = Path(directory)
 
     # Look for trace files with various naming patterns
@@ -82,7 +108,7 @@ def _find_rank_traces(directory: str) -> dict[int, str]:
         "*trace*.json",
     ]
 
-    trace_files = []
+    trace_files: list[Path] = []
     for pattern in trace_patterns:
         trace_files.extend(trace_dir.glob(pattern))
 
@@ -134,46 +160,161 @@ def _find_rank_traces(directory: str) -> dict[int, str]:
     return rank_traces
 
 
-def _analyze_rank_trace(trace_path: str) -> tuple[float, float]:
-    """Analyze a single rank's trace.
+def _analyze_straggler_lag(rank_traces: dict[int, str]) -> dict[str, Any]:
+    """Analyze straggler lag across all ranks.
+
+    Groups NCCL kernels by their position (k-th kernel on each rank)
+    and computes lag for each grouped collective.
+    """
+    # Extract NCCL kernel times from each rank
+    rank_nccl_kernels: dict[int, list[tuple[float, float]]] = {}  # rank -> [(start, end), ...]
+    rank_end_times: dict[int, float] = {}
+    iteration_times: list[float] = []
+
+    for rank, trace_path in rank_traces.items():
+        kernels, end_time, iter_time = _extract_nccl_kernels(trace_path)
+        if kernels:
+            rank_nccl_kernels[rank] = kernels
+            rank_end_times[rank] = end_time
+            if iter_time > 0:
+                iteration_times.append(iter_time)
+
+    if len(rank_nccl_kernels) <= 1:
+        return {
+            "mean_lag_us": 0.0,
+            "p50_lag_us": 0.0,
+            "p95_lag_us": 0.0,
+            "max_lag_us": 0.0,
+            "min_lag_us": 0.0,
+            "num_collectives": 0,
+            "num_ranks": len(rank_traces),
+            "normalized_lag": 0.0,
+            "per_rank_end_times_us": rank_end_times,
+        }
+
+    # Find minimum kernel count across ranks (for alignment)
+    min_kernel_count = min(len(k) for k in rank_nccl_kernels.values())
+
+    # Compute lag for each collective (k-th kernel across all ranks)
+    lags: list[float] = []
+    for k in range(min_kernel_count):
+        start_times = [rank_nccl_kernels[r][k][0] for r in rank_nccl_kernels]
+        end_times = [rank_nccl_kernels[r][k][1] for r in rank_nccl_kernels]
+
+        # Compute lag as max(start) - min(start) for this collective
+        start_lag = max(start_times) - min(start_times)
+        lags.append(start_lag)
+
+    if not lags:
+        return {
+            "mean_lag_us": 0.0,
+            "p50_lag_us": 0.0,
+            "p95_lag_us": 0.0,
+            "max_lag_us": 0.0,
+            "min_lag_us": 0.0,
+            "num_collectives": 0,
+            "num_ranks": len(rank_traces),
+            "normalized_lag": 0.0,
+            "per_rank_end_times_us": rank_end_times,
+        }
+
+    # Compute statistics
+    lags_sorted = sorted(lags)
+    mean_lag = sum(lags) / len(lags)
+    p50_lag = lags_sorted[len(lags_sorted) // 2]
+    p95_idx = int(len(lags_sorted) * 0.95)
+    p95_lag = lags_sorted[min(p95_idx, len(lags_sorted) - 1)]
+    max_lag = max(lags)
+    min_lag = min(lags)
+
+    # Normalize by iteration time if available
+    normalized_lag = 0.0
+    if iteration_times:
+        avg_iter_time = sum(iteration_times) / len(iteration_times)
+        if avg_iter_time > 0:
+            normalized_lag = mean_lag / avg_iter_time
+
+    return {
+        "mean_lag_us": mean_lag,
+        "p50_lag_us": p50_lag,
+        "p95_lag_us": p95_lag,
+        "max_lag_us": max_lag,
+        "min_lag_us": min_lag,
+        "num_collectives": len(lags),
+        "num_ranks": len(rank_nccl_kernels),
+        "normalized_lag": normalized_lag,
+        "per_rank_end_times_us": rank_end_times,
+    }
+
+
+def _extract_nccl_kernels(trace_path: str) -> tuple[list[tuple[float, float]], float, float]:
+    """Extract NCCL kernel times from a single rank's trace.
 
     Returns:
-        Tuple[float, float]: (end_time_us, avg_iteration_time_us)
+        Tuple of:
+            - List of (start_time, end_time) for each NCCL kernel/operation
+            - Max end time (for overall trace end)
+            - Estimated iteration time (from ProfilerStep# if available)
     """
+    nccl_kernels: list[tuple[float, float]] = []
+    max_end_time = 0.0
+    iter_time = 0.0
+
     try:
         with Path(trace_path).open() as f:
             data = json.load(f)
 
         events = data.get("traceEvents", [])
         if not events:
-            return 0.0, 0.0
+            return [], 0.0, 0.0
 
-        # Find the last event end time (not just kernels, as some traces
-        # may not have kernel category)
-        max_end_time = 0.0
-        min_start_time = float("inf")
+        profiler_steps: list[dict[str, Any]] = []
 
         for event in events:
+            name = event.get("name", "")
+            cat = event.get("cat", "")
             ts = event.get("ts", 0)
             dur = event.get("dur", 0)
 
-            if ts > 0:
-                min_start_time = min(min_start_time, ts)
-                if dur > 0:
-                    max_end_time = max(max_end_time, ts + dur)
-                else:
-                    max_end_time = max(max_end_time, ts)
+            if ts <= 0:
+                continue
 
-        if max_end_time == 0:
-            return 0.0, 0.0
+            # Track max end time
+            if dur > 0:
+                max_end_time = max(max_end_time, ts + dur)
+            else:
+                max_end_time = max(max_end_time, ts)
 
-        total_time = max_end_time - min_start_time
+            # Track NCCL kernels (kernel category)
+            if cat == "kernel" and "nccl" in name.lower() and dur > 0:
+                nccl_kernels.append((ts, ts + dur))
 
-        # Estimate iteration time (assume 1 iteration per trace file for TorchTitan)
-        iter_time = total_time
+            # Track NCCL operations from cpu_op category (c10d operations)
+            elif cat == "cpu_op" and dur > 0:
+                if name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES:
+                    nccl_kernels.append((ts, ts + dur))
+
+            # Track NCCL operations from user_annotation category
+            elif cat == "user_annotation" and dur > 0:
+                if name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES:
+                    nccl_kernels.append((ts, ts + dur))
+
+            # Track ProfilerStep# for iteration time
+            if name.startswith("ProfilerStep#"):
+                profiler_steps.append(event)
+
+        # Sort NCCL kernels by start time
+        nccl_kernels.sort(key=lambda x: x[0])
+
+        # Estimate iteration time from ProfilerStep# events
+        if profiler_steps:
+            profiler_steps.sort(key=lambda e: e.get("ts", 0))
+            durations = [e.get("dur", 0) for e in profiler_steps if e.get("dur", 0) > 0]
+            if durations:
+                iter_time = sum(durations) / len(durations)
 
     except (json.JSONDecodeError, FileNotFoundError) as e:
-        print(f"Error reading {trace_path}: {e}")
-        return 0.0, 0.0
-    else:
-        return max_end_time, iter_time
+        print(f"Error reading {trace_path}: {e}", file=sys.stderr)
+        return [], 0.0, 0.0
+
+    return nccl_kernels, max_end_time, iter_time

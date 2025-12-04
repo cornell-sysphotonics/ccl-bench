@@ -2,40 +2,91 @@
 
 Measures the average wall-clock time for a single training iteration
 from profiling traces.
+
+NVTX Dependency: None (uses ProfilerStep# events instead)
+ProfilerStep# events are automatically added by PyTorch Profiler and
+don't require NVTX instrumentation.
 """
 
+from __future__ import annotations
+
 import json
+import sys
 from pathlib import Path
+from typing import Any
 
 
-def metric_cal(directory: str) -> float:
+def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     """Calculate average iteration wall-clock time from trace data.
 
     Args:
-        directory (str): Path to the trace directory containing trace files.
+        directory: Path to the trace directory containing trace files.
+        profile_mode: Profile mode - 'torch', 'nsys', or 'auto' (detect).
 
     Returns:
-        float: Average iteration time in milliseconds.
+        Dictionary with iteration time metrics:
+            - avg_iter_time_ms: Average iteration time in milliseconds
+            - min_iter_time_ms: Minimum iteration time
+            - max_iter_time_ms: Maximum iteration time
+            - std_iter_time_ms: Standard deviation of iteration times
+            - num_iterations: Number of iterations detected
+            - iter_times_ms: List of individual iteration times
     """
     # Try to find iteration markers in traces
-    iter_times = _find_iteration_times(directory)
+    iter_times = _find_iteration_times(directory, profile_mode)
 
     if not iter_times:
-        # Fallback: estimate from total trace duration and assumed iteration count
-        print("Warning: No iteration markers found, estimating from total duration")
-        return _estimate_iter_time(directory)
+        print("Warning: No iteration markers found in traces", file=sys.stderr)
+        print("  Searched for: ProfilerStep# events", file=sys.stderr)
+        return {
+            "avg_iter_time_ms": 0.0,
+            "min_iter_time_ms": 0.0,
+            "max_iter_time_ms": 0.0,
+            "std_iter_time_ms": 0.0,
+            "num_iterations": 0,
+            "iter_times_ms": [],
+        }
 
-    # Return average iteration time in milliseconds
-    return sum(iter_times) / len(iter_times)
+    # Calculate statistics
+    avg_time = sum(iter_times) / len(iter_times)
+    min_time = min(iter_times)
+    max_time = max(iter_times)
+
+    # Standard deviation
+    if len(iter_times) > 1:
+        variance = sum((t - avg_time) ** 2 for t in iter_times) / (len(iter_times) - 1)
+        std_time = variance ** 0.5
+    else:
+        std_time = 0.0
+
+    # Sanity check: warn if high variance
+    if std_time > avg_time * 0.2 and len(iter_times) > 2:
+        print(f"Warning: High iteration time variance detected", file=sys.stderr)
+        print(f"  Avg: {avg_time:.2f} ms, Std: {std_time:.2f} ms", file=sys.stderr)
+        print(f"  This may indicate profiling warmup or system noise", file=sys.stderr)
+
+    return {
+        "avg_iter_time_ms": avg_time,
+        "min_iter_time_ms": min_time,
+        "max_iter_time_ms": max_time,
+        "std_iter_time_ms": std_time,
+        "num_iterations": len(iter_times),
+        "iter_times_ms": iter_times,
+    }
 
 
-def _find_iteration_times(directory: str) -> list[float]:
-    """Find iteration times from NVTX ranges or other markers in traces.
+def _find_iteration_times(directory: str, profile_mode: str = "auto") -> list[float]:
+    """Find iteration times from ProfilerStep# events in traces.
+
+    ProfilerStep# events are preferred over NVTX ranges because they:
+    - Are automatically added by PyTorch Profiler
+    - Don't require NVTX instrumentation
+    - Are reliable iteration markers
 
     Returns:
-        List[float]: List of iteration times in milliseconds.
+        List of iteration times in milliseconds.
     """
-    iter_times = []
+    iter_times: list[float] = []
     trace_dir = Path(directory)
 
     # Look for trace files with various naming patterns
@@ -45,7 +96,7 @@ def _find_iteration_times(directory: str) -> list[float]:
         "*trace*.json",
     ]
 
-    trace_files = []
+    trace_files: list[Path] = []
     for pattern in trace_patterns:
         trace_files.extend(trace_dir.glob(pattern))
 
@@ -62,14 +113,22 @@ def _find_iteration_times(directory: str) -> list[float]:
         if path.is_file() and path.suffix == ".json":
             times = _extract_iter_times_from_kineto(path)
             if times:
-                iter_times.extend(times)
+                # Only use times from one trace file (typically rank 0)
+                # to avoid double counting
+                if not iter_times:
+                    iter_times.extend(times)
+                break
 
     return iter_times
 
 
 def _extract_iter_times_from_kineto(trace_path: Path) -> list[float]:
-    """Extract iteration times from Kineto trace NVTX ranges."""
-    iter_times = []
+    """Extract iteration times from Kineto trace using ProfilerStep# events.
+
+    ProfilerStep# events are preferred because they don't require NVTX
+    and are automatically added by PyTorch Profiler.
+    """
+    iter_times: list[float] = []
 
     try:
         with trace_path.open() as f:
@@ -77,96 +136,51 @@ def _extract_iter_times_from_kineto(trace_path: Path) -> list[float]:
 
         events = data.get("traceEvents", [])
 
-        # Look for iteration markers (NVTX ranges named "iteration" or "step")
-        iteration_markers = []
+        # Primary method: Look for ProfilerStep# events
+        # These are X (complete) events with duration
+        profiler_steps: list[dict[str, Any]] = []
         for event in events:
-            name = event.get("name", "").lower()
-            if "iteration" in name or "step" in name or "train_step" in name:
+            name = event.get("name", "")
+            ph = event.get("ph", "")
+
+            # ProfilerStep# events are complete (X) events with name like "ProfilerStep#0"
+            if name.startswith("ProfilerStep#") and ph == "X":
                 ts = event.get("ts", 0)
                 dur = event.get("dur", 0)
                 if ts > 0 and dur > 0:
-                    iteration_markers.append((ts, dur))
+                    profiler_steps.append({"ts": ts, "dur": dur, "name": name})
 
-        # Convert to milliseconds
-        for _, dur in iteration_markers:
-            iter_times.append(dur / 1000.0)  # microseconds to milliseconds
+        if profiler_steps:
+            # Sort by timestamp
+            profiler_steps.sort(key=lambda e: e["ts"])
+            # Use duration of each ProfilerStep as iteration time
+            iter_times = [e["dur"] / 1000.0 for e in profiler_steps]  # us -> ms
+            print(f"Found {len(iter_times)} ProfilerStep# events in {trace_path.name}", file=sys.stderr)
+            return iter_times
 
-        # If no explicit markers, try to identify iteration boundaries from
-        # ProfilerStep markers
-        if not iter_times:
-            profiler_steps = []
-            for event in events:
-                name = event.get("name", "")
-                if "ProfilerStep" in name:
-                    ts = event.get("ts", 0)
-                    dur = event.get("dur", 0)
-                    if ts > 0:
-                        profiler_steps.append((ts, dur))
+        # Fallback: Look for step boundaries using time gaps between steps
+        # This handles cases where ProfilerStep duration isn't recorded
+        step_starts: list[tuple[int, float]] = []
+        for event in events:
+            name = event.get("name", "")
+            if name.startswith("ProfilerStep#"):
+                ts = event.get("ts", 0)
+                if ts > 0:
+                    # Extract step number
+                    try:
+                        step_num = int(name.replace("ProfilerStep#", ""))
+                        step_starts.append((step_num, ts))
+                    except ValueError:
+                        pass
 
-            # Calculate time between profiler steps
-            if len(profiler_steps) > 1:
-                profiler_steps.sort(key=lambda x: x[0])
-                for i in range(len(profiler_steps) - 1):
-                    time_diff = profiler_steps[i + 1][0] - profiler_steps[i][0]
-                    iter_times.append(time_diff / 1000.0)  # microseconds to ms
+        if len(step_starts) > 1:
+            step_starts.sort(key=lambda x: x[0])  # Sort by step number
+            for i in range(len(step_starts) - 1):
+                time_diff = step_starts[i + 1][1] - step_starts[i][1]
+                iter_times.append(time_diff / 1000.0)  # us -> ms
+            print(f"Computed {len(iter_times)} iteration times from step boundaries", file=sys.stderr)
 
     except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
-        print(f"Error reading {trace_path}: {e}")
+        print(f"Error reading {trace_path}: {e}", file=sys.stderr)
 
     return iter_times
-
-
-def _estimate_iter_time(directory: str) -> float:
-    """Estimate iteration time from total trace duration.
-
-    Assumes 5 iterations if not specified.
-    """
-    trace_dir = Path(directory)
-
-    # Look for trace files with various naming patterns
-    trace_patterns = [
-        "kineto_trace*.json",
-        "rank*_trace.json",
-        "*trace*.json",
-    ]
-
-    trace_files = []
-    for pattern in trace_patterns:
-        trace_files.extend(trace_dir.glob(pattern))
-
-    # Also check profile_trace subdirectory
-    profile_dir = trace_dir / "profile_trace"
-    if profile_dir.exists():
-        for pattern in trace_patterns:
-            trace_files.extend(profile_dir.glob(pattern))
-
-    for path in trace_files:
-        if not path.is_file() or path.suffix != ".json":
-            continue
-        try:
-            with path.open() as f:
-                data = json.load(f)
-
-            events = data.get("traceEvents", [])
-            if not events:
-                continue
-
-            min_ts = float("inf")
-            max_ts = float("-inf")
-
-            for event in events:
-                ts = event.get("ts", 0)
-                dur = event.get("dur", 0)
-                if ts > 0:
-                    min_ts = min(min_ts, ts)
-                    max_ts = max(max_ts, ts + dur)
-
-            if min_ts < float("inf") and max_ts > float("-inf"):
-                total_time_us = max_ts - min_ts
-                # Assume 1 iteration per trace file (TorchTitan saves per-iteration)
-                return total_time_us / 1000.0  # Convert to ms
-
-        except Exception as e:
-            print(f"Error reading {path}: {e}")
-
-    return 0.0

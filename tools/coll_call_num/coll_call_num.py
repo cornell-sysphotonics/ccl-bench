@@ -3,6 +3,9 @@
 Counts the total number of NCCL collective communication kernel invocations
 across all ranks in a distributed training trace.
 
+NVTX Dependency: None
+This metric works purely from kernel events and doesn't require NVTX instrumentation.
+
 Supported NCCL operations:
     - AllReduce
     - ReduceScatter
@@ -10,15 +13,19 @@ Supported NCCL operations:
     - Broadcast
     - Reduce
     - SendRecv (point-to-point)
+    - AllToAll
 """
 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from typing import Any
 
 
 # NCCL kernel name prefixes to match (GPU kernel-level events)
+# These are the explicit kernel names from NCCL
 _NCCL_KERNEL_PREFIXES = (
     "ncclDevKernel_AllReduce",
     "ncclDevKernel_ReduceScatter",
@@ -26,6 +33,7 @@ _NCCL_KERNEL_PREFIXES = (
     "ncclDevKernel_Broadcast",
     "ncclDevKernel_Reduce",
     "ncclDevKernel_SendRecv",
+    "ncclDevKernel_AllToAll",
     # Also match newer NCCL naming patterns
     "ncclKernel_AllReduce",
     "ncclKernel_ReduceScatter",
@@ -33,6 +41,7 @@ _NCCL_KERNEL_PREFIXES = (
     "ncclKernel_Broadcast",
     "ncclKernel_Reduce",
     "ncclKernel_SendRecv",
+    "ncclKernel_AllToAll",
 )
 
 # Operator-level NCCL event names (from TorchTitan/PyTorch profiler traces)
@@ -45,6 +54,7 @@ _NCCL_OPERATOR_NAMES = (
     "nccl:send",
     "nccl:recv",
     "nccl:coalesced",
+    "nccl:all_to_all",
     # c10d distributed operations
     "c10d::allreduce_",
     "c10d::reduce_scatter_",
@@ -53,6 +63,7 @@ _NCCL_OPERATOR_NAMES = (
     "c10d::reduce_",
     "c10d::send",
     "c10d::recv_",
+    "c10d::alltoall",
 )
 
 
@@ -62,8 +73,8 @@ def _find_trace_files(directory: Path) -> list[Path]:
     Searches for trace files using multiple patterns to support different
     naming conventions from TorchTitan, PyTorch Profiler, and Kineto:
         - kineto_trace*.json (legacy naming)
+        - rank*_trace.json (rank-based naming)
         - *trace*.json in profile_trace/ subdirectory (TorchTitan default)
-        - trace_rank*.json (alternative naming)
 
     Args:
         directory: Root directory to search for trace files.
@@ -76,19 +87,21 @@ def _find_trace_files(directory: Path) -> list[Path]:
     # Pattern 1: Direct kineto_trace*.json files in root
     trace_files.extend(directory.glob("kineto_trace*.json"))
 
-    # Pattern 2: TorchTitan's profile_trace subdirectory
+    # Pattern 2: rank*_trace.json files
+    trace_files.extend(directory.glob("rank*_trace.json"))
+
+    # Pattern 3: TorchTitan's profile_trace subdirectory
     profile_trace_dir = directory / "profile_trace"
     if profile_trace_dir.exists():
         trace_files.extend(profile_trace_dir.glob("*trace*.json"))
         trace_files.extend(profile_trace_dir.glob("*.json"))
 
-    # Pattern 3: Recursive search for any trace JSON (fallback)
-    if not trace_files:
-        trace_files.extend(directory.rglob("*trace*.json"))
+    # Pattern 4: Any *trace*.json in root
+    trace_files.extend(directory.glob("*trace*.json"))
 
     # Filter out non-trace files and deduplicate
-    valid_traces = []
-    seen = set()
+    valid_traces: list[Path] = []
+    seen: set[Path] = set()
     for f in trace_files:
         if f.is_file() and f.suffix == ".json" and f not in seen:
             # Skip obviously wrong files
@@ -100,7 +113,7 @@ def _find_trace_files(directory: Path) -> list[Path]:
     return sorted(valid_traces)
 
 
-def metric_cal(directory: str) -> int:
+def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     """Calculate the total number of NCCL communication calls across all ranks.
 
     Scans all trace JSON files in the directory (including profile_trace/
@@ -109,31 +122,49 @@ def metric_cal(directory: str) -> int:
 
     Args:
         directory: Path to the directory containing trace JSON files.
+        profile_mode: Profile mode - 'torch', 'nsys', or 'auto' (detect).
 
     Returns:
-        Total number of communication calls summed across all ranks.
-        Returns 0 if no valid trace files are found.
+        Dictionary with communication call metrics:
+            - total_calls: Total number of communication calls summed across all ranks
+            - calls_per_rank: Dict mapping rank to call count
+            - calls_by_type: Dict mapping collective type to count
+            - num_traces: Number of trace files processed
     """
     trace_dir = Path(directory)
     if not trace_dir.exists():
-        print(f"Warning: Directory not found: {directory}")
-        return 0
+        print(f"Warning: Directory not found: {directory}", file=sys.stderr)
+        return {
+            "total_calls": 0,
+            "calls_per_rank": {},
+            "calls_by_type": {},
+            "num_traces": 0,
+        }
 
     # Find all trace files using flexible pattern matching
     trace_files = _find_trace_files(trace_dir)
 
     if not trace_files:
-        print(f"Warning: No trace JSON files found in {directory}")
-        print("  Searched patterns: kineto_trace*.json, profile_trace/*trace*.json")
-        return 0
+        print(f"Warning: No trace JSON files found in {directory}", file=sys.stderr)
+        print("  Searched patterns: kineto_trace*.json, rank*_trace.json, profile_trace/*trace*.json", file=sys.stderr)
+        return {
+            "total_calls": 0,
+            "calls_per_rank": {},
+            "calls_by_type": {},
+            "num_traces": 0,
+        }
 
-    communication_calls = 0
+    total_calls = 0
+    calls_per_rank: dict[str, int] = {}
+    calls_by_type: dict[str, int] = {}
     traces_processed = 0
 
     for trace_file in trace_files:
         try:
             with trace_file.open() as f:
                 trace_data = json.load(f)
+
+            rank_calls = 0
 
             # Count NCCL events from different trace formats
             for event in trace_data.get("traceEvents", []):
@@ -142,20 +173,56 @@ def metric_cal(directory: str) -> int:
 
                 # Format 1: Kernel-level events (cat == "kernel")
                 if cat == "kernel" and name.startswith(_NCCL_KERNEL_PREFIXES):
-                    communication_calls += 1
+                    rank_calls += 1
+                    total_calls += 1
+                    # Categorize by type
+                    coll_type = _categorize_collective(name)
+                    calls_by_type[coll_type] = calls_by_type.get(coll_type, 0) + 1
+
                 # Format 2: Operator-level events (TorchTitan/PyTorch profiler)
                 elif name in _NCCL_OPERATOR_NAMES or name.startswith(_NCCL_OPERATOR_NAMES):
-                    communication_calls += 1
+                    rank_calls += 1
+                    total_calls += 1
+                    # Categorize by type
+                    coll_type = _categorize_collective(name)
+                    calls_by_type[coll_type] = calls_by_type.get(coll_type, 0) + 1
 
             traces_processed += 1
-            import sys
-            print(f"  Processed: {trace_file.name}", file=sys.stderr)
+            calls_per_rank[trace_file.name] = rank_calls
+            print(f"  Processed: {trace_file.name} ({rank_calls} calls)", file=sys.stderr)
 
         except json.JSONDecodeError as e:
-            import sys
             print(f"Warning: Error decoding JSON in {trace_file}: {e}", file=sys.stderr)
             continue
 
-    import sys
     print(f"Processed {traces_processed} trace files", file=sys.stderr)
-    return communication_calls
+    print(f"Total communication calls: {total_calls}", file=sys.stderr)
+
+    return {
+        "total_calls": total_calls,
+        "calls_per_rank": calls_per_rank,
+        "calls_by_type": calls_by_type,
+        "num_traces": traces_processed,
+    }
+
+
+def _categorize_collective(name: str) -> str:
+    """Categorize a collective operation by its type."""
+    name_lower = name.lower()
+
+    if "allreduce" in name_lower or "all_reduce" in name_lower:
+        return "AllReduce"
+    elif "reducescatter" in name_lower or "reduce_scatter" in name_lower:
+        return "ReduceScatter"
+    elif "allgather" in name_lower or "all_gather" in name_lower:
+        return "AllGather"
+    elif "alltoall" in name_lower or "all_to_all" in name_lower:
+        return "AllToAll"
+    elif "broadcast" in name_lower:
+        return "Broadcast"
+    elif "sendrecv" in name_lower or "send" in name_lower or "recv" in name_lower:
+        return "SendRecv"
+    elif "reduce" in name_lower:
+        return "Reduce"
+    else:
+        return "Other"

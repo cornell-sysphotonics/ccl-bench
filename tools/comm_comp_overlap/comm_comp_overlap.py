@@ -3,23 +3,77 @@
 Measures the overlap ratio between communication (NCCL) and computation (CUDA kernels)
 on the GPU timeline.
 
-Overlap = time_comm_and_comp_overlap / (time_comm_only + time_comm_and_comp_overlap)
+NVTX Dependency: None
+This metric works purely from kernel events and doesn't require NVTX instrumentation.
 
-A higher overlap indicates better hiding of communication latency behind computation.
+Classification:
+- Communication: Kernels with names containing 'nccl'
+- Computation: GPU kernels like matmul, attention, gemm, cutlass, sgemm, mma, etc.
+- Ignored: memcpy, memset (trivial kernels)
 """
 
+from __future__ import annotations
+
 import json
+import sys
 from pathlib import Path
+from typing import Any
 
 
-def metric_cal(directory: str) -> float:
+# NCCL kernel patterns (communication)
+_COMM_KERNEL_PATTERNS = (
+    "nccl",
+    "c10d::",
+)
+
+# Compute kernel patterns (includes common GPU compute kernels)
+_COMPUTE_KERNEL_PATTERNS = (
+    "matmul",
+    "gemm",
+    "cutlass",
+    "sgemm",
+    "dgemm",
+    "hgemm",
+    "mma",
+    "attention",
+    "softmax",
+    "layernorm",
+    "linear",
+    "conv",
+    "relu",
+    "gelu",
+    "aten::",
+    "ampere",
+    "volta",
+    "sm80",
+    "sm90",
+)
+
+# Patterns to ignore (trivial operations)
+_IGNORE_PATTERNS = (
+    "memcpy",
+    "memset",
+    "cudaLaunch",
+    "cudaDeviceSynchronize",
+)
+
+
+def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     """Calculate communication/computation overlap ratio from trace data.
 
     Args:
-        directory (str): Path to the trace directory containing trace files.
+        directory: Path to the trace directory containing trace files.
+        profile_mode: Profile mode - 'torch', 'nsys', or 'auto' (detect).
 
     Returns:
-        float: Overlap ratio between 0 and 1 (or percentage if > 1).
+        Dictionary with overlap metrics:
+            - comm_time_ms: Total communication time in milliseconds
+            - comp_time_ms: Total computation time in milliseconds
+            - overlap_time_ms: Time where comm and comp overlap
+            - overlap_ratio_of_comm: Fraction of comm time that overlaps with comp
+            - overlap_ratio_of_comp: Fraction of comp time that overlaps with comm
+            - num_comm_kernels: Number of communication kernels
+            - num_comp_kernels: Number of computation kernels
     """
     trace_dir = Path(directory)
 
@@ -30,7 +84,7 @@ def metric_cal(directory: str) -> float:
         "*trace*.json",
     ]
 
-    trace_files = []
+    trace_files: list[Path] = []
     for pattern in trace_patterns:
         trace_files.extend(trace_dir.glob(pattern))
 
@@ -40,20 +94,53 @@ def metric_cal(directory: str) -> float:
         for pattern in trace_patterns:
             trace_files.extend(profile_dir.glob(pattern))
 
+    # Process the first valid trace file found
     for path in trace_files:
         if path.is_file() and path.suffix == ".json":
-            overlap = _calculate_overlap_from_trace(path)
-            if overlap >= 0:
-                return overlap
+            result = _calculate_overlap_from_trace(path)
+            if result is not None:
+                return result
 
-    print("Warning: Could not calculate overlap, no suitable traces found")
-    return 0.0
+    print("Warning: Could not calculate overlap, no suitable traces found", file=sys.stderr)
+    return {
+        "comm_time_ms": 0.0,
+        "comp_time_ms": 0.0,
+        "overlap_time_ms": 0.0,
+        "overlap_ratio_of_comm": 0.0,
+        "overlap_ratio_of_comp": 0.0,
+        "num_comm_kernels": 0,
+        "num_comp_kernels": 0,
+    }
 
 
-def _calculate_overlap_from_trace(trace_path: Path) -> float:
+def _is_comm_kernel(name: str) -> bool:
+    """Check if a kernel name indicates a communication kernel."""
+    name_lower = name.lower()
+    return any(p in name_lower for p in _COMM_KERNEL_PATTERNS)
+
+
+def _is_compute_kernel(name: str, cat: str) -> bool:
+    """Check if a kernel name indicates a computation kernel."""
+    name_lower = name.lower()
+
+    # Skip trivial operations
+    if any(p in name_lower for p in _IGNORE_PATTERNS):
+        return False
+
+    # GPU kernel category
+    if cat == "kernel":
+        # If it's a kernel but not NCCL, it's likely compute
+        if not _is_comm_kernel(name):
+            return True
+
+    # Check for known compute patterns
+    return any(p in name_lower for p in _COMPUTE_KERNEL_PATTERNS)
+
+
+def _calculate_overlap_from_trace(trace_path: Path) -> dict[str, Any] | None:
     """Calculate overlap from Kineto Chrome trace.
 
-    Returns overlap ratio (0-1) or -1 if unable to calculate.
+    Returns overlap metrics dictionary or None if unable to calculate.
     """
     try:
         with trace_path.open() as f:
@@ -61,28 +148,11 @@ def _calculate_overlap_from_trace(trace_path: Path) -> float:
 
         events = data.get("traceEvents", [])
         if not events:
-            return -1
+            return None
 
         # Separate communication and computation events
-        comm_intervals = []
-        comp_intervals = []
-
-        # Patterns that indicate communication operations
-        comm_patterns = [
-            "ncclDevKernel",
-            "ncclKernel",
-            "nccl:",
-            "c10d::",
-            "AllReduce",
-            "ReduceScatter",
-            "AllGather",
-            "Broadcast",
-            "Reduce",
-            "SendRecv",
-            "AllToAll",
-            "send",
-            "recv",
-        ]
+        comm_intervals: list[tuple[float, float]] = []
+        comp_intervals: list[tuple[float, float]] = []
 
         for event in events:
             name = event.get("name", "")
@@ -93,46 +163,68 @@ def _calculate_overlap_from_trace(trace_path: Path) -> float:
             if ts <= 0 or dur <= 0:
                 continue
 
-            # Check if this is a communication operation
-            is_comm = any(pattern.lower() in name.lower() for pattern in comm_patterns)
-
-            # For operator-level traces (TorchTitan), also check computation ops
-            is_comp = (
-                cat == "kernel" or  # GPU kernel events
-                name.startswith("aten::") or  # PyTorch ops
-                "matmul" in name.lower() or
-                "linear" in name.lower() or
-                "attention" in name.lower() or
-                "gemm" in name.lower()
-            )
-
-            if is_comm:
+            # Classify kernel
+            if _is_comm_kernel(name):
                 comm_intervals.append((ts, ts + dur))
-            elif is_comp and not is_comm:
+            elif _is_compute_kernel(name, cat):
                 comp_intervals.append((ts, ts + dur))
 
         if not comm_intervals:
-            print("Warning: No communication kernels found")
-            return 0.0
+            print(f"Warning: No communication kernels found in {trace_path.name}", file=sys.stderr)
+            return {
+                "comm_time_ms": 0.0,
+                "comp_time_ms": sum(end - start for start, end in comp_intervals) / 1000.0,
+                "overlap_time_ms": 0.0,
+                "overlap_ratio_of_comm": 0.0,
+                "overlap_ratio_of_comp": 0.0,
+                "num_comm_kernels": 0,
+                "num_comp_kernels": len(comp_intervals),
+            }
 
         if not comp_intervals:
-            print("Warning: No computation kernels found")
-            return 0.0
+            print(f"Warning: No computation kernels found in {trace_path.name}", file=sys.stderr)
+            return {
+                "comm_time_ms": sum(end - start for start, end in comm_intervals) / 1000.0,
+                "comp_time_ms": 0.0,
+                "overlap_time_ms": 0.0,
+                "overlap_ratio_of_comm": 0.0,
+                "overlap_ratio_of_comp": 0.0,
+                "num_comm_kernels": len(comm_intervals),
+                "num_comp_kernels": 0,
+            }
 
-        # Calculate overlap
+        # Calculate overlap using sweep line algorithm
         overlap_time = _calculate_interval_overlap(comm_intervals, comp_intervals)
         total_comm_time = sum(end - start for start, end in comm_intervals)
+        total_comp_time = sum(end - start for start, end in comp_intervals)
 
-        if total_comm_time <= 0:
-            return 0.0
+        # Convert to milliseconds (timestamps are in microseconds)
+        comm_time_ms = total_comm_time / 1000.0
+        comp_time_ms = total_comp_time / 1000.0
+        overlap_time_ms = overlap_time / 1000.0
 
-        # Overlap ratio: what fraction of comm time overlaps with computation
-        overlap_ratio = overlap_time / total_comm_time
-        return float(min(overlap_ratio, 1.0))  # Cap at 1.0
+        # Calculate ratios (avoid division by zero)
+        overlap_ratio_of_comm = overlap_time / total_comm_time if total_comm_time > 0 else 0.0
+        overlap_ratio_of_comp = overlap_time / total_comp_time if total_comp_time > 0 else 0.0
+
+        print(f"Overlap analysis for {trace_path.name}:", file=sys.stderr)
+        print(f"  Comm kernels: {len(comm_intervals)}, Comp kernels: {len(comp_intervals)}", file=sys.stderr)
+        print(f"  Comm time: {comm_time_ms:.2f} ms, Comp time: {comp_time_ms:.2f} ms", file=sys.stderr)
+        print(f"  Overlap: {overlap_time_ms:.2f} ms ({overlap_ratio_of_comm * 100:.1f}% of comm)", file=sys.stderr)
+
+        return {
+            "comm_time_ms": comm_time_ms,
+            "comp_time_ms": comp_time_ms,
+            "overlap_time_ms": overlap_time_ms,
+            "overlap_ratio_of_comm": min(overlap_ratio_of_comm, 1.0),
+            "overlap_ratio_of_comp": min(overlap_ratio_of_comp, 1.0),
+            "num_comm_kernels": len(comm_intervals),
+            "num_comp_kernels": len(comp_intervals),
+        }
 
     except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
-        print(f"Error reading {trace_path}: {e}")
-        return -1
+        print(f"Error reading {trace_path}: {e}", file=sys.stderr)
+        return None
 
 
 def _calculate_interval_overlap(

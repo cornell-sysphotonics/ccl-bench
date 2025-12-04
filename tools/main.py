@@ -20,6 +20,9 @@ Examples:
     # Get traffic distribution as JSON
     ccl-metrics --trace ./traces/qwen3_32b_3d --metric traffic_distribution --output-json
 
+    # Specify profile mode (torch or nsys)
+    ccl-metrics --trace ./traces/llama3_8b --metric iter_time --profile-mode torch
+
     # List all available metrics
     ccl-metrics --list-metrics
 """
@@ -31,12 +34,16 @@ from collections.abc import Callable
 import importlib
 import json
 import sys
-from typing import cast
+from typing import Any, cast
 
 
 # Type alias for metric functions
-MetricResult = int | float | dict[str, float]
-MetricFunction = Callable[[str], MetricResult]
+# Metrics can accept directory, profile_mode, and optional kwargs
+MetricResult = int | float | dict[str, Any]
+MetricFunction = Callable[..., MetricResult]
+
+# Valid profile modes
+PROFILE_MODES = ("torch", "nsys", "auto")
 
 
 # Mapping from metric name -> module path (relative to tools package)
@@ -111,6 +118,13 @@ def main() -> None:
         help="Name of the metric to calculate",
     )
     parser.add_argument(
+        "--profile-mode",
+        type=str,
+        choices=PROFILE_MODES,
+        default="auto",
+        help="Profile mode: 'torch' (Kineto/PyTorch), 'nsys' (Nsight Systems), or 'auto' (detect)",
+    )
+    parser.add_argument(
         "--output-json",
         action="store_true",
         help="Force JSON output (auto-enabled for dict results like traffic_distribution)",
@@ -137,7 +151,15 @@ def main() -> None:
     # Get the metric function and calculate
     try:
         metric_cal_func = get_metric_function(args.metric)
-        result = metric_cal_func(args.trace)
+
+        # Pass profile_mode to metric functions that support it
+        # Use inspect to check if the function accepts profile_mode
+        import inspect
+        sig = inspect.signature(metric_cal_func)
+        if "profile_mode" in sig.parameters:
+            result = metric_cal_func(args.trace, profile_mode=args.profile_mode)
+        else:
+            result = metric_cal_func(args.trace)
 
         # Output the result
         if args.output_json or isinstance(result, dict):
