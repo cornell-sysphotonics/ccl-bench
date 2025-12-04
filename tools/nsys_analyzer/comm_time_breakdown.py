@@ -88,15 +88,98 @@ def categorize_nccl_kernel(kernel_name, tp_size=1, pp_size=1, dp_size=1, ep_size
     return 'OTHER'
 
 
-def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size=1, ep_size=1):
+def detect_stream_roles(cursor):
     """
-    Analyze GPU timeline to compute wall-clock time by parallelism type
+    Detect the role of each CUDA stream based on kernel composition.
     
-    This is the key function for METRIC 1. It uses timeline sweep to compute
-    accurate wall-clock time for each category, handling overlapping kernels correctly.
+    DeepSpeed ZeRO-3 uses different streams for different communication types:
+      - Stream with 100% AllGather -> ZeRO parameter gathering (DP_param)
+      - Stream with 100% ReduceScatter -> ZeRO gradient scattering (DP_grad)
+      - Stream with mixed ops (Broadcast/AllReduce) -> Init/Sync (DP_sync)
     
     Returns:
-        dict: Time breakdown by category (DP, TP, PP, EP, compute, idle)
+        dict: {stream_id: {'role': 'DP_param'/'DP_grad'/'DP_sync'/'PP'/'EP'/'TP', 
+                          'stats': {...}}}
+    """
+    # 1. Get kernel type distribution per stream (sample from device 0)
+    cursor.execute('''
+        SELECT k.streamId,
+               SUM(CASE WHEN s.value LIKE '%AllGather%' THEN 1 ELSE 0 END) as allgather_cnt,
+               SUM(CASE WHEN s.value LIKE '%ReduceScatter%' THEN 1 ELSE 0 END) as reducescatter_cnt,
+               SUM(CASE WHEN s.value LIKE '%AllReduce%' THEN 1 ELSE 0 END) as allreduce_cnt,
+               SUM(CASE WHEN s.value LIKE '%Broadcast%' THEN 1 ELSE 0 END) as broadcast_cnt,
+               SUM(CASE WHEN s.value LIKE '%Send%' OR s.value LIKE '%Recv%' THEN 1 ELSE 0 END) as sendrecv_cnt,
+               SUM(CASE WHEN s.value LIKE '%AllToAll%' THEN 1 ELSE 0 END) as alltoall_cnt,
+               COUNT(*) as total_nccl
+        FROM CUPTI_ACTIVITY_KIND_KERNEL k
+        JOIN StringIds s ON k.shortName = s.id
+        WHERE s.value LIKE '%nccl%' AND k.deviceId = 0
+        GROUP BY k.streamId
+    ''')
+    
+    stream_roles = {}
+    
+    for row in cursor.fetchall():
+        stream_id, ag, rs, ar, bc, sr, a2a, total = row
+        
+        if total == 0:
+            continue
+        
+        # Calculate percentages
+        ag_pct = ag / total
+        rs_pct = rs / total
+        ar_pct = ar / total
+        sr_pct = sr / total
+        a2a_pct = a2a / total
+        
+        # Determine role based on kernel composition
+        # Rule 1: Stream with >90% AllGather -> ZeRO param gathering
+        if ag_pct > 0.9:
+            role = 'DP_param'
+        # Rule 2: Stream with >90% ReduceScatter -> ZeRO grad scattering
+        elif rs_pct > 0.9:
+            role = 'DP_grad'
+        # Rule 3: Stream with Send/Recv -> Pipeline Parallel
+        elif sr_pct > 0.5:
+            role = 'PP'
+        # Rule 4: Stream with AllToAll -> Expert Parallel
+        elif a2a_pct > 0.5:
+            role = 'EP'
+        # Rule 5: Stream with mostly AllReduce (and small msg) -> could be TP
+        #         But for ZeRO-3, AllReduce is usually loss/norm sync
+        elif ar_pct > 0.5:
+            role = 'DP_sync'  # Default to DP sync, could be TP in mixed parallel
+        # Rule 6: Mixed stream -> DP sync/init
+        else:
+            role = 'DP_sync'
+        
+        stream_roles[stream_id] = {
+            'role': role,
+            'stats': {
+                'allgather': ag,
+                'reducescatter': rs,
+                'allreduce': ar,
+                'broadcast': bc,
+                'sendrecv': sr,
+                'alltoall': a2a,
+                'total': total
+            }
+        }
+    
+    return stream_roles
+
+
+def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size=1, ep_size=1):
+    """
+    Analyze GPU timeline to compute wall-clock time by parallelism type.
+    
+    This is the key function for METRIC 1. It uses:
+      1. Stream-based classification (more accurate for ZeRO-3)
+      2. Kernel name fallback for streams without clear role
+      3. Timeline sweep to compute accurate wall-clock time
+    
+    Returns:
+        dict: Time breakdown by category (DP_param, DP_grad, DP_sync, TP, PP, EP, compute, idle)
     """
     sqlite_file = nsys_rep_file.replace('.nsys-rep', '.sqlite')
     
@@ -108,9 +191,18 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
         conn = sqlite3.connect(sqlite_file)
         cursor = conn.cursor()
         
-        # Query all CUDA kernels with timing information
+        # Step 1: Detect stream roles
+        stream_roles = detect_stream_roles(cursor)
+        
+        print(f"\n  Stream Role Detection:")
+        for stream_id, info in sorted(stream_roles.items()):
+            role = info['role']
+            stats = info['stats']
+            print(f"    Stream {stream_id}: {role} (AG={stats['allgather']}, RS={stats['reducescatter']}, AR={stats['allreduce']})")
+        
+        # Step 2: Query all CUDA kernels with stream info
         query = """
-        SELECT k.start, k.end, s.value as name
+        SELECT k.start, k.end, k.streamId, s.value as name
         FROM CUPTI_ACTIVITY_KIND_KERNEL k
         JOIN StringIds s ON k.shortName = s.id
         ORDER BY k.start
@@ -123,41 +215,74 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
         if not kernels:
             return None
         
-        # Build timeline events with parallelism category
+        # Step 3: Build timeline events with stream-based classification
         timeline_events = []
-        category_counts = defaultdict(int)  # For debugging
+        category_counts = defaultdict(int)
         
-        for start, end, name in kernels:
+        # Detailed DP breakdown
+        dp_detail_time = defaultdict(float)  # DP_param, DP_grad, DP_sync
+        
+        for start, end, stream_id, name in kernels:
             name_str = str(name) if name else ""
             
             if 'nccl' in name_str.lower():
-                # Categorize by parallelism type
-                category = categorize_nccl_kernel(name_str, tp_size, pp_size, dp_size, ep_size)
+                # Use stream role for classification
+                if stream_id in stream_roles:
+                    stream_role = stream_roles[stream_id]['role']
+                    
+                    # Map stream role to parallelism category
+                    if stream_role in ['DP_param', 'DP_grad', 'DP_sync']:
+                        category = 'DP'
+                        dp_detail = stream_role
+                    elif stream_role == 'PP':
+                        category = 'PP'
+                        dp_detail = None
+                    elif stream_role == 'EP':
+                        category = 'EP'
+                        dp_detail = None
+                    elif stream_role == 'TP':
+                        category = 'TP'
+                        dp_detail = None
+                    else:
+                        category = 'OTHER'
+                        dp_detail = None
+                else:
+                    # Fallback: use kernel name
+                    category = categorize_nccl_kernel(name_str, tp_size, pp_size, dp_size, ep_size)
+                    dp_detail = None
+                
                 category_counts[category] += 1
             else:
                 category = 'compute'
+                dp_detail = None
                 category_counts['compute'] += 1
             
             timeline_events.append({
                 'time': start,
                 'type': 'start',
-                'category': category
+                'category': category,
+                'dp_detail': dp_detail,
+                'duration': end - start
             })
             timeline_events.append({
                 'time': end,
                 'type': 'end',
-                'category': category
+                'category': category,
+                'dp_detail': dp_detail
             })
+            
+            # Accumulate DP detail time (using sum of duration for detailed breakdown)
+            if dp_detail:
+                dp_detail_time[dp_detail] += (end - start)
         
         # Sort events by time
         timeline_events.sort(key=lambda x: x['time'])
         
-        # Track active counts for each category
+        # Step 4: Sweep line algorithm for accurate wall-clock time
         active_counts = defaultdict(int)
         last_time = timeline_events[0]['time']
         
-        # Accumulators for each category
-        time_accum = defaultdict(float)  # DP, TP, PP, EP, compute
+        time_accum = defaultdict(float)
         total_time = 0
         idle_time = 0
         overlap_time = 0
@@ -169,24 +294,18 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
             if duration > 0:
                 total_time += duration
                 
-                # Count active categories
                 active_categories = [cat for cat, cnt in active_counts.items() if cnt > 0]
                 num_active = len(active_categories)
                 
                 if num_active == 0:
-                    # Idle time
                     idle_time += duration
                 elif num_active == 1:
-                    # Single category active
                     time_accum[active_categories[0]] += duration
                 else:
-                    # Multiple categories active (overlap)
                     overlap_time += duration
-                    # Distribute time equally among active categories
                     for cat in active_categories:
                         time_accum[cat] += duration / num_active
             
-            # Update active counts
             if event['type'] == 'start':
                 active_counts[event['category']] += 1
             else:
@@ -199,7 +318,7 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
         idle_time_ms = idle_time / 1e6
         overlap_time_ms = overlap_time / 1e6
         
-        # Calculate time for each category
+        # Build result
         result = {
             'total_time_ms': total_time_ms,
             'compute_time_ms': time_accum['compute'] / 1e6,
@@ -210,7 +329,15 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
             'comm_OTHER_time_ms': time_accum['OTHER'] / 1e6,
             'idle_time_ms': idle_time_ms,
             'overlap_time_ms': overlap_time_ms,
-            'category_counts': dict(category_counts)
+            'category_counts': dict(category_counts),
+            # Detailed DP breakdown (sum of durations, not wall-clock)
+            'dp_detail': {
+                'DP_param_time_ms': dp_detail_time['DP_param'] / 1e6,
+                'DP_grad_time_ms': dp_detail_time['DP_grad'] / 1e6,
+                'DP_sync_time_ms': dp_detail_time['DP_sync'] / 1e6,
+            },
+            # Stream role mapping for reference
+            'stream_roles': {str(k): v['role'] for k, v in stream_roles.items()}
         }
         
         # Calculate total communication time
@@ -543,6 +670,20 @@ def analyze_comm_breakdown(nsys_path):
                 print(f"    Total comm:     {pb['total_comm_time_ms']:.2f} ms")
                 print(f"    Overlap:        {pb['overlap_time_ms']:.2f} ms")
                 
+                # Print DP detailed breakdown (based on Stream role)
+                if pb.get('dp_detail'):
+                    dp = pb['dp_detail']
+                    print(f"\n    DP Detailed Breakdown (sum of kernel durations):")
+                    print(f"      DP_param (AllGather):      {dp.get('DP_param_time_ms', 0):.2f} ms")
+                    print(f"      DP_grad (ReduceScatter):   {dp.get('DP_grad_time_ms', 0):.2f} ms")
+                    print(f"      DP_sync (AllReduce/other): {dp.get('DP_sync_time_ms', 0):.2f} ms")
+                
+                # Print stream role mapping
+                if pb.get('stream_roles'):
+                    print(f"\n    Stream Role Mapping:")
+                    for stream_id, role in sorted(pb['stream_roles'].items(), key=lambda x: int(x[0])):
+                        print(f"      Stream {stream_id}: {role}")
+                
                 if pb.get('category_counts'):
                     print(f"\n    Kernel counts by category:")
                     for cat, count in sorted(pb['category_counts'].items()):
@@ -559,18 +700,25 @@ def metric_cal(directory):
     Calculate communication time breakdown metrics (METRIC 1)
     
     Args:
-        directory: Trace directory or nsys directory
+        directory: Trace directory, nsys directory, or single .nsys-rep file
     
     Returns:
         dict: METRIC 1 results with time breakdown by parallelism type
     """
-    # Find nsys directory
-    if os.path.exists(os.path.join(directory, "..", "..", "nsys")):
-        nsys_dir = os.path.join(directory, "..", "..", "nsys")
-    elif any(f.endswith(".nsys-rep") for f in os.listdir(directory)):
+    # Check if input is a single file
+    if os.path.isfile(directory) and directory.endswith(".nsys-rep"):
         nsys_dir = directory
+    # Find nsys directory
+    elif os.path.isdir(directory):
+        if os.path.exists(os.path.join(directory, "..", "..", "nsys")):
+            nsys_dir = os.path.join(directory, "..", "..", "nsys")
+        elif any(f.endswith(".nsys-rep") for f in os.listdir(directory)):
+            nsys_dir = directory
+        else:
+            print("No nsys-rep files found")
+            return {}
     else:
-        print("No nsys-rep files found")
+        print(f"Invalid path: {directory}")
         return {}
     
     results = analyze_comm_breakdown(nsys_dir)

@@ -12,11 +12,11 @@
 
 module load conda
 module load cudatoolkit
-conda activate final_project
+conda activate /pscratch/sd/q/qiaox226/ccl-bench/envs/final_project
 
-export HF_TOKEN="hf_xxx" 
+export HF_TOKEN="你的HF_TOKEN"  # 如果模型是本地的，可以不需要
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-export PATH=/global/homes/r/rb945/nsight-systems-2025.5.1/bin:$PATH
+export PATH=/global/homes/q/qiaox226/nsight-systems-2025.5.1/bin:$PATH
 export MASTER_ADDR=$(hostname)
 export MASTER_PORT=29500
 

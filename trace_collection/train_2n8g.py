@@ -42,7 +42,7 @@ Init._convert_to_zero_parameters = patched_convert
 
 # =================================================================
 
-MODEL_PATH = "/pscratch/sd/r/rb945/huggingface/hub/models--meta-llama--Llama-3.1-8B/snapshots/d04e592bb4f6aa9cfee91e2e20afa771667e1d4b"
+MODEL_PATH = "/pscratch/sd/q/qiaox226/huggingface/hub/models--meta-llama--Llama-3.1-8B/snapshots/d04e592bb4f6aa9cfee91e2e20afa771667e1d4b"
 DATA_CACHE_DIR = os.path.expandvars("$PSCRATCH/huggingface_datasets")
 OUTPUT_DIR = "./output_llama_trace"
 MAX_LENGTH = 512

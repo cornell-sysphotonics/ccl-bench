@@ -8,8 +8,8 @@ Usage:
     python analyze_trace.py <nsys_directory_or_file> [options]
 
 Examples:
-    # Analyze directory with multiple trace files
-    python analyze_trace.py ../../nsys
+    # Analyze directory with ALL trace files (results merged into one JSON)
+    python analyze_trace.py ../../nsys_2node
     
     # Analyze single trace file
     python analyze_trace.py ../../nsys/trace_2nodes_rank_0.nsys-rep
@@ -125,14 +125,13 @@ def validate_nsys_input(nsys_path):
     print(f"Error: Invalid path: {nsys_path}")
     return False, False, []
 
-def run_metric(metric_key, nsys_path, is_single_file):
+def run_metric_for_file(metric_key, trace_file):
     """
-    Run a single metric analyzer
+    Run a single metric analyzer for a specific trace file
     
     Args:
         metric_key: metric identifier
-        nsys_path: nsys file path (can be directory or single file)
-        is_single_file: whether input is a single file
+        trace_file: path to a single .nsys-rep file
     
     Returns:
         dict: metric analysis results
@@ -142,36 +141,17 @@ def run_metric(metric_key, nsys_path, is_single_file):
         return None
     
     metric_info = AVAILABLE_METRICS[metric_key]
-    print_subheader(f"Running: {metric_info['name']}")
-    print(f"Description: {metric_info['description']}")
     
     try:
-        # Get trace file path based on input type
-        if is_single_file:
-            trace_file = nsys_path
-        else:
-            # Directory mode: get first trace file
-            trace_files = [f for f in os.listdir(nsys_path) if f.endswith('.nsys-rep')]
-            if trace_files:
-                trace_file = os.path.join(nsys_path, trace_files[0])
-            else:
-                trace_file = None
-        
         # Run different metric analyses
         if metric_key == 'nccl_calls':
-            # nccl_calls supports both directory and single file
-            results = metric_info['module'].analyze_trace_directory(nsys_path)
+            results = metric_info['module'].analyze_trace_directory(trace_file)
         elif metric_key == 'iteration_time':
-            if trace_file:
                 results = metric_info['module'].analyze_iteration_time(trace_file)
-            else:
-                results = None
         elif metric_key == 'comm_breakdown':
-            breakdown = metric_info['module'].analyze_comm_breakdown(nsys_path)
-            # Note: communication_percentage will be calculated later based on iteration time
+            breakdown = metric_info['module'].analyze_comm_breakdown(trace_file)
             results = breakdown
         elif metric_key == 'overlap':
-            if trace_file:
                 overlap_stats = metric_info['module'].analyze_overlap(trace_file)
                 if overlap_stats:
                     # Calculate overlap percentage
@@ -186,35 +166,22 @@ def run_metric(metric_key, nsys_path, is_single_file):
                         'overlap_time_ns': overlap_stats.get("overlap_time_ns", 0),
                         'is_estimated': overlap_stats.get("is_estimated", False)
                     }
-                else:
-                    results = None
             else:
                 results = None
         elif metric_key == 'phase_windows':
-            if trace_file:
                 results = metric_info['module'].analyze_phase_windows(trace_file)
-            else:
-                results = None
         elif metric_key == 'bandwidth':
-            if trace_file:
-                # Use ring model analyzer with parallelism config and hardware bandwidth
-                results = metric_info['module'].analyze_bandwidth_with_model(
-                    trace_file,
-                    dp_size=PARALLELISM_CONFIG['dp_size'],
-                    tp_size=PARALLELISM_CONFIG['tp_size'],
-                    pp_size=PARALLELISM_CONFIG['pp_size'],
-                    ep_size=PARALLELISM_CONFIG['ep_size'],
-                    hardware_bw=PARALLELISM_CONFIG.get('hardware_bw', 100e9)
-                )
-            else:
-                results = None
+            # Use ring model analyzer with parallelism config and hardware bandwidth
+            results = metric_info['module'].analyze_bandwidth_with_model(
+                trace_file,
+                dp_size=PARALLELISM_CONFIG['dp_size'],
+                tp_size=PARALLELISM_CONFIG['tp_size'],
+                pp_size=PARALLELISM_CONFIG['pp_size'],
+                ep_size=PARALLELISM_CONFIG['ep_size'],
+                hardware_bw=PARALLELISM_CONFIG.get('hardware_bw', 100e9)
+            )
         else:
             results = None
-        
-        if results:
-            print(f"✓ {metric_info['name']} completed")
-        else:
-            print(f"✗ {metric_info['name']} failed or returned no data")
         
         return results
         
@@ -223,6 +190,117 @@ def run_metric(metric_key, nsys_path, is_single_file):
         import traceback
         traceback.print_exc()
         return None
+
+
+def extract_rank_from_filename(filename):
+    """
+    Extract rank number from trace filename
+    
+    Examples:
+        trace_2nodes_rank_0_50.nsys-rep -> 0
+        trace_2nodes_rank_4_50.nsys-rep -> 4
+        llama_3.1_8b_trace_50.nsys-rep -> None
+    """
+    import re
+    # Try to match rank_X pattern
+    match = re.search(r'rank[_-]?(\d+)', filename, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def run_all_metrics_for_file(trace_file, metrics_to_run):
+    """
+    Run all specified metrics for a single trace file
+    
+    Args:
+        trace_file: path to .nsys-rep file
+        metrics_to_run: list of metric keys to run
+    
+    Returns:
+        dict: results for all metrics
+    """
+    results = OrderedDict()
+    
+    for metric_key in metrics_to_run:
+        metric_info = AVAILABLE_METRICS[metric_key]
+        metric_results = run_metric_for_file(metric_key, trace_file)
+        results[metric_key] = metric_results
+        
+        if metric_results:
+            print(f"  ✓ {metric_key}")
+        else:
+            print(f"  ✗ {metric_key}")
+    
+    return results
+
+
+def aggregate_results(per_rank_results):
+    """
+    Aggregate results from multiple ranks into summary statistics
+    
+    Args:
+        per_rank_results: dict mapping rank_id -> metric results
+    
+    Returns:
+        dict: aggregated statistics
+    """
+    aggregated = OrderedDict()
+    
+    # Collect iteration times across all ranks
+    all_iteration_times = []
+    for rank_id, rank_data in per_rank_results.items():
+        iter_data = rank_data.get('iteration_time')
+        if iter_data and iter_data.get('iteration_times_ms'):
+            all_iteration_times.extend(iter_data['iteration_times_ms'])
+    
+    if all_iteration_times:
+        import numpy as np
+        arr = np.array(all_iteration_times)
+        aggregated['iteration_time'] = {
+            'num_iterations_total': len(arr),
+            'num_ranks': len(per_rank_results),
+            'avg_iteration_time_ms': float(np.mean(arr)),
+            'std_iteration_time_ms': float(np.std(arr)),
+            'min_iteration_time_ms': float(np.min(arr)),
+            'max_iteration_time_ms': float(np.max(arr)),
+            'p50_iteration_time_ms': float(np.percentile(arr, 50)),
+            'p99_iteration_time_ms': float(np.percentile(arr, 99))
+        }
+    
+    # Collect overlap ratios
+    overlap_ratios = []
+    for rank_id, rank_data in per_rank_results.items():
+        overlap_data = rank_data.get('overlap')
+        if overlap_data and 'overlap_percentage' in overlap_data:
+            overlap_ratios.append(overlap_data['overlap_percentage'])
+    
+    if overlap_ratios:
+        aggregated['overlap'] = {
+            'num_ranks': len(overlap_ratios),
+            'avg_overlap_percentage': sum(overlap_ratios) / len(overlap_ratios),
+            'min_overlap_percentage': min(overlap_ratios),
+            'max_overlap_percentage': max(overlap_ratios)
+        }
+    
+    # Collect bandwidth utilization
+    bw_utils = []
+    for rank_id, rank_data in per_rank_results.items():
+        bw_data = rank_data.get('bandwidth')
+        if bw_data and bw_data.get('summary'):
+            avg_util = bw_data['summary'].get('avg_utilization_pct')
+            if avg_util is not None:
+                bw_utils.append(avg_util)
+    
+    if bw_utils:
+        aggregated['bandwidth'] = {
+            'num_ranks': len(bw_utils),
+            'avg_utilization_pct': sum(bw_utils) / len(bw_utils),
+            'min_utilization_pct': min(bw_utils),
+            'max_utilization_pct': max(bw_utils)
+        }
+    
+    return aggregated
 
 def export_results(results, output_file):
     """Export results to JSON file"""
@@ -285,8 +363,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Analyze all trace files in directory
-  python analyze_trace.py ../../nsys
+  # Analyze all trace files in directory (results merged into one JSON)
+  python analyze_trace.py nsys_2node/ -o results.json
   
   # Analyze single trace file
   python analyze_trace.py ../../nsys/trace_2nodes_rank_0.nsys-rep
@@ -367,14 +445,16 @@ Available metrics:
         print(f"Mode: Single file")
         print(f"Trace file: {os.path.basename(args.nsys_path)}")
     else:
-        print(f"Mode: Directory")
+        print(f"Mode: Multi-file (results merged)")
         print(f"Directory: {args.nsys_path}")
-        print(f"Trace files: {', '.join(trace_files)}")
+        print(f"Trace files ({len(trace_files)}):")
+        for tf in trace_files:
+            print(f"  - {tf}")
     print(f"Parallelism config: DP={args.dp}, TP={args.tp}, PP={args.pp}, EP={args.ep}")
     print(f"Hardware bandwidth: {args.bw} GB/s")
     print(f"Metrics to run: {', '.join(metrics_to_run)}")
     
-    # Run all selected metrics
+    # Build results structure
     results = OrderedDict()
     results['workload_name'] = args.name
     results['nsys_path'] = args.nsys_path
@@ -389,51 +469,70 @@ Available metrics:
         'hardware_bw_gbps': args.bw
     }
     
-    for metric_key in metrics_to_run:
-        metric_results = run_metric(metric_key, args.nsys_path, is_single_file)
-        results[metric_key] = metric_results
-    
-    # Post-process: Use accurate timeline analysis for communication percentage
-    # The timeline_analysis provides accurate wall-clock time breakdown
-    if results.get('comm_breakdown'):
-        comm_data = results['comm_breakdown']
+    if is_single_file:
+        # Single file mode: run all metrics for the single file
+        print_subheader(f"Analyzing: {os.path.basename(args.nsys_path)}")
+        file_results = run_all_metrics_for_file(args.nsys_path, metrics_to_run)
         
-        # Check if we have accurate timeline analysis
-        if comm_data.get('timeline_analysis'):
-            # Timeline analysis is already computed and included in comm_breakdown
-            # Add a note about the accuracy
-            comm_data['note'] = 'Communication percentage based on accurate GPU timeline analysis'
-        elif results.get('iteration_time'):
-            # Fallback: estimate based on iteration time if timeline analysis not available
-            iteration_data = results['iteration_time']
-            complete_iterations = [t for t in iteration_data.get('iteration_times_ms', []) if t > 1000]
+        # Put results at top level for backward compatibility
+        for metric_key, metric_result in file_results.items():
+            results[metric_key] = metric_result
+    else:
+        # Multi-file mode: analyze each trace file and merge results
+        per_rank_results = OrderedDict()
+        
+        for trace_filename in sorted(trace_files):
+            trace_path = os.path.join(args.nsys_path, trace_filename)
+            rank_id = extract_rank_from_filename(trace_filename)
             
-            if complete_iterations:
-                actual_time_ms = sum(complete_iterations)
-                nccl_time_ms = comm_data.get('total_nccl_time_ms', 0)
-                compute_time_ms = comm_data.get('total_compute_time_ms', 0)
-                
-                # NCCL time may exceed actual time due to parallel execution on multiple streams
-                if nccl_time_ms > actual_time_ms:
-                    effective_comm_time = actual_time_ms - compute_time_ms
-                    comm_data['effective_comm_time_ms'] = effective_comm_time
-                    comm_data['comm_parallelism'] = nccl_time_ms / actual_time_ms
-                    comm_data['communication_percentage'] = (effective_comm_time / actual_time_ms) * 100
-                    comm_data['note'] = 'Estimated: NCCL kernels execute in parallel on multiple streams'
-                else:
-                    comm_data['effective_comm_time_ms'] = nccl_time_ms
-                    comm_data['comm_parallelism'] = 1.0
-                    comm_data['communication_percentage'] = (nccl_time_ms / actual_time_ms) * 100
-                    comm_data['note'] = 'Estimated from iteration time'
-                
-                comm_data['actual_iteration_time_ms'] = actual_time_ms
-                comm_data['num_complete_iterations'] = len(complete_iterations)
+            if rank_id is not None:
+                rank_key = f"rank_{rank_id}"
+            else:
+                # Use filename as key if no rank found
+                rank_key = os.path.splitext(trace_filename)[0]
+            
+            print_subheader(f"Analyzing: {trace_filename} ({rank_key})")
+            file_results = run_all_metrics_for_file(trace_path, metrics_to_run)
+            
+            # Store per-rank results
+            per_rank_results[rank_key] = {
+                'trace_file': trace_filename,
+                **file_results
+            }
+        
+        # Add per-rank results to output
+        results['per_rank_results'] = per_rank_results
+        
+        # Calculate aggregated statistics across all ranks
+        print_subheader("Computing aggregated statistics")
+        aggregated = aggregate_results(per_rank_results)
+        results['aggregated'] = aggregated
+        
+        print(f"  ✓ Aggregated {len(per_rank_results)} ranks")
     
     # Print summary
     print_header("Analysis Summary")
     print(f"Workload: {args.name}")
-    print(f"Traces analyzed: {1 if is_single_file else len(trace_files)}")
-    print(f"Metrics computed: {len([r for r in results.values() if r is not None])}/{len(metrics_to_run)}")
+    if is_single_file:
+        print(f"Traces analyzed: 1")
+    else:
+        print(f"Traces analyzed: {len(trace_files)} (merged into one output)")
+        print(f"Ranks: {', '.join(sorted(results.get('per_rank_results', {}).keys()))}")
+    
+    # Show aggregated summary for multi-file mode
+    if not is_single_file and results.get('aggregated'):
+        agg = results['aggregated']
+        print("\nAggregated Statistics:")
+        if agg.get('iteration_time'):
+            it = agg['iteration_time']
+            print(f"  Iteration Time: avg={it['avg_iteration_time_ms']:.2f}ms, "
+                  f"p99={it['p99_iteration_time_ms']:.2f}ms")
+        if agg.get('overlap'):
+            ov = agg['overlap']
+            print(f"  Overlap: avg={ov['avg_overlap_percentage']:.2f}%")
+        if agg.get('bandwidth'):
+            bw = agg['bandwidth']
+            print(f"  Bandwidth Util: avg={bw['avg_utilization_pct']:.2f}%")
     
     # Export results if requested
     if args.output:
