@@ -17,7 +17,12 @@
 set -euo pipefail
 
 # Source common configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Use SLURM_SUBMIT_DIR since SLURM copies the script to a temp location
+if [[ -f "${SLURM_SUBMIT_DIR}/common.sh" ]]; then
+    SCRIPT_DIR="${SLURM_SUBMIT_DIR}"
+else
+    SCRIPT_DIR="${SLURM_SUBMIT_DIR}/perlmutter"
+fi
 source "${SCRIPT_DIR}/common.sh"
 
 # =============================================================================
