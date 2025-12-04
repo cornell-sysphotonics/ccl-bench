@@ -202,9 +202,6 @@ if [[ $DOWNLOAD_MODELS == true ]]; then
 	elif command -v hf &> /dev/null; then
 		HF_CLI="hf"
 		info "Using: hf CLI"
-	elif command -v huggingface-cli &> /dev/null; then
-		HF_CLI="huggingface-cli"
-		info "Using: huggingface-cli (legacy)"
 	fi
 
 	if [[ -n $HF_CLI ]]; then
