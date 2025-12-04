@@ -13,7 +13,7 @@
 # =============================================================================
 
 # Your NERSC allocation (REQUIRED - get this from `sacctmgr show assoc user=$USER`)
-export NERSC_ALLOCATION="${NERSC_ALLOCATION:-CHANGE_ME}"
+export NERSC_ALLOCATION="m4999"
 
 # =============================================================================
 # PATH CONFIGURATION
@@ -29,8 +29,7 @@ fi
 
 CCL_BENCH_HOME="$(cd "$SCRIPT_DIR/.." && pwd)"
 export CCL_BENCH_HOME
-export TORCHTITAN_HOME="${TORCHTITAN_HOME:-${SCRATCH}/torchtitan}"
-export VENV_DIR="${CCL_BENCH_HOME}/.venv"
+export VENV_DIR="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-venv"
 
 # Trace output directory base
 export TRACE_BASE="${CCL_BENCH_HOME}/trace_collection"
@@ -38,11 +37,46 @@ export TRACE_BASE="${CCL_BENCH_HOME}/trace_collection"
 # Train config directory
 export TRAIN_CONFIG_DIR="${CCL_BENCH_HOME}/train_configs"
 
+# HuggingFace model assets directory (where downloaded models are stored)
+export HF_ASSETS_ROOT="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-assets/models"
+
+# =============================================================================
+# MODEL PATH RESOLUTION
+# =============================================================================
+
+# Get the HF assets path for a model based on config file name
+# This maps config files to the correct model directory
+# Usage: get_model_hf_path <config_file>
+get_model_hf_path() {
+	local config_file="$1"
+	local config_name
+	config_name=$(basename "$config_file" .toml)
+
+	# Map config names to model directories
+	case "$config_name" in
+		llama3_8b_*)
+			echo "${HF_ASSETS_ROOT}/Llama-3.1-8B"
+			;;
+		deepseek_v2_lite_*)
+			echo "${HF_ASSETS_ROOT}/DeepSeek-V2-Lite"
+			;;
+		qwen3_32b_*)
+			echo "${HF_ASSETS_ROOT}/Qwen3-32B"
+			;;
+		*)
+			# Fallback: try to extract from config file
+			echo "ERROR: Unknown model config: $config_name" >&2
+			echo "Please add a mapping in common.sh get_model_hf_path()" >&2
+			return 1
+			;;
+	esac
+}
+
 # =============================================================================
 # ENVIRONMENT SETUP
 # =============================================================================
 
-setup_environment() {
+setup_runtime_paths() {
 	# Load required modules
 	# Note: Temporarily disable 'set -u' if active, because module/conda scripts have unbound variables
 	local u_was_set=false
@@ -67,6 +101,13 @@ setup_environment() {
 
 	# Add project to Python path
 	export PYTHONPATH="${CCL_BENCH_HOME}:${PYTHONPATH:-}"
+
+	# Set cache directories on SCRATCH for better performance
+	export HF_HOME="${SCRATCH:-$HOME}/cache/huggingface"
+	export XDG_CACHE_HOME="${SCRATCH:-$HOME}/.cache"
+	export TORCH_EXTENSIONS_DIR="${SCRATCH:-$HOME}/.torch_extensions"
+	export CUDA_CACHE_PATH="${SCRATCH:-$HOME}/.nv/ComputeCache"
+	mkdir -p "$HF_HOME" "$XDG_CACHE_HOME" "$TORCH_EXTENSIONS_DIR" "$CUDA_CACHE_PATH"
 }
 
 # =============================================================================
@@ -222,7 +263,15 @@ launch_torchtitan() {
 		exit 1
 	fi
 
+	# Get the correct model path for this config
+	local model_path
+	model_path=$(get_model_hf_path "${config_file}")
+	if [[ $? -ne 0 ]]; then
+		exit 1
+	fi
+
 	echo "Launching TorchTitan with config: ${config_file}"
+	echo "  Model path: ${model_path}"
 
 	python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
@@ -231,7 +280,8 @@ launch_torchtitan() {
 		--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
 		-m torchtitan.train \
 		--job.config_file "${config_file}" \
-		--job.dump_folder "${TRACE_DIR}"
+		--job.dump_folder "${TRACE_DIR}" \
+		--model.hf_assets_path "${model_path}"
 }
 
 # Launch with NSys profiling
@@ -245,8 +295,16 @@ launch_torchtitan_with_nsys() {
 		exit 1
 	fi
 
+	# Get the correct model path for this config
+	local model_path
+	model_path=$(get_model_hf_path "${config_file}")
+	if [[ $? -ne 0 ]]; then
+		exit 1
+	fi
+
 	echo "Launching TorchTitan with NSys profiling..."
 	echo "  Config: ${config_file}"
+	echo "  Model path: ${model_path}"
 	echo "  NSys output: ${TRACE_DIR}/${nsys_prefix}_${RUN_TIMESTAMP}"
 
 	nsys_profile "${nsys_prefix}" \
@@ -257,7 +315,8 @@ launch_torchtitan_with_nsys() {
 		--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
 		-m torchtitan.train \
 		--job.config_file "${config_file}" \
-		--job.dump_folder "${TRACE_DIR}"
+		--job.dump_folder "${TRACE_DIR}" \
+		--model.hf_assets_path "${model_path}"
 }
 
 # =============================================================================

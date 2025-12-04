@@ -40,15 +40,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Environment paths
-VENV_DIR="${PROJECT_ROOT}/.venv"
-TORCHTITAN_DIR="${SCRATCH:-$HOME}/torchtitan"
-
-# Python version requirement
-PYTHON_MIN_VERSION="3.10.12"
-
-# PyTorch version (CUDA 12.4 for Perlmutter A100s)
-PYTORCH_INDEX="https://download.pytorch.org/whl/cu124"
-
+VENV_DIR="${SCRATCH:-$PROJECT_ROOT}/ccl-bench-venv"
 # Parse arguments
 DOWNLOAD_MODELS=false
 while [[ $# -gt 0 ]]; do
@@ -93,20 +85,6 @@ fi
 # Python Environment Setup
 # =============================================================================
 
-check_python_version() {
-	local python_cmd=$1
-	local version
-	version=$($python_cmd -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2> /dev/null)
-	if [[ -z $version ]]; then
-		return 1
-	fi
-	# Compare versions
-	if [[ "$(printf '%s\n' "$PYTHON_MIN_VERSION" "$version" | sort -V | head -n1)" == "$PYTHON_MIN_VERSION" ]]; then
-		return 0
-	fi
-	return 1
-}
-
 setup_with_uv() {
 	info "Setting up environment with uv..."
 
@@ -123,7 +101,7 @@ setup_with_uv() {
 	cd "$PROJECT_ROOT"
 
 	info "Creating virtual environment with uv..."
-	uv venv "$VENV_DIR" --python "$PYTHON_MIN_VERSION"
+	uv venv "$VENV_DIR"
 
 	# shellcheck disable=SC1091
 	source "$VENV_DIR/bin/activate"
@@ -131,43 +109,6 @@ setup_with_uv() {
 	uv sync
 
 	success "Environment setup complete via uv."
-}
-
-setup_with_venv() {
-	info "Setting up environment with standard venv..."
-
-	# Find suitable Python
-	local python_cmd=""
-	for cmd in python3.10 python3.11 python3; do
-		if command -v "$cmd" &> /dev/null && check_python_version "$cmd"; then
-			python_cmd="$cmd"
-			break
-		fi
-	done
-
-	if [[ -z $python_cmd ]]; then
-		error "No suitable Python >= ${PYTHON_MIN_VERSION} found"
-	fi
-
-	info "Using Python: $python_cmd ($($python_cmd --version))"
-
-	# Create virtual environment
-	info "Creating virtual environment..."
-	$python_cmd -m venv "$VENV_DIR"
-
-	# Activate and install
-	source "$VENV_DIR/bin/activate"
-
-	info "Upgrading pip..."
-	pip install --upgrade pip
-
-	info "Installing PyTorch with CUDA 12.4..."
-	pip install torch torchvision --index-url "$PYTORCH_INDEX"
-
-	info "Installing project dependencies..."
-	pip install -e "$PROJECT_ROOT"
-
-	success "venv environment setup complete"
 }
 
 # Try uv first, fall back to venv
@@ -178,9 +119,6 @@ else
 	if curl -LsSf https://astral.sh/uv/install.sh | sh 2> /dev/null; then
 		export PATH="$HOME/.local/bin:$PATH"
 		setup_with_uv
-	else
-		warn "Could not install uv, falling back to standard venv"
-		setup_with_venv
 	fi
 fi
 
@@ -191,8 +129,10 @@ fi
 if [[ $DOWNLOAD_MODELS == true ]]; then
 	info "Downloading model weights..."
 
-	ASSETS_DIR="${PROJECT_ROOT}/assets/hf"
-	mkdir -p "$ASSETS_DIR"
+	# Root for models + HF cache on SCRATCH (recommended by NERSC)
+	export HF_HOME="$SCRATCH/cache/huggingface"
+	export HF_ASSETS_ROOT="$SCRATCH/ccl-bench-assets/models"
+	mkdir -p "$HF_HOME" "$HF_ASSETS_ROOT"
 
 	# Determine which HF CLI to use (prefer uvx hf, then hf, then huggingface-cli)
 	HF_CLI=""
@@ -212,13 +152,19 @@ if [[ $DOWNLOAD_MODELS == true ]]; then
 		fi
 
 		info "Downloading LLaMA-3.1-8B..."
-		$HF_CLI download meta-llama/Llama-3.1-8B --local-dir "$ASSETS_DIR/Llama-3.1-8B" || warn "LLaMA download failed (may need HF token and model access)"
+		$HF_CLI download meta-llama/Llama-3.1-8B \
+		  --local-dir "$HF_ASSETS_ROOT/Llama-3.1-8B" \
+			|| warn "LLaMA download failed (may need HF token and model access)"
 
 		info "Downloading DeepSeek-V2-Lite..."
-		$HF_CLI download deepseek-ai/DeepSeek-V2-Lite --local-dir "$ASSETS_DIR/DeepSeek-V2-Lite" || warn "DeepSeek download failed"
+		$HF_CLI download deepseek-ai/DeepSeek-V2-Lite \
+		  --local-dir "$HF_ASSETS_ROOT/DeepSeek-V2-Lite" \
+			|| warn "DeepSeek download failed"
 
 		info "Downloading Qwen3-32B..."
-		$HF_CLI download Qwen/Qwen3-32B --local-dir "$ASSETS_DIR/Qwen3-32B" || warn "Qwen download failed"
+		$HF_CLI download Qwen/Qwen3-32B  \
+		  --local-dir "$HF_ASSETS_ROOT/Qwen3-32B" \
+			|| warn "Qwen download failed"
 	else
 		warn "No Hugging Face CLI found."
 		warn "Install with one of:"
@@ -240,7 +186,6 @@ echo -e "${GREEN}Setup Complete!${NC}"
 echo "============================================================================="
 echo ""
 echo "Environment location: ${VENV_DIR}"
-echo "TorchTitan location:  ${TORCHTITAN_DIR}"
 echo ""
 echo "To activate the environment:"
 echo "  source ${ACTIVATE_SCRIPT}"
@@ -253,7 +198,5 @@ echo "  ccl-metrics --trace <trace_dir> --metric <metric_name>"
 echo ""
 if [[ $DOWNLOAD_MODELS == false ]]; then
 	echo -e "${YELLOW}Note: Model weights were not downloaded.${NC}"
-	echo "Run with --with-models to download, or manually place weights in:"
-	echo "  ${PROJECT_ROOT}/assets/hf/"
-	echo ""
+	echo "Run with --with-models to download"
 fi

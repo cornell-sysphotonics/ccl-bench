@@ -32,7 +32,7 @@ NSYS_PREFIX="deepseek_v2_lite_dp_pp"
 # =============================================================================
 
 # Setup environment
-setup_environment
+setup_runtime_paths
 setup_distributed
 setup_trace_dir "${WORKLOAD_NAME}"
 

@@ -32,7 +32,7 @@ NSYS_PREFIX="llama3_8b_pp"
 # =============================================================================
 
 # Setup environment
-setup_environment
+setup_runtime_paths
 setup_distributed
 setup_trace_dir "${WORKLOAD_NAME}"
 

@@ -32,7 +32,7 @@ NSYS_PREFIX="qwen3_32b_3d"
 # =============================================================================
 
 # Setup environment
-setup_environment
+setup_runtime_paths
 setup_distributed
 setup_trace_dir "${WORKLOAD_NAME}"
 
