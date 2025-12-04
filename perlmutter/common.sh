@@ -263,7 +263,7 @@ nsys_profile() {
 
 	nsys profile \
 		--stats=true \
-		--trace=nvtx,cuda,osrt \
+		--trace=cuda,osrt \
 		--cuda-memory-usage=true \
 		--gpuctxsw=true \
 		--output="${TRACE_DIR}/${output_prefix}_${RUN_TIMESTAMP}" \
