@@ -24,13 +24,13 @@ description = "CS5470 CCL-Bench run: deepseek_v2_lite_dp_tp"
 [profiling]
 enable_profiling = true
 save_traces_folder = "torch_traces"
-profile_freq = 10
+profile_freq = 20
 profiler_warmup = 3
 profiler_active = 1
 enable_memory_snapshot = false
 
 [metrics]
-log_freq = 5
+log_freq = 10
 enable_tensorboard = false
 save_tb_folder = "tb"
 save_for_all_ranks = false

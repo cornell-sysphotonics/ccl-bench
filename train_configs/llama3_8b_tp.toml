@@ -20,13 +20,13 @@ description = "CS5470 CCL-Bench run: llama3_8b_tp"
 [profiling]
 enable_profiling = true
 save_traces_folder = "torch_traces"
-profile_freq = 10
+profile_freq = 20
 profiler_warmup = 3
 profiler_active = 1
 enable_memory_snapshot = false
 
 [metrics]
-log_freq = 5
+log_freq = 10
 enable_tensorboard = false
 save_tb_folder = "tb"
 save_for_all_ranks = false
@@ -65,11 +65,8 @@ data_parallel_replicate_degree = 1
 data_parallel_shard_degree = 1
 tensor_parallel_degree = 4
 pipeline_parallel_degree = 1
-pipeline_parallel_microbatch_size = 2
+pipeline_parallel_microbatch_size = 1
 pipeline_parallel_schedule = "1F1B"
-pipeline_parallel_layers_per_stage = 0
-pipeline_parallel_first_stage_less_layers = 1
-pipeline_parallel_last_stage_less_layers = 1
 context_parallel_degree = 1
 expert_parallel_degree = 1
 expert_tensor_parallel_degree = 1
