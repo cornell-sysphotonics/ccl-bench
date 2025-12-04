@@ -27,7 +27,7 @@ fi
 
 if command -v module &> /dev/null; then
 	module load python 2> /dev/null || true
-	module load cudatoolkit 2> /dev/null || true
+	module load cudatoolkit/12.9 2> /dev/null || true
 fi
 
 if [[ $_u_was_set == true ]]; then

@@ -76,7 +76,7 @@ if command -v module &> /dev/null; then
 	info "Loading Perlmutter modules..."
 	set +u  # Disable unbound variable check for module commands
 	module load python 2> /dev/null || true
-	module load cudatoolkit 2> /dev/null || true
+	module load cudatoolkit/12.9 2> /dev/null || true
 	set -u  # Re-enable unbound variable check
 	success "Modules loaded"
 fi

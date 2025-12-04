@@ -91,7 +91,7 @@ setup_runtime_paths() {
 		set +u
 	fi
 	module load python 2> /dev/null || true
-	module load cudatoolkit 2> /dev/null || true
+	module load cudatoolkit/12.9 2> /dev/null || true
 	if [[ $u_was_set == true ]]; then
 		set -u
 	fi

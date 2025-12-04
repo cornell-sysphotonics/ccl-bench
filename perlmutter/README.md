@@ -41,7 +41,7 @@ cd ccl-bench
 
 This will:
 - Create a Python virtual environment using uv (or fallback to venv)
-- Install PyTorch with CUDA 12.4 support
+- Install PyTorch with CUDA 12.9 support
 - Clone and set up TorchTitan
 - Create an activation script at `perlmutter/activate.sh`
 
@@ -188,7 +188,7 @@ Before running full workloads, do a quick validation:
 
 ### NCCL errors
 - Add `export NCCL_DEBUG=INFO` to the sbatch script for details
-- Ensure `module load cudatoolkit` completes successfully
+- Ensure `module load cudatoolkit/12.9` completes successfully
 
 ### Out of memory
 - Reduce `local_batch_size` in the TOML config
