@@ -57,14 +57,15 @@ def metric_cal(directory: str) -> float:
         avg_end = sum(end_times) / len(end_times)
         normalized_lag = lag_us / avg_end if avg_end > 0 else 0
 
-    print("Straggler Analysis:")
-    print(f"  Ranks analyzed: {len(rank_end_times)}")
+    import sys
+    print("Straggler Analysis:", file=sys.stderr)
+    print(f"  Ranks analyzed: {len(rank_end_times)}", file=sys.stderr)
     max_rank = max(rank_end_times.keys(), key=lambda k: rank_end_times[k])
     min_rank = min(rank_end_times.keys(), key=lambda k: rank_end_times[k])
-    print(f"  Max end time: {max_end:.2f} us (rank {max_rank})")
-    print(f"  Min end time: {min_end:.2f} us (rank {min_rank})")
-    print(f"  Lag: {lag_us:.2f} us")
-    print(f"  Normalized lag: {normalized_lag:.4f}")
+    print(f"  Max end time: {max_end:.2f} us (rank {max_rank})", file=sys.stderr)
+    print(f"  Min end time: {min_end:.2f} us (rank {min_rank})", file=sys.stderr)
+    print(f"  Lag: {lag_us:.2f} us", file=sys.stderr)
+    print(f"  Normalized lag: {normalized_lag:.4f}", file=sys.stderr)
 
     return normalized_lag
 
@@ -72,15 +73,62 @@ def metric_cal(directory: str) -> float:
 def _find_rank_traces(directory: str) -> dict[int, str]:
     """Find trace files organized by rank."""
     rank_traces = {}
+    trace_dir = Path(directory)
 
-    for path in Path(directory).iterdir():
-        if path.name.startswith("kineto_trace") and path.name.endswith(".json"):
-            parts = path.name.replace(".json", "").split("_")
+    # Look for trace files with various naming patterns
+    trace_patterns = [
+        "kineto_trace*.json",
+        "rank*_trace.json",
+        "*trace*.json",
+    ]
+
+    trace_files = []
+    for pattern in trace_patterns:
+        trace_files.extend(trace_dir.glob(pattern))
+
+    # Also check profile_trace subdirectory
+    profile_dir = trace_dir / "profile_trace"
+    if profile_dir.exists():
+        for pattern in trace_patterns:
+            trace_files.extend(profile_dir.glob(pattern))
+
+    for path in trace_files:
+        if not path.is_file() or path.suffix != ".json":
+            continue
+
+        # Try to extract rank from filename
+        name = path.name.replace(".json", "").lower()
+
+        # Try different patterns: rank0_trace, kineto_trace_0, trace_rank_0
+        rank = -1
+        if name.startswith("rank"):
+            # rank0_trace.json -> rank 0
             try:
-                rank = int(parts[-1])
-            except (ValueError, IndexError):
-                rank = 0
+                rank_part = name.split("_")[0].replace("rank", "")
+                rank = int(rank_part)
+            except ValueError:
+                pass
+        elif "rank" in name:
+            # kineto_trace_rank_0.json
+            parts = name.split("_")
+            for i, part in enumerate(parts):
+                if part == "rank" and i + 1 < len(parts):
+                    try:
+                        rank = int(parts[i + 1])
+                    except ValueError:
+                        pass
+                    break
+        else:
+            # Try last number in filename
+            parts = name.replace(".json", "").split("_")
+            for part in reversed(parts):
+                try:
+                    rank = int(part)
+                    break
+                except ValueError:
+                    continue
 
+        if rank >= 0:
             rank_traces[rank] = str(path)
 
     return rank_traces
@@ -100,30 +148,29 @@ def _analyze_rank_trace(trace_path: str) -> tuple[float, float]:
         if not events:
             return 0.0, 0.0
 
-        # Find the last kernel end time
+        # Find the last event end time (not just kernels, as some traces
+        # may not have kernel category)
         max_end_time = 0.0
         min_start_time = float("inf")
 
         for event in events:
-            cat = event.get("cat", "")
-            if cat != "kernel":
-                continue
-
             ts = event.get("ts", 0)
             dur = event.get("dur", 0)
 
             if ts > 0:
                 min_start_time = min(min_start_time, ts)
-                max_end_time = max(max_end_time, ts + dur)
+                if dur > 0:
+                    max_end_time = max(max_end_time, ts + dur)
+                else:
+                    max_end_time = max(max_end_time, ts)
 
         if max_end_time == 0:
             return 0.0, 0.0
 
         total_time = max_end_time - min_start_time
 
-        # Estimate iteration time (assume ~5 iterations)
-        # Better would be to use explicit markers
-        iter_time = total_time / 5.0 if total_time > 0 else 0.0
+        # Estimate iteration time (assume 1 iteration per trace file for TorchTitan)
+        iter_time = total_time
 
     except (json.JSONDecodeError, FileNotFoundError) as e:
         print(f"Error reading {trace_path}: {e}")

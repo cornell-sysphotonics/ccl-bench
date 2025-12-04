@@ -18,7 +18,7 @@ import json
 from pathlib import Path
 
 
-# NCCL kernel name prefixes to match
+# NCCL kernel name prefixes to match (GPU kernel-level events)
 _NCCL_KERNEL_PREFIXES = (
     "ncclDevKernel_AllReduce",
     "ncclDevKernel_ReduceScatter",
@@ -33,6 +33,26 @@ _NCCL_KERNEL_PREFIXES = (
     "ncclKernel_Broadcast",
     "ncclKernel_Reduce",
     "ncclKernel_SendRecv",
+)
+
+# Operator-level NCCL event names (from TorchTitan/PyTorch profiler traces)
+_NCCL_OPERATOR_NAMES = (
+    "nccl:all_reduce",
+    "nccl:reduce_scatter",
+    "nccl:all_gather",
+    "nccl:broadcast",
+    "nccl:reduce",
+    "nccl:send",
+    "nccl:recv",
+    "nccl:coalesced",
+    # c10d distributed operations
+    "c10d::allreduce_",
+    "c10d::reduce_scatter_",
+    "c10d::allgather_",
+    "c10d::broadcast_",
+    "c10d::reduce_",
+    "c10d::send",
+    "c10d::recv_",
 )
 
 
@@ -115,21 +135,27 @@ def metric_cal(directory: str) -> int:
             with trace_file.open() as f:
                 trace_data = json.load(f)
 
-            # Count NCCL kernel events
+            # Count NCCL events from different trace formats
             for event in trace_data.get("traceEvents", []):
-                if event.get("cat") != "kernel":
-                    continue
-
                 name = event.get("name", "")
-                if name.startswith(_NCCL_KERNEL_PREFIXES):
+                cat = event.get("cat", "")
+
+                # Format 1: Kernel-level events (cat == "kernel")
+                if cat == "kernel" and name.startswith(_NCCL_KERNEL_PREFIXES):
+                    communication_calls += 1
+                # Format 2: Operator-level events (TorchTitan/PyTorch profiler)
+                elif name in _NCCL_OPERATOR_NAMES or name.startswith(_NCCL_OPERATOR_NAMES):
                     communication_calls += 1
 
             traces_processed += 1
-            print(f"  Processed: {trace_file.name}")
+            import sys
+            print(f"  Processed: {trace_file.name}", file=sys.stderr)
 
         except json.JSONDecodeError as e:
-            print(f"Warning: Error decoding JSON in {trace_file}: {e}")
+            import sys
+            print(f"Warning: Error decoding JSON in {trace_file}: {e}", file=sys.stderr)
             continue
 
-    print(f"Processed {traces_processed} trace files")
+    import sys
+    print(f"Processed {traces_processed} trace files", file=sys.stderr)
     return communication_calls

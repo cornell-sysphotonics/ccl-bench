@@ -36,10 +36,30 @@ def _find_iteration_times(directory: str) -> list[float]:
         List[float]: List of iteration times in milliseconds.
     """
     iter_times = []
+    trace_dir = Path(directory)
 
-    # Look for Kineto traces with NVTX ranges
-    for path in Path(directory).iterdir():
-        if path.name.startswith("kineto_trace") and path.name.endswith(".json"):
+    # Look for trace files with various naming patterns
+    trace_patterns = [
+        "kineto_trace*.json",
+        "rank*_trace.json",
+        "*trace*.json",
+    ]
+
+    trace_files = []
+    for pattern in trace_patterns:
+        trace_files.extend(trace_dir.glob(pattern))
+
+    # Also check profile_trace subdirectory
+    profile_dir = trace_dir / "profile_trace"
+    if profile_dir.exists():
+        for pattern in trace_patterns:
+            trace_files.extend(profile_dir.glob(pattern))
+
+    # Deduplicate
+    trace_files = list(set(trace_files))
+
+    for path in trace_files:
+        if path.is_file() and path.suffix == ".json":
             times = _extract_iter_times_from_kineto(path)
             if times:
                 iter_times.extend(times)
@@ -101,33 +121,52 @@ def _estimate_iter_time(directory: str) -> float:
 
     Assumes 5 iterations if not specified.
     """
-    # Try to get total time from Kineto trace
-    for path in Path(directory).iterdir():
-        if path.name.startswith("kineto_trace") and path.name.endswith(".json"):
-            try:
-                with path.open() as f:
-                    data = json.load(f)
+    trace_dir = Path(directory)
 
-                events = data.get("traceEvents", [])
-                if not events:
-                    continue
+    # Look for trace files with various naming patterns
+    trace_patterns = [
+        "kineto_trace*.json",
+        "rank*_trace.json",
+        "*trace*.json",
+    ]
 
-                min_ts = float("inf")
-                max_ts = float("-inf")
+    trace_files = []
+    for pattern in trace_patterns:
+        trace_files.extend(trace_dir.glob(pattern))
 
-                for event in events:
-                    ts = event.get("ts", 0)
-                    dur = event.get("dur", 0)
-                    if ts > 0:
-                        min_ts = min(min_ts, ts)
-                        max_ts = max(max_ts, ts + dur)
+    # Also check profile_trace subdirectory
+    profile_dir = trace_dir / "profile_trace"
+    if profile_dir.exists():
+        for pattern in trace_patterns:
+            trace_files.extend(profile_dir.glob(pattern))
 
-                if min_ts < float("inf") and max_ts > float("-inf"):
-                    total_time_us = max_ts - min_ts
-                    # Assume 5 iterations
-                    return (total_time_us / 5) / 1000.0  # Convert to ms
+    for path in trace_files:
+        if not path.is_file() or path.suffix != ".json":
+            continue
+        try:
+            with path.open() as f:
+                data = json.load(f)
 
-            except Exception as e:
-                print(f"Error reading {path}: {e}")
+            events = data.get("traceEvents", [])
+            if not events:
+                continue
+
+            min_ts = float("inf")
+            max_ts = float("-inf")
+
+            for event in events:
+                ts = event.get("ts", 0)
+                dur = event.get("dur", 0)
+                if ts > 0:
+                    min_ts = min(min_ts, ts)
+                    max_ts = max(max_ts, ts + dur)
+
+            if min_ts < float("inf") and max_ts > float("-inf"):
+                total_time_us = max_ts - min_ts
+                # Assume 1 iteration per trace file (TorchTitan saves per-iteration)
+                return total_time_us / 1000.0  # Convert to ms
+
+        except Exception as e:
+            print(f"Error reading {path}: {e}")
 
     return 0.0

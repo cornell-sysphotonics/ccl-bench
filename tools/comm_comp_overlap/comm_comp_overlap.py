@@ -21,9 +21,27 @@ def metric_cal(directory: str) -> float:
     Returns:
         float: Overlap ratio between 0 and 1 (or percentage if > 1).
     """
-    # Find Kineto trace files
-    for path in Path(directory).iterdir():
-        if path.name.startswith("kineto_trace") and path.name.endswith(".json"):
+    trace_dir = Path(directory)
+
+    # Look for trace files with various naming patterns
+    trace_patterns = [
+        "kineto_trace*.json",
+        "rank*_trace.json",
+        "*trace*.json",
+    ]
+
+    trace_files = []
+    for pattern in trace_patterns:
+        trace_files.extend(trace_dir.glob(pattern))
+
+    # Also check profile_trace subdirectory
+    profile_dir = trace_dir / "profile_trace"
+    if profile_dir.exists():
+        for pattern in trace_patterns:
+            trace_files.extend(profile_dir.glob(pattern))
+
+    for path in trace_files:
+        if path.is_file() and path.suffix == ".json":
             overlap = _calculate_overlap_from_trace(path)
             if overlap >= 0:
                 return overlap
@@ -45,15 +63,16 @@ def _calculate_overlap_from_trace(trace_path: Path) -> float:
         if not events:
             return -1
 
-        # Separate communication and computation kernel events
+        # Separate communication and computation events
         comm_intervals = []
         comp_intervals = []
 
-        # NCCL kernel names that indicate communication
-        nccl_patterns = [
+        # Patterns that indicate communication operations
+        comm_patterns = [
             "ncclDevKernel",
             "ncclKernel",
-            "nccl",
+            "nccl:",
+            "c10d::",
             "AllReduce",
             "ReduceScatter",
             "AllGather",
@@ -61,27 +80,35 @@ def _calculate_overlap_from_trace(trace_path: Path) -> float:
             "Reduce",
             "SendRecv",
             "AllToAll",
+            "send",
+            "recv",
         ]
 
         for event in events:
-            # Only look at GPU kernel events
-            cat = event.get("cat", "")
-            if cat != "kernel":
-                continue
-
             name = event.get("name", "")
+            cat = event.get("cat", "")
             ts = event.get("ts", 0)
             dur = event.get("dur", 0)
 
             if ts <= 0 or dur <= 0:
                 continue
 
-            # Check if this is a communication kernel
-            is_comm = any(pattern.lower() in name.lower() for pattern in nccl_patterns)
+            # Check if this is a communication operation
+            is_comm = any(pattern.lower() in name.lower() for pattern in comm_patterns)
+
+            # For operator-level traces (TorchTitan), also check computation ops
+            is_comp = (
+                cat == "kernel" or  # GPU kernel events
+                name.startswith("aten::") or  # PyTorch ops
+                "matmul" in name.lower() or
+                "linear" in name.lower() or
+                "attention" in name.lower() or
+                "gemm" in name.lower()
+            )
 
             if is_comm:
                 comm_intervals.append((ts, ts + dur))
-            else:
+            elif is_comp and not is_comm:
                 comp_intervals.append((ts, ts + dur))
 
         if not comm_intervals:

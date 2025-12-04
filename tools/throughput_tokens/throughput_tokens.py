@@ -97,35 +97,54 @@ def _get_total_time_from_traces(directory: str) -> float:
 
 def _get_time_from_kineto(directory: str) -> float:
     """Extract time from Kineto Chrome trace format."""
-    # Look for kineto trace files
-    for path in Path(directory).iterdir():
-        if path.name.startswith("kineto_trace") and path.name.endswith(".json"):
-            try:
-                with path.open() as f:
-                    data = json.load(f)
+    trace_dir = Path(directory)
 
-                events = data.get("traceEvents", [])
-                if not events:
-                    continue
+    # Look for trace files with various naming patterns
+    trace_patterns = [
+        "kineto_trace*.json",
+        "rank*_trace.json",
+        "*trace*.json",
+    ]
 
-                # Find min start time and max end time
-                min_ts = float("inf")
-                max_ts = float("-inf")
+    trace_files = []
+    for pattern in trace_patterns:
+        trace_files.extend(trace_dir.glob(pattern))
 
-                for event in events:
-                    ts = event.get("ts", 0)
-                    dur = event.get("dur", 0)
-                    if ts > 0:
-                        min_ts = min(min_ts, ts)
-                        max_ts = max(max_ts, ts + dur)
+    # Also check profile_trace subdirectory
+    profile_dir = trace_dir / "profile_trace"
+    if profile_dir.exists():
+        for pattern in trace_patterns:
+            trace_files.extend(profile_dir.glob(pattern))
 
-                if min_ts < float("inf") and max_ts > float("-inf"):
-                    # Timestamps are in microseconds
-                    return (max_ts - min_ts) / 1_000_000.0
+    for path in trace_files:
+        if not path.is_file() or path.suffix != ".json":
+            continue
+        try:
+            with path.open() as f:
+                data = json.load(f)
 
-            except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
-                print(f"Error reading {path}: {e}")
+            events = data.get("traceEvents", [])
+            if not events:
                 continue
+
+            # Find min start time and max end time
+            min_ts = float("inf")
+            max_ts = float("-inf")
+
+            for event in events:
+                ts = event.get("ts", 0)
+                dur = event.get("dur", 0)
+                if ts > 0:
+                    min_ts = min(min_ts, ts)
+                    max_ts = max(max_ts, ts + dur)
+
+            if min_ts < float("inf") and max_ts > float("-inf"):
+                # Timestamps are in microseconds
+                return (max_ts - min_ts) / 1_000_000.0
+
+        except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
+            print(f"Error reading {path}: {e}")
+            continue
 
     return 0.0
 

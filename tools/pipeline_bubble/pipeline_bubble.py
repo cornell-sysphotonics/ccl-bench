@@ -35,16 +35,62 @@ def metric_cal(directory: str) -> float:
 def _find_rank_traces(directory: str) -> dict[int, str]:
     """Find trace files organized by rank."""
     rank_traces = {}
+    trace_dir = Path(directory)
 
-    for path in Path(directory).iterdir():
-        if path.name.startswith("kineto_trace") and path.name.endswith(".json"):
-            # Try to extract rank from filename (e.g., kineto_trace_0.json)
-            parts = path.name.replace(".json", "").split("_")
+    # Look for trace files with various naming patterns
+    trace_patterns = [
+        "kineto_trace*.json",
+        "rank*_trace.json",
+        "*trace*.json",
+    ]
+
+    trace_files = []
+    for pattern in trace_patterns:
+        trace_files.extend(trace_dir.glob(pattern))
+
+    # Also check profile_trace subdirectory
+    profile_dir = trace_dir / "profile_trace"
+    if profile_dir.exists():
+        for pattern in trace_patterns:
+            trace_files.extend(profile_dir.glob(pattern))
+
+    for path in trace_files:
+        if not path.is_file() or path.suffix != ".json":
+            continue
+
+        # Try to extract rank from filename
+        name = path.name.replace(".json", "").lower()
+
+        # Try different patterns: rank0_trace, kineto_trace_0, trace_rank_0
+        rank = -1
+        if name.startswith("rank"):
+            # rank0_trace.json -> rank 0
             try:
-                rank = int(parts[-1])
-            except (ValueError, IndexError):
-                rank = 0  # Default to rank 0
+                rank_part = name.split("_")[0].replace("rank", "")
+                rank = int(rank_part)
+            except ValueError:
+                pass
+        elif "rank" in name:
+            # kineto_trace_rank_0.json
+            parts = name.split("_")
+            for i, part in enumerate(parts):
+                if part == "rank" and i + 1 < len(parts):
+                    try:
+                        rank = int(parts[i + 1])
+                    except ValueError:
+                        pass
+                    break
+        else:
+            # Try last number in filename
+            parts = name.replace(".json", "").split("_")
+            for part in reversed(parts):
+                try:
+                    rank = int(part)
+                    break
+                except ValueError:
+                    continue
 
+        if rank >= 0:
             rank_traces[rank] = str(path)
 
     return rank_traces
