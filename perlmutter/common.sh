@@ -32,7 +32,9 @@ export CCL_BENCH_HOME
 export VENV_DIR="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-venv"
 
 # Trace output directory base
-export TRACE_BASE="${CCL_BENCH_HOME}/trace_collection"
+# Use $SCRATCH for traces to avoid filling home/project directories
+# Nsys .qdrep/.nsys-rep files and Torch profiler traces can be large
+export TRACE_BASE="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-traces"
 
 # Train config directory
 export TRAIN_CONFIG_DIR="${CCL_BENCH_HOME}/train_configs"
@@ -144,6 +146,21 @@ setup_distributed() {
 }
 
 # =============================================================================
+# PROFILING MODE CONFIGURATION
+# =============================================================================
+# Controls what kind of profiling traces to collect:
+#   "both"          - Nsys + Torch Profiler (default, may hit CUPTI conflicts)
+#   "nsys"          - Nsys only (disables Torch Profiler via CLI override)
+#   "torch"         - Torch Profiler only (no Nsys wrapper)
+#
+# If you see CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED, run two passes:
+#   1. PROFILE_MODE="nsys" for Nsight traces
+#   2. PROFILE_MODE="torch" for Torch ET + Kineto traces
+# =============================================================================
+
+export PROFILE_MODE="${PROFILE_MODE:-both}"
+
+# =============================================================================
 # TRACE COLLECTION SETUP
 # =============================================================================
 
@@ -154,6 +171,7 @@ setup_trace_dir() {
 	mkdir -p "${TRACE_DIR}"
 
 	echo "Trace output directory: ${TRACE_DIR}"
+	echo "Profiling mode: ${PROFILE_MODE}"
 
 	# Create a run timestamp for unique trace names
 	RUN_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -254,9 +272,12 @@ nsys_profile() {
 # =============================================================================
 
 # Launch distributed training with torchrun
-# Usage: launch_torchtitan <config_file>
+# Usage: launch_torchtitan <config_file> [extra_args...]
+# Respects PROFILE_MODE for Torch Profiler control
 launch_torchtitan() {
 	local config_file="$1"
+	shift
+	local extra_args=("$@")
 
 	if [[ ! -f ${config_file} ]]; then
 		echo "ERROR: Config file not found: ${config_file}"
@@ -273,6 +294,16 @@ launch_torchtitan() {
 	echo "Launching TorchTitan with config: ${config_file}"
 	echo "  Model path: ${model_path}"
 
+	# Build profiler args based on PROFILE_MODE
+	local profiler_args=()
+	if [[ ${PROFILE_MODE} == "nsys" ]]; then
+		# Disable Torch Profiler when running Nsys-only
+		profiler_args+=(--profiling.enable_profiling False)
+		echo "  Torch Profiler: DISABLED (nsys-only mode)"
+	else
+		echo "  Torch Profiler: ENABLED"
+	fi
+
 	python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
 		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
@@ -281,11 +312,14 @@ launch_torchtitan() {
 		-m torchtitan.train \
 		--job.config_file "${config_file}" \
 		--job.dump_folder "${TRACE_DIR}" \
-		--model.hf_assets_path "${model_path}"
+		--model.hf_assets_path "${model_path}" \
+		"${profiler_args[@]}" \
+		"${extra_args[@]}"
 }
 
 # Launch with NSys profiling
 # Usage: launch_torchtitan_with_nsys <config_file> <nsys_output_prefix>
+# Respects PROFILE_MODE: "both" wraps with nsys, "torch" skips nsys
 launch_torchtitan_with_nsys() {
 	local config_file="$1"
 	local nsys_prefix="$2"
@@ -302,21 +336,72 @@ launch_torchtitan_with_nsys() {
 		exit 1
 	fi
 
-	echo "Launching TorchTitan with NSys profiling..."
-	echo "  Config: ${config_file}"
-	echo "  Model path: ${model_path}"
-	echo "  NSys output: ${TRACE_DIR}/${nsys_prefix}_${RUN_TIMESTAMP}"
+	# Build profiler args based on PROFILE_MODE
+	local profiler_args=()
+	if [[ ${PROFILE_MODE} == "nsys" ]]; then
+		# Disable Torch Profiler when running Nsys-only
+		profiler_args+=(--profiling.enable_profiling False)
+	fi
 
-	nsys_profile "${nsys_prefix}" \
-		python -m torch.distributed.run \
-		--nnodes="${SLURM_JOB_NUM_NODES}" \
-		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
-		--rdzv-backend=c10d \
-		--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
-		-m torchtitan.train \
-		--job.config_file "${config_file}" \
-		--job.dump_folder "${TRACE_DIR}" \
-		--model.hf_assets_path "${model_path}"
+	# Handle different profiling modes
+	case "${PROFILE_MODE}" in
+		torch)
+			# Torch Profiler only - no Nsys wrapper
+			echo "Launching TorchTitan with Torch Profiler only (no Nsys)..."
+			echo "  Config: ${config_file}"
+			echo "  Model path: ${model_path}"
+
+			python -m torch.distributed.run \
+				--nnodes="${SLURM_JOB_NUM_NODES}" \
+				--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
+				--rdzv-backend=c10d \
+				--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
+				-m torchtitan.train \
+				--job.config_file "${config_file}" \
+				--job.dump_folder "${TRACE_DIR}" \
+				--model.hf_assets_path "${model_path}"
+			;;
+		nsys)
+			# Nsys only - disable Torch Profiler
+			echo "Launching TorchTitan with Nsys only (Torch Profiler disabled)..."
+			echo "  Config: ${config_file}"
+			echo "  Model path: ${model_path}"
+			echo "  NSys output: ${TRACE_DIR}/${nsys_prefix}_${RUN_TIMESTAMP}"
+
+			nsys_profile "${nsys_prefix}" \
+				python -m torch.distributed.run \
+				--nnodes="${SLURM_JOB_NUM_NODES}" \
+				--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
+				--rdzv-backend=c10d \
+				--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
+				-m torchtitan.train \
+				--job.config_file "${config_file}" \
+				--job.dump_folder "${TRACE_DIR}" \
+				--model.hf_assets_path "${model_path}" \
+				--profiling.enable_profiling False
+			;;
+		both|*)
+			# Both Nsys + Torch Profiler (default)
+			echo "Launching TorchTitan with Nsys + Torch Profiler..."
+			echo "  Config: ${config_file}"
+			echo "  Model path: ${model_path}"
+			echo "  NSys output: ${TRACE_DIR}/${nsys_prefix}_${RUN_TIMESTAMP}"
+			echo ""
+			echo "  NOTE: If you see CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED,"
+			echo "        run two separate passes with PROFILE_MODE=nsys and PROFILE_MODE=torch"
+
+			nsys_profile "${nsys_prefix}" \
+				python -m torch.distributed.run \
+				--nnodes="${SLURM_JOB_NUM_NODES}" \
+				--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
+				--rdzv-backend=c10d \
+				--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
+				-m torchtitan.train \
+				--job.config_file "${config_file}" \
+				--job.dump_folder "${TRACE_DIR}" \
+				--model.hf_assets_path "${model_path}"
+			;;
+	esac
 }
 
 # =============================================================================

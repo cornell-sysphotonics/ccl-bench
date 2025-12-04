@@ -27,6 +27,10 @@ WORKLOAD_NAME="qwen3_32b_dp_tp"
 CONFIG_FILE="${TRAIN_CONFIG_DIR}/qwen3_32b_dp_tp.toml"
 NSYS_PREFIX="qwen3_32b_dp_tp"
 
+# Profiling Mode: "both" (default), "nsys" (Nsys only), "torch" (Torch Profiler only)
+# Set via: export PROFILE_MODE=nsys  (before sbatch, or uncomment below)
+# export PROFILE_MODE="both"
+
 # =============================================================================
 # Job Execution
 # =============================================================================

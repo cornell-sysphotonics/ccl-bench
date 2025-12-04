@@ -22,6 +22,10 @@ save_traces_folder = "profile_trace"
 profile_freq = 1  # TorchTitan internal profiler frequency (set to 1 for denser traces)
 # Note: NSys profiling is controlled externally via `nsys profile ...`
 
+# Optional: Enable memory snapshots for memory allocation/fragmentation analysis
+# enable_memory_snapshot = true
+# save_memory_snapshot_folder = "memory_snapshots"
+
 [metrics]
 log_freq = 10
 enable_tensorboard = true

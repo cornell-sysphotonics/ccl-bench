@@ -27,6 +27,10 @@ WORKLOAD_NAME="llama3_8b_pp"
 CONFIG_FILE="${TRAIN_CONFIG_DIR}/llama3_8b_pp.toml"
 NSYS_PREFIX="llama3_8b_pp"
 
+# Profiling Mode: "both" (default), "nsys" (Nsys only), "torch" (Torch Profiler only)
+# Set via: export PROFILE_MODE=nsys  (before sbatch, or uncomment below)
+# export PROFILE_MODE="both"
+
 # =============================================================================
 # Job Execution
 # =============================================================================
