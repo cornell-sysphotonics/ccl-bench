@@ -53,7 +53,7 @@ mkdir -p "${CCL_BENCH_HOME}/logs"
 
 # Launch training with NSys profiling
 cd "${TRACE_DIR}"
-srun launch_torchtitan_with_nsys "${CONFIG_FILE}" "${NSYS_PREFIX}"
+launch_torchtitan_with_nsys "${CONFIG_FILE}" "${NSYS_PREFIX}"
 
 # Job complete
 print_job_complete

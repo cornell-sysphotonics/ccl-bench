@@ -97,6 +97,8 @@ setup_with_uv() {
 
 	success "uv version: $(uv --version)"
 
+	export UV_LINK_MODE=copy
+
 	# Create venv and install dependencies
 	cd "$PROJECT_ROOT"
 
@@ -106,7 +108,8 @@ setup_with_uv() {
 	# shellcheck disable=SC1091
 	source "$VENV_DIR/bin/activate"
 
-	uv sync
+	# Use --active to sync to the activated venv (not the default .venv)
+	uv sync --active
 
 	success "Environment setup complete via uv."
 }

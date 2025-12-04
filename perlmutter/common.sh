@@ -20,9 +20,13 @@ export NERSC_ALLOCATION="m4999"
 # =============================================================================
 
 # Auto-detect paths based on script location
-if [[ -n ${SLURM_SUBMIT_DIR:-}   ]]; then
-	# Running under Slurm
-	SCRIPT_DIR="${SLURM_SUBMIT_DIR}/perlmutter"
+if [[ -n ${SLURM_SUBMIT_DIR:-} ]]; then
+	# Running under Slurm - check if submitted from perlmutter/ or project root
+	if [[ -f "${SLURM_SUBMIT_DIR}/common.sh" ]]; then
+		SCRIPT_DIR="${SLURM_SUBMIT_DIR}"
+	else
+		SCRIPT_DIR="${SLURM_SUBMIT_DIR}/perlmutter"
+	fi
 else
 	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
