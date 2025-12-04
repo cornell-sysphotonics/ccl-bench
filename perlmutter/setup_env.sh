@@ -182,33 +182,6 @@ else
 fi
 
 # =============================================================================
-# TorchTitan Setup
-# =============================================================================
-
-info "Setting up TorchTitan..."
-
-if [[ -d $TORCHTITAN_DIR ]]; then
-	info "TorchTitan directory exists, updating..."
-	cd "$TORCHTITAN_DIR"
-	git pull origin main 2> /dev/null || warn "Could not update TorchTitan"
-else
-	info "Cloning TorchTitan..."
-	git clone https://github.com/pytorch/torchtitan.git "$TORCHTITAN_DIR"
-fi
-
-# Install TorchTitan in the environment
-source "$VENV_DIR/bin/activate"
-cd "$TORCHTITAN_DIR"
-
-info "Installing TorchTitan dependencies..."
-pip install -r requirements.txt 2> /dev/null || warn "Some TorchTitan deps may have failed"
-
-# Install TorchTitan itself
-pip install -e . 2> /dev/null || warn "TorchTitan editable install may have failed"
-
-success "TorchTitan setup complete at: ${TORCHTITAN_DIR}"
-
-# =============================================================================
 # Model Weights Download (Optional)
 # =============================================================================
 
