@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# DeepSeek-V2-Lite DP+TP (DP=2, FSDP=2, TP=2) - 2 Nodes, 8 GPUs
+# DeepSeek-V2-Lite DP+TP (DP=2, FSDP=2, TP=2) - 1 Node, 4 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
 #SBATCH -q regular
 #SBATCH -J deepseek_dp_tp
-#SBATCH --nodes=2
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=128

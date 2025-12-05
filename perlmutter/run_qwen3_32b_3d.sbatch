@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# Qwen3-32B Full 3D Parallelism (DP=2, TP=4, PP=2) - 4 Nodes, 16 GPUs
+# Qwen3-32B Full 3D Parallelism (DP=2, TP=2, PP=2) - 2 Nodes, 8 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
 #SBATCH -q regular
 #SBATCH -J qwen3_32b_3d
-#SBATCH --nodes=4
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=128
