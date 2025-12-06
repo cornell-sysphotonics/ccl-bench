@@ -33,12 +33,12 @@ workload:
       total_count: 16
       count_per_node: 4
     driver_version: cuda_12.4
-  
+
 Model-executor:
-  framework: 
+  framework:
     name: torchtitan
     compiler_tool_selection: plain_pytorch
-  model_plan_parallelization: 
+  model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 2
     tp: 4
@@ -51,7 +51,7 @@ Model-executor:
   protocol_selection:
     - rocev2
     - p2p
-  
+
 
 
 metric_source:

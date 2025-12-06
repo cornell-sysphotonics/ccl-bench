@@ -31,9 +31,9 @@ workload:
       total_count: 16  # Total number of processing units, e.g., 8, 16.
       count_per_node: 4  # Number of processing units per node, e.g., 4, 8.
     driver_version: cuda_12.4  # Driver version, e.g., "cuda_12.4", "rocm_5.6".
-  
+
 Model-executor:
-  framework: 
+  framework:
     name: torchtitan  # Framework name, e.g., "torchtitan", "deepspeed".
     compiler_tool_selection: plain_pytorch  # Compiler tool, e.g., "plain_pytorch", "triton".
   model_plan_parallelization:

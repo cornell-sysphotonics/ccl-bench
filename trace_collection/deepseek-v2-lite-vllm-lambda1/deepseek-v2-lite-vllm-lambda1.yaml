@@ -22,7 +22,7 @@ workload:
     dataset: random
   hardware:
     network_topo:
-      topology: 
+      topology:
       bandwidth_gbps:
         - 200
         - 2000
@@ -34,9 +34,9 @@ workload:
     driver_version: cuda_12.9
 
 Model-executor:
-  framework: 
+  framework:
     name: vllm
-    compiler_tool_selection: 
+    compiler_tool_selection:
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 2

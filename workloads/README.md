@@ -16,4 +16,3 @@ Mistral-7B: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2
 ## List of datasets
 1. c4: https://huggingface.co/datasets/allenai/c4
 2. wikitext: https://huggingface.co/datasets/Salesforce/wikitext
-
