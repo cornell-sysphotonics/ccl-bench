@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TOOLS_DIR="$PROJECT_ROOT/tools"
-TRACE_DIR="$PROJECT_ROOT/trace_collection/qwen-32b-torchtitan-perlmutter-16"
+TRACE_DIR="$PROJECT_ROOT/trace_collection/qwen3-32b-torchtitan-3d-perlmutter-16"
 OUTPUT_CSV="$PROJECT_ROOT/metrics_qwen.csv"
 
 # Available metrics

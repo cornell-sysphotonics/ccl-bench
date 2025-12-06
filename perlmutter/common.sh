@@ -13,7 +13,7 @@
 # =============================================================================
 
 # Your NERSC allocation (REQUIRED - get this from `sacctmgr show assoc user=$USER`)
-export NERSC_ALLOCATION="m4999"
+export NERSC_ALLOCATION="${NERSC_ALLOCATION:-m4999}"
 
 # =============================================================================
 # PATH CONFIGURATION
@@ -33,33 +33,70 @@ fi
 
 CCL_BENCH_HOME="$(cd "$SCRIPT_DIR/.." && pwd)"
 export CCL_BENCH_HOME
-export VENV_DIR="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-venv"
+export VENV_DIR="${VENV_DIR:-${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-venv}"
 
 # Trace output directory base
 # Use $SCRATCH for traces to avoid filling home/project directories
 # Nsys .qdrep/.nsys-rep files and Torch profiler traces can be large
-export TRACE_BASE="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-traces"
+export TRACE_BASE="${TRACE_BASE:-${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-traces}"
 
-# Train config directory
-export TRAIN_CONFIG_DIR="${CCL_BENCH_HOME}/train_configs"
+# Train config directory - now inside trace_collection folders
+export TRACE_COLLECTION_DIR="${CCL_BENCH_HOME}/trace_collection"
 
 # HuggingFace model assets directory (where downloaded models are stored)
-export HF_ASSETS_ROOT="${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-assets/models"
+export HF_ASSETS_ROOT="${HF_ASSETS_ROOT:-${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-assets/models}"
+
+# =============================================================================
+# WORKLOAD CONFIGURATION
+# =============================================================================
+
+# Map workload names to their folder names in trace_collection
+declare -A WORKLOAD_FOLDERS=(
+	["llama3_8b_pp"]="llama3.1-8b-torchtitan-pp-perlmutter-16"
+	["llama3_8b_tp"]="llama3.1-8b-torchtitan-tp-perlmutter-16"
+	["deepseek_v2_lite_dp_pp"]="deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16"
+	["deepseek_v2_lite_dp_tp"]="deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16"
+	["qwen3_32b_3d"]="qwen3-32b-torchtitan-3d-perlmutter-16"
+	["qwen3_32b_dp_pp"]="qwen3-32b-torchtitan-dp+pp-perlmutter-16"
+	["qwen3_32b_dp_tp"]="qwen3-32b-torchtitan-dp+tp-perlmutter-16"
+)
+
+# Get the workload folder name for a given workload
+# Usage: get_workload_folder <workload_name>
+get_workload_folder() {
+	local workload_name="$1"
+	local folder="${WORKLOAD_FOLDERS[$workload_name]:-}"
+
+	if [[ -z "$folder" ]]; then
+		echo "ERROR: Unknown workload: $workload_name" >&2
+		echo "Available workloads: ${!WORKLOAD_FOLDERS[*]}" >&2
+		return 1
+	fi
+
+	echo "$folder"
+}
+
+# Get the config file path for a given workload
+# Usage: get_config_file <workload_name>
+get_config_file() {
+	local workload_name="$1"
+	local folder
+	folder=$(get_workload_folder "$workload_name") || return 1
+	echo "${TRACE_COLLECTION_DIR}/${folder}/train_config.toml"
+}
 
 # =============================================================================
 # MODEL PATH RESOLUTION
 # =============================================================================
 
-# Get the HF assets path for a model based on config file name
-# This maps config files to the correct model directory
-# Usage: get_model_hf_path <config_file>
+# Get the HF assets path for a model based on workload name
+# This maps workload names to the correct model directory
+# Usage: get_model_hf_path <workload_name>
 get_model_hf_path() {
-	local config_file="$1"
-	local config_name
-	config_name=$(basename "$config_file" .toml)
+	local workload_name="$1"
 
-	# Map config names to model directories
-	case "$config_name" in
+	# Map workload names to model directories
+	case "$workload_name" in
 		llama3_8b_*)
 			echo "${HF_ASSETS_ROOT}/Llama-3.1-8B"
 			;;
@@ -70,8 +107,8 @@ get_model_hf_path() {
 			echo "${HF_ASSETS_ROOT}/Qwen3-32B"
 			;;
 		*)
-			# Fallback: try to extract from config file
-			echo "ERROR: Unknown model config: $config_name" >&2
+			# Fallback: try to extract from workload name
+			echo "ERROR: Unknown model in workload: $workload_name" >&2
 			echo "Please add a mapping in common.sh get_model_hf_path()" >&2
 			return 1
 			;;
@@ -109,10 +146,10 @@ setup_runtime_paths() {
 	export PYTHONPATH="${CCL_BENCH_HOME}:${PYTHONPATH:-}"
 
 	# Set cache directories on SCRATCH for better performance
-	export HF_HOME="${SCRATCH:-$HOME}/cache/huggingface"
-	export XDG_CACHE_HOME="${SCRATCH:-$HOME}/.cache"
-	export TORCH_EXTENSIONS_DIR="${SCRATCH:-$HOME}/.torch_extensions"
-	export CUDA_CACHE_PATH="${SCRATCH:-$HOME}/.nv/ComputeCache"
+	export HF_HOME="${HF_HOME:-${SCRATCH:-$HOME}/cache/huggingface}"
+	export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${SCRATCH:-$HOME}/.cache}"
+	export TORCH_EXTENSIONS_DIR="${TORCH_EXTENSIONS_DIR:-${SCRATCH:-$HOME}/.torch_extensions}"
+	export CUDA_CACHE_PATH="${CUDA_CACHE_PATH:-${SCRATCH:-$HOME}/.nv/ComputeCache}"
 	mkdir -p "$HF_HOME" "$XDG_CACHE_HOME" "$TORCH_EXTENSIONS_DIR" "$CUDA_CACHE_PATH"
 }
 
@@ -133,8 +170,8 @@ setup_distributed() {
 	export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
 
 	# NCCL configuration for Perlmutter Slingshot network
-	export NCCL_NET_GDR_LEVEL=PHB
-	export NCCL_IB_QPS_PER_CONNECTION=4
+	export NCCL_NET_GDR_LEVEL="${NCCL_NET_GDR_LEVEL:-PHB}"
+	export NCCL_IB_QPS_PER_CONNECTION="${NCCL_IB_QPS_PER_CONNECTION:-4}"
 
 	# Enable NCCL debug output (set to WARN or INFO for debugging)
 	export NCCL_DEBUG="${NCCL_DEBUG:-WARN}"
@@ -170,8 +207,10 @@ export PROFILE_MODE="${PROFILE_MODE:-both}"
 
 setup_trace_dir() {
 	local workload_name="$1"
+	local workload_folder
+	workload_folder=$(get_workload_folder "$workload_name") || exit 1
 
-	export TRACE_DIR="${TRACE_BASE}/${workload_name}"
+	export TRACE_DIR="${TRACE_BASE}/${workload_folder}"
 	mkdir -p "${TRACE_DIR}"
 
 	echo "Trace output directory: ${TRACE_DIR}"
@@ -241,8 +280,7 @@ verify_config() {
 
 	if [[ ! -f ${config_file} ]]; then
 		echo "ERROR: Config file not found: ${config_file}"
-		echo "Available configs in ${TRAIN_CONFIG_DIR}:"
-		ls -1 "${TRAIN_CONFIG_DIR}"/*.toml 2> /dev/null || echo "  (none found)"
+		echo "Check that the workload folder exists in ${TRACE_COLLECTION_DIR}"
 		exit 1
 	fi
 
@@ -276,21 +314,24 @@ nsys_profile() {
 # =============================================================================
 
 # Launch distributed training with torchrun
-# Usage: launch_torchtitan <config_file> [extra_args...]
+# Usage: launch_torchtitan <workload_name> [extra_args...]
 # Respects PROFILE_MODE for Torch Profiler control
 launch_torchtitan() {
-	local config_file="$1"
+	local workload_name="$1"
 	shift
 	local extra_args=("$@")
+
+	local config_file
+	config_file=$(get_config_file "$workload_name") || exit 1
 
 	if [[ ! -f ${config_file} ]]; then
 		echo "ERROR: Config file not found: ${config_file}"
 		exit 1
 	fi
 
-	# Get the correct model path for this config
+	# Get the correct model path for this workload
 	local model_path
-	model_path=$(get_model_hf_path "${config_file}")
+	model_path=$(get_model_hf_path "${workload_name}")
 	if [[ $? -ne 0 ]]; then
 		exit 1
 	fi
@@ -322,20 +363,23 @@ launch_torchtitan() {
 }
 
 # Launch with NSys profiling
-# Usage: launch_torchtitan_with_nsys <config_file> <nsys_output_prefix>
+# Usage: launch_torchtitan_with_nsys <workload_name> <nsys_output_prefix>
 # Respects PROFILE_MODE: "both" wraps with nsys, "torch" skips nsys
 launch_torchtitan_with_nsys() {
-	local config_file="$1"
+	local workload_name="$1"
 	local nsys_prefix="$2"
+
+	local config_file
+	config_file=$(get_config_file "$workload_name") || exit 1
 
 	if [[ ! -f ${config_file} ]]; then
 		echo "ERROR: Config file not found: ${config_file}"
 		exit 1
 	fi
 
-	# Get the correct model path for this config
+	# Get the correct model path for this workload
 	local model_path
-	model_path=$(get_model_hf_path "${config_file}")
+	model_path=$(get_model_hf_path "${workload_name}")
 	if [[ $? -ne 0 ]]; then
 		exit 1
 	fi
@@ -414,7 +458,8 @@ launch_torchtitan_with_nsys() {
 
 print_job_summary() {
 	local workload_name="$1"
-	local config_file="$2"
+	local config_file
+	config_file=$(get_config_file "$workload_name") || exit 1
 
 	echo ""
 	echo "============================================================================="

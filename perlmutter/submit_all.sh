@@ -9,6 +9,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
 # =============================================================================
@@ -16,21 +17,21 @@ source "${SCRIPT_DIR}/common.sh"
 # =============================================================================
 
 # Check allocation is set
-if [[ ${NERSC_ALLOCATION} == "CHANGE_ME"   ]]; then
+if [[ ${NERSC_ALLOCATION} == "CHANGE_ME" ]]; then
 	echo "ERROR: Please set NERSC_ALLOCATION in common.sh"
 	echo '  Get your allocation with: sacctmgr show assoc user=$USER'
 	exit 1
 fi
 
-# Job scripts to submit
-WORKLOADS=(
-	"run_llama3_8b_tp.sbatch"
-	"run_llama3_8b_pp.sbatch"
-	"run_deepseek_v2_lite_dp_tp.sbatch"
-	"run_deepseek_v2_lite_dp_pp.sbatch"
-	"run_qwen3_32b_3d.sbatch"
-	"run_qwen3_32b_dp_tp.sbatch"
-	"run_qwen3_32b_dp_pp.sbatch"
+# Workload folders (in trace_collection/)
+WORKLOAD_FOLDERS=(
+	"llama3.1-8b-torchtitan-tp-perlmutter-16"
+	"llama3.1-8b-torchtitan-pp-perlmutter-16"
+	"deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16"
+	"deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16"
+	"qwen3-32b-torchtitan-3d-perlmutter-16"
+	"qwen3-32b-torchtitan-dp+tp-perlmutter-16"
+	"qwen3-32b-torchtitan-dp+pp-perlmutter-16"
 )
 
 # =============================================================================
@@ -41,7 +42,7 @@ echo "==========================================================================
 echo "CCL-Bench Job Submission"
 echo "============================================================================="
 echo "Allocation: ${NERSC_ALLOCATION}"
-echo "Workloads:  ${#WORKLOADS[@]} jobs"
+echo "Workloads:  ${#WORKLOAD_FOLDERS[@]} jobs"
 echo ""
 
 # Create logs directory
@@ -49,17 +50,17 @@ mkdir -p "${CCL_BENCH_HOME}/logs"
 
 # Submit each workload
 submitted_jobs=()
-for workload in "${WORKLOADS[@]}"; do
-	script_path="${SCRIPT_DIR}/${workload}"
+for workload_folder in "${WORKLOAD_FOLDERS[@]}"; do
+	script_path="${PROJECT_ROOT}/trace_collection/${workload_folder}/run.sbatch"
 
 	if [[ ! -f ${script_path} ]]; then
 		echo "WARNING: Script not found: ${script_path}"
 		continue
 	fi
 
-	echo "Submitting: ${workload}..."
+	echo "Submitting: ${workload_folder}..."
 	job_id=$(sbatch --parsable -A "${NERSC_ALLOCATION}" "${script_path}")
-	submitted_jobs+=("${job_id}:${workload}")
+	submitted_jobs+=("${job_id}:${workload_folder}")
 	echo "  Job ID: ${job_id}"
 done
 
@@ -68,8 +69,8 @@ echo "==========================================================================
 echo "Submitted Jobs:"
 echo "============================================================================="
 for job_info in "${submitted_jobs[@]}"; do
-	IFS=':' read -r job_id workload <<< "${job_info}"
-	echo "  ${job_id}: ${workload}"
+	IFS=':' read -r job_id workload_folder <<< "${job_info}"
+	echo "  ${job_id}: ${workload_folder}"
 done
 
 echo ""

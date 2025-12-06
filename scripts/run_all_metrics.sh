@@ -11,9 +11,13 @@ OUTPUT_CSV="$PROJECT_ROOT/metrics_all_workloads.csv"
 
 # Workloads to process
 WORKLOADS=(
-	"llama-3.1-8b-torchtitan-perlmutter-16"
-	"deepseek-v2-lite-torchtitan-perlmutter-16"
-	"qwen-32b-torchtitan-perlmutter-16"
+	"llama3.1-8b-torchtitan-pp-perlmutter-16"
+	"llama3.1-8b-torchtitan-tp-perlmutter-16"
+	"deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16"
+	"deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16"
+	"qwen3-32b-torchtitan-3d-perlmutter-16"
+	"qwen3-32b-torchtitan-dp+pp-perlmutter-16"
+	"qwen3-32b-torchtitan-dp+tp-perlmutter-16"
 )
 
 # Available metrics

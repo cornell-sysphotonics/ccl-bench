@@ -1,23 +1,33 @@
 # Perlmutter Slurm Scripts
 
-This directory contains Slurm batch scripts for running TorchTitan training jobs on NERSC Perlmutter with trace collection for CCL-Bench.
+This directory contains shared configuration and utility scripts for running TorchTitan training jobs on NERSC Perlmutter with trace collection for CCL-Bench.
 
 ## Directory Structure
 
 ```
 perlmutter/
-├── README.md                           # This file
-├── setup_env.sh                        # Environment setup script (run once)
-├── activate.sh                         # Environment activation (created by setup)
-├── common.sh                           # Shared configuration and functions
-├── submit_all.sh                       # Submit all workloads at once
-├── run_llama3_8b_tp.sbatch            # LLaMA-3.1-8B with Tensor Parallelism
-├── run_llama3_8b_pp.sbatch            # LLaMA-3.1-8B with Pipeline Parallelism
-├── run_deepseek_v2_lite_dp_tp.sbatch  # DeepSeek-V2-Lite with DP+TP
-├── run_deepseek_v2_lite_dp_pp.sbatch  # DeepSeek-V2-Lite with DP+PP
-├── run_qwen3_32b_3d.sbatch            # Qwen3-32B with 3D parallelism
-├── run_qwen3_32b_dp_tp.sbatch         # Qwen3-32B with DP+TP
-└── run_qwen3_32b_dp_pp.sbatch         # Qwen3-32B with DP+PP
+├── README.md           # This file
+├── setup_env.sh        # Environment setup script (run once)
+├── activate.sh         # Environment activation (source this)
+├── common.sh           # Shared configuration and functions
+└── submit_all.sh       # Submit all workloads at once
+```
+
+Each workload's execution scripts are now located in their respective folders under `trace_collection/`:
+
+```
+trace_collection/
+├── llama3.1-8b-torchtitan-tp-perlmutter-16/
+│   ├── run.sh              # Simple wrapper to submit job
+│   ├── run.sbatch          # SLURM batch script
+│   ├── train_config.toml   # TorchTitan configuration
+│   ├── workload_card.yaml  # Workload metadata
+│   └── pyproject.toml      # uv workspace member
+├── llama3.1-8b-torchtitan-pp-perlmutter-16/
+│   └── ... (same structure)
+├── deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16/
+│   └── ...
+└── ... (other workloads)
 ```
 
 ## Prerequisites
@@ -61,13 +71,14 @@ sacctmgr show assoc user=$USER
 ### 3. Submit a Job
 
 ```bash
-# Single node job (LLaMA-8B with TP)
-sbatch perlmutter/run_llama3_8b_tp.sbatch
+# Option 1: Use run.sh from the workload folder
+cd trace_collection/llama3.1-8b-torchtitan-tp-perlmutter-16
+./run.sh
 
-# Multi-node job (Qwen-32B 3D parallelism)
-sbatch perlmutter/run_qwen3_32b_3d.sbatch
+# Option 2: Submit directly using sbatch
+sbatch trace_collection/llama3.1-8b-torchtitan-tp-perlmutter-16/run.sbatch
 
-# Submit all workloads
+# Option 3: Submit all workloads at once
 ./perlmutter/submit_all.sh
 ```
 
@@ -81,7 +92,7 @@ squeue -u $USER
 
 After job completion, traces will be organized in:
 ```
-trace_collection/<workload_name>/
+$SCRATCH/ccl-bench-traces/<workload_folder>/
 ├── <workload>_<timestamp>.nsys-rep    # NSight Systems trace
 ├── profile_trace/                      # TorchTitan profiler output
 │   ├── *rank0*.json                   # Kineto trace (rank 0)
@@ -91,17 +102,19 @@ trace_collection/<workload_name>/
 └── *.log                              # Training logs
 ```
 
-## Workload Configuration Summary
+## Workload Configuration
 
-| Config | Model | Parallelism | GPUs | Nodes |
-|--------|-------|-------------|------|-------|
-| `llama3_8b_tp` | LLaMA-3.1-8B | TP=4 | 4 | 1 |
-| `llama3_8b_pp` | LLaMA-3.1-8B | PP=4 | 4 | 1 |
-| `deepseek_v2_lite_dp_tp` | DeepSeek-V2-Lite | DP=2, FSDP=2, TP=2 | 8 | 2 |
-| `deepseek_v2_lite_dp_pp` | DeepSeek-V2-Lite | DP=2, FSDP=2, PP=2 | 8 | 2 |
-| `qwen3_32b_3d` | Qwen3-32B | DP=2, TP=4, PP=2 | 16 | 4 |
-| `qwen3_32b_dp_tp` | Qwen3-32B | DP=4, TP=2 | 8 | 2 |
-| `qwen3_32b_dp_pp` | Qwen3-32B | DP=4, PP=2 | 8 | 2 |
+Training configurations are stored in `trace_collection/<workload_folder>/train_config.toml`.
+
+| Workload Folder | Model | Parallelism | GPUs | Nodes |
+|-----------------|-------|-------------|------|-------|
+| `llama3.1-8b-torchtitan-tp-perlmutter-16` | LLaMA-3.1-8B | TP=4 | 4 | 1 |
+| `llama3.1-8b-torchtitan-pp-perlmutter-16` | LLaMA-3.1-8B | PP=4 | 4 | 1 |
+| `deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16` | DeepSeek-V2-Lite | DP=2, TP=2 | 4 | 1 |
+| `deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16` | DeepSeek-V2-Lite | DP=2, PP=2 | 4 | 1 |
+| `qwen3-32b-torchtitan-3d-perlmutter-16` | Qwen3-32B | DP=2, TP=2, PP=2 | 8 | 2 |
+| `qwen3-32b-torchtitan-dp+tp-perlmutter-16` | Qwen3-32B | DP=2, TP=2 | 4 | 1 |
+| `qwen3-32b-torchtitan-dp+pp-perlmutter-16` | Qwen3-32B | DP=2, PP=2 | 4 | 1 |
 
 ## Trace Collection Details
 
@@ -131,10 +144,10 @@ After collecting traces, use the CCL-Bench metric tools:
 source perlmutter/activate.sh
 
 # Count NCCL collective calls
-ccl-metrics --trace trace_collection/llama3_8b_tp --metric coll_call_num
+ccl-metrics --trace $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16 --metric coll_call_num
 
 # Measure throughput
-ccl-metrics --trace trace_collection/llama3_8b_tp --metric throughput_tokens
+ccl-metrics --trace $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16 --metric throughput_tokens
 
 # Available metrics:
 #   coll_call_num       - Count of NCCL collective operations
@@ -150,18 +163,18 @@ ccl-metrics --trace trace_collection/llama3_8b_tp --metric throughput_tokens
 
 ```bash
 # Generate summary report
-nsys stats trace_collection/llama3_8b_tp/llama3_8b_tp_*.nsys-rep
+nsys stats $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16/*.nsys-rep
 
 # Export GPU kernel summary to JSON
 nsys stats --report gpu-kern-summary --format json \
-    trace_collection/llama3_8b_tp/llama3_8b_tp_*.nsys-rep > gpu_stats.json
+    $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16/*.nsys-rep > gpu_stats.json
 ```
 
 ## Test Run (Recommended First Step)
 
 Before running full workloads, do a quick validation:
 
-1. Edit `train_configs/llama3_8b_tp.toml` and set:
+1. Edit `trace_collection/llama3.1-8b-torchtitan-tp-perlmutter-16/train_config.toml` and set:
    ```toml
    [training]
    steps = 20  # Quick test
@@ -171,8 +184,8 @@ Before running full workloads, do a quick validation:
    ```bash
    sbatch perlmutter/run_llama3_8b_tp.sbatch
    # Wait for completion...
-   ls trace_collection/llama3_8b_tp/
-   ls trace_collection/llama3_8b_tp/profile_trace/
+   ls $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16/
+   ls $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16/profile_trace/
    ```
 
 3. You should see:
@@ -184,7 +197,7 @@ Before running full workloads, do a quick validation:
 ### Job fails immediately
 - Check allocation: `sacctmgr show assoc user=$USER`
 - Verify GPU availability: `sinfo -p gpu`
-- Check `NERSC_ALLOCATION` in `common.sh` is not `CHANGE_ME`
+- Check `NERSC_ALLOCATION` in `common.sh` or set it via environment variable
 
 ### NCCL errors
 - Add `export NCCL_DEBUG=INFO` to the sbatch script for details
@@ -200,6 +213,6 @@ Before running full workloads, do a quick validation:
 - Check job stderr for profiler errors
 
 ### Metric tools can't find traces
-- Traces should be in `trace_collection/<workload>/profile_trace/`
+- Traces should be in `$SCRATCH/ccl-bench-traces/<workload_folder>/profile_trace/`
 - A symlink `kineto_trace_0.json` is created automatically
 - If missing, manually find and link: `ln -s profile_trace/*rank0*.json kineto_trace_0.json`

@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TOOLS_DIR="$PROJECT_ROOT/tools"
-TRACE_DIR="$PROJECT_ROOT/trace_collection/deepseek-v2-lite-torchtitan-perlmutter-16"
+TRACE_DIR="$PROJECT_ROOT/trace_collection/deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16"
 OUTPUT_CSV="$PROJECT_ROOT/metrics_deepseek.csv"
 
 # Available metrics
