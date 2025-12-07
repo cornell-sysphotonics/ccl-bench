@@ -44,35 +44,9 @@ Naming of the metrics and tools for the metrics:
 ## Layout
 ```
 ├── README.md
-├── pyproject.toml                     # Root project config with uv workspace
 ├── requirements.txt
-├── workload_card_template.yaml        # Metadata template
-├── perlmutter/                        # NERSC Perlmutter shared scripts
-│   ├── common.sh                      # Shared configuration and functions
-│   ├── setup_env.sh                   # Environment setup script
-│   ├── activate.sh                    # Environment activation
-│   └── submit_all.sh                  # Submit all workloads
-├── scripts/                           # Scripts to execute metric tools
-├── tools/                             # main.py and metric calculation plugins
-└── trace_collection/                  # Workload configs, scripts, and metadata
-    ├── <model>-<framework+parallelism>-<platform>-<group>/
-    │   ├── run.sh                     # Simple wrapper to submit job
-    │   ├── run.sbatch                 # SLURM batch script
-    │   ├── train_config.toml          # TorchTitan training config
-    │   ├── workload_card.yaml         # Workload metadata
-    │   ├── pyproject.toml             # uv workspace member
-    │   └── README.md                  # Workload documentation
-    └── ...
+├── workload_card_template.yaml # metadata template, should be located in trace_collection/<workload> folder
+├── scripts  # scripts to execute tools for different metrics
+├── tools   # main.py, and various plug-ins for different metrics
+└── trace_collection # place to store temparary traces locally, which are downloaded from Google Drive.
 ```
-
-## Group 16 Workloads (TorchTitan on Perlmutter)
-
-| Workload | Model | Parallelism |
-|----------|-------|-------------|
-| `llama3.1-8b-torchtitan-pp-perlmutter-16` | LLaMA-3.1-8B | PP=4 |
-| `llama3.1-8b-torchtitan-tp-perlmutter-16` | LLaMA-3.1-8B | TP=4 |
-| `deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16` | DeepSeek-V2-Lite | DP=2, PP=2 |
-| `deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16` | DeepSeek-V2-Lite | DP=2, TP=2 |
-| `qwen3-32b-torchtitan-3d-perlmutter-16` | Qwen3-32B | DP=2, TP=2, PP=2 |
-| `qwen3-32b-torchtitan-dp+pp-perlmutter-16` | Qwen3-32B | DP=2, PP=2 |
-| `qwen3-32b-torchtitan-dp+tp-perlmutter-16` | Qwen3-32B | DP=2, TP=2 |
