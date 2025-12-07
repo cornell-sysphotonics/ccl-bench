@@ -1,31 +1,4 @@
-"""CCL-Bench Metrics Tool.
-
-Usage:
-    python -m tools.main --trace <trace_directory> --metric <metric_name>
-    ccl-metrics --trace <trace_directory> --metric <metric_name>
-
-Available metrics:
-    - coll_call_num: Number of NCCL communication calls (summed across all ranks)
-    - throughput_tokens: Training throughput in tokens/sec
-    - iter_time: Average iteration wall-clock time (ms)
-    - comm_comp_overlap: Communication/computation overlap ratio
-    - pipeline_bubble: Pipeline bubble ratio
-    - traffic_distribution: Traffic distribution by parallelism type (returns dict)
-    - straggler_lag: Straggler lag metric (normalized)
-
-Examples:
-    # Calculate communication call count
-    ccl-metrics --trace ./traces/llama3_8b_tp --metric coll_call_num
-
-    # Get traffic distribution as JSON
-    ccl-metrics --trace ./traces/qwen3_32b_3d --metric traffic_distribution --output-json
-
-    # Specify profile mode (torch or nsys)
-    ccl-metrics --trace ./traces/llama3_8b --metric iter_time --profile-mode torch
-
-    # List all available metrics
-    ccl-metrics --list-metrics
-"""
+"""CCL-Bench Metrics Tool."""
 
 from __future__ import annotations
 
@@ -47,27 +20,33 @@ MetricFunction = Callable[..., MetricResult]
 PROFILE_MODES = ("torch", "nsys", "auto")
 
 
-# Mapping from metric name -> module path (relative to tools package)
+# =============================================================================
+# Metric Registry
+# =============================================================================
+# Metric names follow the convention: <metric_name>_<group_number>
 # Each module must export a `metric_cal(directory: str)` function
+# Folder structure: tools/<metric_name>_<group>/metric.py
+
 _METRIC_MODULES: dict[str, str] = {
-    "coll_call_num": "coll_call_num.coll_call_num",
-    "comm_comp_overlap": "comm_comp_overlap.comm_comp_overlap",
-    "iter_time": "iter_time.iter_time",
-    "pipeline_bubble": "pipeline_bubble.pipeline_bubble",
-    "straggler_lag": "straggler_lag.straggler_lag",
-    "throughput_tokens": "throughput_tokens.throughput_tokens",
-    "traffic_distribution": "traffic_distribution.traffic_distribution",
+    # Default metrics
+    "coll_call_num": "tools.coll_call_num.coll_call_num",
+    # Group 16 metrics
+    "coll_call_num_16": "tools.coll_call_num_16.metric",
+    "comm_comp_overlap_16": "tools.comm_comp_overlap_16.metric",
+    "iter_time_16": "tools.iter_time_16.metric",
+    "pipeline_bubble_16": "tools.pipeline_bubble_16.metric",
+    "straggler_lag_16": "tools.straggler_lag_16.metric",
+    "throughput_tokens_16": "tools.throughput_tokens_16.metric",
+    "traffic_distribution_16": "tools.traffic_distribution_16.metric",
 }
 
-# Sorted list for CLI display
-AVAILABLE_METRICS = sorted(_METRIC_MODULES.keys())
+METRICS = sorted(_METRIC_MODULES.keys())
 
 
 def get_metric_function(metric_name: str) -> MetricFunction:
     """Get the metric calculation function for a given metric name.
 
-    Uses dynamic import to load the appropriate module on demand,
-    reducing startup time and memory usage.
+    Uses dynamic import to load the appropriate module on demand.
 
     Args:
         metric_name: Name of the metric to calculate.
@@ -81,8 +60,7 @@ def get_metric_function(metric_name: str) -> MetricFunction:
     """
     if metric_name not in _METRIC_MODULES:
         raise ValueError(
-            f"Unsupported metric: '{metric_name}'\n"
-            f"Available metrics: {', '.join(AVAILABLE_METRICS)}"
+            f"Unsupported metric: '{metric_name}'\nAvailable metrics: {', '.join(METRICS)}"
         )
 
     module_path = _METRIC_MODULES[metric_name]
@@ -103,7 +81,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="CCL-Bench Metrics Tool - Calculate metrics from trace data.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Available metrics:\n  " + "\n  ".join(AVAILABLE_METRICS),
+        epilog="Available metrics:\n  " + "\n  ".join(METRICS),
     )
     parser.add_argument(
         "--trace",
@@ -113,7 +91,7 @@ def main() -> None:
     parser.add_argument(
         "--metric",
         type=str,
-        choices=AVAILABLE_METRICS,
+        choices=METRICS,
         help="Name of the metric to calculate",
     )
     parser.add_argument(
@@ -139,7 +117,7 @@ def main() -> None:
     # Handle list-metrics flag first
     if args.list_metrics:
         print("Available metrics:")
-        for metric in AVAILABLE_METRICS:
+        for metric in METRICS:
             print(f"  - {metric}")
         sys.exit(0)
 

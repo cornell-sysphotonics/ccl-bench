@@ -233,6 +233,8 @@ setup_trace_dir() {
 copy_kineto_traces() {
 	local trace_dir="${TRACE_DIR}"
 	local profile_trace_dir="${trace_dir}/profile_trace"
+	local kineto_found=false
+	local torch_et_found=false
 
 	echo "Organizing trace files for analysis..."
 
@@ -264,8 +266,42 @@ copy_kineto_traces() {
 			ln -sf "${rank0_trace}" "${dest}"
 			echo "  Linked: ${rank0_trace} -> kineto_trace_0.json"
 		fi
+		kineto_found=true
 	else
 		echo "  Note: No rank-0 trace found in profile_trace/"
+	fi
+
+	# Torch execution trace (torch_et_<rank>.json) for ExecutionTraceObserver
+	local torch_et_trace=""
+	for pattern in "torch_et*rank0*.json" "torch_et_0.json" "torch_et*.json" "pytorch_et*0*.json"; do
+		# shellcheck disable=SC2312
+		torch_et_trace=$(find "${trace_dir}" -maxdepth 3 -name "${pattern}" -type f 2> /dev/null | head -n 1)
+		if [[ -z ${torch_et_trace} && -d ${profile_trace_dir} ]]; then
+			# shellcheck disable=SC2312
+			torch_et_trace=$(find "${profile_trace_dir}" -maxdepth 3 -name "${pattern}" -type f 2> /dev/null | head -n 1)
+		fi
+		if [[ -n ${torch_et_trace} ]]; then
+			break
+		fi
+	done
+
+	if [[ -n ${torch_et_trace} && -f ${torch_et_trace} ]]; then
+		local dest_et="${trace_dir}/torch_et_0.json"
+		if [[ ! -e ${dest_et} ]]; then
+			ln -sf "${torch_et_trace}" "${dest_et}"
+			echo "  Linked: ${torch_et_trace} -> torch_et_0.json"
+		fi
+		torch_et_found=true
+	else
+		echo "  Note: No torch execution trace (torch_et_*.json) found; run PROFILE_MODE=torch or both to collect ExecutionTraceObserver output."
+	fi
+
+	if [[ ${PROFILE_MODE:-} == "both" ]]; then
+		if [[ ${kineto_found} == true && ${torch_et_found} == true ]]; then
+			echo "  Trace check: Kineto + torch_et traces detected (simultaneous collection)."
+		else
+			echo "  Warning: PROFILE_MODE='both' but missing kineto or torch_et traces."
+		fi
 	fi
 
 	# List all trace files for reference
@@ -501,7 +537,7 @@ print_job_complete() {
 	echo ""
 	echo "To analyze traces, run:"
 	echo "  source perlmutter/activate.sh"
-	echo "  ccl-metrics --trace ${TRACE_DIR} --metric coll_call_num"
-	echo "  ccl-metrics --trace ${TRACE_DIR} --metric throughput_tokens"
+	echo "  ccl-metrics --trace ${TRACE_DIR} --metric coll_call_num_16"
+	echo "  ccl-metrics --trace ${TRACE_DIR} --metric throughput_tokens_16"
 	echo ""
 }

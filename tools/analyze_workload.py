@@ -33,25 +33,32 @@ if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
 
-def _load_metric_module(module_name: str, submodule: str) -> Any:
-    """Dynamically load a metric module from the tools directory."""
-    module_path = TOOLS_DIR / module_name / f"{submodule}.py"
-    spec = importlib.util.spec_from_file_location(f"{module_name}.{submodule}", module_path)
+def _load_metric_module(folder_name: str) -> Any:
+    """Dynamically load a metric module from the tools directory.
+
+    Args:
+        folder_name: The folder name (e.g., "coll_call_num_16")
+
+    Returns:
+        The metric_cal function from the module.
+    """
+    module_path = TOOLS_DIR / folder_name / "metric.py"
+    spec = importlib.util.spec_from_file_location(f"{folder_name}.metric", module_path)
     if spec is None or spec.loader is None:
-        raise ImportError(f"Could not load module {module_name}.{submodule}")
+        raise ImportError(f"Could not load module from {module_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.metric_cal
 
 
 # Load metric modules dynamically
-calc_coll_call_num = _load_metric_module("coll_call_num", "coll_call_num")
-calc_comm_comp_overlap = _load_metric_module("comm_comp_overlap", "comm_comp_overlap")
-calc_iter_time = _load_metric_module("iter_time", "iter_time")
-calc_pipeline_bubble = _load_metric_module("pipeline_bubble", "pipeline_bubble")
-calc_straggler_lag = _load_metric_module("straggler_lag", "straggler_lag")
-calc_throughput_tokens = _load_metric_module("throughput_tokens", "throughput_tokens")
-calc_traffic_distribution = _load_metric_module("traffic_distribution", "traffic_distribution")
+calc_coll_call_num = _load_metric_module("coll_call_num_16")
+calc_comm_comp_overlap = _load_metric_module("comm_comp_overlap_16")
+calc_iter_time = _load_metric_module("iter_time_16")
+calc_pipeline_bubble = _load_metric_module("pipeline_bubble_16")
+calc_straggler_lag = _load_metric_module("straggler_lag_16")
+calc_throughput_tokens = _load_metric_module("throughput_tokens_16")
+calc_traffic_distribution = _load_metric_module("traffic_distribution_16")
 
 
 # Try to import plotting libraries
@@ -68,15 +75,15 @@ except ImportError:
     print("Warning: matplotlib not available. Install with: pip install matplotlib")
 
 
-# Metric registry
+# Metric registry using metric names with _16 suffix for group 16
 METRICS = {
-    "coll_call_num": calc_coll_call_num,
-    "throughput_tokens": calc_throughput_tokens,
-    "iter_time": calc_iter_time,
-    "comm_comp_overlap": calc_comm_comp_overlap,
-    "pipeline_bubble": calc_pipeline_bubble,
-    "straggler_lag": calc_straggler_lag,
-    "traffic_distribution": calc_traffic_distribution,
+    "coll_call_num_16": calc_coll_call_num,
+    "throughput_tokens_16": calc_throughput_tokens,
+    "iter_time_16": calc_iter_time,
+    "comm_comp_overlap_16": calc_comm_comp_overlap,
+    "pipeline_bubble_16": calc_pipeline_bubble,
+    "straggler_lag_16": calc_straggler_lag,
+    "traffic_distribution_16": calc_traffic_distribution,
 }
 
 

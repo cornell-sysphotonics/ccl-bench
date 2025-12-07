@@ -135,6 +135,16 @@ Each job collects three types of traces:
 - **Files**: `kineto_trace_0.json` (symlink)
 - **Purpose**: Provides consistent location for metric analysis tools
 
+### 4. PyTorch Execution Trace
+- **Files**: `torch_et_0.json` (symlink to `torch_et_<rank>.json`)
+- **Purpose**: ExecutionTraceObserver output collected alongside Kineto for tool compatibility
+- **Check**: After a run, verify both Kineto and torch_et traces exist:
+  ```bash
+  ls $SCRATCH/ccl-bench-traces/<workload>/kineto_trace_0.json
+  ls $SCRATCH/ccl-bench-traces/<workload>/torch_et_0.json
+  ```
+  If missing, rerun with `PROFILE_MODE=both` (or `torch`) to capture torch_et.
+
 ## Analyzing Traces
 
 After collecting traces, use the CCL-Bench metric tools:
@@ -144,19 +154,22 @@ After collecting traces, use the CCL-Bench metric tools:
 source perlmutter/activate.sh
 
 # Count NCCL collective calls
-ccl-metrics --trace $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16 --metric coll_call_num
+ccl-metrics --trace $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16 --metric coll_call_num_16
 
 # Measure throughput
-ccl-metrics --trace $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16 --metric throughput_tokens
+ccl-metrics --trace $SCRATCH/ccl-bench-traces/llama3.1-8b-torchtitan-tp-perlmutter-16 --metric throughput_tokens_16
 
-# Available metrics:
-#   coll_call_num       - Count of NCCL collective operations
-#   throughput_tokens   - Training throughput (tokens/sec)
-#   iter_time           - Per-iteration wall-clock time
-#   pipeline_bubble     - Pipeline parallelism bubble time
-#   comm_comp_overlap   - Communication/computation overlap ratio
-#   straggler_lag       - Slowest rank lag time
-#   traffic_distribution - Communication traffic per collective type
+# Available metrics (all use _16 suffix for group 16):
+#   coll_call_num_16       - Count of NCCL collective operations
+#   throughput_tokens_16   - Training throughput (tokens/sec)
+#   iter_time_16           - Per-iteration wall-clock time
+#   pipeline_bubble_16     - Pipeline parallelism bubble time
+#   comm_comp_overlap_16   - Communication/computation overlap ratio
+#   straggler_lag_16       - Slowest rank lag time
+#   traffic_distribution_16 - Communication traffic per collective type
+
+# List all available metrics
+ccl-metrics --list-metrics
 ```
 
 ### Extracting NSight Statistics
