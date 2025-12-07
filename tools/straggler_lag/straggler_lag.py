@@ -14,9 +14,10 @@ Grouping Strategy:
 
 from __future__ import annotations
 
+import contextlib
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 
@@ -90,7 +91,7 @@ def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     print(f"  P50 lag: {result['p50_lag_us']:.2f} us", file=sys.stderr)
     print(f"  P95 lag: {result['p95_lag_us']:.2f} us", file=sys.stderr)
     print(f"  Max lag: {result['max_lag_us']:.2f} us", file=sys.stderr)
-    if result['normalized_lag'] > 0:
+    if result["normalized_lag"] > 0:
         print(f"  Normalized lag: {result['normalized_lag']:.4f}", file=sys.stderr)
 
     return result
@@ -139,10 +140,8 @@ def _find_rank_traces(directory: str) -> dict[int, str]:
             parts = name.split("_")
             for i, part in enumerate(parts):
                 if part == "rank" and i + 1 < len(parts):
-                    try:
+                    with contextlib.suppress(ValueError):
                         rank = int(parts[i + 1])
-                    except ValueError:
-                        pass
                     break
         else:
             # Try last number in filename
@@ -199,7 +198,6 @@ def _analyze_straggler_lag(rank_traces: dict[int, str]) -> dict[str, Any]:
     lags: list[float] = []
     for k in range(min_kernel_count):
         start_times = [rank_nccl_kernels[r][k][0] for r in rank_nccl_kernels]
-        end_times = [rank_nccl_kernels[r][k][1] for r in rank_nccl_kernels]
 
         # Compute lag as max(start) - min(start) for this collective
         start_lag = max(start_times) - min(start_times)
@@ -280,24 +278,14 @@ def _extract_nccl_kernels(trace_path: str) -> tuple[list[tuple[float, float]], f
                 continue
 
             # Track max end time
-            if dur > 0:
-                max_end_time = max(max_end_time, ts + dur)
-            else:
-                max_end_time = max(max_end_time, ts)
+            max_end_time = max(max_end_time, ts + dur) if dur > 0 else max(max_end_time, ts)
 
             # Track NCCL kernels (kernel category)
-            if cat == "kernel" and "nccl" in name.lower() and dur > 0:
+            if (cat == "kernel" and "nccl" in name.lower() and dur > 0) or (
+                ((cat == "cpu_op" and dur > 0) or (cat == "user_annotation" and dur > 0))
+                and (name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES)
+            ):
                 nccl_kernels.append((ts, ts + dur))
-
-            # Track NCCL operations from cpu_op category (c10d operations)
-            elif cat == "cpu_op" and dur > 0:
-                if name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES:
-                    nccl_kernels.append((ts, ts + dur))
-
-            # Track NCCL operations from user_annotation category
-            elif cat == "user_annotation" and dur > 0:
-                if name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES:
-                    nccl_kernels.append((ts, ts + dur))
 
             # Track ProfilerStep# for iteration time
             if name.startswith("ProfilerStep#"):

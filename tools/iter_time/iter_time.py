@@ -11,8 +11,8 @@ don't require NVTX instrumentation.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 
@@ -55,15 +55,15 @@ def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     # Standard deviation
     if len(iter_times) > 1:
         variance = sum((t - avg_time) ** 2 for t in iter_times) / (len(iter_times) - 1)
-        std_time = variance ** 0.5
+        std_time = variance**0.5
     else:
         std_time = 0.0
 
     # Sanity check: warn if high variance
     if std_time > avg_time * 0.2 and len(iter_times) > 2:
-        print(f"Warning: High iteration time variance detected", file=sys.stderr)
+        print("Warning: High iteration time variance detected", file=sys.stderr)
         print(f"  Avg: {avg_time:.2f} ms, Std: {std_time:.2f} ms", file=sys.stderr)
-        print(f"  This may indicate profiling warmup or system noise", file=sys.stderr)
+        print("  This may indicate profiling warmup or system noise", file=sys.stderr)
 
     return {
         "avg_iter_time_ms": avg_time,
@@ -155,7 +155,10 @@ def _extract_iter_times_from_kineto(trace_path: Path) -> list[float]:
             profiler_steps.sort(key=lambda e: e["ts"])
             # Use duration of each ProfilerStep as iteration time
             iter_times = [e["dur"] / 1000.0 for e in profiler_steps]  # us -> ms
-            print(f"Found {len(iter_times)} ProfilerStep# events in {trace_path.name}", file=sys.stderr)
+            print(
+                f"Found {len(iter_times)} ProfilerStep# events in {trace_path.name}",
+                file=sys.stderr,
+            )
             return iter_times
 
         # Fallback: Look for step boundaries using time gaps between steps
@@ -178,7 +181,9 @@ def _extract_iter_times_from_kineto(trace_path: Path) -> list[float]:
             for i in range(len(step_starts) - 1):
                 time_diff = step_starts[i + 1][1] - step_starts[i][1]
                 iter_times.append(time_diff / 1000.0)  # us -> ms
-            print(f"Computed {len(iter_times)} iteration times from step boundaries", file=sys.stderr)
+            print(
+                f"Computed {len(iter_times)} iteration times from step boundaries", file=sys.stderr
+            )
 
     except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
         print(f"Error reading {trace_path}: {e}", file=sys.stderr)

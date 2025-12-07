@@ -10,8 +10,9 @@ Works with both Kineto (torch profiler) and nsys traces.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
+import sqlite3
+import sys
 from typing import Any
 
 import yaml
@@ -209,6 +210,37 @@ def _get_info_from_kineto(directory: str) -> dict[str, Any]:
     return {"duration_s": 0.0, "num_iterations": 0}
 
 
+def _query_nsys_sqlite(sqlite_path: Path) -> dict[str, Any] | None:
+    """Query a single NSys SQLite file for kernel timing.
+
+    Args:
+        sqlite_path: Path to the NSys SQLite file.
+
+    Returns:
+        Dictionary with timing info or None if query failed.
+    """
+    try:
+        conn = sqlite3.connect(str(sqlite_path))
+        cursor = conn.cursor()
+
+        # Query for GPU kernel timing
+        cursor.execute("""
+            SELECT MIN(start), MAX(end)
+            FROM CUPTI_ACTIVITY_KIND_KERNEL
+        """)
+        row = cursor.fetchone()
+        conn.close()
+    except Exception as e:
+        print(f"Error reading nsys sqlite {sqlite_path}: {e}", file=sys.stderr)
+        return None
+
+    if row and row[0] is not None and row[1] is not None:
+        # NSys timestamps are in nanoseconds
+        duration_s = (row[1] - row[0]) / 1e9
+        return {"duration_s": duration_s, "num_iterations": 0}
+    return None
+
+
 def _get_info_from_nsys(directory: str) -> dict[str, Any]:
     """Extract timing info from NSys trace data.
 
@@ -221,27 +253,9 @@ def _get_info_from_nsys(directory: str) -> dict[str, Any]:
     sqlite_files = list(trace_dir.glob("*.sqlite"))
 
     for sqlite_path in sqlite_files:
-        try:
-            import sqlite3
-            conn = sqlite3.connect(str(sqlite_path))
-            cursor = conn.cursor()
-
-            # Query for GPU kernel timing
-            cursor.execute("""
-                SELECT MIN(start), MAX(end)
-                FROM CUPTI_ACTIVITY_KIND_KERNEL
-            """)
-            row = cursor.fetchone()
-            conn.close()
-
-            if row and row[0] is not None and row[1] is not None:
-                # NSys timestamps are in nanoseconds
-                duration_s = (row[1] - row[0]) / 1e9
-                return {"duration_s": duration_s, "num_iterations": 0}
-
-        except Exception as e:
-            print(f"Error reading nsys sqlite {sqlite_path}: {e}", file=sys.stderr)
-            continue
+        result = _query_nsys_sqlite(sqlite_path)
+        if result is not None:
+            return result
 
     return {"duration_s": 0.0, "num_iterations": 0}
 

@@ -37,11 +37,6 @@ packages = ["tools"]
 # ============================================================================
 [tool.uv]
 managed = true
-prerelease = "allow"
-
-# Only resolve for x86_64 Linux (Perlmutter target platform)
-# This prevents resolution errors for platforms where CUDA packages don't exist
-environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
 
 # Default dependency groups to include
 default-groups = ["dev"]
@@ -365,8 +360,13 @@ docstring-code-line-length = "dynamic"
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false        # Gradual typing
-ignore_missing_imports = true        # For external libs without stubs
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_no_return = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+ignore_missing_imports = false
 exclude = ["build", "dist", ".venv"]
 
 [[tool.mypy.overrides]]

@@ -19,10 +19,9 @@ Without NVTX, classification relies on:
 
 from __future__ import annotations
 
-from collections import defaultdict
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 
@@ -116,12 +115,20 @@ def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     print(f"  TP: {tp_bytes:.2f} bytes ({fractions['tp'] * 100:.1f}%)", file=sys.stderr)
     print(f"  PP: {pp_bytes:.2f} bytes ({fractions['pp'] * 100:.1f}%)", file=sys.stderr)
     print(f"  EP: {ep_bytes:.2f} bytes ({fractions['ep'] * 100:.1f}%)", file=sys.stderr)
-    print(f"  Unknown: {unknown_bytes:.2f} bytes ({fractions['unknown'] * 100:.1f}%)", file=sys.stderr)
+    print(
+        f"  Unknown: {unknown_bytes:.2f} bytes ({fractions['unknown'] * 100:.1f}%)", file=sys.stderr
+    )
     print(f"  Total comm calls: {result['total_comm_calls']}", file=sys.stderr)
 
     if mode == MODE_HEURISTIC:
-        print("  Warning: Using heuristic mode. DP/TP classification may be inaccurate.", file=sys.stderr)
-        print("           For accurate classification, use NVTX ranges to tag parallel types.", file=sys.stderr)
+        print(
+            "  Warning: Using heuristic mode. DP/TP classification may be inaccurate.",
+            file=sys.stderr,
+        )
+        print(
+            "           For accurate classification, use NVTX ranges to tag parallel types.",
+            file=sys.stderr,
+        )
 
     return result
 
@@ -201,7 +208,7 @@ def _analyze_single_trace(trace_path: Path) -> dict[str, Any]:
 
         # Build coalesced -> classification map
         coalesced_classification: dict[tuple[float, float], str] = {}
-        for c_start, c_end, c_dur in coalesced_events:
+        for c_start, c_end, _c_dur in coalesced_events:
             # Find c10d operations inside this coalesced range
             ops_inside = [name for name, ts in c10d_events if c_start <= ts <= c_end]
 
@@ -265,9 +272,19 @@ def _extract_nvtx_ranges(events: list[dict[str, Any]]) -> list[tuple[float, floa
 
     # Keywords that indicate parallelism markers
     parallelism_keywords = [
-        "dp", "tp", "pp", "ep",
-        "data_parallel", "tensor_parallel", "pipeline", "expert",
-        "fsdp", "ddp", "moe", "gradient_sync", "all_reduce_grad",
+        "dp",
+        "tp",
+        "pp",
+        "ep",
+        "data_parallel",
+        "tensor_parallel",
+        "pipeline",
+        "expert",
+        "fsdp",
+        "ddp",
+        "moe",
+        "gradient_sync",
+        "all_reduce_grad",
     ]
 
     for event in events:
@@ -315,52 +332,63 @@ def _is_comm_kernel(name: str, cat: str) -> bool:
     return any(p in name_lower for p in comm_patterns)
 
 
-def _classify_comm_op(
-    name: str,
-    ts: float,
-    dur: float,
-    nvtx_ranges: list[tuple[float, float, str]],
-    mode: str,
-) -> str:
-    """Classify a communication operation by parallelism type.
+def _classify_by_nvtx_range(range_name: str) -> str | None:
+    """Classify parallelism type from an NVTX range name.
 
-    Uses:
-    1. NVTX range context if available (mode='nvtx')
-    2. Kernel name patterns (mode='heuristic')
+    Returns the parallelism type (DP, TP, PP, EP) or None if not determinable.
     """
-    name_lower = name.lower()
+    # Check for explicit parallelism markers
+    # Use word boundaries or explicit patterns to avoid false matches
+    # (e.g., "ProfilerStep" should not match "ep")
+    range_name_parts = range_name.replace("_", " ").replace(":", " ").split()
 
-    # Mode: NVTX - Check NVTX context first for accurate classification
-    # Only use NVTX if we find actual parallelism markers (not just any user_annotation)
-    if mode == MODE_NVTX and nvtx_ranges:
-        for range_start, range_end, range_name in nvtx_ranges:
-            if range_start <= ts <= range_end:
-                # Check for explicit parallelism markers
-                # Use word boundaries or explicit patterns to avoid false matches
-                # (e.g., "ProfilerStep" should not match "ep")
-                range_name_parts = range_name.replace("_", " ").replace(":", " ").split()
+    if any(p in ["dp", "data_parallel", "gradient"] for p in range_name_parts):
+        return "DP"
+    if any(p in ["tp", "tensor_parallel"] for p in range_name_parts):
+        return "TP"
+    if any(p in ["pp", "pipeline"] for p in range_name_parts):
+        return "PP"
+    if any(p in ["ep", "expert", "moe"] for p in range_name_parts):
+        return "EP"
 
-                if any(p in ["dp", "data_parallel", "gradient"] for p in range_name_parts):
-                    return "DP"
-                if any(p in ["tp", "tensor_parallel"] for p in range_name_parts):
-                    return "TP"
-                if any(p in ["pp", "pipeline"] for p in range_name_parts):
-                    return "PP"
-                if any(p in ["ep", "expert", "moe"] for p in range_name_parts):
-                    return "EP"
+    # Also check for underscore-separated patterns
+    if (
+        "data_parallel" in range_name
+        or "_dp_" in range_name
+        or range_name.startswith("dp_")
+        or range_name.endswith("_dp")
+    ):
+        return "DP"
+    if (
+        "tensor_parallel" in range_name
+        or "_tp_" in range_name
+        or range_name.startswith("tp_")
+        or range_name.endswith("_tp")
+    ):
+        return "TP"
+    if (
+        "pipeline_parallel" in range_name
+        or "_pp_" in range_name
+        or range_name.startswith("pp_")
+        or range_name.endswith("_pp")
+    ):
+        return "PP"
+    if (
+        "expert_parallel" in range_name
+        or "_ep_" in range_name
+        or range_name.startswith("ep_")
+        or range_name.endswith("_ep")
+    ):
+        return "EP"
 
-                # Also check for underscore-separated patterns
-                if "data_parallel" in range_name or "_dp_" in range_name or range_name.startswith("dp_") or range_name.endswith("_dp"):
-                    return "DP"
-                if "tensor_parallel" in range_name or "_tp_" in range_name or range_name.startswith("tp_") or range_name.endswith("_tp"):
-                    return "TP"
-                if "pipeline_parallel" in range_name or "_pp_" in range_name or range_name.startswith("pp_") or range_name.endswith("_pp"):
-                    return "PP"
-                if "expert_parallel" in range_name or "_ep_" in range_name or range_name.startswith("ep_") or range_name.endswith("_ep"):
-                    return "EP"
+    return None
 
-    # Heuristic classification based on kernel name patterns
 
+def _classify_by_heuristic(name_lower: str) -> str:
+    """Classify parallelism type based on kernel name patterns.
+
+    Returns the parallelism type (DP, TP, PP, EP) or 'unknown'.
+    """
     # PP: Point-to-point operations (SendRecv, send, recv)
     # These are definitively PP since they're used for pipeline stage communication
     if "sendrecv" in name_lower:
@@ -370,7 +398,7 @@ def _classify_comm_op(
         return "PP"
     if "nccl:send" in name_lower or "nccl:recv" in name_lower:
         return "PP"
-    if name_lower.endswith("_send") or name_lower.endswith("_recv"):
+    if name_lower.endswith(("_send", "_recv")):
         return "PP"
     if "nccldevkernel_sendrecv" in name_lower or "ncclkernel_sendrecv" in name_lower:
         return "PP"
@@ -410,3 +438,31 @@ def _classify_comm_op(
         return "unknown"
 
     return "unknown"
+
+
+def _classify_comm_op(
+    name: str,
+    ts: float,
+    dur: float,
+    nvtx_ranges: list[tuple[float, float, str]],
+    mode: str,
+) -> str:
+    """Classify a communication operation by parallelism type.
+
+    Uses:
+    1. NVTX range context if available (mode='nvtx')
+    2. Kernel name patterns (mode='heuristic')
+    """
+    name_lower = name.lower()
+
+    # Mode: NVTX - Check NVTX context first for accurate classification
+    # Only use NVTX if we find actual parallelism markers (not just any user_annotation)
+    if mode == MODE_NVTX and nvtx_ranges:
+        for range_start, range_end, range_name in nvtx_ranges:
+            if range_start <= ts <= range_end:
+                result = _classify_by_nvtx_range(range_name)
+                if result is not None:
+                    return result
+
+    # Heuristic classification based on kernel name patterns
+    return _classify_by_heuristic(name_lower)

@@ -19,43 +19,53 @@ Features:
 from __future__ import annotations
 
 import argparse
-import json
-import os
-import sys
 from dataclasses import dataclass, field
+import importlib.util
+import json
 from pathlib import Path
+import sys
 from typing import Any
 
-# Add tools directory to path
-TOOLS_DIR = Path(__file__).parent
-sys.path.insert(0, str(TOOLS_DIR))
 
-# Import metric modules
-from coll_call_num.coll_call_num import metric_cal as calc_coll_call_num
-from throughput_tokens.throughput_tokens import metric_cal as calc_throughput_tokens
-from iter_time.iter_time import metric_cal as calc_iter_time
-from comm_comp_overlap.comm_comp_overlap import metric_cal as calc_comm_comp_overlap
-from pipeline_bubble.pipeline_bubble import metric_cal as calc_pipeline_bubble
-from straggler_lag.straggler_lag import metric_cal as calc_straggler_lag
-from traffic_distribution.traffic_distribution import metric_cal as calc_traffic_distribution
+# Add tools directory to path for metric module imports
+TOOLS_DIR = Path(__file__).parent
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
+
+
+def _load_metric_module(module_name: str, submodule: str) -> Any:
+    """Dynamically load a metric module from the tools directory."""
+    module_path = TOOLS_DIR / module_name / f"{submodule}.py"
+    spec = importlib.util.spec_from_file_location(f"{module_name}.{submodule}", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load module {module_name}.{submodule}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.metric_cal
+
+
+# Load metric modules dynamically
+calc_coll_call_num = _load_metric_module("coll_call_num", "coll_call_num")
+calc_comm_comp_overlap = _load_metric_module("comm_comp_overlap", "comm_comp_overlap")
+calc_iter_time = _load_metric_module("iter_time", "iter_time")
+calc_pipeline_bubble = _load_metric_module("pipeline_bubble", "pipeline_bubble")
+calc_straggler_lag = _load_metric_module("straggler_lag", "straggler_lag")
+calc_throughput_tokens = _load_metric_module("throughput_tokens", "throughput_tokens")
+calc_traffic_distribution = _load_metric_module("traffic_distribution", "traffic_distribution")
+
 
 # Try to import plotting libraries
 try:
     import matplotlib
-    matplotlib.use('Agg')  # Non-interactive backend for servers
+
+    matplotlib.use("Agg")  # Non-interactive backend for servers
     import matplotlib.pyplot as plt
-    import matplotlib.patches as mpatches
     from matplotlib.ticker import MaxNLocator
+
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
     print("Warning: matplotlib not available. Install with: pip install matplotlib")
-
-try:
-    import numpy as np
-    HAS_NUMPY = True
-except ImportError:
-    HAS_NUMPY = False
 
 
 # Metric registry
@@ -73,6 +83,7 @@ METRICS = {
 @dataclass
 class IterationData:
     """Data collected for a single iteration."""
+
     iteration: int
     trace_dir: str
     metrics: dict[str, Any] = field(default_factory=dict)
@@ -81,6 +92,7 @@ class IterationData:
 @dataclass
 class WorkloadAnalysis:
     """Complete analysis of a workload across iterations."""
+
     workload_name: str
     trace_base: str
     iterations: list[IterationData] = field(default_factory=list)
@@ -144,7 +156,6 @@ def analyze_workload(
     metrics_to_run: list[str] | None = None,
 ) -> WorkloadAnalysis:
     """Analyze a complete workload across all iterations."""
-
     if workload_name is None:
         workload_name = Path(trace_base).parent.name
 
@@ -181,46 +192,49 @@ def analyze_workload(
 # Plotting Functions
 # =============================================================================
 
-def setup_plot_style():
+
+def setup_plot_style() -> None:
     """Configure matplotlib for publication-quality plots."""
     if not HAS_MATPLOTLIB:
         return
 
-    plt.style.use('seaborn-v0_8-whitegrid')
-    plt.rcParams.update({
-        'font.family': 'sans-serif',
-        'font.sans-serif': ['DejaVu Sans', 'Arial', 'Helvetica'],
-        'font.size': 11,
-        'axes.labelsize': 12,
-        'axes.titlesize': 14,
-        'axes.titleweight': 'bold',
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
-        'legend.fontsize': 10,
-        'figure.titlesize': 16,
-        'figure.titleweight': 'bold',
-        'figure.dpi': 150,
-        'savefig.dpi': 300,
-        'savefig.bbox': 'tight',
-        'axes.spines.top': False,
-        'axes.spines.right': False,
-    })
+    plt.style.use("seaborn-v0_8-whitegrid")
+    plt.rcParams.update(
+        {
+            "font.family": "sans-serif",
+            "font.sans-serif": ["DejaVu Sans", "Arial", "Helvetica"],
+            "font.size": 11,
+            "axes.labelsize": 12,
+            "axes.titlesize": 14,
+            "axes.titleweight": "bold",
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
+            "legend.fontsize": 10,
+            "figure.titlesize": 16,
+            "figure.titleweight": "bold",
+            "figure.dpi": 150,
+            "savefig.dpi": 300,
+            "savefig.bbox": "tight",
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+        }
+    )
 
 
-def get_color_palette():
+def get_color_palette() -> dict[str, str]:
     """Get a consistent color palette for plots."""
     return {
-        'primary': '#2E86AB',      # Blue
-        'secondary': '#A23B72',    # Magenta
-        'tertiary': '#F18F01',     # Orange
-        'quaternary': '#C73E1D',   # Red
-        'success': '#3A7D44',      # Green
-        'neutral': '#6C757D',      # Gray
-        'pp': '#2E86AB',           # Pipeline Parallel - Blue
-        'tp': '#A23B72',           # Tensor Parallel - Magenta
-        'dp': '#F18F01',           # Data Parallel - Orange
-        'ep': '#C73E1D',           # Expert Parallel - Red
-        'unknown': '#6C757D',      # Unknown - Gray
+        "primary": "#2E86AB",  # Blue
+        "secondary": "#A23B72",  # Magenta
+        "tertiary": "#F18F01",  # Orange
+        "quaternary": "#C73E1D",  # Red
+        "success": "#3A7D44",  # Green
+        "neutral": "#6C757D",  # Gray
+        "pp": "#2E86AB",  # Pipeline Parallel - Blue
+        "tp": "#A23B72",  # Tensor Parallel - Magenta
+        "dp": "#F18F01",  # Data Parallel - Orange
+        "ep": "#C73E1D",  # Expert Parallel - Red
+        "unknown": "#6C757D",  # Unknown - Gray
     }
 
 
@@ -250,30 +264,46 @@ def plot_iteration_time(analysis: WorkloadAnalysis, output_dir: Path) -> str | N
         return None
 
     colors = get_color_palette()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    _fig, ax = plt.subplots(figsize=(10, 6))
 
-    ax.bar(iterations, avg_times, color=colors['primary'], alpha=0.8,
-           label='Average', edgecolor='white', linewidth=1)
+    ax.bar(
+        iterations,
+        avg_times,
+        color=colors["primary"],
+        alpha=0.8,
+        label="Average",
+        edgecolor="white",
+        linewidth=1,
+    )
 
     # Add error bars if min/max differ
     if min_times != avg_times or max_times != avg_times:
-        errors = [[avg - min_t for avg, min_t in zip(avg_times, min_times)],
-                  [max_t - avg for avg, max_t in zip(avg_times, max_times)]]
-        ax.errorbar(iterations, avg_times, yerr=errors, fmt='none',
-                    color=colors['quaternary'], capsize=5, capthick=2, linewidth=2)
+        errors = [
+            [avg - min_t for avg, min_t in zip(avg_times, min_times)],
+            [max_t - avg for avg, max_t in zip(avg_times, max_times)],
+        ]
+        ax.errorbar(
+            iterations,
+            avg_times,
+            yerr=errors,
+            fmt="none",
+            color=colors["quaternary"],
+            capsize=5,
+            capthick=2,
+            linewidth=2,
+        )
 
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Time (ms)')
-    ax.set_title(f'Iteration Time - {analysis.workload_name}')
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Time (ms)")
+    ax.set_title(f"Iteration Time - {analysis.workload_name}")
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Add value labels on bars
-    for i, (x, y) in enumerate(zip(iterations, avg_times)):
-        ax.annotate(f'{y:.1f}', xy=(x, y), ha='center', va='bottom',
-                    fontsize=9, fontweight='bold')
+    for _i, (x, y) in enumerate(zip(iterations, avg_times)):
+        ax.annotate(f"{y:.1f}", xy=(x, y), ha="center", va="bottom", fontsize=9, fontweight="bold")
 
     plt.tight_layout()
-    filename = output_dir / 'iter_time.png'
+    filename = output_dir / "iter_time.png"
     plt.savefig(filename)
     plt.close()
 
@@ -302,30 +332,46 @@ def plot_throughput(analysis: WorkloadAnalysis, output_dir: Path) -> str | None:
         return None
 
     colors = get_color_palette()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    _fig, ax = plt.subplots(figsize=(10, 6))
 
-    bars = ax.bar(iterations, [t/1000 for t in throughputs],
-                  color=colors['success'], alpha=0.8,
-                  edgecolor='white', linewidth=1)
+    bars = ax.bar(
+        iterations,
+        [t / 1000 for t in throughputs],
+        color=colors["success"],
+        alpha=0.8,
+        edgecolor="white",
+        linewidth=1,
+    )
 
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Throughput (K tokens/sec)')
-    ax.set_title(f'Training Throughput - {analysis.workload_name}')
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Throughput (K tokens/sec)")
+    ax.set_title(f"Training Throughput - {analysis.workload_name}")
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Add value labels
     for bar, val in zip(bars, throughputs):
-        ax.annotate(f'{val/1000:.1f}K', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
-                    ha='center', va='bottom', fontsize=9, fontweight='bold')
+        ax.annotate(
+            f"{val / 1000:.1f}K",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            fontweight="bold",
+        )
 
     # Add average line
     avg_throughput = sum(throughputs) / len(throughputs) / 1000
-    ax.axhline(y=avg_throughput, color=colors['quaternary'], linestyle='--',
-               linewidth=2, label=f'Average: {avg_throughput:.1f}K')
+    ax.axhline(
+        y=avg_throughput,
+        color=colors["quaternary"],
+        linestyle="--",
+        linewidth=2,
+        label=f"Average: {avg_throughput:.1f}K",
+    )
     ax.legend()
 
     plt.tight_layout()
-    filename = output_dir / 'throughput.png'
+    filename = output_dir / "throughput.png"
     plt.savefig(filename)
     plt.close()
 
@@ -364,40 +410,61 @@ def plot_comm_comp_overlap(analysis: WorkloadAnalysis, output_dir: Path) -> str 
     width = 0.35
     x = range(len(iterations))
 
-    ax1.bar([i - width/2 for i in x], comm_times, width,
-            label='Communication', color=colors['primary'], alpha=0.8)
-    ax1.bar([i + width/2 for i in x], comp_times, width,
-            label='Computation', color=colors['tertiary'], alpha=0.8)
+    ax1.bar(
+        [i - width / 2 for i in x],
+        comm_times,
+        width,
+        label="Communication",
+        color=colors["primary"],
+        alpha=0.8,
+    )
+    ax1.bar(
+        [i + width / 2 for i in x],
+        comp_times,
+        width,
+        label="Computation",
+        color=colors["tertiary"],
+        alpha=0.8,
+    )
 
-    ax1.set_xlabel('Iteration')
-    ax1.set_ylabel('Time (ms)')
-    ax1.set_title('Communication vs Computation Time')
+    ax1.set_xlabel("Iteration")
+    ax1.set_ylabel("Time (ms)")
+    ax1.set_title("Communication vs Computation Time")
     ax1.set_xticks(x)
     ax1.set_xticklabels(iterations)
     ax1.legend()
 
     # Right plot: Overlap ratio
-    bars = ax2.bar(iterations, overlap_ratios, color=colors['secondary'], alpha=0.8)
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('Overlap Ratio (%)')
-    ax2.set_title('Comm/Comp Overlap Efficiency')
+    bars = ax2.bar(iterations, overlap_ratios, color=colors["secondary"], alpha=0.8)
+    ax2.set_xlabel("Iteration")
+    ax2.set_ylabel("Overlap Ratio (%)")
+    ax2.set_title("Comm/Comp Overlap Efficiency")
     ax2.set_ylim(0, 100)
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Add value labels
     for bar, val in zip(bars, overlap_ratios):
-        ax2.annotate(f'{val:.1f}%', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
-                    ha='center', va='bottom', fontsize=9, fontweight='bold')
+        ax2.annotate(
+            f"{val:.1f}%",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            fontweight="bold",
+        )
 
     # Add reference lines
-    ax2.axhline(y=80, color=colors['success'], linestyle='--', alpha=0.7, label='Good (80%)')
-    ax2.axhline(y=50, color=colors['quaternary'], linestyle='--', alpha=0.7, label='Fair (50%)')
-    ax2.legend(loc='lower right')
+    ax2.axhline(y=80, color=colors["success"], linestyle="--", alpha=0.7, label="Good (80%)")
+    ax2.axhline(y=50, color=colors["quaternary"], linestyle="--", alpha=0.7, label="Fair (50%)")
+    ax2.legend(loc="lower right")
 
-    fig.suptitle(f'Communication/Computation Analysis - {analysis.workload_name}',
-                 fontsize=14, fontweight='bold')
+    fig.suptitle(
+        f"Communication/Computation Analysis - {analysis.workload_name}",
+        fontsize=14,
+        fontweight="bold",
+    )
     plt.tight_layout()
-    filename = output_dir / 'comm_comp_overlap.png'
+    filename = output_dir / "comm_comp_overlap.png"
     plt.savefig(filename)
     plt.close()
 
@@ -431,36 +498,49 @@ def plot_pipeline_bubble(analysis: WorkloadAnalysis, output_dir: Path) -> str | 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
     # Left: Bubble ratio as percentage
-    bars1 = ax1.bar(iterations, bubble_ratios, color=colors['quaternary'], alpha=0.8)
-    ax1.set_xlabel('Iteration')
-    ax1.set_ylabel('Bubble Ratio (%)')
-    ax1.set_title('Pipeline Bubble Ratio')
+    bars1 = ax1.bar(iterations, bubble_ratios, color=colors["quaternary"], alpha=0.8)
+    ax1.set_xlabel("Iteration")
+    ax1.set_ylabel("Bubble Ratio (%)")
+    ax1.set_title("Pipeline Bubble Ratio")
     ax1.set_ylim(0, max(bubble_ratios) * 1.3 if bubble_ratios else 10)
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     for bar, val in zip(bars1, bubble_ratios):
-        ax1.annotate(f'{val:.1f}%', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
-                    ha='center', va='bottom', fontsize=9, fontweight='bold')
+        ax1.annotate(
+            f"{val:.1f}%",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            fontweight="bold",
+        )
 
     # Add reference line for ideal
-    ax1.axhline(y=5, color=colors['success'], linestyle='--', alpha=0.7, label='Target (<5%)')
+    ax1.axhline(y=5, color=colors["success"], linestyle="--", alpha=0.7, label="Target (<5%)")
     ax1.legend()
 
     # Right: Bubble time in ms
-    bars2 = ax2.bar(iterations, bubble_times, color=colors['tertiary'], alpha=0.8)
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('Bubble Time (ms)')
-    ax2.set_title('Pipeline Bubble Time')
+    bars2 = ax2.bar(iterations, bubble_times, color=colors["tertiary"], alpha=0.8)
+    ax2.set_xlabel("Iteration")
+    ax2.set_ylabel("Bubble Time (ms)")
+    ax2.set_title("Pipeline Bubble Time")
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     for bar, val in zip(bars2, bubble_times):
-        ax2.annotate(f'{val:.1f}', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
-                    ha='center', va='bottom', fontsize=9, fontweight='bold')
+        ax2.annotate(
+            f"{val:.1f}",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            fontweight="bold",
+        )
 
-    fig.suptitle(f'Pipeline Bubble Analysis - {analysis.workload_name}',
-                 fontsize=14, fontweight='bold')
+    fig.suptitle(
+        f"Pipeline Bubble Analysis - {analysis.workload_name}", fontsize=14, fontweight="bold"
+    )
     plt.tight_layout()
-    filename = output_dir / 'pipeline_bubble.png'
+    filename = output_dir / "pipeline_bubble.png"
     plt.savefig(filename)
     plt.close()
 
@@ -495,46 +575,81 @@ def plot_straggler_lag(analysis: WorkloadAnalysis, output_dir: Path) -> str | No
         return None
 
     colors = get_color_palette()
-    fig, ax = plt.subplots(figsize=(12, 7))
+    _fig, ax = plt.subplots(figsize=(12, 7))
 
     x = range(len(iterations))
     width = 0.2
 
-    ax.bar([i - 1.5*width for i in x], mean_lags, width, label='Mean',
-           color=colors['primary'], alpha=0.8)
-    ax.bar([i - 0.5*width for i in x], p50_lags, width, label='P50 (Median)',
-           color=colors['secondary'], alpha=0.8)
-    ax.bar([i + 0.5*width for i in x], p95_lags, width, label='P95',
-           color=colors['tertiary'], alpha=0.8)
-    ax.bar([i + 1.5*width for i in x], max_lags, width, label='Max',
-           color=colors['quaternary'], alpha=0.8)
+    ax.bar(
+        [i - 1.5 * width for i in x],
+        mean_lags,
+        width,
+        label="Mean",
+        color=colors["primary"],
+        alpha=0.8,
+    )
+    ax.bar(
+        [i - 0.5 * width for i in x],
+        p50_lags,
+        width,
+        label="P50 (Median)",
+        color=colors["secondary"],
+        alpha=0.8,
+    )
+    ax.bar(
+        [i + 0.5 * width for i in x],
+        p95_lags,
+        width,
+        label="P95",
+        color=colors["tertiary"],
+        alpha=0.8,
+    )
+    ax.bar(
+        [i + 1.5 * width for i in x],
+        max_lags,
+        width,
+        label="Max",
+        color=colors["quaternary"],
+        alpha=0.8,
+    )
 
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Lag (ms)')
-    ax.set_title(f'Straggler Lag Distribution - {analysis.workload_name}')
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Lag (ms)")
+    ax.set_title(f"Straggler Lag Distribution - {analysis.workload_name}")
     ax.set_xticks(x)
-    ax.set_xticklabels(iterations)
+    ax.set_xticklabels([str(i) for i in iterations])
     ax.legend()
 
     plt.tight_layout()
-    filename = output_dir / 'straggler_lag.png'
+    filename = output_dir / "straggler_lag.png"
     plt.savefig(filename)
     plt.close()
 
     return str(filename)
 
 
-def plot_traffic_distribution(analysis: WorkloadAnalysis, output_dir: Path) -> str | None:
-    """Plot traffic distribution by parallelism type."""
-    if not HAS_MATPLOTLIB:
-        return None
+@dataclass
+class TrafficDistributionData:
+    """Data for traffic distribution plotting."""
 
-    iterations = []
-    dp_fracs = []
-    tp_fracs = []
-    pp_fracs = []
-    ep_fracs = []
-    unknown_fracs = []
+    iterations: list[int]
+    dp_fracs: list[float]
+    tp_fracs: list[float]
+    pp_fracs: list[float]
+    ep_fracs: list[float]
+    unknown_fracs: list[float]
+
+
+def _extract_traffic_distribution_data(
+    analysis: WorkloadAnalysis,
+) -> TrafficDistributionData | None:
+    """Extract traffic distribution data from workload analysis."""
+    iterations: list[int] = []
+    dp_fracs: list[float] = []
+    tp_fracs: list[float] = []
+    pp_fracs: list[float] = []
+    ep_fracs: list[float] = []
+    unknown_fracs: list[float] = []
 
     for iter_data in analysis.iterations:
         if "traffic_distribution" not in iter_data.metrics:
@@ -554,89 +669,110 @@ def plot_traffic_distribution(analysis: WorkloadAnalysis, output_dir: Path) -> s
     if not iterations:
         return None
 
-    colors = get_color_palette()
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    return TrafficDistributionData(
+        iterations=iterations,
+        dp_fracs=dp_fracs,
+        tp_fracs=tp_fracs,
+        pp_fracs=pp_fracs,
+        ep_fracs=ep_fracs,
+        unknown_fracs=unknown_fracs,
+    )
 
-    # Left: Stacked bar chart across iterations
-    x = range(len(iterations))
+
+def _plot_traffic_stacked_bar(
+    ax: Any,
+    data: TrafficDistributionData,
+    colors: dict[str, str],
+) -> None:
+    """Plot stacked bar chart for traffic distribution."""
+    x = range(len(data.iterations))
     width = 0.6
+    bottom = [0.0] * len(data.iterations)
 
-    bottom = [0] * len(iterations)
+    bar_configs = [
+        (data.pp_fracs, "Pipeline (PP)", colors["pp"], 0.9),
+        (data.tp_fracs, "Tensor (TP)", colors["tp"], 0.9),
+        (data.dp_fracs, "Data (DP)", colors["dp"], 0.9),
+        (data.ep_fracs, "Expert (EP)", colors["ep"], 0.9),
+        (data.unknown_fracs, "Unknown", colors["unknown"], 0.7),
+    ]
 
-    if any(pp_fracs):
-        ax1.bar(x, pp_fracs, width, label='Pipeline (PP)', color=colors['pp'],
-                bottom=bottom, alpha=0.9)
-        bottom = [b + v for b, v in zip(bottom, pp_fracs)]
+    for fracs, label, color, alpha in bar_configs:
+        if any(fracs):
+            ax.bar(x, fracs, width, label=label, color=color, bottom=bottom, alpha=alpha)
+            bottom = [b + v for b, v in zip(bottom, fracs)]
 
-    if any(tp_fracs):
-        ax1.bar(x, tp_fracs, width, label='Tensor (TP)', color=colors['tp'],
-                bottom=bottom, alpha=0.9)
-        bottom = [b + v for b, v in zip(bottom, tp_fracs)]
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Traffic Distribution (%)")
+    ax.set_title("Traffic by Parallelism Type")
+    ax.set_xticks(x)
+    ax.set_xticklabels(data.iterations)
+    ax.set_ylim(0, 105)
+    ax.legend(loc="upper right")
 
-    if any(dp_fracs):
-        ax1.bar(x, dp_fracs, width, label='Data (DP)', color=colors['dp'],
-                bottom=bottom, alpha=0.9)
-        bottom = [b + v for b, v in zip(bottom, dp_fracs)]
 
-    if any(ep_fracs):
-        ax1.bar(x, ep_fracs, width, label='Expert (EP)', color=colors['ep'],
-                bottom=bottom, alpha=0.9)
-        bottom = [b + v for b, v in zip(bottom, ep_fracs)]
+def _plot_traffic_pie_chart(
+    ax: Any,
+    data: TrafficDistributionData,
+    colors: dict[str, str],
+) -> None:
+    """Plot pie chart for average traffic distribution."""
+    avg_pp = sum(data.pp_fracs) / len(data.pp_fracs) if data.pp_fracs else 0
+    avg_tp = sum(data.tp_fracs) / len(data.tp_fracs) if data.tp_fracs else 0
+    avg_dp = sum(data.dp_fracs) / len(data.dp_fracs) if data.dp_fracs else 0
+    avg_ep = sum(data.ep_fracs) / len(data.ep_fracs) if data.ep_fracs else 0
+    avg_unknown = sum(data.unknown_fracs) / len(data.unknown_fracs) if data.unknown_fracs else 0
 
-    if any(unknown_fracs):
-        ax1.bar(x, unknown_fracs, width, label='Unknown', color=colors['unknown'],
-                bottom=bottom, alpha=0.7)
-
-    ax1.set_xlabel('Iteration')
-    ax1.set_ylabel('Traffic Distribution (%)')
-    ax1.set_title('Traffic by Parallelism Type')
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(iterations)
-    ax1.set_ylim(0, 105)
-    ax1.legend(loc='upper right')
-
-    # Right: Pie chart of average distribution
-    avg_pp = sum(pp_fracs) / len(pp_fracs) if pp_fracs else 0
-    avg_tp = sum(tp_fracs) / len(tp_fracs) if tp_fracs else 0
-    avg_dp = sum(dp_fracs) / len(dp_fracs) if dp_fracs else 0
-    avg_ep = sum(ep_fracs) / len(ep_fracs) if ep_fracs else 0
-    avg_unknown = sum(unknown_fracs) / len(unknown_fracs) if unknown_fracs else 0
+    pie_data = [
+        (avg_pp, f"PP ({avg_pp:.1f}%)", colors["pp"]),
+        (avg_tp, f"TP ({avg_tp:.1f}%)", colors["tp"]),
+        (avg_dp, f"DP ({avg_dp:.1f}%)", colors["dp"]),
+        (avg_ep, f"EP ({avg_ep:.1f}%)", colors["ep"]),
+        (avg_unknown, f"Unknown ({avg_unknown:.1f}%)", colors["unknown"]),
+    ]
 
     sizes = []
     labels = []
     pie_colors = []
 
-    if avg_pp > 0.1:
-        sizes.append(avg_pp)
-        labels.append(f'PP ({avg_pp:.1f}%)')
-        pie_colors.append(colors['pp'])
-    if avg_tp > 0.1:
-        sizes.append(avg_tp)
-        labels.append(f'TP ({avg_tp:.1f}%)')
-        pie_colors.append(colors['tp'])
-    if avg_dp > 0.1:
-        sizes.append(avg_dp)
-        labels.append(f'DP ({avg_dp:.1f}%)')
-        pie_colors.append(colors['dp'])
-    if avg_ep > 0.1:
-        sizes.append(avg_ep)
-        labels.append(f'EP ({avg_ep:.1f}%)')
-        pie_colors.append(colors['ep'])
-    if avg_unknown > 0.1:
-        sizes.append(avg_unknown)
-        labels.append(f'Unknown ({avg_unknown:.1f}%)')
-        pie_colors.append(colors['unknown'])
+    for avg, label, color in pie_data:
+        if avg > 0.1:
+            sizes.append(avg)
+            labels.append(label)
+            pie_colors.append(color)
 
     if sizes:
-        wedges, texts, autotexts = ax2.pie(sizes, labels=labels, colors=pie_colors,
-                                           autopct='', startangle=90,
-                                           wedgeprops={'edgecolor': 'white', 'linewidth': 2})
-        ax2.set_title('Average Traffic Distribution')
+        ax.pie(
+            sizes,
+            labels=labels,
+            colors=pie_colors,
+            autopct="",
+            startangle=90,
+            wedgeprops={"edgecolor": "white", "linewidth": 2},
+        )
+        ax.set_title("Average Traffic Distribution")
 
-    fig.suptitle(f'Communication Traffic Analysis - {analysis.workload_name}',
-                 fontsize=14, fontweight='bold')
+
+def plot_traffic_distribution(analysis: WorkloadAnalysis, output_dir: Path) -> str | None:
+    """Plot traffic distribution by parallelism type."""
+    if not HAS_MATPLOTLIB:
+        return None
+
+    traffic_data = _extract_traffic_distribution_data(analysis)
+    if traffic_data is None:
+        return None
+
+    colors = get_color_palette()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    _plot_traffic_stacked_bar(ax1, traffic_data, colors)
+    _plot_traffic_pie_chart(ax2, traffic_data, colors)
+
+    fig.suptitle(
+        f"Communication Traffic Analysis - {analysis.workload_name}", fontsize=14, fontweight="bold"
+    )
     plt.tight_layout()
-    filename = output_dir / 'traffic_distribution.png'
+    filename = output_dir / "traffic_distribution.png"
     plt.savefig(filename)
     plt.close()
 
@@ -673,40 +809,53 @@ def plot_coll_call_breakdown(analysis: WorkloadAnalysis, output_dir: Path) -> st
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
     # Left: Total calls per iteration
-    bars = ax1.bar(iterations, total_calls_per_iter, color=colors['primary'], alpha=0.8)
-    ax1.set_xlabel('Iteration')
-    ax1.set_ylabel('Number of Calls')
-    ax1.set_title('Total Communication Calls')
+    bars = ax1.bar(iterations, total_calls_per_iter, color=colors["primary"], alpha=0.8)
+    ax1.set_xlabel("Iteration")
+    ax1.set_ylabel("Number of Calls")
+    ax1.set_title("Total Communication Calls")
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     for bar, val in zip(bars, total_calls_per_iter):
-        ax1.annotate(f'{val}', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
-                    ha='center', va='bottom', fontsize=9, fontweight='bold')
+        ax1.annotate(
+            f"{val}",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            fontweight="bold",
+        )
 
     # Right: Pie chart of call types
     if call_types:
         type_colors = {
-            'SendRecv': colors['pp'],
-            'AllReduce': colors['dp'],
-            'ReduceScatter': colors['tertiary'],
-            'AllGather': colors['secondary'],
-            'AllToAll': colors['ep'],
-            'Broadcast': colors['success'],
-            'Other': colors['neutral'],
+            "SendRecv": colors["pp"],
+            "AllReduce": colors["dp"],
+            "ReduceScatter": colors["tertiary"],
+            "AllGather": colors["secondary"],
+            "AllToAll": colors["ep"],
+            "Broadcast": colors["success"],
+            "Other": colors["neutral"],
         }
 
         sizes = list(call_types.values())
-        labels = [f'{k}\n({v})' for k, v in call_types.items()]
-        pie_colors = [type_colors.get(k, colors['neutral']) for k in call_types.keys()]
+        labels = [f"{k}\n({v})" for k, v in call_types.items()]
+        pie_colors = [type_colors.get(k, colors["neutral"]) for k in call_types]
 
-        ax2.pie(sizes, labels=labels, colors=pie_colors, autopct='%1.1f%%',
-                startangle=90, wedgeprops={'edgecolor': 'white', 'linewidth': 2})
-        ax2.set_title('Call Type Distribution')
+        ax2.pie(
+            sizes,
+            labels=labels,
+            colors=pie_colors,
+            autopct="%1.1f%%",
+            startangle=90,
+            wedgeprops={"edgecolor": "white", "linewidth": 2},
+        )
+        ax2.set_title("Call Type Distribution")
 
-    fig.suptitle(f'Collective Calls Analysis - {analysis.workload_name}',
-                 fontsize=14, fontweight='bold')
+    fig.suptitle(
+        f"Collective Calls Analysis - {analysis.workload_name}", fontsize=14, fontweight="bold"
+    )
     plt.tight_layout()
-    filename = output_dir / 'coll_calls.png'
+    filename = output_dir / "coll_calls.png"
     plt.savefig(filename)
     plt.close()
 
@@ -756,50 +905,67 @@ def plot_summary_dashboard(analysis: WorkloadAnalysis, output_dir: Path) -> str 
 
     # Plot 1: Throughput
     if throughputs:
-        ax1.bar(iterations[:len(throughputs)], throughputs, color=colors['success'], alpha=0.8)
-        ax1.set_xlabel('Iteration')
-        ax1.set_ylabel('K tokens/sec')
-        ax1.set_title('Throughput', fontweight='bold')
+        ax1.bar(iterations[: len(throughputs)], throughputs, color=colors["success"], alpha=0.8)
+        ax1.set_xlabel("Iteration")
+        ax1.set_ylabel("K tokens/sec")
+        ax1.set_title("Throughput", fontweight="bold")
         avg = sum(throughputs) / len(throughputs)
-        ax1.axhline(y=avg, color=colors['quaternary'], linestyle='--', alpha=0.7)
-        ax1.annotate(f'Avg: {avg:.1f}K', xy=(0.02, 0.95), xycoords='axes fraction',
-                     fontsize=10, fontweight='bold', color=colors['quaternary'])
+        ax1.axhline(y=avg, color=colors["quaternary"], linestyle="--", alpha=0.7)
+        ax1.annotate(
+            f"Avg: {avg:.1f}K",
+            xy=(0.02, 0.95),
+            xycoords="axes fraction",
+            fontsize=10,
+            fontweight="bold",
+            color=colors["quaternary"],
+        )
 
     # Plot 2: Iteration Time
     if iter_times:
-        ax2.bar(iterations[:len(iter_times)], iter_times, color=colors['primary'], alpha=0.8)
-        ax2.set_xlabel('Iteration')
-        ax2.set_ylabel('Time (ms)')
-        ax2.set_title('Iteration Time', fontweight='bold')
+        ax2.bar(iterations[: len(iter_times)], iter_times, color=colors["primary"], alpha=0.8)
+        ax2.set_xlabel("Iteration")
+        ax2.set_ylabel("Time (ms)")
+        ax2.set_title("Iteration Time", fontweight="bold")
         avg = sum(iter_times) / len(iter_times)
-        ax2.axhline(y=avg, color=colors['quaternary'], linestyle='--', alpha=0.7)
-        ax2.annotate(f'Avg: {avg:.1f}ms', xy=(0.02, 0.95), xycoords='axes fraction',
-                     fontsize=10, fontweight='bold', color=colors['quaternary'])
+        ax2.axhline(y=avg, color=colors["quaternary"], linestyle="--", alpha=0.7)
+        ax2.annotate(
+            f"Avg: {avg:.1f}ms",
+            xy=(0.02, 0.95),
+            xycoords="axes fraction",
+            fontsize=10,
+            fontweight="bold",
+            color=colors["quaternary"],
+        )
 
     # Plot 3: Pipeline Bubble
     if bubble_ratios:
-        ax3.bar(iterations[:len(bubble_ratios)], bubble_ratios, color=colors['tertiary'], alpha=0.8)
-        ax3.set_xlabel('Iteration')
-        ax3.set_ylabel('Bubble Ratio (%)')
-        ax3.set_title('Pipeline Bubble', fontweight='bold')
-        ax3.axhline(y=5, color=colors['success'], linestyle='--', alpha=0.7, label='Target <5%')
-        ax3.legend(loc='upper right', fontsize=9)
+        ax3.bar(
+            iterations[: len(bubble_ratios)], bubble_ratios, color=colors["tertiary"], alpha=0.8
+        )
+        ax3.set_xlabel("Iteration")
+        ax3.set_ylabel("Bubble Ratio (%)")
+        ax3.set_title("Pipeline Bubble", fontweight="bold")
+        ax3.axhline(y=5, color=colors["success"], linestyle="--", alpha=0.7, label="Target <5%")
+        ax3.legend(loc="upper right", fontsize=9)
 
     # Plot 4: Comm/Comp Overlap
     if overlap_ratios:
-        ax4.bar(iterations[:len(overlap_ratios)], overlap_ratios, color=colors['secondary'], alpha=0.8)
-        ax4.set_xlabel('Iteration')
-        ax4.set_ylabel('Overlap Ratio (%)')
-        ax4.set_title('Comm/Comp Overlap', fontweight='bold')
+        ax4.bar(
+            iterations[: len(overlap_ratios)], overlap_ratios, color=colors["secondary"], alpha=0.8
+        )
+        ax4.set_xlabel("Iteration")
+        ax4.set_ylabel("Overlap Ratio (%)")
+        ax4.set_title("Comm/Comp Overlap", fontweight="bold")
         ax4.set_ylim(0, 100)
-        ax4.axhline(y=80, color=colors['success'], linestyle='--', alpha=0.7, label='Good >80%')
-        ax4.legend(loc='lower right', fontsize=9)
+        ax4.axhline(y=80, color=colors["success"], linestyle="--", alpha=0.7, label="Good >80%")
+        ax4.legend(loc="lower right", fontsize=9)
 
-    fig.suptitle(f'Performance Dashboard - {analysis.workload_name}',
-                 fontsize=16, fontweight='bold', y=1.02)
+    fig.suptitle(
+        f"Performance Dashboard - {analysis.workload_name}", fontsize=16, fontweight="bold", y=1.02
+    )
     plt.tight_layout()
-    filename = output_dir / 'summary_dashboard.png'
-    plt.savefig(filename, bbox_inches='tight')
+    filename = output_dir / "summary_dashboard.png"
+    plt.savefig(filename, bbox_inches="tight")
     plt.close()
 
     return str(filename)
@@ -809,27 +975,28 @@ def plot_summary_dashboard(analysis: WorkloadAnalysis, output_dir: Path) -> str 
 # Export Functions
 # =============================================================================
 
+
 def export_csv(analysis: WorkloadAnalysis, output_dir: Path) -> str:
     """Export analysis to CSV format."""
-    csv_path = output_dir / 'metrics_summary.csv'
+    csv_path = output_dir / "metrics_summary.csv"
 
     # Flatten metrics for CSV
     rows = []
-    headers = ['iteration']
+    headers = ["iteration"]
 
     # Collect all metric keys
     metric_keys = set()
     for iter_data in analysis.iterations:
         for metric_name, metric_data in iter_data.metrics.items():
             if isinstance(metric_data, dict) and "error" not in metric_data:
-                for key in metric_data.keys():
+                for key in metric_data:
                     if not isinstance(metric_data[key], (dict, list)):
                         metric_keys.add(f"{metric_name}_{key}")
 
     headers.extend(sorted(metric_keys))
 
     for iter_data in analysis.iterations:
-        row = {'iteration': iter_data.iteration}
+        row = {"iteration": iter_data.iteration}
         for metric_name, metric_data in iter_data.metrics.items():
             if isinstance(metric_data, dict) and "error" not in metric_data:
                 for key, value in metric_data.items():
@@ -837,20 +1004,20 @@ def export_csv(analysis: WorkloadAnalysis, output_dir: Path) -> str:
                         row[f"{metric_name}_{key}"] = value
         rows.append(row)
 
-    with open(csv_path, 'w') as f:
-        f.write(','.join(headers) + '\n')
+    with csv_path.open("w") as f:
+        f.write(",".join(headers) + "\n")
         for row in rows:
-            values = [str(row.get(h, '')) for h in headers]
-            f.write(','.join(values) + '\n')
+            values = [str(row.get(h, "")) for h in headers]
+            f.write(",".join(values) + "\n")
 
     return str(csv_path)
 
 
 def export_json(analysis: WorkloadAnalysis, output_dir: Path) -> str:
     """Export analysis to JSON format."""
-    json_path = output_dir / 'analysis.json'
+    json_path = output_dir / "analysis.json"
 
-    with open(json_path, 'w') as f:
+    with json_path.open("w") as f:
         json.dump(analysis.to_dict(), f, indent=2)
 
     return str(json_path)
@@ -862,18 +1029,20 @@ def generate_html_report(
     plots: dict[str, str | None],
 ) -> str:
     """Generate an HTML report with all visualizations."""
-    html_path = output_dir / 'report.html'
+    html_path = output_dir / "report.html"
 
     # Calculate summary statistics
-    avg_throughput = 0
-    avg_iter_time = 0
-    avg_bubble = 0
-    avg_overlap = 0
+    avg_throughput: float = 0.0
+    avg_iter_time: float = 0.0
+    avg_bubble: float = 0.0
+    avg_overlap: float = 0.0
     total_calls = 0
 
     for iter_data in analysis.iterations:
         if "throughput_tokens" in iter_data.metrics:
-            avg_throughput += iter_data.metrics["throughput_tokens"].get("throughput_tokens_per_s", 0)
+            avg_throughput += iter_data.metrics["throughput_tokens"].get(
+                "throughput_tokens_per_s", 0
+            )
         if "iter_time" in iter_data.metrics:
             avg_iter_time += iter_data.metrics["iter_time"].get("avg_iter_time_ms", 0)
         if "pipeline_bubble" in iter_data.metrics:
@@ -1069,19 +1238,19 @@ def generate_html_report(
 
         <div class="summary-grid">
             <div class="stat-card success">
-                <div class="value">{avg_throughput/1000:.1f}K</div>
+                <div class="value">{avg_throughput / 1000:.1f}K</div>
                 <div class="label">Avg Throughput (tokens/sec)</div>
             </div>
             <div class="stat-card">
                 <div class="value">{avg_iter_time:.1f}</div>
                 <div class="label">Avg Iteration Time (ms)</div>
             </div>
-            <div class="stat-card {'success' if avg_bubble < 0.05 else 'warning' if avg_bubble < 0.1 else 'danger'}">
-                <div class="value">{avg_bubble*100:.1f}%</div>
+            <div class="stat-card {"success" if avg_bubble < 0.05 else "warning" if avg_bubble < 0.1 else "danger"}">
+                <div class="value">{avg_bubble * 100:.1f}%</div>
                 <div class="label">Avg Pipeline Bubble</div>
             </div>
-            <div class="stat-card {'success' if avg_overlap > 0.8 else 'warning' if avg_overlap > 0.5 else 'danger'}">
-                <div class="value">{avg_overlap*100:.1f}%</div>
+            <div class="stat-card {"success" if avg_overlap > 0.8 else "warning" if avg_overlap > 0.5 else "danger"}">
+                <div class="value">{avg_overlap * 100:.1f}%</div>
                 <div class="label">Avg Comm/Comp Overlap</div>
             </div>
             <div class="stat-card">
@@ -1092,25 +1261,46 @@ def generate_html_report(
 """
 
     # Add summary dashboard
-    if plots.get('summary_dashboard'):
+    summary_dashboard_path = plots.get("summary_dashboard")
+    if summary_dashboard_path:
         html_content += f"""
         <section>
             <h2>📈 Performance Dashboard</h2>
             <div class="plot-container">
-                <img src="{Path(plots['summary_dashboard']).name}" alt="Summary Dashboard">
+                <img src="{Path(summary_dashboard_path).name}" alt="Summary Dashboard">
             </div>
         </section>
 """
 
     # Add individual plots
     plot_sections = [
-        ('throughput', '🚀 Throughput Analysis', 'Training throughput measured in tokens per second.'),
-        ('iter_time', '⏱️ Iteration Time', 'Wall-clock time for each training iteration.'),
-        ('comm_comp_overlap', '🔄 Communication/Computation Overlap', 'How well communication is hidden behind computation.'),
-        ('pipeline_bubble', '🫧 Pipeline Bubble Analysis', 'Idle time in pipeline parallel execution.'),
-        ('straggler_lag', '🐢 Straggler Lag', 'Synchronization overhead between ranks.'),
-        ('traffic_distribution', '📡 Traffic Distribution', 'Communication traffic breakdown by parallelism type.'),
-        ('coll_calls', '📞 Collective Calls', 'Number and types of collective communication operations.'),
+        (
+            "throughput",
+            "🚀 Throughput Analysis",
+            "Training throughput measured in tokens per second.",
+        ),
+        ("iter_time", "⏱️ Iteration Time", "Wall-clock time for each training iteration."),
+        (
+            "comm_comp_overlap",
+            "🔄 Communication/Computation Overlap",
+            "How well communication is hidden behind computation.",
+        ),
+        (
+            "pipeline_bubble",
+            "🫧 Pipeline Bubble Analysis",
+            "Idle time in pipeline parallel execution.",
+        ),
+        ("straggler_lag", "🐢 Straggler Lag", "Synchronization overhead between ranks."),
+        (
+            "traffic_distribution",
+            "📡 Traffic Distribution",
+            "Communication traffic breakdown by parallelism type.",
+        ),
+        (
+            "coll_calls",
+            "📞 Collective Calls",
+            "Number and types of collective communication operations.",
+        ),
     ]
 
     html_content += """
@@ -1120,12 +1310,13 @@ def generate_html_report(
 """
 
     for plot_key, title, description in plot_sections:
-        if plots.get(plot_key):
+        plot_path = plots.get(plot_key)
+        if plot_path:
             html_content += f"""
                 <div class="plot-container">
                     <h3>{title}</h3>
                     <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">{description}</p>
-                    <img src="{Path(plots[plot_key]).name}" alt="{title}">
+                    <img src="{Path(plot_path).name}" alt="{title}">
                 </div>
 """
 
@@ -1153,14 +1344,22 @@ def generate_html_report(
 """
 
     for iter_data in analysis.iterations:
-        throughput = iter_data.metrics.get("throughput_tokens", {}).get("throughput_tokens_per_s", 0) / 1000
+        throughput = (
+            iter_data.metrics.get("throughput_tokens", {}).get("throughput_tokens_per_s", 0) / 1000
+        )
         iter_time = iter_data.metrics.get("iter_time", {}).get("avg_iter_time_ms", 0)
         bubble = iter_data.metrics.get("pipeline_bubble", {}).get("bubble_ratio", 0) * 100
-        overlap = iter_data.metrics.get("comm_comp_overlap", {}).get("overlap_ratio_of_comm", 0) * 100
+        overlap = (
+            iter_data.metrics.get("comm_comp_overlap", {}).get("overlap_ratio_of_comm", 0) * 100
+        )
         calls = iter_data.metrics.get("coll_call_num", {}).get("total_calls", 0)
 
-        bubble_class = "badge-success" if bubble < 5 else "badge-warning" if bubble < 10 else "badge-danger"
-        overlap_class = "badge-success" if overlap > 80 else "badge-warning" if overlap > 50 else "badge-danger"
+        bubble_class = (
+            "badge-success" if bubble < 5 else "badge-warning" if bubble < 10 else "badge-danger"
+        )
+        overlap_class = (
+            "badge-success" if overlap > 80 else "badge-warning" if overlap > 50 else "badge-danger"
+        )
 
         html_content += f"""
                     <tr>
@@ -1173,20 +1372,20 @@ def generate_html_report(
                     </tr>
 """
 
-    html_content += """
+    html_content += f"""
                 </tbody>
             </table>
         </section>
 
         <footer>
-            <p>Generated by CCL-Bench Analysis Tool | {}</p>
+            <p>Generated by CCL-Bench Analysis Tool | {Path(analysis.trace_base).name}</p>
         </footer>
     </div>
 </body>
 </html>
-""".format(Path(analysis.trace_base).name)
+"""
 
-    with open(html_path, 'w') as f:
+    with html_path.open("w") as f:
         f.write(html_content)
 
     return str(html_path)
@@ -1196,7 +1395,9 @@ def generate_html_report(
 # Main Entry Point
 # =============================================================================
 
-def main():
+
+def main() -> int:
+    """Main entry point for the workload analysis tool."""
     parser = argparse.ArgumentParser(
         description="CCL-Bench Workload Analysis Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -1267,14 +1468,14 @@ def main():
         setup_plot_style()
 
         print("  Generating plots...")
-        plots['iter_time'] = plot_iteration_time(analysis, output_dir)
-        plots['throughput'] = plot_throughput(analysis, output_dir)
-        plots['comm_comp_overlap'] = plot_comm_comp_overlap(analysis, output_dir)
-        plots['pipeline_bubble'] = plot_pipeline_bubble(analysis, output_dir)
-        plots['straggler_lag'] = plot_straggler_lag(analysis, output_dir)
-        plots['traffic_distribution'] = plot_traffic_distribution(analysis, output_dir)
-        plots['coll_calls'] = plot_coll_call_breakdown(analysis, output_dir)
-        plots['summary_dashboard'] = plot_summary_dashboard(analysis, output_dir)
+        plots["iter_time"] = plot_iteration_time(analysis, output_dir)
+        plots["throughput"] = plot_throughput(analysis, output_dir)
+        plots["comm_comp_overlap"] = plot_comm_comp_overlap(analysis, output_dir)
+        plots["pipeline_bubble"] = plot_pipeline_bubble(analysis, output_dir)
+        plots["straggler_lag"] = plot_straggler_lag(analysis, output_dir)
+        plots["traffic_distribution"] = plot_traffic_distribution(analysis, output_dir)
+        plots["coll_calls"] = plot_coll_call_breakdown(analysis, output_dir)
+        plots["summary_dashboard"] = plot_summary_dashboard(analysis, output_dir)
 
         generated = [k for k, v in plots.items() if v]
         print(f"    Generated {len(generated)} plots: {', '.join(generated)}")

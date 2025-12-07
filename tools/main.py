@@ -32,6 +32,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable
 import importlib
+import inspect
 import json
 import sys
 from typing import Any, cast
@@ -88,9 +89,7 @@ def get_metric_function(metric_name: str) -> MetricFunction:
     module = importlib.import_module(module_path)
 
     if not hasattr(module, "metric_cal"):
-        raise AttributeError(
-            f"Module '{module_path}' does not define metric_cal(directory: str)"
-        )
+        raise AttributeError(f"Module '{module_path}' does not define metric_cal(directory: str)")
 
     return cast("MetricFunction", module.metric_cal)
 
@@ -154,7 +153,6 @@ def main() -> None:
 
         # Pass profile_mode to metric functions that support it
         # Use inspect to check if the function accepts profile_mode
-        import inspect
         sig = inspect.signature(metric_cal_func)
         if "profile_mode" in sig.parameters:
             result = metric_cal_func(args.trace, profile_mode=args.profile_mode)

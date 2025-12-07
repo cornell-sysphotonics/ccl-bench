@@ -19,8 +19,8 @@ Supported NCCL operations:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 
@@ -65,6 +65,46 @@ _NCCL_OPERATOR_NAMES = (
     "c10d::recv_",
     "c10d::alltoall",
 )
+
+
+def _process_single_trace(
+    trace_file: Path,
+) -> tuple[int, dict[str, int]] | None:
+    """Process a single trace file and count NCCL events.
+
+    Args:
+        trace_file: Path to the trace JSON file.
+
+    Returns:
+        Tuple of (rank_calls, calls_by_type_delta) or None if processing failed.
+    """
+    try:
+        with trace_file.open() as f:
+            trace_data = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Warning: Error decoding JSON in {trace_file}: {e}", file=sys.stderr)
+        return None
+
+    rank_calls = 0
+    calls_by_type_delta: dict[str, int] = {}
+
+    # Count NCCL events from different trace formats
+    for event in trace_data.get("traceEvents", []):
+        name = event.get("name", "")
+        cat = event.get("cat", "")
+
+        # Format 1: Kernel-level events (cat == "kernel")
+        if (
+            (cat == "kernel" and name.startswith(_NCCL_KERNEL_PREFIXES))
+            or name in _NCCL_OPERATOR_NAMES
+            or name.startswith(_NCCL_OPERATOR_NAMES)
+        ):
+            rank_calls += 1
+            # Categorize by type
+            coll_type = _categorize_collective(name)
+            calls_by_type_delta[coll_type] = calls_by_type_delta.get(coll_type, 0) + 1
+
+    return rank_calls, calls_by_type_delta
 
 
 def _find_trace_files(directory: Path) -> list[Path]:
@@ -146,7 +186,10 @@ def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
 
     if not trace_files:
         print(f"Warning: No trace JSON files found in {directory}", file=sys.stderr)
-        print("  Searched patterns: kineto_trace*.json, rank*_trace.json, profile_trace/*trace*.json", file=sys.stderr)
+        print(
+            "  Searched patterns: kineto_trace*.json, rank*_trace.json, profile_trace/*trace*.json",
+            file=sys.stderr,
+        )
         return {
             "total_calls": 0,
             "calls_per_rank": {},
@@ -160,40 +203,20 @@ def metric_cal(directory: str, profile_mode: str = "auto") -> dict[str, Any]:
     traces_processed = 0
 
     for trace_file in trace_files:
-        try:
-            with trace_file.open() as f:
-                trace_data = json.load(f)
-
-            rank_calls = 0
-
-            # Count NCCL events from different trace formats
-            for event in trace_data.get("traceEvents", []):
-                name = event.get("name", "")
-                cat = event.get("cat", "")
-
-                # Format 1: Kernel-level events (cat == "kernel")
-                if cat == "kernel" and name.startswith(_NCCL_KERNEL_PREFIXES):
-                    rank_calls += 1
-                    total_calls += 1
-                    # Categorize by type
-                    coll_type = _categorize_collective(name)
-                    calls_by_type[coll_type] = calls_by_type.get(coll_type, 0) + 1
-
-                # Format 2: Operator-level events (TorchTitan/PyTorch profiler)
-                elif name in _NCCL_OPERATOR_NAMES or name.startswith(_NCCL_OPERATOR_NAMES):
-                    rank_calls += 1
-                    total_calls += 1
-                    # Categorize by type
-                    coll_type = _categorize_collective(name)
-                    calls_by_type[coll_type] = calls_by_type.get(coll_type, 0) + 1
-
-            traces_processed += 1
-            calls_per_rank[trace_file.name] = rank_calls
-            print(f"  Processed: {trace_file.name} ({rank_calls} calls)", file=sys.stderr)
-
-        except json.JSONDecodeError as e:
-            print(f"Warning: Error decoding JSON in {trace_file}: {e}", file=sys.stderr)
+        result = _process_single_trace(trace_file)
+        if result is None:
             continue
+
+        rank_calls, calls_by_type_delta = result
+        total_calls += rank_calls
+        traces_processed += 1
+        calls_per_rank[trace_file.name] = rank_calls
+
+        # Merge call type counts
+        for coll_type, count in calls_by_type_delta.items():
+            calls_by_type[coll_type] = calls_by_type.get(coll_type, 0) + count
+
+        print(f"  Processed: {trace_file.name} ({rank_calls} calls)", file=sys.stderr)
 
     print(f"Processed {traces_processed} trace files", file=sys.stderr)
     print(f"Total communication calls: {total_calls}", file=sys.stderr)
@@ -212,17 +235,16 @@ def _categorize_collective(name: str) -> str:
 
     if "allreduce" in name_lower or "all_reduce" in name_lower:
         return "AllReduce"
-    elif "reducescatter" in name_lower or "reduce_scatter" in name_lower:
+    if "reducescatter" in name_lower or "reduce_scatter" in name_lower:
         return "ReduceScatter"
-    elif "allgather" in name_lower or "all_gather" in name_lower:
+    if "allgather" in name_lower or "all_gather" in name_lower:
         return "AllGather"
-    elif "alltoall" in name_lower or "all_to_all" in name_lower:
+    if "alltoall" in name_lower or "all_to_all" in name_lower:
         return "AllToAll"
-    elif "broadcast" in name_lower:
+    if "broadcast" in name_lower:
         return "Broadcast"
-    elif "sendrecv" in name_lower or "send" in name_lower or "recv" in name_lower:
+    if "sendrecv" in name_lower or "send" in name_lower or "recv" in name_lower:
         return "SendRecv"
-    elif "reduce" in name_lower:
+    if "reduce" in name_lower:
         return "Reduce"
-    else:
-        return "Other"
+    return "Other"

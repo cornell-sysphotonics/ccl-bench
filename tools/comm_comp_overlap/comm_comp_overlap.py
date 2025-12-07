@@ -15,8 +15,8 @@ Classification:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 
@@ -127,11 +127,9 @@ def _is_compute_kernel(name: str, cat: str) -> bool:
     if any(p in name_lower for p in _IGNORE_PATTERNS):
         return False
 
-    # GPU kernel category
-    if cat == "kernel":
-        # If it's a kernel but not NCCL, it's likely compute
-        if not _is_comm_kernel(name):
-            return True
+    # GPU kernel category - if it's a kernel but not NCCL, it's likely compute
+    if cat == "kernel" and not _is_comm_kernel(name):
+        return True
 
     # Check for known compute patterns
     return any(p in name_lower for p in _COMPUTE_KERNEL_PATTERNS)
@@ -208,9 +206,17 @@ def _calculate_overlap_from_trace(trace_path: Path) -> dict[str, Any] | None:
         overlap_ratio_of_comp = overlap_time / total_comp_time if total_comp_time > 0 else 0.0
 
         print(f"Overlap analysis for {trace_path.name}:", file=sys.stderr)
-        print(f"  Comm kernels: {len(comm_intervals)}, Comp kernels: {len(comp_intervals)}", file=sys.stderr)
-        print(f"  Comm time: {comm_time_ms:.2f} ms, Comp time: {comp_time_ms:.2f} ms", file=sys.stderr)
-        print(f"  Overlap: {overlap_time_ms:.2f} ms ({overlap_ratio_of_comm * 100:.1f}% of comm)", file=sys.stderr)
+        print(
+            f"  Comm kernels: {len(comm_intervals)}, Comp kernels: {len(comp_intervals)}",
+            file=sys.stderr,
+        )
+        print(
+            f"  Comm time: {comm_time_ms:.2f} ms, Comp time: {comp_time_ms:.2f} ms", file=sys.stderr
+        )
+        print(
+            f"  Overlap: {overlap_time_ms:.2f} ms ({overlap_ratio_of_comm * 100:.1f}% of comm)",
+            file=sys.stderr,
+        )
 
         return {
             "comm_time_ms": comm_time_ms,

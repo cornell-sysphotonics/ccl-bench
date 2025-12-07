@@ -21,9 +21,10 @@ For accurate pipeline bubble measurement, consider:
 
 from __future__ import annotations
 
+import contextlib
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 
@@ -127,10 +128,8 @@ def _find_rank_traces(directory: str) -> dict[int, str]:
             parts = name.split("_")
             for i, part in enumerate(parts):
                 if part == "rank" and i + 1 < len(parts):
-                    try:
+                    with contextlib.suppress(ValueError):
                         rank = int(parts[i + 1])
-                    except ValueError:
-                        pass
                     break
         else:
             # Try last number in filename
@@ -159,7 +158,6 @@ def _calculate_bubble_ratio(rank_traces: dict[int, str]) -> dict[str, Any]:
     all_bubbles: list[float] = []
     total_times: list[float] = []
     method = "heuristic"  # Default to heuristic without NVTX
-    has_pp_markers = False
 
     for trace_path in rank_traces.values():
         result = _analyze_single_trace(trace_path)
@@ -167,7 +165,6 @@ def _calculate_bubble_ratio(rank_traces: dict[int, str]) -> dict[str, Any]:
             all_bubbles.append(result["bubble_time"])
             total_times.append(result["total_time"])
             if result["has_pp_markers"]:
-                has_pp_markers = True
                 method = "nvtx"
 
     if not total_times:
@@ -235,7 +232,6 @@ def _analyze_single_trace(trace_path: str) -> dict[str, Any]:
         activity_intervals: list[tuple[float, float]] = []
         pp_markers: list[tuple[float, float, str]] = []
         profiler_step_duration: float = 0.0
-        profiler_step_start: float = 0.0
 
         # Look for pipeline-related markers
         pp_patterns = ["pp_", "pipeline", "stage", "microbatch", "p2p", "send", "recv"]
@@ -253,7 +249,6 @@ def _analyze_single_trace(trace_path: str) -> dict[str, Any]:
             # Track ProfilerStep for total iteration time
             if name.startswith("ProfilerStep#") and dur > 0:
                 profiler_step_duration = dur
-                profiler_step_start = ts
 
             # Track all activity: kernel events, cpu_ops, and user_annotations with duration
             if dur > 0:
@@ -262,10 +257,11 @@ def _analyze_single_trace(trace_path: str) -> dict[str, Any]:
                 elif cat == "cpu_op":
                     # Include significant compute operations
                     activity_intervals.append((ts, ts + dur))
-                elif cat == "user_annotation":
+                elif cat == "user_annotation" and (
+                    name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES
+                ):
                     # Include communication events from user_annotation
-                    if name.startswith(_NCCL_OPERATOR_NAMES) or name in _NCCL_OPERATOR_NAMES:
-                        activity_intervals.append((ts, ts + dur))
+                    activity_intervals.append((ts, ts + dur))
 
             # Track pipeline markers (NVTX or similar)
             if any(p in name_lower for p in pp_patterns):

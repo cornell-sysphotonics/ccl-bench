@@ -43,14 +43,14 @@ repos:
           - --external-sources
           - --enable=all
         types_or: [shell, file]
-        files: \.(sh|sbatch)$
+        files: (\.(sh|sbatch)$|\.envrc$)
 
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.12.0-2
     hooks:
       - id: shfmt
         types_or: [shell, file]
-        files: \.(sh|sbatch)$
+        files: (\.(sh|sbatch)$|\.envrc$)
         args:
           - --language-dialect=bash
           - --indent=0
