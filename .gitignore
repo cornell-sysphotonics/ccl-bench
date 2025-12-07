@@ -47,6 +47,6 @@ Sessionx.vim
 .DS_Store
 
 # trace
-*.json
+# *.json
 *.nsys-rep
 *.sqlite
