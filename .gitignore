@@ -15,6 +15,9 @@ uv.lock
 # Ruff cache
 .ruff_cache/
 
+# mypy cache
+.mypy_cache/
+
 # data
 data
 out
