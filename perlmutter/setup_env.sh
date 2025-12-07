@@ -37,10 +37,10 @@ success() { echo -e "${GREEN}[OK]${NC} $*"; }
 
 # Detect script location and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Environment paths
-VENV_DIR="${SCRATCH:-$PROJECT_ROOT}/ccl-bench-venv"
+VENV_DIR="${SCRATCH:-${PROJECT_ROOT}}/ccl-bench-venv"
 # Parse arguments
 DOWNLOAD_MODELS=false
 while [[ $# -gt 0 ]]; do
@@ -74,10 +74,10 @@ fi
 # Note: Temporarily disable 'set -u' because module/conda scripts have unbound variables
 if command -v module &> /dev/null; then
 	info "Loading Perlmutter modules..."
-	set +u  # Disable unbound variable check for module commands
+	set +u # Disable unbound variable check for module commands
 	module load python 2> /dev/null || true
 	module load cudatoolkit/12.9 2> /dev/null || true
-	set -u  # Re-enable unbound variable check
+	set -u # Re-enable unbound variable check
 	success "Modules loaded"
 fi
 
@@ -92,21 +92,22 @@ setup_with_uv() {
 	if ! command -v uv &> /dev/null; then
 		info "Installing uv..."
 		curl -LsSf https://astral.sh/uv/install.sh | sh
-		export PATH="$HOME/.local/bin:$PATH"
+		export PATH="${HOME}/.local/bin:${PATH}"
 	fi
 
+	# shellcheck disable=SC2312
 	success "uv version: $(uv --version)"
 
 	export UV_LINK_MODE=copy
 
 	# Create venv and install dependencies
-	cd "$PROJECT_ROOT"
+	cd "${PROJECT_ROOT}"
 
 	info "Creating virtual environment with uv..."
-	uv venv "$VENV_DIR"
+	uv venv "${VENV_DIR}"
 
 	# shellcheck disable=SC1091
-	source "$VENV_DIR/bin/activate"
+	source "${VENV_DIR}/bin/activate"
 
 	# Use --active to sync to the activated venv (not the default .venv)
 	uv sync --active
@@ -115,12 +116,12 @@ setup_with_uv() {
 }
 
 # Try uv first, fall back to venv
-if command -v uv &> /dev/null || [[ -f "$HOME/.local/bin/uv" ]]; then
+if command -v uv &> /dev/null || [[ -f "${HOME}/.local/bin/uv" ]]; then
 	setup_with_uv
 else
 	warn "uv not found, attempting to install..."
 	if curl -LsSf https://astral.sh/uv/install.sh | sh 2> /dev/null; then
-		export PATH="$HOME/.local/bin:$PATH"
+		export PATH="${HOME}/.local/bin:${PATH}"
 		setup_with_uv
 	fi
 fi
@@ -129,13 +130,13 @@ fi
 # Model Weights Download (Optional)
 # =============================================================================
 
-if [[ $DOWNLOAD_MODELS == true ]]; then
+if [[ ${DOWNLOAD_MODELS} == true ]]; then
 	info "Downloading model weights..."
 
 	# Root for models + HF cache on SCRATCH (recommended by NERSC)
-	export HF_HOME="$SCRATCH/cache/huggingface"
-	export HF_ASSETS_ROOT="$SCRATCH/ccl-bench-assets/models"
-	mkdir -p "$HF_HOME" "$HF_ASSETS_ROOT"
+	export HF_HOME="${SCRATCH}/cache/huggingface"
+	export HF_ASSETS_ROOT="${SCRATCH}/ccl-bench-assets/models"
+	mkdir -p "${HF_HOME}" "${HF_ASSETS_ROOT}"
 
 	# Determine which HF CLI to use (prefer uvx hf, then hf, then huggingface-cli)
 	HF_CLI=""
@@ -147,26 +148,26 @@ if [[ $DOWNLOAD_MODELS == true ]]; then
 		info "Using: hf CLI"
 	fi
 
-	if [[ -n $HF_CLI ]]; then
+	if [[ -n ${HF_CLI} ]]; then
 		# Check if logged in
-		if ! $HF_CLI auth whoami &> /dev/null; then
-			warn "Not logged in to Hugging Face. Run: $HF_CLI auth login"
+		if ! ${HF_CLI} auth whoami &> /dev/null; then
+			warn "Not logged in to Hugging Face. Run: ${HF_CLI} auth login"
 			warn "Some models (like LLaMA) require authentication."
 		fi
 
 		info "Downloading LLaMA-3.1-8B..."
-		$HF_CLI download meta-llama/Llama-3.1-8B \
-		  --local-dir "$HF_ASSETS_ROOT/Llama-3.1-8B" \
+		${HF_CLI} download meta-llama/Llama-3.1-8B \
+			--local-dir "${HF_ASSETS_ROOT}/Llama-3.1-8B" \
 			|| warn "LLaMA download failed (may need HF token and model access)"
 
 		info "Downloading DeepSeek-V2-Lite..."
-		$HF_CLI download deepseek-ai/DeepSeek-V2-Lite \
-		  --local-dir "$HF_ASSETS_ROOT/DeepSeek-V2-Lite" \
+		${HF_CLI} download deepseek-ai/DeepSeek-V2-Lite \
+			--local-dir "${HF_ASSETS_ROOT}/DeepSeek-V2-Lite" \
 			|| warn "DeepSeek download failed"
 
 		info "Downloading Qwen3-32B..."
-		$HF_CLI download Qwen/Qwen3-32B  \
-		  --local-dir "$HF_ASSETS_ROOT/Qwen3-32B" \
+		${HF_CLI} download Qwen/Qwen3-32B \
+			--local-dir "${HF_ASSETS_ROOT}/Qwen3-32B" \
 			|| warn "Qwen download failed"
 	else
 		warn "No Hugging Face CLI found."
@@ -199,7 +200,7 @@ echo ""
 echo "To analyze traces:"
 echo "  ccl-metrics --trace <trace_dir> --metric <metric_name>"
 echo ""
-if [[ $DOWNLOAD_MODELS == false ]]; then
+if [[ ${DOWNLOAD_MODELS} == false ]]; then
 	echo -e "${YELLOW}Note: Model weights were not downloaded.${NC}"
 	echo "Run with --with-models to download"
 fi

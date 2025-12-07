@@ -1,3 +1,4 @@
+---
 # workload_card.yaml - Qwen3-32B DP+PP Configuration
 # Workload: qwen3-32b-torchtitan-dp+pp-perlmutter-16
 version: 1
@@ -6,7 +7,8 @@ description: >
   Qwen3-32B training on 4 GPUs with DP + PP parallelism.
   Single Perlmutter GPU node with 4x NVIDIA A100 (40GB) GPUs.
   Configuration: dp_replicate=2, pp=2 (2 DP replicas × 2-stage PP).
-  TorchTitan framework with NCCL; uses send/recv for PP and all-reduce for DP gradient sync.
+  TorchTitan framework with NCCL; uses send/recv for PP and
+  all-reduce for DP gradient sync.
 
 hf_url: https://huggingface.co/Qwen/Qwen3-32B
 trace_url:  # TODO: Add Cornell Box link after uploading traces
@@ -28,7 +30,7 @@ workload:
     network_topo:
       topology: slingshot
       bandwidth_gbps:
-        - 200   # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
+        - 200  # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
         - 2000  # Scale-up: Approx NVLink/NVSwitch aggregate bandwidth (Gbps)
     xpu_spec:
       type: GPU
@@ -51,16 +53,13 @@ Model-executor:
     name: NCCL
     version: 2.18.5
     env:
-      NCCL_IB_QPS_PER_CONNECTION: "4"
+      NCCL_IB_QPS_PER_CONNECTION: '4'
       NCCL_DEBUG: INFO
   protocol_selection:
     - rocev2  # Scale-out over Slingshot (inter-node DP gradient sync and PP)
-    - p2p     # Intra-node GPUDirect/NVLink (PP point-to-point)
+    - p2p  # Intra-node GPUDirect/NVLink (PP point-to-point)
 
 metric_source:
-  traces:
-    - nsys
-    - torch_et
-    - kineto_trace
+  traces: [nsys, torch_et, kineto_trace]
   metrics_specific_trace:
     - nvtx_ranges  # For parallelism classification

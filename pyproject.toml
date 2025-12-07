@@ -8,20 +8,12 @@ requires-python = ">=3.10.12,<3.11"
 
 # Core dependencies for trace analysis tools
 dependencies = [
-    "huggingface-hub>=1.1.7",
-    "matplotlib>=3.7.0",
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-    "pyyaml>=6.0",
-    "torchtitan==0.2.0",
-    "pytorch-triton>=3.2.0 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "huggingface-hub>=1.1.7",
+  "matplotlib>=3.7.0",
+  "numpy>=1.24.0",
+  "pandas>=2.0.0",
+  "pyyaml>=6.0",
 ]
-
-[project.optional-dependencies]
-# Development dependencies
-dev = ["pytest>=8.0.0", "pytest-cov>=4.0.0", "mypy>=1.8.0", "ruff>=0.4.0"]
-# Documentation
-docs = ["mkdocs>=1.5.0", "mkdocs-material>=9.5.0"]
 
 [project.scripts]
 ccl-metrics = "tools.main:main"
@@ -47,32 +39,24 @@ packages = ["tools"]
 managed = true
 prerelease = "allow"
 
+# Only resolve for x86_64 Linux (Perlmutter target platform)
+# This prevents resolution errors for platforms where CUDA packages don't exist
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
 # Default dependency groups to include
 default-groups = ["dev"]
 
 # Workspace configuration - each workload is a separate package
 [tool.uv.workspace]
 members = [
-    "trace_collection/llama3.1-8b-torchtitan-pp-perlmutter-16",
-    "trace_collection/llama3.1-8b-torchtitan-tp-perlmutter-16",
-    "trace_collection/deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16",
-    "trace_collection/deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16",
-    "trace_collection/qwen3-32b-torchtitan-3d-perlmutter-16",
-    "trace_collection/qwen3-32b-torchtitan-dp+pp-perlmutter-16",
-    "trace_collection/qwen3-32b-torchtitan-dp+tp-perlmutter-16",
+  "trace_collection/llama3.1-8b-torchtitan-pp-perlmutter-16",
+  "trace_collection/llama3.1-8b-torchtitan-tp-perlmutter-16",
+  "trace_collection/deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16",
+  "trace_collection/deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16",
+  "trace_collection/qwen3-32b-torchtitan-3d-perlmutter-16",
+  "trace_collection/qwen3-32b-torchtitan-dp+pp-perlmutter-16",
+  "trace_collection/qwen3-32b-torchtitan-dp+tp-perlmutter-16",
 ]
-
-[tool.uv.sources]
-torch = [{ index = "pytorch-cu129" }]
-torchvision = [{ index = "pytorch-cu129" }]
-torchaudio = [{ index = "pytorch-cu129" }]
-torchao = [{ index = "pytorch-cu129" }]
-pytorch-triton = [{ index = "pytorch-cu129" }]
-
-[[tool.uv.index]]
-name = "pytorch-cu129"
-url = "https://download.pytorch.org/whl/nightly/cu129"
-explicit = true
 
 
 # ============================================================================
@@ -80,12 +64,12 @@ explicit = true
 # ============================================================================
 [dependency-groups]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.0.0",
-    "mypy>=1.8.0",
-    "ruff>=0.4.0",
-    "pre-commit>=3.6.0",
-    "types-pyyaml>=6.0.12.20250915",
+  "pytest>=8.0.0",
+  "pytest-cov>=4.0.0",
+  "mypy>=1.8.0",
+  "ruff>=0.4.0",
+  "pre-commit>=3.6.0",
+  "types-pyyaml>=6.0.12.20250915",
 ]
 test = ["pytest>=8.0.0", "pytest-cov>=4.0.0"]
 lint = ["ruff>=0.4.0", "mypy>=1.8.0"]
@@ -108,16 +92,16 @@ src = ["tools", "scripts"]
 
 # Exclude common non-source directories
 extend-exclude = [
-    "trace_collection",
-    "trace_gen",
-    "workloads",
-    "assets",
-    "__pycache__",
-    ".git",
-    ".venv",
-    "build",
-    "dist",
-    "*.egg-info",
+  "trace_collection",
+  "trace_gen",
+  "workloads",
+  "assets",
+  "__pycache__",
+  ".git",
+  ".venv",
+  "build",
+  "dist",
+  "*.egg-info",
 ]
 
 # Respect .gitignore
@@ -134,128 +118,128 @@ fix = true
 # ============================================================================
 [tool.ruff.lint]
 select = [
-    # Core Python
-    "E", # pycodestyle errors
-    "W", # pycodestyle warnings
-    "F", # Pyflakes - undefined names, unused imports, etc.
-    # Code quality
-    "B",   # flake8-bugbear - common bugs and design problems
-    "C4",  # flake8-comprehensions - better comprehensions
-    "SIM", # flake8-simplify - simplify code
-    "UP",  # pyupgrade - modern Python syntax
+  # Core Python
+  "E", # pycodestyle errors
+  "W", # pycodestyle warnings
+  "F", # Pyflakes - undefined names, unused imports, etc.
+  # Code quality
+  "B",   # flake8-bugbear - common bugs and design problems
+  "C4",  # flake8-comprehensions - better comprehensions
+  "SIM", # flake8-simplify - simplify code
+  "UP",  # pyupgrade - modern Python syntax
 
-    # Import organization
-    "I",   # isort - import sorting
-    "TID", # flake8-tidy-imports - import hygiene
+  # Import organization
+  "I",   # isort - import sorting
+  "TID", # flake8-tidy-imports - import hygiene
 
-    # Type annotations
-    "TC",  # flake8-type-checking - type-checking imports
-    "ANN", # flake8-annotations - type annotation presence
+  # Type annotations
+  "TC",  # flake8-type-checking - type-checking imports
+  "ANN", # flake8-annotations - type annotation presence
 
-    # Documentation
-    "D", # pydocstyle - docstring conventions
+  # Documentation
+  "D", # pydocstyle - docstring conventions
 
-    # Naming conventions
-    "N", # pep8-naming - naming conventions
+  # Naming conventions
+  "N", # pep8-naming - naming conventions
 
-    # Error handling
-    "EM",  # flake8-errmsg - error message formatting
-    "TRY", # tryceratops - exception handling best practices
-    "RSE", # flake8-raise - raise statement improvements
+  # Error handling
+  "EM",  # flake8-errmsg - error message formatting
+  "TRY", # tryceratops - exception handling best practices
+  "RSE", # flake8-raise - raise statement improvements
 
-    # Code complexity
-    "C90", # mccabe - cyclomatic complexity
-    "PLR", # Pylint refactor suggestions
+  # Code complexity
+  "C90", # mccabe - cyclomatic complexity
+  "PLR", # Pylint refactor suggestions
 
-    # Security
-    "S", # flake8-bandit - security issues
+  # Security
+  "S", # flake8-bandit - security issues
 
-    # Performance
-    "PERF", # Perflint - performance anti-patterns
+  # Performance
+  "PERF", # Perflint - performance anti-patterns
 
-    # Best practices
-    "RUF",  # Ruff-specific rules
-    "PL",   # Pylint rules
-    "PIE",  # flake8-pie - misc lints
-    "PT",   # flake8-pytest-style - pytest best practices
-    "Q",    # flake8-quotes - quote consistency
-    "RET",  # flake8-return - return statement issues
-    "ARG",  # flake8-unused-arguments
-    "PTH",  # flake8-use-pathlib - prefer pathlib
-    "ERA",  # eradicate - commented out code
-    "PGH",  # pygrep-hooks - misc checks
-    "FLY",  # flynt - f-string conversion
-    "NPY",  # NumPy-specific rules
-    "PD",   # pandas-vet - pandas best practices
-    "FURB", # refurb - modern Python idioms
-    "LOG",  # flake8-logging - logging best practices
-    "G",    # flake8-logging-format - logging format strings
+  # Best practices
+  "RUF",  # Ruff-specific rules
+  "PL",   # Pylint rules
+  "PIE",  # flake8-pie - misc lints
+  "PT",   # flake8-pytest-style - pytest best practices
+  "Q",    # flake8-quotes - quote consistency
+  "RET",  # flake8-return - return statement issues
+  "ARG",  # flake8-unused-arguments
+  "PTH",  # flake8-use-pathlib - prefer pathlib
+  "ERA",  # eradicate - commented out code
+  "PGH",  # pygrep-hooks - misc checks
+  "FLY",  # flynt - f-string conversion
+  "NPY",  # NumPy-specific rules
+  "PD",   # pandas-vet - pandas best practices
+  "FURB", # refurb - modern Python idioms
+  "LOG",  # flake8-logging - logging best practices
+  "G",    # flake8-logging-format - logging format strings
 
-    # Async
-    "ASYNC", # flake8-async - async best practices
+  # Async
+  "ASYNC", # flake8-async - async best practices
 
-    # Testing
-    "FBT", # flake8-boolean-trap - boolean arguments
+  # Testing
+  "FBT", # flake8-boolean-trap - boolean arguments
 
-    # Comments
-    "TD",  # flake8-todos - TODO comment format
-    "FIX", # flake8-fixme - FIXME/TODO/XXX comments
+  # Comments
+  "TD",  # flake8-todos - TODO comment format
+  "FIX", # flake8-fixme - FIXME/TODO/XXX comments
 ]
 
 # Rules to ignore (with justification)
 ignore = [
-    # Line length handled by formatter
-    "E501", # line-too-long
+  # Line length handled by formatter
+  "E501", # line-too-long
 
-    # Documentation - relaxed for flexibility
-    "D100", # Missing docstring in public module
-    "D104", # Missing docstring in public package
-    "D107", # Missing docstring in __init__
-    "D203", # 1 blank line before class docstring (conflicts with D211)
-    "D213", # Multi-line summary second line (conflicts with D212)
+  # Documentation - relaxed for flexibility
+  "D100", # Missing docstring in public module
+  "D104", # Missing docstring in public package
+  "D107", # Missing docstring in __init__
+  "D203", # 1 blank line before class docstring (conflicts with D211)
+  "D213", # Multi-line summary second line (conflicts with D212)
 
-    # Annotations - allow gradual typing
-    "ANN401", # Dynamically typed expressions (Any)
+  # Annotations - allow gradual typing
+  "ANN401", # Dynamically typed expressions (Any)
 
-    # Complexity - allow reasonable complexity
-    "PLR0911", # Too many return statements
-    "PLR0912", # Too many branches
-    "PLR0913", # Too many arguments
-    "PLR0915", # Too many statements
-    "PLR2004", # Magic value in comparison
+  # Complexity - allow reasonable complexity
+  "PLR0911", # Too many return statements
+  "PLR0912", # Too many branches
+  "PLR0913", # Too many arguments
+  "PLR0915", # Too many statements
+  "PLR2004", # Magic value in comparison
 
-    # Style preferences
-    "B008", # Function call in default argument (common pattern)
-    "B905", # zip without strict= (Python 3.10+ feature)
+  # Style preferences
+  "B008", # Function call in default argument (common pattern)
+  "B905", # zip without strict= (Python 3.10+ feature)
 
-    # Conflicts with formatter
-    "W191",   # tab-indentation
-    "E111",   # indentation-with-invalid-multiple
-    "E114",   # indentation-with-invalid-multiple-comment
-    "E117",   # over-indented
-    "D206",   # docstring-tab-indentation
-    "D300",   # triple-single-quotes
-    "Q000",   # bad-quotes-inline-string
-    "Q001",   # bad-quotes-multiline-string
-    "Q002",   # bad-quotes-docstring
-    "Q003",   # avoidable-escaped-quote
-    "COM812", # missing-trailing-comma
-    "COM819", # prohibited-trailing-comma
-    "ISC001", # single-line-implicit-string-concatenation
+  # Conflicts with formatter
+  "W191",   # tab-indentation
+  "E111",   # indentation-with-invalid-multiple
+  "E114",   # indentation-with-invalid-multiple-comment
+  "E117",   # over-indented
+  "D206",   # docstring-tab-indentation
+  "D300",   # triple-single-quotes
+  "Q000",   # bad-quotes-inline-string
+  "Q001",   # bad-quotes-multiline-string
+  "Q002",   # bad-quotes-docstring
+  "Q003",   # avoidable-escaped-quote
+  "COM812", # missing-trailing-comma
+  "COM819", # prohibited-trailing-comma
+  "ISC001", # single-line-implicit-string-concatenation
 
-    # Project-specific relaxations
-    "S101",   # Use of assert (needed for tests and debugging)
-    "T201",   # print() found (acceptable in CLI tools)
-    "ARG001", # Unused function argument (common in callbacks)
-    "TRY003", # Long exception messages (acceptable for clarity)
-    "EM101",  # Exception must not use string literal
-    "EM102",  # Exception must not use f-string literal
-    "TD002",  # Missing author in TODO
-    "TD003",  # Missing issue link in TODO
-    "FIX002", # Line contains TODO
+  # Project-specific relaxations
+  "S101",   # Use of assert (needed for tests and debugging)
+  "T201",   # print() found (acceptable in CLI tools)
+  "ARG001", # Unused function argument (common in callbacks)
+  "TRY003", # Long exception messages (acceptable for clarity)
+  "EM101",  # Exception must not use string literal
+  "EM102",  # Exception must not use f-string literal
+  "TD002",  # Missing author in TODO
+  "TD003",  # Missing issue link in TODO
+  "FIX002", # Line contains TODO
 
-    # Pandas/NumPy specific relaxations
-    "NPY002", # Legacy np.random (acceptable in existing code)
+  # Pandas/NumPy specific relaxations
+  "NPY002", # Legacy np.random (acceptable in existing code)
 ]
 
 # Allow these rules to be fixed automatically
@@ -263,9 +247,9 @@ fixable = ["ALL"]
 
 # Never try to fix these (manual review required)
 unfixable = [
-    "ERA",  # Don't auto-remove commented code
-    "F401", # Don't auto-remove unused imports (may be intentional)
-    "F841", # Don't auto-remove unused variables
+  "ERA",  # Don't auto-remove commented code
+  "F401", # Don't auto-remove unused imports (may be intentional)
+  "F841", # Don't auto-remove unused variables
 ]
 
 # Allow unused variables when underscore-prefixed
@@ -398,8 +382,8 @@ python_files = ["test_*.py", "*_test.py"]
 python_functions = ["test_*"]
 addopts = ["-v", "--tb=short", "--strict-markers"]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "gpu: marks tests that require GPU",
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "gpu: marks tests that require GPU",
 ]
 
 # ============================================================================
@@ -412,10 +396,16 @@ omit = ["*/tests/*", "*/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
+  "pragma: no cover",
+  "def __repr__",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
 ]
+
+[tool.yamlfix]
+whitelines = 1
+line_length = 80
+section_whitelines = 1
+quote_representation = '"'

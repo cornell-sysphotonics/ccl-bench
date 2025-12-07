@@ -1,3 +1,4 @@
+---
 # workload_card.yaml - LLaMA-3.1-8B Pure Pipeline Parallelism Configuration
 # Workload: llama3.1-8b-torchtitan-pp-perlmutter-16
 version: 1
@@ -5,8 +6,9 @@ version: 1
 description: >
   LLaMA-3.1-8B training on 4 GPUs with Pure Pipeline Parallelism (PP=4).
   Single Perlmutter GPU node with 4x NVIDIA A100 (40GB) GPUs.
-  TorchTitan framework with NCCL over NVLink (intra-node) and Slingshot/RoCEv2.
-  Model split into 4 pipeline stages; uses point-to-point send/recv between stages.
+  TorchTitan framework with NCCL over NVLink (intra-node) and
+  Slingshot/RoCEv2. Model split into 4 pipeline stages;
+  uses point-to-point send/recv between stages.
 
 hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
 trace_url:  # TODO: Add Cornell Box link after uploading traces
@@ -28,7 +30,7 @@ workload:
     network_topo:
       topology: slingshot
       bandwidth_gbps:
-        - 200   # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
+        - 200  # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
         - 2000  # Scale-up: Approx NVLink/NVSwitch aggregate bandwidth (Gbps)
     xpu_spec:
       type: GPU
@@ -51,16 +53,13 @@ Model-executor:
     name: NCCL
     version: 2.18.5
     env:
-      NCCL_IB_QPS_PER_CONNECTION: "4"
+      NCCL_IB_QPS_PER_CONNECTION: '4'
       NCCL_DEBUG: INFO
   protocol_selection:
     - rocev2  # Scale-out over Slingshot
-    - p2p     # Intra-node GPUDirect/NVLink
+    - p2p  # Intra-node GPUDirect/NVLink
 
 metric_source:
-  traces:
-    - nsys
-    - torch_et
-    - kineto_trace
+  traces: [nsys, torch_et, kineto_trace]
   metrics_specific_trace:
     - nvtx_ranges  # For parallelism classification

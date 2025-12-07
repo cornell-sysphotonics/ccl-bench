@@ -19,8 +19,8 @@ PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
 
 # Check for dry-run flag
 DRY_RUN=false
-if [[ "${1:-}" == "--dry-run" ]]; then
-    DRY_RUN=true
+if [[ ${1:-} == "--dry-run" ]]; then
+	DRY_RUN=true
 fi
 
 echo "========================================"
@@ -33,22 +33,22 @@ echo ""
 
 # Verify required files exist
 if [[ ! -f "${WORKLOAD_DIR}/run.sbatch" ]]; then
-    echo "ERROR: run.sbatch not found in ${WORKLOAD_DIR}"
-    exit 1
+	echo "ERROR: run.sbatch not found in ${WORKLOAD_DIR}"
+	exit 1
 fi
 
 if [[ ! -f "${WORKLOAD_DIR}/train_config.toml" ]]; then
-    echo "ERROR: train_config.toml not found in ${WORKLOAD_DIR}"
-    exit 1
+	echo "ERROR: train_config.toml not found in ${WORKLOAD_DIR}"
+	exit 1
 fi
 
-if [[ "${DRY_RUN}" == true ]]; then
-    echo "[DRY-RUN] Would submit: sbatch ${WORKLOAD_DIR}/run.sbatch"
-    echo ""
-    echo "SBATCH configuration:"
-    grep "^#SBATCH" "${WORKLOAD_DIR}/run.sbatch"
+if [[ ${DRY_RUN} == true ]]; then
+	echo "[DRY-RUN] Would submit: sbatch ${WORKLOAD_DIR}/run.sbatch"
+	echo ""
+	echo "SBATCH configuration:"
+	grep "^#SBATCH" "${WORKLOAD_DIR}/run.sbatch"
 else
-    echo "Submitting job..."
-    cd "${WORKLOAD_DIR}"
-    sbatch run.sbatch
+	echo "Submitting job..."
+	cd "${WORKLOAD_DIR}"
+	sbatch run.sbatch
 fi

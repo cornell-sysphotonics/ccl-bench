@@ -5,9 +5,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-TOOLS_DIR="$PROJECT_ROOT/tools"
-OUTPUT_CSV="$PROJECT_ROOT/metrics_all_workloads.csv"
+PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
+TOOLS_DIR="${PROJECT_ROOT}/tools"
+OUTPUT_CSV="${PROJECT_ROOT}/metrics_all_workloads.csv"
 
 # Workloads to process
 WORKLOADS=(
@@ -35,30 +35,30 @@ echo "================================="
 echo ""
 
 # Write CSV header
-echo "workload,metric,value" > "$OUTPUT_CSV"
+echo "workload,metric,value" > "${OUTPUT_CSV}"
 
-cd "$TOOLS_DIR"
+cd "${TOOLS_DIR}"
 
 for workload in "${WORKLOADS[@]}"; do
-	TRACE_DIR="$PROJECT_ROOT/trace_collection/$workload"
-	echo "Processing: $workload"
-	echo "  Trace directory: $TRACE_DIR"
+	TRACE_DIR="${PROJECT_ROOT}/trace_collection/${workload}"
+	echo "Processing: ${workload}"
+	echo "  Trace directory: ${TRACE_DIR}"
 
 	# Check if trace directory exists
-	if [ ! -d "$TRACE_DIR" ]; then
+	if [[ ! -d ${TRACE_DIR} ]]; then
 		echo "  Warning: Trace directory not found, skipping..."
 		continue
 	fi
 
 	for metric in "${METRICS[@]}"; do
-		echo "  Calculating: $metric"
-		value=$(python main.py --trace "$TRACE_DIR" --metric "$metric" 2> /dev/null || echo "N/A")
-		echo "$workload,$metric,$value" >> "$OUTPUT_CSV"
+		echo "  Calculating: ${metric}"
+		value=$(python main.py --trace "${TRACE_DIR}" --metric "${metric}" 2> /dev/null || echo "N/A")
+		echo "${workload},${metric},${value}" >> "${OUTPUT_CSV}"
 	done
 	echo ""
 done
 
-echo "Results saved to: $OUTPUT_CSV"
+echo "Results saved to: ${OUTPUT_CSV}"
 echo ""
 echo "Summary:"
-cat "$OUTPUT_CSV"
+cat "${OUTPUT_CSV}"

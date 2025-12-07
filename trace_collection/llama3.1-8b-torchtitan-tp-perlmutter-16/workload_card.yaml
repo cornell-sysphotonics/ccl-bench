@@ -1,3 +1,4 @@
+---
 # workload_card.yaml - LLaMA-3.1-8B Pure Tensor Parallelism Configuration
 # Workload: llama3.1-8b-torchtitan-tp-perlmutter-16
 version: 1
@@ -28,7 +29,7 @@ workload:
     network_topo:
       topology: slingshot
       bandwidth_gbps:
-        - 200   # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
+        - 200  # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
         - 2000  # Scale-up: Approx NVLink/NVSwitch aggregate bandwidth (Gbps)
     xpu_spec:
       type: GPU
@@ -51,16 +52,13 @@ Model-executor:
     name: NCCL
     version: 2.18.5
     env:
-      NCCL_IB_QPS_PER_CONNECTION: "4"
+      NCCL_IB_QPS_PER_CONNECTION: '4'
       NCCL_DEBUG: INFO
   protocol_selection:
     - rocev2  # Scale-out over Slingshot
-    - p2p     # Intra-node GPUDirect/NVLink
+    - p2p  # Intra-node GPUDirect/NVLink
 
 metric_source:
-  traces:
-    - nsys
-    - torch_et
-    - kineto_trace
+  traces: [nsys, torch_et, kineto_trace]
   metrics_specific_trace:
     - nvtx_ranges  # For parallelism classification

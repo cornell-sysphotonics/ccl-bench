@@ -10,6 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/common.sh"
 
 # =============================================================================
@@ -17,8 +18,10 @@ source "${SCRIPT_DIR}/common.sh"
 # =============================================================================
 
 # Check allocation is set
-if [[ ${NERSC_ALLOCATION} == "CHANGE_ME" ]]; then
-	echo "ERROR: Please set NERSC_ALLOCATION in common.sh"
+# shellcheck disable=SC2154
+if [[ ${NERSC_ALLOCATION} == \"CHANGE_ME\" ]]; then
+	echo \"ERROR: Please set NERSC_ALLOCATION in common.sh\"
+	# shellcheck disable=SC2016
 	echo '  Get your allocation with: sacctmgr show assoc user=$USER'
 	exit 1
 fi
@@ -46,6 +49,7 @@ echo "Workloads:  ${#WORKLOAD_FOLDERS[@]} jobs"
 echo ""
 
 # Create logs directory
+# shellcheck disable=SC2154
 mkdir -p "${CCL_BENCH_HOME}/logs"
 
 # Submit each workload
@@ -74,6 +78,7 @@ for job_info in "${submitted_jobs[@]}"; do
 done
 
 echo ""
+# shellcheck disable=SC2016
 echo 'Monitor jobs with: squeue -u $USER'
 echo "View job output:   tail -f logs/<job_name>_<job_id>.out"
 echo "============================================================================="

@@ -31,20 +31,20 @@ else
 	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
 
-CCL_BENCH_HOME="$(cd "$SCRIPT_DIR/.." && pwd)"
+CCL_BENCH_HOME="$(cd "${SCRIPT_DIR}/.." && pwd)"
 export CCL_BENCH_HOME
-export VENV_DIR="${VENV_DIR:-${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-venv}"
+export VENV_DIR="${VENV_DIR:-${SCRATCH:-${CCL_BENCH_HOME}}/ccl-bench-venv}"
 
 # Trace output directory base
 # Use $SCRATCH for traces to avoid filling home/project directories
 # Nsys .qdrep/.nsys-rep files and Torch profiler traces can be large
-export TRACE_BASE="${TRACE_BASE:-${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-traces}"
+export TRACE_BASE="${TRACE_BASE:-${SCRATCH:-${CCL_BENCH_HOME}}/ccl-bench-traces}"
 
 # Train config directory - now inside trace_collection folders
 export TRACE_COLLECTION_DIR="${CCL_BENCH_HOME}/trace_collection"
 
 # HuggingFace model assets directory (where downloaded models are stored)
-export HF_ASSETS_ROOT="${HF_ASSETS_ROOT:-${SCRATCH:-$CCL_BENCH_HOME}/ccl-bench-assets/models}"
+export HF_ASSETS_ROOT="${HF_ASSETS_ROOT:-${SCRATCH:-${CCL_BENCH_HOME}}/ccl-bench-assets/models}"
 
 # =============================================================================
 # WORKLOAD CONFIGURATION
@@ -65,15 +65,15 @@ declare -A WORKLOAD_FOLDERS=(
 # Usage: get_workload_folder <workload_name>
 get_workload_folder() {
 	local workload_name="$1"
-	local folder="${WORKLOAD_FOLDERS[$workload_name]:-}"
+	local folder="${WORKLOAD_FOLDERS[${workload_name}]:-}"
 
-	if [[ -z "$folder" ]]; then
-		echo "ERROR: Unknown workload: $workload_name" >&2
+	if [[ -z ${folder} ]]; then
+		echo "ERROR: Unknown workload: ${workload_name}" >&2
 		echo "Available workloads: ${!WORKLOAD_FOLDERS[*]}" >&2
 		return 1
 	fi
 
-	echo "$folder"
+	echo "${folder}"
 }
 
 # Get the config file path for a given workload
@@ -81,7 +81,7 @@ get_workload_folder() {
 get_config_file() {
 	local workload_name="$1"
 	local folder
-	folder=$(get_workload_folder "$workload_name") || return 1
+	folder=$(get_workload_folder "${workload_name}") || return 1
 	echo "${TRACE_COLLECTION_DIR}/${folder}/train_config.toml"
 }
 
@@ -96,7 +96,7 @@ get_model_hf_path() {
 	local workload_name="$1"
 
 	# Map workload names to model directories
-	case "$workload_name" in
+	case "${workload_name}" in
 		llama3_8b_*)
 			echo "${HF_ASSETS_ROOT}/Llama-3.1-8B"
 			;;
@@ -108,7 +108,7 @@ get_model_hf_path() {
 			;;
 		*)
 			# Fallback: try to extract from workload name
-			echo "ERROR: Unknown model in workload: $workload_name" >&2
+			echo "ERROR: Unknown model in workload: ${workload_name}" >&2
 			echo "Please add a mapping in common.sh get_model_hf_path()" >&2
 			return 1
 			;;
@@ -129,12 +129,13 @@ setup_runtime_paths() {
 	fi
 	module load python 2> /dev/null || true
 	module load cudatoolkit/12.9 2> /dev/null || true
-	if [[ $u_was_set == true ]]; then
+	if [[ ${u_was_set} == true ]]; then
 		set -u
 	fi
 
 	# Activate virtual environment
 	if [[ -f "${VENV_DIR}/bin/activate" ]]; then
+		# shellcheck disable=SC1091
 		source "${VENV_DIR}/bin/activate"
 	else
 		echo "ERROR: Virtual environment not found at ${VENV_DIR}"
@@ -146,11 +147,11 @@ setup_runtime_paths() {
 	export PYTHONPATH="${CCL_BENCH_HOME}:${PYTHONPATH:-}"
 
 	# Set cache directories on SCRATCH for better performance
-	export HF_HOME="${HF_HOME:-${SCRATCH:-$HOME}/cache/huggingface}"
-	export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${SCRATCH:-$HOME}/.cache}"
-	export TORCH_EXTENSIONS_DIR="${TORCH_EXTENSIONS_DIR:-${SCRATCH:-$HOME}/.torch_extensions}"
-	export CUDA_CACHE_PATH="${CUDA_CACHE_PATH:-${SCRATCH:-$HOME}/.nv/ComputeCache}"
-	mkdir -p "$HF_HOME" "$XDG_CACHE_HOME" "$TORCH_EXTENSIONS_DIR" "$CUDA_CACHE_PATH"
+	export HF_HOME="${HF_HOME:-${SCRATCH:-${HOME}}/cache/huggingface}"
+	export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${SCRATCH:-${HOME}}/.cache}"
+	export TORCH_EXTENSIONS_DIR="${TORCH_EXTENSIONS_DIR:-${SCRATCH:-${HOME}}/.torch_extensions}"
+	export CUDA_CACHE_PATH="${CUDA_CACHE_PATH:-${SCRATCH:-${HOME}}/.nv/ComputeCache}"
+	mkdir -p "${HF_HOME}" "${XDG_CACHE_HOME}" "${TORCH_EXTENSIONS_DIR}" "${CUDA_CACHE_PATH}"
 }
 
 # =============================================================================
@@ -159,11 +160,13 @@ setup_runtime_paths() {
 
 setup_distributed() {
 	# Get master address from Slurm
-	MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+	# shellcheck disable=SC2154,SC2312
+	MASTER_ADDR=$(scontrol show hostnames "${SLURM_JOB_NODELIST}" | head -n 1)
 	export MASTER_ADDR
 	export MASTER_PORT="${MASTER_PORT:-29500}"
 
 	# Calculate world size
+	# shellcheck disable=SC2154
 	export WORLD_SIZE=$((SLURM_JOB_NUM_NODES * SLURM_GPUS_PER_NODE))
 
 	# OpenMP threads (conservative to avoid oversubscription)
@@ -208,7 +211,7 @@ export PROFILE_MODE="${PROFILE_MODE:-both}"
 setup_trace_dir() {
 	local workload_name="$1"
 	local workload_folder
-	workload_folder=$(get_workload_folder "$workload_name") || exit 1
+	workload_folder=$(get_workload_folder "${workload_name}") || exit 1
 
 	export TRACE_DIR="${TRACE_BASE}/${workload_folder}"
 	mkdir -p "${TRACE_DIR}"
@@ -240,6 +243,7 @@ copy_kineto_traces() {
 	if [[ -d ${profile_trace_dir} ]]; then
 		# Look for rank 0 trace with common patterns
 		for pattern in "*rank0*.json" "*local_rank0*.json" "*trace_0.json"; do
+			# shellcheck disable=SC2312
 			rank0_trace=$(find "${profile_trace_dir}" -maxdepth 2 -name "${pattern}" -type f 2> /dev/null | head -n 1)
 			if [[ -n ${rank0_trace} ]]; then
 				break
@@ -248,6 +252,7 @@ copy_kineto_traces() {
 
 		# If no rank-specific file found, take the first JSON trace
 		if [[ -z ${rank0_trace} ]]; then
+			# shellcheck disable=SC2312
 			rank0_trace=$(find "${profile_trace_dir}" -maxdepth 2 -name "*.json" -type f 2> /dev/null | head -n 1)
 		fi
 	fi
@@ -322,7 +327,7 @@ launch_torchtitan() {
 	local extra_args=("$@")
 
 	local config_file
-	config_file=$(get_config_file "$workload_name") || exit 1
+	config_file=$(get_config_file "${workload_name}") || exit 1
 
 	if [[ ! -f ${config_file} ]]; then
 		echo "ERROR: Config file not found: ${config_file}"
@@ -331,8 +336,7 @@ launch_torchtitan() {
 
 	# Get the correct model path for this workload
 	local model_path
-	model_path=$(get_model_hf_path "${workload_name}")
-	if [[ $? -ne 0 ]]; then
+	if ! model_path=$(get_model_hf_path "${workload_name}"); then
 		exit 1
 	fi
 
@@ -370,7 +374,7 @@ launch_torchtitan_with_nsys() {
 	local nsys_prefix="$2"
 
 	local config_file
-	config_file=$(get_config_file "$workload_name") || exit 1
+	config_file=$(get_config_file "${workload_name}") || exit 1
 
 	if [[ ! -f ${config_file} ]]; then
 		echo "ERROR: Config file not found: ${config_file}"
@@ -379,8 +383,7 @@ launch_torchtitan_with_nsys() {
 
 	# Get the correct model path for this workload
 	local model_path
-	model_path=$(get_model_hf_path "${workload_name}")
-	if [[ $? -ne 0 ]]; then
+	if ! model_path=$(get_model_hf_path "${workload_name}"); then
 		exit 1
 	fi
 
@@ -428,7 +431,7 @@ launch_torchtitan_with_nsys() {
 				--model.hf_assets_path "${model_path}" \
 				--profiling.enable_profiling False
 			;;
-		both|*)
+		both | *)
 			# Both Nsys + Torch Profiler (default)
 			echo "Launching TorchTitan with Nsys + Torch Profiler..."
 			echo "  Config: ${config_file}"
@@ -459,18 +462,21 @@ launch_torchtitan_with_nsys() {
 print_job_summary() {
 	local workload_name="$1"
 	local config_file
-	config_file=$(get_config_file "$workload_name") || exit 1
+	config_file=$(get_config_file "${workload_name}") || exit 1
 
 	echo ""
 	echo "============================================================================="
 	echo "CCL-Bench Training Job: ${workload_name}"
 	echo "============================================================================="
+	# shellcheck disable=SC2154
 	echo "Job ID:         ${SLURM_JOB_ID}"
+	# shellcheck disable=SC2154
 	echo "Job Name:       ${SLURM_JOB_NAME}"
 	echo "Nodes:          ${SLURM_JOB_NUM_NODES}"
 	echo "GPUs per Node:  ${SLURM_GPUS_PER_NODE}"
 	echo "Total GPUs:     ${WORLD_SIZE}"
 	echo "Trace Dir:      ${TRACE_DIR}"
+	# shellcheck disable=SC2312
 	echo "Start Time:     $(date)"
 	echo "-----------------------------------------------------------------------------"
 
@@ -488,6 +494,7 @@ print_job_complete() {
 	echo ""
 	echo "============================================================================="
 	echo "Job Complete: ${SLURM_JOB_NAME}"
+	# shellcheck disable=SC2312
 	echo "End Time:     $(date)"
 	echo "Traces saved to: ${TRACE_DIR}"
 	echo "============================================================================="

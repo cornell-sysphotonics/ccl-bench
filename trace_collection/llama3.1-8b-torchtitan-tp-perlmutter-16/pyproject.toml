@@ -8,10 +8,8 @@ description = "LLaMA-3.1-8B training with Pure Tensor Parallelism (TP=4) on Perl
 readme = "README.md"
 requires-python = ">=3.10.12,<3.11"
 dependencies = [
-    "torch>=2.9.1 ; sys_platform == 'linux'",
-    "torchvision ; sys_platform == 'linux'",
-    "torchaudio ; sys_platform == 'linux'",
-    "torchtitan>=0.2.0 ; sys_platform == 'linux'",
+  "torch>=2.9.1 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "torchtitan>=0.2.0 ; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [build-system]
@@ -26,10 +24,8 @@ managed = true
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cu129" }]
-torchvision = [{ index = "pytorch-cu129" }]
-torchaudio = [{ index = "pytorch-cu129" }]
 
 [[tool.uv.index]]
 name = "pytorch-cu129"
-url = "https://download.pytorch.org/whl/nightly/cu129"
+url = "https://download.pytorch.org/whl/cu129"
 explicit = true
