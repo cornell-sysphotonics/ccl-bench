@@ -7,6 +7,7 @@ outputs
 dist/*
 .vscode
 .vs
+.env
 
 # data
 data
