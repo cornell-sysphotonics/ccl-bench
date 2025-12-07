@@ -1,4 +1,4 @@
-# Tool Development 
+# Tool Development
 
 Tool development: Byungsoo, Jamal
 
@@ -11,7 +11,7 @@ Metric collection: Byungsoo, Jinkun
     Example: `ccl-bench/trace_collection/llama3-8B_torchtitan_perlmutter`
 
 2. Define metrics
-    
+
     Should always include a number (integer, float) that could be presented on the benchmark.
     Other metric format could be collected in addition, such as distribution, or time series.
 
@@ -33,7 +33,7 @@ Metric collection: Byungsoo, Jinkun
     ./scripts/get_<name of metric>.sh
     ```
 
-## Metrics 
+## Metrics
 
 1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
 2. `throughput_tokens_sec`: throughput measured in tokens per second
