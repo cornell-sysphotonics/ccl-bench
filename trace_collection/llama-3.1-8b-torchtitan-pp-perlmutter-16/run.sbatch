@@ -11,52 +11,49 @@
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=128
 #SBATCH -t 00:30:00
-#SBATCH --output=logs/llama3_8b_pp_%j.out
-#SBATCH --error=logs/llama3_8b_pp_%j.err
+#SBATCH --module=gpu,nccl-plugin
 
 set -euo pipefail
 
-# Source common configuration from perlmutter directory
-# Navigate from workload folder to project root, then to perlmutter/
+# =============================================================================
+# Setup Paths
+# =============================================================================
 WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
+LOGS_DIR="${WORKLOAD_DIR}/logs"
+mkdir -p "${LOGS_DIR}"
 
-# Source workload environment configuration first
-if [[ -f "${WORKLOAD_DIR}/env.sh" ]]; then
-	# shellcheck disable=SC1091
-	source "${WORKLOAD_DIR}/env.sh"
-fi
+# Redirect output to logs directory
+exec > "${LOGS_DIR}/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out" 2> "${LOGS_DIR}/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.err"
 
-source "${PROJECT_ROOT}/perlmutter/common.sh"
+# Source environment configuration
+# shellcheck disable=SC1091
+source "${WORKLOAD_DIR}/env.sh"
 
-# =============================================================================
-# Workload Configuration
-# =============================================================================
-WORKLOAD_NAME="llama3_8b_pp"
-NSYS_PREFIX="llama3_8b_pp"
-
-# Profiling Mode: "both" (default), "nsys" (Nsys only), "torch" (Torch Profiler only)
-# Set via: export PROFILE_MODE=nsys  (before sbatch, or uncomment below)
-# export PROFILE_MODE="both"
+# Source common functions
+# shellcheck disable=SC1091
+source "${WORKLOAD_DIR}/common.sh"
 
 # =============================================================================
 # Job Execution
 # =============================================================================
 
-# Setup environment
-setup_runtime_paths
-setup_distributed
-setup_trace_dir "${WORKLOAD_NAME}"
+# Setup trace directory
+setup_trace_dir "${WORKLOAD_DIR}"
 
 # Print job summary
-print_job_summary "${WORKLOAD_NAME}"
+print_job_summary
 
-# Create logs directory if needed
-mkdir -p "${CCL_BENCH_HOME}/logs"
+# Activate virtual environment
+if [[ -f "${VENV_DIR}/bin/activate" ]]; then
+	# shellcheck disable=SC1091
+	source "${VENV_DIR}/bin/activate"
+fi
+
+# Change to trace directory for output
+cd "${TRACE_DIR}"
 
 # Launch training with NSys profiling
-cd "${TRACE_DIR}"
-launch_torchtitan_with_nsys "${WORKLOAD_NAME}" "${NSYS_PREFIX}"
+launch_torchtitan_nsys "llama3_8b_pp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
 
 # Job complete
 print_job_complete

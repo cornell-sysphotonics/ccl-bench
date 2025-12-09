@@ -50,3 +50,41 @@ export VENV_DIR="${SCRATCH}/ccl-bench-venv"
 
 # Base directory for all collected traces (nsys, torch profiler, etc.)
 export TRACE_BASE="${SCRATCH}/ccl-bench-traces"
+
+# =============================================================================
+# MPI Configuration
+# =============================================================================
+
+# GPU-aware MPI (needed for CUDA ptrs in MPI & GPUDirect RDMA)
+export MPICH_GPU_SUPPORT_ENABLED=1
+
+# =============================================================================
+# OpenMP Configuration
+# =============================================================================
+
+# Reasonable number of CPU threads per rank (tune if needed)
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
+
+# =============================================================================
+# NCCL Configuration
+# =============================================================================
+
+# Debug level: WARN (default), INFO (verbose), or TRACE (very verbose)
+export NCCL_DEBUG="${NCCL_DEBUG:-INFO}"
+
+# Enable async error handling for robustness
+export NCCL_ASYNC_ERROR_HANDLING=1
+
+# =============================================================================
+# Distributed Training Configuration
+# =============================================================================
+
+# Master address and port for torch.distributed
+# MASTER_ADDR is set dynamically from SLURM_JOB_NODELIST when running under Slurm
+if [[ -n ${SLURM_JOB_NODELIST:-} ]]; then
+	MASTER_ADDR=$(scontrol show hostnames "${SLURM_JOB_NODELIST}" | head -n 1 || true)
+	export MASTER_ADDR
+else
+	export MASTER_ADDR="${MASTER_ADDR:-localhost}"
+fi
+export MASTER_PORT="${MASTER_PORT:-29500}"

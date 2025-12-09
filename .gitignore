@@ -38,6 +38,11 @@ _remote_module_non_scriptable.py
 
 env
 
+# SLURM job logs
+logs/
+*.out
+*.err
+
 nsys-res/*
 topology.xml
 # Editor temporaries (VIM)
