@@ -1,8 +1,5 @@
-# TorchTitan-Perlmutter-16 Workload Dependencies
-# Part of CCL-Bench workspace
-
 [project]
-name = "torchtitan-perlmutter-16"
+name = "torchtitan-perlmutter-16-workload"
 version = "0.1.0"
 description = "TorchTitan training workload on Perlmutter"
 requires-python = ">=3.10.12,<3.11"

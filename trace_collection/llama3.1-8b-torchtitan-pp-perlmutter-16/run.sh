@@ -19,6 +19,12 @@ WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
 WORKLOAD_NAME="$(basename "${WORKLOAD_DIR}")"
 
+# Source environment configuration
+if [[ -f "${WORKLOAD_DIR}/env.sh" ]]; then
+	# shellcheck disable=SC1091
+	source "${WORKLOAD_DIR}/env.sh"
+fi
+
 # Check for dry-run flag
 DRY_RUN=false
 if [[ ${1:-} == "--dry-run" ]]; then

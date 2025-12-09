@@ -41,19 +41,6 @@ managed = true
 # Default dependency groups to include
 default-groups = ["dev"]
 
-# Workspace configuration - each workload is a separate package
-[tool.uv.workspace]
-members = [
-  "trace_collection/llama3.1-8b-torchtitan-pp-perlmutter-16",
-  "trace_collection/llama3.1-8b-torchtitan-tp-perlmutter-16",
-  "trace_collection/deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16",
-  "trace_collection/deepseek-v2-lite-torchtitan-dp+tp-perlmutter-16",
-  "trace_collection/qwen3-32b-torchtitan-3d-perlmutter-16",
-  "trace_collection/qwen3-32b-torchtitan-dp+pp-perlmutter-16",
-  "trace_collection/qwen3-32b-torchtitan-dp+tp-perlmutter-16",
-]
-
-
 # ============================================================================
 # Dependency Groups (PEP 735)
 # ============================================================================

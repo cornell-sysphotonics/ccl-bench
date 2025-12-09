@@ -20,6 +20,13 @@ set -euo pipefail
 # Navigate from workload folder to project root, then to perlmutter/
 WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
+
+# Source workload environment configuration first
+if [[ -f "${WORKLOAD_DIR}/env.sh" ]]; then
+	# shellcheck disable=SC1091
+	source "${WORKLOAD_DIR}/env.sh"
+fi
+
 source "${PROJECT_ROOT}/perlmutter/common.sh"
 
 # =============================================================================
