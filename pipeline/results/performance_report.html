@@ -1,0 +1,48 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>NCCL vs MSCCL++ Performance Analysis Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                th { background-color: #4CAF50; color: white; }
+                tr:nth-child(even) { background-color: #f2f2f2; }
+                .highlight { background-color: #ffffcc; }
+                .improvement { color: green; font-weight: bold; }
+                .regression { color: red; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>NCCL vs MSCCL++ Performance Analysis Report</h1>
+            <p>Generated On: 2025-12-08 12:21:06</p>
+            
+            <h2>Performance Comparison</h2>
+            <table>
+                <tr>
+                    <th>Metric</th>
+        <th>NCCL</th><th>MSCCL++</th><th>Improvement (%)</th></tr><tr><td>Throughput (tokens/sec)</td><td>10756.302521</td><td>10666.666667</td><td class="regression">-0.8%</td></tr><tr><td>Communication Overhead (%)</td><td>0.480093</td><td>0.457897</td><td class="improvement">-4.6%</td></tr><tr><td>Bandwidth Utilization (%)</td><td>0.007182</td><td>0.007468</td><td class="improvement">+4.0%</td></tr><tr><td>Compute/Communication Ratio</td><td>207.293113</td><td>217.389670</td><td class="improvement">+4.9%</td></tr>
+            </table>
+            
+            <h2>Detailed Configuration</h2>
+            <h3>Model Configuration</h3>
+            <ul>
+                <li>Model Name: Llama-3.1-8B-LoRA</li>
+                <li>Batch Size: 10</li>
+                <li>Sequence Length: 512</li>
+                <li>Trainable Parameters: 10M (LoRA)</li>
+            </ul>
+            
+            <h3>Hardware Configuration</h3>
+            <ul>
+                <li>GPU: NVIDIA A100</li>
+                <li>Node Count: 2</li>
+                <li>Theoretical Bandwidth (Inter-node): 25 GB/s</li>
+            </ul>
+            
+            <h2>Performance Analysis</h2>
+            <img src="performance_comparison.png" alt="Performance Comparison Chart" style="max-width: 100%;">
+        </body>
+        </html>
+        

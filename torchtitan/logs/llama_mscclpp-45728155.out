@@ -1,0 +1,732 @@
+Starting Training with MSCCL++ (Job ID: 45728155)...
+3: [titan] 2025-11-26 19:32:24,829 - root - INFO - Starting job: Llama 3 8B training
+5: [titan] 2025-11-26 19:32:24,833 - root - INFO - Starting job: Llama 3 8B training
+6: [titan] 2025-11-26 19:32:24,833 - root - INFO - Starting job: Llama 3 8B training
+4: [titan] 2025-11-26 19:32:24,852 - root - INFO - Starting job: Llama 3 8B training
+7: [titan] 2025-11-26 19:32:24,857 - root - INFO - Starting job: Llama 3 8B training
+0: [titan] 2025-11-26 19:32:24,858 - root - INFO - Starting job: Llama 3 8B training
+1: [titan] 2025-11-26 19:32:24,876 - root - INFO - Starting job: Llama 3 8B training
+2: [titan] 2025-11-26 19:32:24,884 - root - INFO - Starting job: Llama 3 8B training
+1: [titan] 2025-11-26 19:32:25,849 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+2: [titan] 2025-11-26 19:32:25,849 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+3: [titan] 2025-11-26 19:32:25,850 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+0: [titan] 2025-11-26 19:32:25,851 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+6: [titan] 2025-11-26 19:32:25,859 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+5: [titan] 2025-11-26 19:32:25,859 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+4: [titan] 2025-11-26 19:32:25,859 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+7: [titan] 2025-11-26 19:32:25,860 - root - INFO - Building 1-D device mesh with ['dp_shard'], [8]
+1: [titan] 2025-11-26 19:32:25,896 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+2: [titan] 2025-11-26 19:32:25,896 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+3: [titan] 2025-11-26 19:32:25,896 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+0: [titan] 2025-11-26 19:32:25,896 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+5: [titan] 2025-11-26 19:32:25,909 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+4: [titan] 2025-11-26 19:32:25,909 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+6: [titan] 2025-11-26 19:32:25,909 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+7: [titan] 2025-11-26 19:32:25,910 - root - INFO - [GC] Initial GC collection. 0.00 seconds.
+3: [titan] 2025-11-26 19:32:26,083 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+3: [titan] 2025-11-26 19:32:26,083 - root - INFO - Preparing c4 dataset from allenai/c4
+2: [titan] 2025-11-26 19:32:26,087 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+2: [titan] 2025-11-26 19:32:26,087 - root - INFO - Preparing c4 dataset from allenai/c4
+1: [titan] 2025-11-26 19:32:26,089 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+0: [titan] 2025-11-26 19:32:26,089 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+1: [titan] 2025-11-26 19:32:26,089 - root - INFO - Preparing c4 dataset from allenai/c4
+0: [titan] 2025-11-26 19:32:26,089 - root - INFO - Preparing c4 dataset from allenai/c4
+6: [titan] 2025-11-26 19:32:26,095 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+6: [titan] 2025-11-26 19:32:26,095 - root - INFO - Preparing c4 dataset from allenai/c4
+5: [titan] 2025-11-26 19:32:26,095 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+5: [titan] 2025-11-26 19:32:26,095 - root - INFO - Preparing c4 dataset from allenai/c4
+4: [titan] 2025-11-26 19:32:26,099 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+4: [titan] 2025-11-26 19:32:26,099 - root - INFO - Preparing c4 dataset from allenai/c4
+7: [titan] 2025-11-26 19:32:26,101 - root - INFO - TikTokenizer built: #words 128256, BOS ID 128000, EOS ID 128001
+7: [titan] 2025-11-26 19:32:26,101 - root - INFO - Preparing c4 dataset from allenai/c4
+1: Request 1b124dd7-71d3-4074-9eeb-23149fd3c9dc: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+0: Request 30ac7a07-97cf-4877-ba6b-7928d644763d: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+3: Request 02530bbb-9433-4332-83e5-b1ef127034d0: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+2: Request af31816d-6b73-49bd-adcf-7c09ffb4d830: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+6: Request bae2d8a6-41d7-409f-ba3a-db977b88881a: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+4: Request 6a305cbd-683e-419e-8b62-5495a179a244: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+7: Request 066e5228-5ee1-4c80-af2f-8096372e7d4b: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+5: Request 7aa07ef7-5f7d-4144-94cf-b88c0b8a2317: HEAD https://huggingface.co/datasets/allenai/c4/resolve/main/README.md (authenticated: True)
+0: Request 07c2e9e2-3678-4a7d-8fd4-7751e3ac1280: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+3: Request d343c719-b85b-4d46-9b42-405f0f6f92e2: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+2: Request cd7b7fb5-e824-4db0-ba1c-948673d523cc: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+7: Request 2c92e3d9-3c50-481d-8e2f-c0dcf9c2bce4: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+6: Request 3aac01dc-123b-4830-b544-58bd225e0dd0: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+4: Request e00bc753-57f7-4a49-97c8-570a4d85f696: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+5: Request ed3a3ee7-fa1d-4b57-87ad-84e432bddd67: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+2: Request 1989fa5e-3e5c-4753-8364-0e37f5bf87e1: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+3: Request 9dc86afc-99f9-49ac-b6a1-d400479a4901: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+0: Request ec25b97c-b287-408f-a7bf-24925bab892d: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+7: Request e5163ee1-0d51-4d1a-8390-80b6e4b88978: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+6: Request 7ec0b351-439d-4273-9bcd-01dc92823da4: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+4: Request f10040d7-95b2-44a4-a5db-40c286e6a82b: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+5: Request ff6cb966-d0dc-47df-915a-ba89a1241591: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+0: Request b2b930b5-3984-4f7c-9f68-4cfd554eb933: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+3: Request b106f2f3-8792-4d80-917e-2b7e8bafa3ef: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+4: Request 71df701e-3211-4a1d-b910-11a4360c073e: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+7: Request b9210ae7-385e-447e-adee-ab723579e33b: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+6: Request ba84aaa2-728f-4dca-9db0-156547d72af5: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+2: Request 35655526-f964-4af4-a92c-93956709947b: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+5: Request 186d3ac1-c51d-4f33-85dc-c8ea3903e20b: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+6: Request 4cf02f96-42d9-4d7a-b125-59781b1c1f99: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+2: Request 1352f7f6-9b98-4893-9d39-9c9da14882cf: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+4: Request 8db99a61-2b9d-45db-939b-c5a3cef2f592: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+3: Request 683d989f-67db-43b8-9e46-753cb6cb143f: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+5: Request 453084a6-9a02-4b5b-af1e-7bb8b929ccf9: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+0: Request cda666a6-b784-44a0-a438-39d75ed55a5e: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+7: Request 44affad9-66ed-4ea4-9767-709f6b672a83: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+1: Request 618dd7b4-396a-4379-845a-85e98b32eda7: HEAD https://huggingface.co/api/resolve-cache/datasets/allenai/c4/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/README.md (authenticated: True)
+1: Request fa0d0697-1443-4bc1-a143-a399358300f0: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/c4.py (authenticated: True)
+1: Request 14d711da-aa3f-4326-a9c8-dd78383a35d6: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/allenai/c4/allenai/c4.py (authenticated: False)
+1: Request 3c184d61-3df7-4056-8c3d-1fd994dbb025: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+2: Request 4fdccaf0-880c-49fe-be35-9c5e3ad6b994: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+4: Request 3c2b2879-40d2-406a-b0f3-137af18bec0c: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+3: Request a44d1beb-1a25-4f41-85c8-bfabfd8ab0b1: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+0: Request 0442118c-f6e4-4ce2-8da7-5dbc7de8a2ce: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+7: Request a70fbb36-d637-4d9d-862e-8335fc204c34: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+6: Request 0c962746-c6f4-44b9-85ef-cb954e77e460: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+2: Request c62a9068-d309-4ea6-8d08-43039c0dfc0f: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+3: Request 03d35368-e67b-4a1f-9f65-8796763bc173: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+4: Request 99e8b070-04b3-4807-9c8c-28e9fb104a88: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+5: Request b05388c4-fab6-4985-82d1-4f232db6bde1: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+7: Request 82d96b19-c09f-469a-82ce-d45d5703c085: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+0: Request 7862f9f2-8f7d-4494-8aae-e5ec2bc81b1e: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+6: Request bbabb57e-fc7a-45d9-8251-b238f828b33a: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+5: Request 050c8bfe-a3b5-40cf-807b-38150f6e65bc: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+3: Request 74be0f00-eff4-494f-b5e5-d62142006ff8: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+4: Request f36a1ccc-b17e-4a57-a38e-f021aeb8e017: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+2: Request 283182e1-8bc1-4a47-af7d-706212d6b32f: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+7: Request 1a701a18-b540-401d-b02c-e9c201dd35b4: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+6: Request 592493c8-6e5c-440e-b457-d1e7fcb3d1cf: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+0: Request a72527b7-db66-4863-b819-5d2d69fc731d: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+3: Request b0f4f3a8-2291-4800-a823-c4723106a86a: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+4: Request db472ff2-3fdc-4188-844c-65eb6429d912: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+5: Request 371b58d2-f223-46e7-86e2-380cf10744b2: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+2: Request e05669d4-3438-4bd3-a7b0-06aa1d36c24e: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+6: Request d2c2cda7-6361-4495-b51d-50d493e406bc: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+7: Request 0b8dec3f-10e1-40e1-be8a-de579845a2ef: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+0: Request dfceae72-8649-41e9-8963-d369f5fa1237: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+5: Request d480db9b-dd1a-4ce7-aeb2-660c4394e600: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+2: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+1: Request 257022f9-0fbc-4b71-89c7-58b6345c7c50: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/.huggingface.yaml (authenticated: True)
+2: Request 5e803191-9fca-4f7b-a3e0-0ebc17f97992: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+3: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+4: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+3: Request 53cba6b8-530c-436e-98b0-03f1e8d7fb4c: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+4: Request 0ffd2e87-8764-4546-83df-116dc2f0d926: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+7: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+7: Request 17d05e1e-4855-485b-a67e-0a74b6cf79d9: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+6: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+6: Request 009a56cb-217a-4812-94de-d71d25a9bf41: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+0: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+0: Request 5541e4a2-b08b-4cb3-a884-92cfd63fc913: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+1: Request dc5eb1c5-a681-43dd-a472-44cedee61df9: GET https://datasets-server.huggingface.co/info?dataset=allenai/c4 (authenticated: True)
+5: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+5: Request 41468f0d-7f24-4331-ab43-794dd2128e48: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+2: Request e058ed8d-8d75-414e-8382-875fcdf01176: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+4: Request d8e542e7-f633-46a0-b16b-606d89856f68: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+3: Request 0282b416-7894-445e-a987-51f59bb14891: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+7: Request 008fc90e-0c91-4469-b52f-ebc29d900642: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+6: Request b2964824-bebb-4820-b961-d31df92db6d8: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+0: Request 9e4154b1-c0cd-46a1-afdd-73aa1574fa70: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+5: Request bb6c50d2-9b80-4627-a383-e8c5425f23fa: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+2: [titan] 2025-11-26 19:32:28,894 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+3: [titan] 2025-11-26 19:32:28,899 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+1: Request 779edf3a-1fce-44fe-bbc9-d46c3225ab32: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2?recursive=False&expand=False (authenticated: True)
+4: [titan] 2025-11-26 19:32:28,912 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+7: [titan] 2025-11-26 19:32:28,970 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+6: [titan] 2025-11-26 19:32:28,990 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+0: [titan] 2025-11-26 19:32:29,010 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+1: Request bd716e01-20cf-4b88-9ba4-cd3a5cefdd4e: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+5: [titan] 2025-11-26 19:32:29,031 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+3: [titan] 2025-11-26 19:32:29,226 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+2: [titan] 2025-11-26 19:32:29,226 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+1: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+1: Request 1947b447-7202-4649-837e-0f9d252e25ec: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+3: [titan] 2025-11-26 19:32:29,243 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+2: [titan] 2025-11-26 19:32:29,243 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+3: [titan] 2025-11-26 19:32:29,243 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+2: [titan] 2025-11-26 19:32:29,244 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+3: [titan] 2025-11-26 19:32:29,244 - root - INFO - Applied selective activation checkpointing to the model
+2: [titan] 2025-11-26 19:32:29,245 - root - INFO - Applied selective activation checkpointing to the model
+4: [titan] 2025-11-26 19:32:29,258 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+7: [titan] 2025-11-26 19:32:29,266 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+6: [titan] 2025-11-26 19:32:29,279 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+4: [titan] 2025-11-26 19:32:29,283 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+7: [titan] 2025-11-26 19:32:29,283 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+4: [titan] 2025-11-26 19:32:29,284 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+7: [titan] 2025-11-26 19:32:29,284 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+4: [titan] 2025-11-26 19:32:29,285 - root - INFO - Applied selective activation checkpointing to the model
+6: [titan] 2025-11-26 19:32:29,285 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+7: [titan] 2025-11-26 19:32:29,285 - root - INFO - Applied selective activation checkpointing to the model
+6: [titan] 2025-11-26 19:32:29,285 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+6: [titan] 2025-11-26 19:32:29,287 - root - INFO - Applied selective activation checkpointing to the model
+0: [titan] 2025-11-26 19:32:29,309 - root - INFO - TensorBoard logging enabled. Logs will be saved at ./outputs/tb/20251126-1932
+0: [titan] 2025-11-26 19:32:29,309 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+0: [titan] 2025-11-26 19:32:29,314 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+0: [titan] 2025-11-26 19:32:29,315 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+0: [titan] 2025-11-26 19:32:29,316 - root - INFO - Applied selective activation checkpointing to the model
+5: [titan] 2025-11-26 19:32:29,319 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+5: [titan] 2025-11-26 19:32:29,324 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+5: [titan] 2025-11-26 19:32:29,325 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+5: [titan] 2025-11-26 19:32:29,326 - root - INFO - Applied selective activation checkpointing to the model
+3: [titan] 2025-11-26 19:32:29,375 - root - INFO - Applied FSDP to the model
+2: [titan] 2025-11-26 19:32:29,378 - root - INFO - Applied FSDP to the model
+7: [titan] 2025-11-26 19:32:29,412 - root - INFO - Applied FSDP to the model
+6: [titan] 2025-11-26 19:32:29,412 - root - INFO - Applied FSDP to the model
+4: [titan] 2025-11-26 19:32:29,413 - root - INFO - Applied FSDP to the model
+0: [titan] 2025-11-26 19:32:29,426 - root - INFO - Applied FSDP to the model
+5: [titan] 2025-11-26 19:32:29,432 - root - INFO - Applied FSDP to the model
+1: Request c0529820-1727-46eb-baf5-20123c0bce1e: HEAD https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/dataset_infos.json (authenticated: True)
+1: [titan] 2025-11-26 19:32:29,647 - root - INFO - Building llama3 8B with TransformerModelArgs(_enforced='This field is used to enforce all fields have defaults.', dim=4096, n_layers=32, n_heads=32, n_kv_heads=8, vocab_size=128256, multiple_of=1024, ffn_dim_multiplier=1.3, norm_eps=1e-05, rope_theta=500000, max_seq_len=8192, depth_init=True, use_flex_attn=False, attn_mask_type='causal', eos_id=128001)
+0: [titan] 2025-11-26 19:32:29,793 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+0: [titan] 2025-11-26 19:32:29,793 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+0: [titan] 2025-11-26 19:32:29,794 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+3: [titan] 2025-11-26 19:32:29,795 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+3: [titan] 2025-11-26 19:32:29,795 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+0: [titan] 2025-11-26 19:32:29,796 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+0: [titan] 2025-11-26 19:32:29,796 - root - INFO - Mixed precision training is handled by fully_shard
+3: [titan] 2025-11-26 19:32:29,796 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+0: [titan] 2025-11-26 19:32:29,796 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+0: [titan] 2025-11-26 19:32:29,796 - root - INFO - Training starts at step 1.
+0: [titan] 2025-11-26 19:32:29,796 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+3: [titan] 2025-11-26 19:32:29,797 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+3: [titan] 2025-11-26 19:32:29,797 - root - INFO - Mixed precision training is handled by fully_shard
+3: [titan] 2025-11-26 19:32:29,797 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+3: [titan] 2025-11-26 19:32:29,797 - root - INFO - Training starts at step 1.
+3: [titan] 2025-11-26 19:32:29,797 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+2: [titan] 2025-11-26 19:32:29,798 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+2: [titan] 2025-11-26 19:32:29,798 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+2: [titan] 2025-11-26 19:32:29,798 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+2: [titan] 2025-11-26 19:32:29,800 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+2: [titan] 2025-11-26 19:32:29,800 - root - INFO - Mixed precision training is handled by fully_shard
+2: [titan] 2025-11-26 19:32:29,800 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+2: [titan] 2025-11-26 19:32:29,800 - root - INFO - Training starts at step 1.
+2: [titan] 2025-11-26 19:32:29,800 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+3: Request fb8d5693-99a6-4e0d-b13e-b6f4d31d3adb: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+0: Request ac8b4d62-df1e-440f-a0fa-93e07b293a4b: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+2: Request ead83dce-6c62-45be-affe-d7d05c7ebab2: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+6: [titan] 2025-11-26 19:32:29,873 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+6: [titan] 2025-11-26 19:32:29,873 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+5: [titan] 2025-11-26 19:32:29,874 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+5: [titan] 2025-11-26 19:32:29,874 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+4: [titan] 2025-11-26 19:32:29,874 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+4: [titan] 2025-11-26 19:32:29,874 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+5: [titan] 2025-11-26 19:32:29,874 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+6: [titan] 2025-11-26 19:32:29,874 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+4: [titan] 2025-11-26 19:32:29,874 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+7: [titan] 2025-11-26 19:32:29,875 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+7: [titan] 2025-11-26 19:32:29,875 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+7: [titan] 2025-11-26 19:32:29,875 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+5: [titan] 2025-11-26 19:32:29,876 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+6: [titan] 2025-11-26 19:32:29,876 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+4: [titan] 2025-11-26 19:32:29,876 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+6: [titan] 2025-11-26 19:32:29,876 - root - INFO - Mixed precision training is handled by fully_shard
+5: [titan] 2025-11-26 19:32:29,876 - root - INFO - Mixed precision training is handled by fully_shard
+6: [titan] 2025-11-26 19:32:29,876 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+5: [titan] 2025-11-26 19:32:29,876 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+5: [titan] 2025-11-26 19:32:29,876 - root - INFO - Training starts at step 1.
+6: [titan] 2025-11-26 19:32:29,876 - root - INFO - Training starts at step 1.
+4: [titan] 2025-11-26 19:32:29,876 - root - INFO - Mixed precision training is handled by fully_shard
+5: [titan] 2025-11-26 19:32:29,876 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+4: [titan] 2025-11-26 19:32:29,876 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+6: [titan] 2025-11-26 19:32:29,876 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+4: [titan] 2025-11-26 19:32:29,876 - root - INFO - Training starts at step 1.
+4: [titan] 2025-11-26 19:32:29,876 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+7: [titan] 2025-11-26 19:32:29,876 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+7: [titan] 2025-11-26 19:32:29,876 - root - INFO - Mixed precision training is handled by fully_shard
+7: [titan] 2025-11-26 19:32:29,877 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+7: [titan] 2025-11-26 19:32:29,877 - root - INFO - Training starts at step 1.
+7: [titan] 2025-11-26 19:32:29,877 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+5: Request a9f31af0-cc46-483b-8101-9ad549a843b6: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+6: Request d694a459-bc10-45ab-b6e8-77fb7717e841: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+4: Request c726af1f-0a35-4954-acdf-1d9842c4e6e5: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+7: Request ae7cd76b-e0da-4fb5-8cd3-941205b4a51a: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+1: [titan] 2025-11-26 19:32:29,948 - root - INFO - CUDA capacity: NVIDIA A100-SXM4-40GB with 39.38GiB memory
+1: [titan] 2025-11-26 19:32:29,954 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+1: [titan] 2025-11-26 19:32:29,955 - root - INFO - [34mModel llama3 8B [31msize: 8,030,261,248 total parameters[39m
+1: [titan] 2025-11-26 19:32:29,956 - root - INFO - Applied selective activation checkpointing to the model
+1: [titan] 2025-11-26 19:32:30,063 - root - INFO - Applied FSDP to the model
+3: Request bcfaec9f-ddf9-40f5-bf76-a8c7f2eca7dc: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+6: Request d1bea535-85f3-4eb3-8510-41445df0a792: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+0: Request 1f460b8c-c1f8-45a9-9aff-c1a1893e7e5d: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+3: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+3: Request 4feda139-5e61-41bd-9b62-d5b1341ed972: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+1: [titan] 2025-11-26 19:32:30,378 - root - WARNING - Error running lspci: [Errno 2] No such file or directory: 'lspci', fallback to use device_name
+1: [titan] 2025-11-26 19:32:30,378 - root - INFO - Peak FLOPS used for computing MFU: 3.120e+14
+1: [titan] 2025-11-26 19:32:30,379 - root - INFO - CUDA memory usage for model: 3.76GiB(9.56%)
+1: [titan] 2025-11-26 19:32:30,380 - root - WARNING - Warmup steps (200) exceed total training steps (50). Adjusting warmup steps to 50.
+1: [titan] 2025-11-26 19:32:30,380 - root - INFO - Mixed precision training is handled by fully_shard
+1: [titan] 2025-11-26 19:32:30,380 - root - INFO - Trainer is initialized with local batch size 1, global batch size 8, gradient accumulation steps 1, sequence length 8192, total steps 50 (warmup 200).
+1: [titan] 2025-11-26 19:32:30,381 - root - INFO - Training starts at step 1.
+1: [titan] 2025-11-26 19:32:30,381 - root - INFO - Profiling active. Traces will be saved at ./outputs/profile_trace
+5: Request 84d1d5b1-a37e-4aff-b4ea-355ca2042f24: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+1: Request 733dfb60-1816-450c-9489-f3d632e71237: GET https://huggingface.co/api/datasets/allenai/c4/revision/1588ec454efa1a09f29cd18ddd04fe05fc8653a2 (authenticated: True)
+6: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+6: Request 7dcd4a7f-6fbb-4632-9345-60ca84650593: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+0: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+0: Request 4d44a357-be5b-4fa2-8731-6827fd7de446: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+2: Request 480e1bf3-87aa-4bc1-bf2b-c03884bddc7e: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+4: Request 1e00877f-f4d2-4a73-89f0-081261926ce3: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+7: Request a744628b-269d-4fc3-8e7a-f48fb9958108: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+6: Request c121df31-2595-4c3b-8a53-4115eaa65eb7: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00006-of-01024.json.gz (authenticated: True)
+3: Request 3b3fe5d2-2af7-495c-a6f4-eaf1f9050975: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00003-of-01024.json.gz (authenticated: True)
+0: Request d17b6e0e-a358-401a-9139-8e3eb4a87372: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00000-of-01024.json.gz (authenticated: True)
+5: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+5: Request 1f9ef0f1-9ab6-41eb-9073-325e49c2e0a1: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+6: Request c121df31-2595-4c3b-8a53-4115eaa65eb7: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/6b2563bb8cf827943b9928d532b201d80bbc935c26220fc59a059e37e582dfe7?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033230Z&X-Amz-Expires=3600&X-Amz-Signature=ea537487ba4a86d941e45b13678b7bc627793dc2efccd7fdc7a67237007c7e5d&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00006-of-01024.json.gz%3B+filename%3D%22c4-train.00006-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217950&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvNmIyNTYzYmI4Y2Y4Mjc5NDNiOTkyOGQ1MzJiMjAxZDgwYmJjOTM1YzI2MjIwZmM1OWEwNTll
+6: MzdlNTgyZGZlNyoifV19&Signature=bi2vMSDuMx1ixq6KCBuD6j329Egx2IpjHCu7f-V9PJM2NtoZDGOiZv7X-wVN1m4eF0kOytFbKjVFjngZHSEGBkNlb-KPv90jseQtLk6vzoaVV143DS~PW3THD8Zfvd~YJtaNPEGEwDTvTstnQ1iQiFSGnOVhjfWF6QBXufWpeIII5YDlxyvP7Bhm0RyAfQhZ0Mg2WD2B-xI~bOncCkViOPJE~ZSMtT-LwV7M6T-ejDKxpmgpO6x-hc3nyCMmzJElRWZtIk3zjHjustWAKPSN7oq8M4YaRT2QRs~5X7Lg82RlaCWumv8Oyb4~qHDnOIBp7qRzUIbBAyE-55G44JSRJw__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+3: Request 3b3fe5d2-2af7-495c-a6f4-eaf1f9050975: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/a20f257af4ab58526d8f66b50d36299eec45b2e79f25d94c8cb8186322bfb888?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033230Z&X-Amz-Expires=3600&X-Amz-Signature=b4920768d2bfb4b9469b0655f10252dfa54c196d4734bd150c03612db16f26e3&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00003-of-01024.json.gz%3B+filename%3D%22c4-train.00003-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217950&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvYTIwZjI1N2FmNGFiNTg1MjZkOGY2NmI1MGQzNjI5OWVlYzQ1YjJlNzlmMjVkOTRjOGNiODE4
+3: NjMyMmJmYjg4OCoifV19&Signature=Hn4Td36kXgpbGSt0UwtagCsizcsFo9A9r0tMY88YDONm3vXmjgxBX4mS2-smHb1vHjPBYcvWM-JVxeb1I3c6E-zWrfNCuPzDurUuA52PjiI0w-RPBd1o8th94zQTtdIDJMppA92o5h4GiqE6eCynADLgtiA718Jg25DonB0afd9Mvp4t6EE-PyMnc5O-WcJuQTZb0ZapTOjFo5iLdbvPTQePyGx8PF5hJReubk8BJroGEOl46Na3oUg6t~ArHnFOJahMka-2MlY3MeY0EERa5JhgTmKsTN1nvyJw75jJfgeKgRwtqJUh~wLufu1FDipTd0U3TTFX4c1G8jDblXTfDg__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+7: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+0: Request d17b6e0e-a358-401a-9139-8e3eb4a87372: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/6656aac078668b0d5feb1cfb7b04def05bff73e7e375d0a66e252827336ac1a8?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033230Z&X-Amz-Expires=3600&X-Amz-Signature=2e87a4df32b3602ab2789763e5f10e2f2e576817519aceb8fa32fbffacc8749d&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00000-of-01024.json.gz%3B+filename%3D%22c4-train.00000-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217950&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvNjY1NmFhYzA3ODY2OGIwZDVmZWIxY2ZiN2IwNGRlZjA1YmZmNzNlN2UzNzVkMGE2NmUyNTI4
+0: MjczMzZhYzFhOCoifV19&Signature=lncat~nKoLpeHVbxVo4dMamzJt6mKmG6GKP447SX1BV3vDX7nRHWr24~csB3MBtevA8JlnH0SfzQBNZ0PAo2NEI26mCou1WqCV0~Z3VHmEKdh-wKglc7cBYZ4a-l01BISFFy4W6eKooGTYcSP69AhAFQSeQrxYJgu4q504J~T3lpuZE~n0qcZrnvCjQZMLMgdAuWGvADJ86t4F3ZMG45XHyW-vzavkWrtRFuiguL5ZkK1or1VIWKa5dAk0WlGPcYCZ4Nee2ACRGaGx1tJStgmCTqWEw1uVZUTEf~56dM2c4AuwSMAN0i3gReteZgYCI7C3FtXRrzjlbQBpJBVnidjA__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+7: Request 01173bc8-b299-4d31-8a0a-8d531fc3fbbb: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+5: Request 0ee8571c-c677-4b5e-aaed-bacb38971266: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00005-of-01024.json.gz (authenticated: True)
+7: Request 0428e830-d718-4d6a-be02-11566d773c65: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00007-of-01024.json.gz (authenticated: True)
+4: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+4: Request d207d61a-989e-49b2-81a6-26e12a376857: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+5: Request 0ee8571c-c677-4b5e-aaed-bacb38971266: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/9ff78164fd3eb8b3e9b6366d3efe4d16d21108f674fd1d4f11c47720a700d371?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033230Z&X-Amz-Expires=3600&X-Amz-Signature=1875e3585ef47dbed0af6a201fed5bf88b69ab47849f081f2c73c95d841616d3&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00005-of-01024.json.gz%3B+filename%3D%22c4-train.00005-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217950&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvOWZmNzgxNjRmZDNlYjhiM2U5YjYzNjZkM2VmZTRkMTZkMjExMDhmNjc0ZmQxZDRmMTFjNDc3
+5: MjBhNzAwZDM3MSoifV19&Signature=bpYoYpIRUfKLaxh-JIQklkiGldq~CQimDtS~321KeH4kvBFCuVC6DGXz1ax8mhl0-qNMROIKdbL5AesIEmdSZHlfSYIa68weCAktkbVe7x0PUK1YJu7ZrEWc-HXqvuL66fVvTY9wwve4Wu7xmRqmfqG9m2IfyuIfe6IENnIhCW9M6RwEDtC987I2ZQI0ruFnptKXh9jrJATVHlBRrX0UjBPB6SXMF-CL~mGO0CMXMasHrZaFJuu5aSjyAcsULYpOv~asAtFCKyOW9DtGtmHLFpvXPx-BxUbHzM-pUo8YxVxz8XIUxxFGEytETsNS6CzpL30KVxIabY9WLCCw3MzT7Q__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+7: Request 0428e830-d718-4d6a-be02-11566d773c65: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/52b8eebfc10bc64fe30386652eabc479c504c5f4bc52a0e9cc76d0dcfa797e90?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033230Z&X-Amz-Expires=3600&X-Amz-Signature=d992882abe025a14c7b766081c7224b4a526d0137c1edc42bd5cc0b1fd66f393&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00007-of-01024.json.gz%3B+filename%3D%22c4-train.00007-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217950&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvNTJiOGVlYmZjMTBiYzY0ZmUzMDM4NjY1MmVhYmM0NzljNTA0YzVmNGJjNTJhMGU5Y2M3NmQw
+7: ZGNmYTc5N2U5MCoifV19&Signature=FmkX6hPEQiK09eSiikAH3zwl3L5BOkh3GqZjEYDxGc9vxwzxIjnZ6fgCGk8S78U3KsiR8Ok9TzT0uubLo~ZT07U5dg2oqt0QDjrTs335~BuFp5J1vdHcEtKmhpM~ZmbQJ6vNeqIS8sloOAzmGtHMQxi9W5V4XTfnFS~XVCQK9fcCaFseAbcPPBtU8-rAFoGjhwx~WofNilJXi17H68T4Xz04s3CJi-8eajqZIb-ELXj04lj66tBd5i68rAMheDW3DL2EnUjU-x4O9Zq1tuCrQhIRkl6aDGiw8zt7QWtiJOISHrtucom9LGO65xrpOFn1nBZPcR0xFBKlB9yBEUQPCA__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+4: Request d05bc3e7-9c03-4e0f-b28c-40e8ebdd5f71: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00004-of-01024.json.gz (authenticated: True)
+4: Request d05bc3e7-9c03-4e0f-b28c-40e8ebdd5f71: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/732ea51359e83c755ff7a289603bc934a5d50b7220002769b99b42f17034a706?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033230Z&X-Amz-Expires=3600&X-Amz-Signature=82e8b8e3151693948f23f99a7f5618465141f14a22e75e10e4443804624a7199&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00004-of-01024.json.gz%3B+filename%3D%22c4-train.00004-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217950&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvNzMyZWE1MTM1OWU4M2M3NTVmZjdhMjg5NjAzYmM5MzRhNWQ1MGI3MjIwMDAyNzY5Yjk5YjQy
+4: ZjE3MDM0YTcwNioifV19&Signature=ao-tJieHmlnoK5N94QZpcMAO0s1IaiDCpry9eJFe1SqKDEQvFZ09AlzVlHxMUIsBZkpFUOr6j8TLCFQpUyXXtsgJ8rw4stN0I5Npd5kSIPl94-eRE3WuXF4HWUUeT6UecIP1UqJ3Gyo~m3KMixvDGcr8GSAAuZ7O6djrGMQ7mguES79mAKCIXtjuoHyN36gyOg0VcUE0P3RUyE6tf1CbjeGL9c2z3JsarCkySzvPOrS5Jvu6XD2nlrBQHXnhAYyhPl-vhSLWwIkCREe43DBBDClsKK06-iReqjRyYnuFKXCf5j95dBCGEYFBi9vPkrBeqXEsPYzQFPOoMFZ6t1ZGWA__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+1: Request 58e0691e-c0e9-4bf3-baf7-4cc1348a7be3: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?recursive=False&expand=False (authenticated: True)
+1: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+1: Request ed497e0c-5122-4d90-afd6-def1b07211a9: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+1: Request 4a529897-f702-4d40-80dc-5ece9c308bf1: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00001-of-01024.json.gz (authenticated: True)
+1: Request 4a529897-f702-4d40-80dc-5ece9c308bf1: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/9f36194e2bf0cd3bd27a023ec7519b36c0dcc5c236eb2695517969d070de9aac?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033231Z&X-Amz-Expires=3600&X-Amz-Signature=60acb85f8c417e059b6a0a192ae6888113f6d8d1b43a203d2110ebeff8fc7417&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00001-of-01024.json.gz%3B+filename%3D%22c4-train.00001-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217951&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MX19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvOWYzNjE5NGUyYmYwY2QzYmQyN2EwMjNlYzc1MTliMzZjMGRjYzVjMjM2ZWIyNjk1NTE3OTY5
+1: ZDA3MGRlOWFhYyoifV19&Signature=gV-TwlmDtkQ-Jy6FcfW3Z5MoELllQA09FomdpnS63iWdqesfkS2OwsF8RSBTWylYX0TdQcY0ggjxB4HX1mDs9k~ZSS90tdsqLfo4s1m21OSi6vB5JL0PBK~HMwzOIprbCPRzaS6xrhoAawq7pZgGERbO6o-7QpsUsLvD4DXOlR6aSE6DXUGbMSFSD3Pj6rOSoDULC-TvQsl8RN5TYdD-bwJzypgK97kyas8hAtgLhNOXpuqy9X0sk-QuDBVTtSFNRZTBaxrCpAhkHmaNFj1GM9JYpyWzZyMO94-uI3XRa-mThbZimdDSlSSWRdYV0zhbJjYmxfYilBZszKuAjuO4qg__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+2: Pagination detected. Requesting next page: https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D
+2: Request 70361b46-27f4-47f6-ba62-3edcd7e34d54: GET https://huggingface.co/api/datasets/allenai/c4/tree/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en?expand=false&recursive=false&limit=1000&cursor=ZXlKbWFXeGxYMjVoYldVaU9pSmxiaTlqTkMxMGNtRnBiaTR3TURrNU9TMXZaaTB3TVRBeU5DNXFjMjl1TG1kNklpd2lkSEpsWlY5dmFXUWlPaUprWXprME0yTTBZelF3WmpVelpEQXlZak14WTJWa01XUmxabUUzWlRWbU5ETTRaRFU0TmpKbEluMD06MTAwMA%3D%3D (authenticated: True)
+2: Request 675e5f42-ce98-474d-874e-7db3ead630ec: GET https://huggingface.co/datasets/allenai/c4/resolve/1588ec454efa1a09f29cd18ddd04fe05fc8653a2/en/c4-train.00002-of-01024.json.gz (authenticated: True)
+2: Request 675e5f42-ce98-474d-874e-7db3ead630ec: GET https://cas-bridge.xethub.hf.co/xet-bridge-us/621ffdd236468d709f182a80/96adb94376f42df2255c7ad2fa02604236304fc487f7bb89b8bdee36a126f298?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20251127%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T033231Z&X-Amz-Expires=3600&X-Amz-Signature=4fa213e37072416ebc45ed05ae92afd3eb89e27be06cfb68139157abe4faca3a&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=68c8ff31125b011e2ff95b13&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27c4-train.00002-of-01024.json.gz%3B+filename%3D%22c4-train.00002-of-01024.json.gz%22%3B&response-content-type=application%2Fgzip&x-id=GetObject&Expires=1764217951&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NDIxNzk1MX19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82MjFmZmRkMjM2NDY4ZDcwOWYxODJhODAvOTZhZGI5NDM3NmY0MmRmMjI1NWM3YWQyZmEwMjYwNDIzNjMwNGZjNDg3ZjdiYjg5YjhiZGVl
+2: MzZhMTI2ZjI5OCoifV19&Signature=huOtRn4r1sJrk6FXJCmzV~c2jWdQLEkxZD~w71hzLGagnW9CIWacq8E94w5FBq-lq28kBeTcKR57x8UjsKzBQ9GWU-kbDLizt94jWg5qaZqzl-aoFEzvtNumEuZlMgDYgGA~~JxQWirLXnWBNUXCPAlmFgQcJAzMzePA17HPrCJOH8jeMJaViejLahwQQUifOHpaugrHCHBVr3R~N0oSyBJm07A-wbOoy0~gqtQxT6g~1T-3BdQXbiA-3Ke4y8xP2YJv9CVcQnxb4vBsPQLU26-fzGB-8aSYfYKhUE08TSwiOVpghMBgW-7Cm05ocyCSQJ1s-c~CPp7zh1GBXnDtrw__&Key-Pair-Id=K2L8F4GPSG1IFC (authenticated: False)
+7: [titan] 2025-11-26 19:32:33,270 - root - INFO - Process group destroyed.
+7: nid002817:1669019:1669019 [3] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.93<0>
+7: nid002817:1669019:1669019 [3] MSCCLPP INFO rank 7 nranks 8 - connecting to 10.100.28.113<48115>
+7: nid002817:1669019:1669019 [3] MSCCLPP INFO rank 7 - unix socket server started
+7: nid002817:1669019:1670433 [3] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 0
+7: nid002817:1669019:1669019 [3] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+7: nid002817:1669019:1669019 [3] MSCCLPP INFO Stopping unix socket server
+3: [titan] 2025-11-26 19:32:33,271 - root - INFO - Process group destroyed.
+4: [titan] 2025-11-26 19:32:33,270 - root - INFO - Process group destroyed.
+0: nid002816:1714963:1714963 [0] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.113<0>
+0: nid002816:1714963:1714963 [0] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.113<0>
+0: nid002816:1714963:1714963 [0] MSCCLPP INFO rank 0 nranks 8 - connecting to 10.100.28.113<48115>
+0: nid002816:1714963:1714963 [0] MSCCLPP INFO tryAccept: Call to try accept returned Resource temporarily unavailable, retrying
+0: nid002816:1714963:1714963 [0] MSCCLPP INFO rank 0 - unix socket server started
+0: nid002816:1714963:1716389 [0] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 3
+0: nid002816:1714963:1714963 [0] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+0: nid002816:1714963:1714963 [0] MSCCLPP INFO Stopping unix socket server
+0: [titan] 2025-11-26 19:32:33,271 - root - INFO - Process group destroyed.
+4: nid002817:1669020:1669020 [0] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.93<0>
+4: nid002817:1669020:1669020 [0] MSCCLPP INFO rank 4 nranks 8 - connecting to 10.100.28.113<48115>
+4: nid002817:1669020:1669020 [0] MSCCLPP INFO rank 4 - unix socket server started
+4: nid002817:1669020:1670435 [0] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 3
+4: nid002817:1669020:1669020 [0] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+4: nid002817:1669020:1669020 [0] MSCCLPP INFO Stopping unix socket server
+6: [titan] 2025-11-26 19:32:33,270 - root - INFO - Process group destroyed.
+3: nid002816:1714960:1714960 [3] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.113<0>
+3: nid002816:1714960:1714960 [3] MSCCLPP INFO rank 3 nranks 8 - connecting to 10.100.28.113<48115>
+3: nid002816:1714960:1714960 [3] MSCCLPP INFO tryAccept: Call to try accept returned Resource temporarily unavailable, retrying
+3: nid002816:1714960:1714960 [3] MSCCLPP INFO rank 3 - unix socket server started
+3: nid002816:1714960:1716386 [3] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 0
+3: nid002816:1714960:1714960 [3] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+3: nid002816:1714960:1714960 [3] MSCCLPP INFO Stopping unix socket server
+2: [titan] 2025-11-26 19:32:33,271 - root - INFO - Process group destroyed.
+6: nid002817:1669022:1669022 [2] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.93<0>
+6: nid002817:1669022:1669022 [2] MSCCLPP INFO rank 6 nranks 8 - connecting to 10.100.28.113<48115>
+6: nid002817:1669022:1669022 [2] MSCCLPP INFO tryAccept: Call to try accept returned Resource temporarily unavailable, retrying
+6: nid002817:1669022:1669022 [2] MSCCLPP INFO rank 6 - unix socket server started
+6: nid002817:1669022:1670438 [2] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 1
+6: nid002817:1669022:1669022 [2] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+6: nid002817:1669022:1669022 [2] MSCCLPP INFO Stopping unix socket server
+2: nid002816:1714962:1714962 [2] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.113<0>
+2: nid002816:1714962:1714962 [2] MSCCLPP INFO rank 2 nranks 8 - connecting to 10.100.28.113<48115>
+2: nid002816:1714962:1714962 [2] MSCCLPP INFO rank 2 - unix socket server started
+2: nid002816:1714962:1716387 [2] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 1
+2: nid002816:1714962:1714962 [2] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+2: nid002816:1714962:1714962 [2] MSCCLPP INFO Stopping unix socket server
+2: [rank2]: Traceback (most recent call last):
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+2: [rank2]:     return _run_code(code, main_globals, None,
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+2: [rank2]:     exec(code, run_globals)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+2: [rank2]:     trainer.train()
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+2: [rank2]:     return f(*args, **kwargs)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+2: [rank2]:     self.train_step(data_iterator)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+2: [rank2]:     loss = self.forward_backward_step(input_dict, labels)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+2: [rank2]:     pred = model_parts[0](inputs)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+2: [rank2]:     return self._call_impl(*args, **kwargs)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+2: [rank2]:     return inner()
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+4: [rank4]: Traceback (most recent call last):
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+4: [rank4]:     return _run_code(code, main_globals, None,
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+4: [rank4]:     exec(code, run_globals)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+4: [rank4]:     trainer.train()
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+4: [rank4]:     return f(*args, **kwargs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+4: [rank4]:     self.train_step(data_iterator)
+2: [rank2]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+2: [rank2]:     return torch._dynamo.disable(
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+2: [rank2]:     return fn(*args, **kwargs)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+2: [rank2]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+2: [rank2]:     self.unshard(self.unshard_async_op)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+4: [rank4]:     loss = self.forward_backward_step(input_dict, labels)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+4: [rank4]:     pred = model_parts[0](inputs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+4: [rank4]:     return self._call_impl(*args, **kwargs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+4: [rank4]:     return inner()
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+2: [rank2]:     self._all_gather_result = foreach_all_gather(
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+2: [rank2]:     return func(*args, **kwargs)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+2: [rank2]:     all_gather_work = all_gather_comm(
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+2: [rank2]:     return dist.all_gather_into_tensor(
+4: [rank4]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+4: [rank4]:     return torch._dynamo.disable(
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+4: [rank4]:     return fn(*args, **kwargs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+4: [rank4]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+4: [rank4]:     self.unshard(self.unshard_async_op)
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+2: [rank2]:     return func(*args, **kwargs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+4: [rank4]:     self._all_gather_result = foreach_all_gather(
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+4: [rank4]:     return func(*args, **kwargs)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+4: [rank4]:     all_gather_work = all_gather_comm(
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+4: [rank4]:     return dist.all_gather_into_tensor(
+2: [rank2]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+2: [rank2]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+2: [rank2]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+2: [rank2]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+2: [rank2]: Last error:
+2: 
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+4: [rank4]:     return func(*args, **kwargs)
+3: [rank3]: Traceback (most recent call last):
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+3: [rank3]:     return _run_code(code, main_globals, None,
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+3: [rank3]:     exec(code, run_globals)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+3: [rank3]:     trainer.train()
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+3: [rank3]:     return f(*args, **kwargs)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+3: [rank3]:     self.train_step(data_iterator)
+6: [rank6]: Traceback (most recent call last):
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+6: [rank6]:     return _run_code(code, main_globals, None,
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+6: [rank6]:     exec(code, run_globals)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+6: [rank6]:     trainer.train()
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+6: [rank6]:     return f(*args, **kwargs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+6: [rank6]:     self.train_step(data_iterator)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+3: [rank3]:     loss = self.forward_backward_step(input_dict, labels)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+3: [rank3]:     pred = model_parts[0](inputs)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+3: [rank3]:     return self._call_impl(*args, **kwargs)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+3: [rank3]:     return inner()
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+6: [rank6]:     loss = self.forward_backward_step(input_dict, labels)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+6: [rank6]:     pred = model_parts[0](inputs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+6: [rank6]:     return self._call_impl(*args, **kwargs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+6: [rank6]:     return inner()
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+3: [rank3]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+3: [rank3]:     return torch._dynamo.disable(
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+3: [rank3]:     return fn(*args, **kwargs)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+3: [rank3]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+3: [rank3]:     self.unshard(self.unshard_async_op)
+6: [rank6]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+6: [rank6]:     return torch._dynamo.disable(
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+6: [rank6]:     return fn(*args, **kwargs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+6: [rank6]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+6: [rank6]:     self.unshard(self.unshard_async_op)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+3: [rank3]:     self._all_gather_result = foreach_all_gather(
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+3: [rank3]:     return func(*args, **kwargs)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+3: [rank3]:     all_gather_work = all_gather_comm(
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+3: [rank3]:     return dist.all_gather_into_tensor(
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+6: [rank6]:     self._all_gather_result = foreach_all_gather(
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+6: [rank6]:     return func(*args, **kwargs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+6: [rank6]:     all_gather_work = all_gather_comm(
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+6: [rank6]:     return dist.all_gather_into_tensor(
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+3: [rank3]:     return func(*args, **kwargs)
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+6: [rank6]:     return func(*args, **kwargs)
+0: [rank0]: Traceback (most recent call last):
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+0: [rank0]:     return _run_code(code, main_globals, None,
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+0: [rank0]:     exec(code, run_globals)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+0: [rank0]:     trainer.train()
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+0: [rank0]:     return f(*args, **kwargs)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+0: [rank0]:     self.train_step(data_iterator)
+4: [rank4]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+4: [rank4]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+4: [rank4]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+4: [rank4]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+4: [rank4]: Last error:
+4: 
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+0: [rank0]:     loss = self.forward_backward_step(input_dict, labels)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+0: [rank0]:     pred = model_parts[0](inputs)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+0: [rank0]:     return self._call_impl(*args, **kwargs)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+0: [rank0]:     return inner()
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+6: [rank6]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+6: [rank6]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+6: [rank6]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+6: [rank6]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+6: [rank6]: Last error:
+6: 
+0: [rank0]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+0: [rank0]:     return torch._dynamo.disable(
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+0: [rank0]:     return fn(*args, **kwargs)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+0: [rank0]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+0: [rank0]:     self.unshard(self.unshard_async_op)
+7: [rank7]: Traceback (most recent call last):
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+7: [rank7]:     return _run_code(code, main_globals, None,
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+7: [rank7]:     exec(code, run_globals)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+7: [rank7]:     trainer.train()
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+7: [rank7]:     return f(*args, **kwargs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+7: [rank7]:     self.train_step(data_iterator)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+0: [rank0]:     self._all_gather_result = foreach_all_gather(
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+0: [rank0]:     return func(*args, **kwargs)
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+0: [rank0]:     all_gather_work = all_gather_comm(
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+0: [rank0]:     return dist.all_gather_into_tensor(
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+7: [rank7]:     loss = self.forward_backward_step(input_dict, labels)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+7: [rank7]:     pred = model_parts[0](inputs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+7: [rank7]:     return self._call_impl(*args, **kwargs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+7: [rank7]:     return inner()
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+0: [rank0]:     return func(*args, **kwargs)
+7: [rank7]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+7: [rank7]:     return torch._dynamo.disable(
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+7: [rank7]:     return fn(*args, **kwargs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+7: [rank7]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+7: [rank7]:     self.unshard(self.unshard_async_op)
+3: [rank3]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+3: [rank3]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+3: [rank3]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+3: [rank3]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+3: [rank3]: Last error:
+3: 
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+7: [rank7]:     self._all_gather_result = foreach_all_gather(
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+7: [rank7]:     return func(*args, **kwargs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+7: [rank7]:     all_gather_work = all_gather_comm(
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+7: [rank7]:     return dist.all_gather_into_tensor(
+0: [rank0]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+0: [rank0]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+0: [rank0]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+0: [rank0]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+0: [rank0]: Last error:
+0: 
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+7: [rank7]:     return func(*args, **kwargs)
+7: [rank7]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+7: [rank7]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+7: [rank7]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+7: [rank7]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+7: [rank7]: Last error:
+7: 
+1: [titan] 2025-11-26 19:32:33,371 - root - INFO - Process group destroyed.
+1: nid002816:1714961:1714961 [1] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.113<0>
+1: nid002816:1714961:1714961 [1] MSCCLPP INFO rank 1 nranks 8 - connecting to 10.100.28.113<48115>
+1: nid002816:1714961:1714961 [1] MSCCLPP INFO rank 1 - unix socket server started
+1: nid002816:1714961:1716388 [1] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 2
+1: nid002816:1714961:1714961 [1] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+1: nid002816:1714961:1714961 [1] MSCCLPP INFO Stopping unix socket server
+5: [titan] 2025-11-26 19:32:33,370 - root - INFO - Process group destroyed.
+5: nid002817:1669021:1669021 [1] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.28.93<0>
+5: nid002817:1669021:1669021 [1] MSCCLPP INFO rank 5 nranks 8 - connecting to 10.100.28.113<48115>
+5: nid002817:1669021:1669021 [1] MSCCLPP INFO rank 5 - unix socket server started
+5: nid002817:1669021:1670436 [1] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 2
+5: nid002817:1669021:1669021 [1] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+5: nid002817:1669021:1669021 [1] MSCCLPP INFO Stopping unix socket server
+5: [rank5]: Traceback (most recent call last):
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+5: [rank5]:     return _run_code(code, main_globals, None,
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+5: [rank5]:     exec(code, run_globals)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+5: [rank5]:     trainer.train()
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+5: [rank5]:     return f(*args, **kwargs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+5: [rank5]:     self.train_step(data_iterator)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+5: [rank5]:     loss = self.forward_backward_step(input_dict, labels)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+5: [rank5]:     pred = model_parts[0](inputs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+5: [rank5]:     return self._call_impl(*args, **kwargs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+5: [rank5]:     return inner()
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+5: [rank5]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+5: [rank5]:     return torch._dynamo.disable(
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+5: [rank5]:     return fn(*args, **kwargs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+5: [rank5]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+5: [rank5]:     self.unshard(self.unshard_async_op)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+5: [rank5]:     self._all_gather_result = foreach_all_gather(
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+5: [rank5]:     return func(*args, **kwargs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+5: [rank5]:     all_gather_work = all_gather_comm(
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+5: [rank5]:     return dist.all_gather_into_tensor(
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+5: [rank5]:     return func(*args, **kwargs)
+5: [rank5]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+5: [rank5]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+5: [rank5]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+5: [rank5]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+5: [rank5]: Last error:
+5: 
+1: [rank1]: Traceback (most recent call last):
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+1: [rank1]:     return _run_code(code, main_globals, None,
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+1: [rank1]:     exec(code, run_globals)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 553, in <module>
+1: [rank1]:     trainer.train()
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+1: [rank1]:     return f(*args, **kwargs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 492, in train
+1: [rank1]:     self.train_step(data_iterator)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 431, in train_step
+1: [rank1]:     loss = self.forward_backward_step(input_dict, labels)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 409, in forward_backward_step
+1: [rank1]:     pred = model_parts[0](inputs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+1: [rank1]:     return self._call_impl(*args, **kwargs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1881, in _call_impl
+1: [rank1]:     return inner()
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1808, in inner
+1: [rank1]:     args_kwargs_result = hook(self, args, kwargs)  # type: ignore[misc]
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 62, in fsdp_hook_wrapper
+1: [rank1]:     return torch._dynamo.disable(
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+1: [rank1]:     return fn(*args, **kwargs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_state.py", line 248, in _pre_forward
+1: [rank1]:     args, kwargs = self._fsdp_param_group.pre_forward(module, args, kwargs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 438, in pre_forward
+1: [rank1]:     self.unshard(self.unshard_async_op)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py", line 331, in unshard
+1: [rank1]:     self._all_gather_result = foreach_all_gather(
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+1: [rank1]:     return func(*args, **kwargs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 275, in foreach_all_gather
+1: [rank1]:     all_gather_work = all_gather_comm(
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_collectives.py", line 89, in __call__
+1: [rank1]:     return dist.all_gather_into_tensor(
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+1: [rank1]:     return func(*args, **kwargs)
+1: [rank1]:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 4049, in all_gather_into_tensor
+1: [rank1]:     work = group._allgather_base(output_tensor, input_tensor, opts)
+1: [rank1]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+1: [rank1]: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+1: [rank1]: Last error:
+1: 
+srun: error: nid002816: task 0: Exited with exit code 1
+srun: Terminating StepId=45728155.0
+srun: error: nid002817: task 4: Exited with exit code 1
+0: slurmstepd: error: *** STEP 45728155.0 ON nid002816 CANCELLED AT 2025-11-27T03:32:37 ***
+srun: error: nid002817: tasks 5-7: Exited with exit code 1
+srun: error: nid002816: tasks 1-3: Exited with exit code 1

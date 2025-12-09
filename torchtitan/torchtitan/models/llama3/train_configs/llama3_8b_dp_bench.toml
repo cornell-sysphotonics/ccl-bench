@@ -1,0 +1,64 @@
+# llama3_8b_dp_bench.toml
+
+[job]
+dump_folder = "./outputs"
+description = "Llama 3 8B All-Reduce Benchmark"
+
+[profiling]
+enable_profiling = true
+save_traces_folder = "profile_trace"
+profile_freq = 100
+
+[metrics]
+log_freq = 1
+enable_tensorboard = false # 暂时关闭以排除依赖报错，如果环境配好了可开启
+save_tb_folder = "tb"
+
+[model]
+name = "llama3"
+flavor = "8B"
+norm_type = "rmsnorm"  # 显式指定通常更安全
+tokenizer_path = "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/assets/tokenizer/original/tokenizer.model"
+
+[optimizer]
+name = "AdamW"
+lr = 3e-4
+eps = 1e-8
+
+[training]
+local_batch_size = 1 # A100 80G 可尝试调大，但在 Profiling 阶段 1 足够
+seq_len = 8192
+max_norm = 1.0
+steps = 20           # Benchmark 跑 20-50 步即可
+warmup_steps = 5
+compile = false      # 调试通信性能时建议先关闭 torch.compile
+dataset = "c4"       # 确保你已经下载了 c4 或者换成 debug 用的 dummy dataset
+
+[parallelism]
+# 强制关闭分片 (禁用 FSDP/Reduce-Scatter)
+data_parallel_shard_degree = 1
+
+# === 修正处 ===
+# 必须等于你的总 GPU 数量 (World Size)。
+# 如果你跑 1 个节点 (4 GPUs)，这里填 4。
+# 如果你跑 4 个节点 (16 GPUs)，这里填 16。
+data_parallel_replicate_degree = 4 
+
+tensor_parallel_degree = 1
+pipeline_parallel_degree = 1
+context_parallel_degree = 1
+
+[checkpoint]
+enable_checkpoint = false
+folder = "checkpoint"
+interval = 500
+export_dtype = "float32"
+async_mode = "disabled"
+
+[activation_checkpoint]
+mode = "selective"
+selective_ac_option = "op"
+
+[float8]
+enable_fsdp_float8_all_gather = false
+precompute_float8_dynamic_scale_for_fsdp = false

@@ -1,0 +1,39 @@
+Starting Training with MSCCL++ (Job ID: 45734201)...
+1: Traceback (most recent call last):
+1:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+0: Traceback (most recent call last):
+0:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+2: Traceback (most recent call last):
+2:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+3: Traceback (most recent call last):
+3:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+1:     from torchtitan.models.llama.model import Transformer, ModelArgs
+1: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+0:     from torchtitan.models.llama.model import Transformer, ModelArgs
+0: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+2:     from torchtitan.models.llama.model import Transformer, ModelArgs
+2: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+3:     from torchtitan.models.llama.model import Transformer, ModelArgs
+3: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+6: Traceback (most recent call last):
+6:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+4: Traceback (most recent call last):
+4:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+7: Traceback (most recent call last):
+7:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+6:     from torchtitan.models.llama.model import Transformer, ModelArgs
+6: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+4:     from torchtitan.models.llama.model import Transformer, ModelArgs
+4: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+7:     from torchtitan.models.llama.model import Transformer, ModelArgs
+7: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+5: Traceback (most recent call last):
+5:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/train_ddp_llama.py", line 8, in <module>
+5:     from torchtitan.models.llama.model import Transformer, ModelArgs
+5: ModuleNotFoundError: No module named 'torchtitan.models.llama'
+srun: error: nid001913: tasks 1-3: Exited with exit code 1
+srun: Terminating StepId=45734201.0
+0: slurmstepd: error: *** STEP 45734201.0 ON nid001913 CANCELLED AT 2025-11-27T05:05:51 ***
+srun: error: nid001913: task 0: Terminated
+srun: error: nid008417: tasks 4-7: Terminated
+srun: Force Terminated StepId=45734201.0

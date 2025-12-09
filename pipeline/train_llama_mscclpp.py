@@ -104,7 +104,7 @@ def main():
     model.register_comm_hook(state=mscclpp_manager, hook=mscclpp_hook)
     
     train_data = get_c4_dataset(tokenizer)
-    train_loader = DataLoader(train_data, batch_size=2, collate_fn=default_data_collator)
+    train_loader = DataLoader(train_data, batch_size=10, collate_fn=default_data_collator)
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
 
     # ================= Trace 收集核心代码 =================

@@ -1,0 +1,78 @@
+Starting Training with MSCCL++ (Job ID: 45734676)...
+3: [titan] 2025-11-26 21:44:46,630 - root - INFO - Starting job: Llama 3 8B All-Reduce Benchmark
+2: [titan] 2025-11-26 21:44:46,667 - root - INFO - Starting job: Llama 3 8B All-Reduce Benchmark
+1: [titan] 2025-11-26 21:44:46,682 - root - INFO - Starting job: Llama 3 8B All-Reduce Benchmark
+0: [titan] 2025-11-26 21:44:46,719 - root - INFO - Starting job: Llama 3 8B All-Reduce Benchmark
+3: Traceback (most recent call last):
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+3:     return _run_code(code, main_globals, None,
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+3:     exec(code, run_globals)
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 541, in <module>
+2: Traceback (most recent call last):
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+2:     return _run_code(code, main_globals, None,
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+2:     exec(code, run_globals)
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 541, in <module>
+2:     trainer = Trainer(config)
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+3:     trainer = Trainer(config)
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+2:     return f(*args, **kwargs)
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 86, in __init__
+3:     return f(*args, **kwargs)
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 86, in __init__
+2:     self.parallel_dims = parallel_dims = ParallelDims(
+2:   File "<string>", line 10, in __init__
+3:     self.parallel_dims = parallel_dims = ParallelDims(
+3:   File "<string>", line 10, in __init__
+0: Traceback (most recent call last):
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+1: Traceback (most recent call last):
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+0:     return _run_code(code, main_globals, None,
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+0:     exec(code, run_globals)
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 541, in <module>
+1:     return _run_code(code, main_globals, None,
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/runpy.py", line 86, in _run_code
+1:     exec(code, run_globals)
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 541, in <module>
+0:     trainer = Trainer(config)
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+1:     trainer = Trainer(config)
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+0:     return f(*args, **kwargs)
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 86, in __init__
+1:     return f(*args, **kwargs)
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/train.py", line 86, in __init__
+0:     self.parallel_dims = parallel_dims = ParallelDims(
+0:   File "<string>", line 10, in __init__
+1:     self.parallel_dims = parallel_dims = ParallelDims(
+1:   File "<string>", line 10, in __init__
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 30, in __post_init__
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 30, in __post_init__
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 30, in __post_init__
+2:     self._validate()
+2:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 41, in _validate
+1:     self._validate()
+1:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 41, in _validate
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 30, in __post_init__
+3:     self._validate()
+3:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 41, in _validate
+0:     self._validate()
+0:   File "/pscratch/sd/x/xz987/conda_storage/.conda/envs/ccl-bench/lib/python3.10/site-packages/torchtitan/distributed/parallel_dims.py", line 41, in _validate
+2:     assert d >= 1, "Parallelism degree should be >= 1, except for dp_shard"
+3:     assert d >= 1, "Parallelism degree should be >= 1, except for dp_shard"
+2: AssertionError: Parallelism degree should be >= 1, except for dp_shard
+3: AssertionError: Parallelism degree should be >= 1, except for dp_shard
+1:     assert d >= 1, "Parallelism degree should be >= 1, except for dp_shard"
+1: AssertionError: Parallelism degree should be >= 1, except for dp_shard
+0:     assert d >= 1, "Parallelism degree should be >= 1, except for dp_shard"
+0: AssertionError: Parallelism degree should be >= 1, except for dp_shard
+srun: error: nid008352: tasks 2-3: Exited with exit code 1
+srun: Terminating StepId=45734676.0
+0: slurmstepd: error: *** STEP 45734676.0 ON nid008352 CANCELLED AT 2025-11-27T05:44:49 ***
+srun: error: nid008352: tasks 0-1: Terminated
+srun: Force Terminated StepId=45734676.0

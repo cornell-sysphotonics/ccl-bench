@@ -1,0 +1,69 @@
+Starting Training with MSCCL++ (Job ID: 45729322)...
+0: === Benchmarking nccl on 8 GPUs ===
+0: Tensor Size: 128 MB (67108864 elements, FP16)
+0: [AllReduce] Failed: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+0: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+0: Last error:
+0: 
+0: [AllGather] Failed: NCCL error in: /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:3690, invalid usage (run with MSCCLPP_DEBUG=WARN for details), NCCL version 0.8.0
+0: ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+0: Last error:
+0: 
+0: Hint: If AllReduce works but AllGather fails, generated XML might mismtch FSDP requirements.
+7: nid001757:1553706:1553706 [3] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.40<0>
+7: nid001757:1553706:1553706 [3] MSCCLPP INFO rank 7 nranks 8 - connecting to 10.100.8.95<58235>
+7: nid001757:1553706:1553706 [3] MSCCLPP INFO rank 7 - unix socket server started
+7: nid001757:1553706:1554018 [3] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 0
+7: nid001757:1553706:1553706 [3] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+7: nid001757:1553706:1553706 [3] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+7: nid001757:1553706:1553706 [3] MSCCLPP INFO Stopping unix socket server
+4: nid001757:1553707:1553707 [0] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.40<0>
+4: nid001757:1553707:1553707 [0] MSCCLPP INFO rank 4 nranks 8 - connecting to 10.100.8.95<58235>
+4: nid001757:1553707:1553707 [0] MSCCLPP INFO rank 4 - unix socket server started
+4: nid001757:1553707:1554020 [0] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 3
+4: nid001757:1553707:1553707 [0] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+4: nid001757:1553707:1553707 [0] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+4: nid001757:1553707:1553707 [0] MSCCLPP INFO Stopping unix socket server
+6: nid001757:1553705:1553705 [2] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.40<0>
+6: nid001757:1553705:1553705 [2] MSCCLPP INFO rank 6 nranks 8 - connecting to 10.100.8.95<58235>
+6: nid001757:1553705:1553705 [2] MSCCLPP INFO rank 6 - unix socket server started
+6: nid001757:1553705:1554019 [2] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 1
+6: nid001757:1553705:1553705 [2] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+6: nid001757:1553705:1553705 [2] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+6: nid001757:1553705:1553705 [2] MSCCLPP INFO Stopping unix socket server
+5: nid001757:1553704:1553704 [1] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.40<0>
+5: nid001757:1553704:1553704 [1] MSCCLPP INFO rank 5 nranks 8 - connecting to 10.100.8.95<58235>
+5: nid001757:1553704:1553704 [1] MSCCLPP INFO rank 5 - unix socket server started
+5: nid001757:1553704:1554017 [1] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 2
+5: nid001757:1553704:1553704 [1] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+5: nid001757:1553704:1553704 [1] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+5: nid001757:1553704:1553704 [1] MSCCLPP INFO Stopping unix socket server
+2: nid001756:2182779:2182779 [2] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.95<0>
+2: nid001756:2182779:2182779 [2] MSCCLPP INFO rank 2 nranks 8 - connecting to 10.100.8.95<58235>
+2: nid001756:2182779:2182779 [2] MSCCLPP INFO rank 2 - unix socket server started
+2: nid001756:2182779:2183090 [2] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 1
+2: nid001756:2182779:2182779 [2] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+2: nid001756:2182779:2182779 [2] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+2: nid001756:2182779:2182779 [2] MSCCLPP INFO Stopping unix socket server
+0: nid001756:2182780:2182780 [0] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.95<0>
+0: nid001756:2182780:2182780 [0] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.95<0>
+0: nid001756:2182780:2182780 [0] MSCCLPP INFO rank 0 nranks 8 - connecting to 10.100.8.95<58235>
+0: nid001756:2182780:2182780 [0] MSCCLPP INFO rank 0 - unix socket server started
+0: nid001756:2182780:2183094 [0] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 3
+0: nid001756:2182780:2182780 [0] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+0: nid001756:2182780:2182780 [0] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+0: nid001756:2182780:2182780 [0] MSCCLPP INFO Stopping unix socket server
+1: nid001756:2182781:2182781 [1] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.95<0>
+1: nid001756:2182781:2182781 [1] MSCCLPP INFO rank 1 nranks 8 - connecting to 10.100.8.95<58235>
+1: nid001756:2182781:2182781 [1] MSCCLPP INFO rank 1 - unix socket server started
+1: nid001756:2182781:2183091 [1] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 2
+1: nid001756:2182781:2182781 [1] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+1: nid001756:2182781:2182781 [1] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+1: nid001756:2182781:2182781 [1] MSCCLPP INFO Stopping unix socket server
+3: nid001756:2182778:2182778 [3] MSCCLPP INFO TcpBootstrap : Using nmn0:10.100.8.95<0>
+3: nid001756:2182778:2182778 [3] MSCCLPP INFO rank 3 nranks 8 - connecting to 10.100.8.95<58235>
+3: nid001756:2182778:2182778 [3] MSCCLPP INFO rank 3 - unix socket server started
+3: nid001756:2182778:2183095 [3] MSCCLPP INFO NUMA node of ProxyService proxy thread is set to 0
+3: nid001756:2182778:2182778 [3] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:712 MSCCLPP WARN No FallBack implementation for AllReduce
+3: nid001756:2182778:2182778 [3] /pscratch/sd/x/xz987/CS5470/final_project/mscclpp/apps/nccl/src/nccl.cu:812 MSCCLPP WARN No FallBack implementation for AllGather
+3: nid001756:2182778:2182778 [3] MSCCLPP INFO Stopping unix socket server
