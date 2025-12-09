@@ -1,1 +1,0 @@
-../llama3.1-8b-torchtitan-pp-perlmutter-16/install.sh

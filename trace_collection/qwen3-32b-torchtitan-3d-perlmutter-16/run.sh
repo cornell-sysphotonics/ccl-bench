@@ -1,1 +1,1 @@
-../llama3.1-8b-torchtitan-pp-perlmutter-16/run.sh
+../llama-3.1-8b-torchtitan-pp-perlmutter-16/run.sh
