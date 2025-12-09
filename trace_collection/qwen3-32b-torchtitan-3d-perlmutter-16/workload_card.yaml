@@ -17,7 +17,7 @@ trace_url:  # TODO: Add Cornell Box link after uploading traces
 workload:
   model:
     phase: training
-    moe: false
+    moe: true
     granularity: model_fwd_bwd_pass
     model_family: qwen3-32b
     precision: bf16

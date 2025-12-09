@@ -1,8 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# LLaMA-3.1-8B Pure Pipeline Parallelism (PP=4) - Run Script
+# Generic Perlmutter-16 Workload - Run Script
 # =============================================================================
 # Simple wrapper to submit the SLURM batch job for this workload.
+# Automatically detects workload name from directory.
 #
 # Usage:
 #   ./run.sh              # Submit job with default settings
@@ -16,6 +17,7 @@ set -euo pipefail
 
 WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
+WORKLOAD_NAME="$(basename "${WORKLOAD_DIR}")"
 
 # Check for dry-run flag
 DRY_RUN=false
@@ -24,7 +26,7 @@ if [[ ${1:-} == "--dry-run" ]]; then
 fi
 
 echo "========================================"
-echo "Workload: llama3.1-8b-torchtitan-pp-perlmutter-16"
+echo "Workload: ${WORKLOAD_NAME}"
 echo "========================================"
 echo "Workload directory: ${WORKLOAD_DIR}"
 echo "Project root: ${PROJECT_ROOT}"
