@@ -170,19 +170,11 @@ success "Python environment ready"
 
 info "Checking HuggingFace authentication..."
 
-HF_TOKEN_FILE="${HF_HOME}/token"
-
 check_hf_login() {
-	# Check if token file exists
-	if [[ -f ${HF_TOKEN_FILE} ]]; then
-		return 0
-	fi
-
 	# Try to check via uvx hf auth whoami
 	if uvx hf auth whoami &> /dev/null; then
 		return 0
 	fi
-
 	return 1
 }
 
@@ -197,9 +189,7 @@ else
 	warn "Some models require authentication."
 	warn ""
 	warn "To log in, run:"
-	warn "  HF_HOME=${HF_HOME} uvx hf auth login"
-	warn ""
-	warn "Your token will be stored at: ${HF_TOKEN_FILE}"
+	warn "  uvx hf auth login"
 	warn ""
 	warn "Get your token from: https://huggingface.co/settings/tokens"
 	warn "=========================================="
@@ -264,7 +254,7 @@ else
 			warn "  ${HF_URL}"
 			warn ""
 			warn "After approval, ensure you're logged in:"
-			warn "  HF_HOME=${HF_HOME} uvx hf auth login"
+			warn "  uvx hf auth login"
 			warn "=========================================="
 		fi
 

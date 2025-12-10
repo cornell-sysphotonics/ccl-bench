@@ -119,7 +119,7 @@ torchrun_launcher() {
 	echo "  MASTER_PORT:    ${MASTER_PORT}"
 	echo "=========================================="
 
-	uv run python -m torch.distributed.run \
+	python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
 		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
 		--rdzv-backend=c10d \
@@ -265,7 +265,7 @@ launch_torchtitan_nsys() {
 	echo "=========================================="
 
 	nsys_profile "${nsys_prefix}" \
-		uv run python -m torch.distributed.run \
+		python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
 		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
 		--rdzv-backend=c10d \

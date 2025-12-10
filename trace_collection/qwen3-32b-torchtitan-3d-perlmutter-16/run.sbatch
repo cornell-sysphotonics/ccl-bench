@@ -18,6 +18,12 @@
 set -euo pipefail
 
 # =============================================================================
+# Load Required Modules
+# =============================================================================
+# Load CUDA toolkit for torch GPU support
+module load cudatoolkit/12.9 2>/dev/null || true
+
+# =============================================================================
 # Setup Paths
 # =============================================================================
 # Use SLURM_SUBMIT_DIR when available (keeps original submission dir).
