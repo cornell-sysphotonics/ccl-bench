@@ -73,7 +73,8 @@ export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
 export NCCL_DEBUG="${NCCL_DEBUG:-INFO}"
 
 # Enable async error handling for robustness
-export NCCL_ASYNC_ERROR_HANDLING=1
+# Note: NCCL_ASYNC_ERROR_HANDLING is deprecated, use TORCH_NCCL_ASYNC_ERROR_HANDLING
+export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 
 # =============================================================================
 # Distributed Training Configuration
