@@ -36,7 +36,6 @@ echo "Workload: ${WORKLOAD_NAME}"
 echo "========================================"
 echo "Workload directory: ${WORKLOAD_DIR}"
 echo "Project root: ${PROJECT_ROOT}"
-echo "Profile mode: ${PROFILE_MODE:-both}"
 echo ""
 
 # Verify required files exist
