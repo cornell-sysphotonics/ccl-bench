@@ -12,18 +12,23 @@
 #SBATCH --cpus-per-task=128
 #SBATCH -t 00:30:00
 #SBATCH --module=gpu,nccl-plugin
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
 
 set -euo pipefail
 
 # =============================================================================
 # Setup Paths
 # =============================================================================
-WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOGS_DIR="${WORKLOAD_DIR}/logs"
-mkdir -p "${LOGS_DIR}"
+# Use SLURM_SUBMIT_DIR when available (keeps original submission dir).
+if [[ -n "${SLURM_SUBMIT_DIR:-}" ]]; then
+	WORKLOAD_DIR="${SLURM_SUBMIT_DIR}"
+else
+	WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
 
-# Redirect output to logs directory
-exec > "${LOGS_DIR}/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out" 2> "${LOGS_DIR}/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.err"
+# Ensure logs directory exists (Slurm needs it before job starts)
+mkdir -p "${WORKLOAD_DIR}/logs" 2>/dev/null || true
 
 # Source environment configuration
 # shellcheck disable=SC1091

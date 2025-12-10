@@ -186,10 +186,7 @@ check_hf_login() {
 	return 1
 }
 
-check_hf_login
-hf_login_status=$?
-
-if [[ ${hf_login_status} -eq 0 ]]; then
+if check_hf_login; then
 	success "HuggingFace authentication found"
 else
 	warn "=========================================="
@@ -200,7 +197,7 @@ else
 	warn "Some models require authentication."
 	warn ""
 	warn "To log in, run:"
-	warn "  HF_TOKEN=${HF_TOKEN} uvx hf login"
+	warn "  HF_HOME=${HF_HOME} uvx hf auth login"
 	warn ""
 	warn "Your token will be stored at: ${HF_TOKEN_FILE}"
 	warn ""
@@ -267,54 +264,50 @@ else
 			warn "  ${HF_URL}"
 			warn ""
 			warn "After approval, ensure you're logged in:"
-			warn "  uvx hf login"
+			warn "  HF_HOME=${HF_HOME} uvx hf auth login"
 			warn "=========================================="
 		fi
 
-		# Download tokenizer and config using torchtitan's script
-		# We use uv run to ensure we have the right dependencies
+		# Download tokenizer and config files using huggingface-hub CLI
+		# Note: torchtitan's scripts/ folder is NOT included in the pip package
 		info "Downloading tokenizer and config..."
 
-		# Get HF token from file if it exists
-		HF_TOKEN=""
-		if [[ -f ${HF_TOKEN_FILE} ]]; then
-			HF_TOKEN=$(cat "${HF_TOKEN_FILE}")
-		fi
+		MODEL_DIR="${HF_ASSETS_ROOT}/${MODEL_NAME}"
+		mkdir -p "${MODEL_DIR}"
 
-		# Use torchtitan's download script from the package
-		if [[ -n ${HF_TOKEN} ]]; then
-			uv run python -m torchtitan.scripts.download_hf_assets \
-				--repo_id "${REPO_ID}" \
-				--local_dir "${HF_ASSETS_ROOT}" \
-				--assets tokenizer config \
-				--hf_token "${HF_TOKEN}" || {
-				if [[ ${IS_GATED} == true ]]; then
-					error "=========================================="
-					error "Model download failed!"
-					error "=========================================="
-					error ""
-					error "This is likely because you don't have access to ${REPO_ID}"
-					error ""
-					error "Please:"
-					error "1. Visit ${HF_URL} and request access"
-					error "2. Wait for approval"
-					error "3. Run this script again"
-					error "=========================================="
-					exit 1
-				else
-					warn "Download failed, but model may not be gated. Check errors above."
-				fi
-			}
+		# Download tokenizer files (tokenizer.json, tokenizer_config.json, tokenizer.model, etc.)
+		# and config files (config.json, generation_config.json)
+		# Each pattern needs its own --include flag
+		if uvx hf download "${REPO_ID}" \
+			--local-dir "${MODEL_DIR}" \
+      --include "tokenizer.json" \
+      --include "tokenizer_config.json" \
+      --include "tokenizer.model" \
+      --include "vocab.txt" \
+      --include "vocab.json" \
+      --include "merges.txt" \
+      --include "special_tokens_map.json" \
+			--include "config.json" \
+			--include "generation_config.json"; then
+			success "Model assets downloaded to ${MODEL_DIR}"
 		else
-			uv run python -m torchtitan.scripts.download_hf_assets \
-				--repo_id "${REPO_ID}" \
-				--local_dir "${HF_ASSETS_ROOT}" \
-				--assets tokenizer config || {
-				warn "Download failed - you may need to log in first"
-			}
+			if [[ ${IS_GATED} == true ]]; then
+				error "=========================================="
+				error "Model download failed!"
+				error "=========================================="
+				error ""
+				error "This is likely because you don't have access to ${REPO_ID}"
+				error ""
+				error "Please:"
+				error "1. Visit ${HF_URL} and request access"
+				error "2. Wait for approval"
+				error "3. Run this script again"
+				error "=========================================="
+				exit 1
+			else
+				warn "Download failed - check the errors above"
+			fi
 		fi
-
-		success "Model assets downloaded to ${HF_ASSETS_ROOT}/${MODEL_NAME}"
 	fi
 fi
 
