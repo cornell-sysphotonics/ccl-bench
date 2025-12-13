@@ -33,11 +33,16 @@ _METRIC_MODULES: dict[str, str] = {
     # Group 16 metrics
     "coll_call_num_16": "tools.coll_call_num_16.metric",
     "comm_comp_overlap_16": "tools.comm_comp_overlap_16.metric",
+    "comm_volume_16": "tools.comm_volume_16.metric",
+    "config_metadata_16": "tools.config_metadata_16.metric",
+    "hardware_saturation_16": "tools.hardware_saturation_16.metric",
     "iter_time_16": "tools.iter_time_16.metric",
     "pipeline_bubble_16": "tools.pipeline_bubble_16.metric",
     "straggler_lag_16": "tools.straggler_lag_16.metric",
     "throughput_tokens_16": "tools.throughput_tokens_16.metric",
     "traffic_distribution_16": "tools.traffic_distribution_16.metric",
+    "training_quality_16": "tools.training_quality_16.metric",
+    "variability_metrics_16": "tools.variability_metrics_16.metric",
 }
 
 METRICS = sorted(_METRIC_MODULES.keys())
