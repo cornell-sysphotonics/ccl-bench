@@ -1,11 +1,11 @@
 #!/bin/bash
 # =============================================================================
-# LLaMA-3.1-8B Pure Tensor Parallelism (TP=4) - 1 Node, 4 GPUs
+# LLaMA-3.1-8B FSDP (FSDP=4) - 1 Node, 4 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
-#SBATCH -q debug
-#SBATCH -J llama3_8b_tp
+#SBATCH -q regular
+#SBATCH -J llama3_8b_fsdp
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
@@ -28,9 +28,9 @@ module load cudatoolkit/12.9 2>/dev/null || true
 # =============================================================================
 # Use SLURM_SUBMIT_DIR when available (keeps original submission dir).
 if [[ -n "${SLURM_SUBMIT_DIR:-}" ]]; then
-	WORKLOAD_DIR="${SLURM_SUBMIT_DIR}"
+  WORKLOAD_DIR="${SLURM_SUBMIT_DIR}"
 else
-	WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  WORKLOAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
 
 # Ensure logs directory exists (Slurm needs it before job starts)
@@ -64,7 +64,8 @@ fi
 cd "${TRACE_DIR}"
 
 # Launch training with NSys profiling
-launch_torchtitan_nsys "llama3_8b_tp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+launch_torchtitan_nsys "llama3_8b_fsdp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
 
 # Job complete
 print_job_complete
+

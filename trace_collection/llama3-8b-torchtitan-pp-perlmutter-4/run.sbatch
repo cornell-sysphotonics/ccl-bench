@@ -1,10 +1,10 @@
 #!/bin/bash
 # =============================================================================
-# LLaMA-3.1-8B Pure Pipeline Parallelism (PP=4) - 1 Node, 4 GPUs
+# LLaMA-3.1-8B PP (PP=4) - 1 Node, 4 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
-#SBATCH -q debug
+#SBATCH -q regular
 #SBATCH -J llama3_8b_pp
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -68,3 +68,4 @@ launch_torchtitan_nsys "llama3_8b_pp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_c
 
 # Job complete
 print_job_complete
+

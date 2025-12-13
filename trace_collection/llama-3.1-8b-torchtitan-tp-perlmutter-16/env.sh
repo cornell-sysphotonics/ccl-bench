@@ -1,1 +1,0 @@
-../llama-3.1-8b-torchtitan-pp-perlmutter-16/env.sh

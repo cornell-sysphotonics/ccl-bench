@@ -1,14 +1,11 @@
 # =============================================================================
-# LLaMA-3.1-8B Pure Pipeline Parallelism (PP=4)
+# LLaMA-3.1-8B Pipeline Parallel (PP=4)
 # =============================================================================
 # CS5470 CCL-Bench Configuration
 #
 # world_size = 4 (nnodes=1, nproc_per_node=4)
 # Parallelism: dp_replicate=1, dp_shard=1, tp=1, pp=4, cp=1
 # Verification: 1 × 1 × 1 × 4 × 1 = 4 ✓
-#
-# Pipeline config: local_batch_size=4, microbatch_size=1 => 4 microbatches
-# This matches PP degree for minimal bubble overhead.
 #
 # Launch command:
 #   torchrun --nnodes=1 --nproc_per_node=4 \
@@ -18,12 +15,12 @@
 [job]
 # dump_folder is set dynamically via CLI: --job.dump_folder <path>
 print_config = true
-description = "CS5470 CCL-Bench run: llama3.1-8b-torchtitan-pp-perlmutter-16"
+description = "CS5470 CCL-Bench run: llama3-8b-torchtitan-pp-perlmutter-4"
 
 [profiling]
 enable_profiling = true
 save_traces_folder = "torch_traces"
-profile_freq = 20
+profile_freq = 5
 profiler_warmup = 3
 profiler_active = 1
 enable_memory_snapshot = false
@@ -52,10 +49,10 @@ decay_type = "linear"
 min_lr_factor = 0.0
 
 [training]
-steps = 80
+steps = 100
 local_batch_size = 4
-global_batch_size = -1
-seq_len = 2048
+global_batch_size = 4     
+seq_len = 4096
 max_norm = 1.0
 dataset = "c4"
 dtype = "bfloat16"
@@ -86,3 +83,4 @@ selective_ac_option = "op"
 
 [validation]
 enable = false
+
