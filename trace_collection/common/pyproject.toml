@@ -1,0 +1,24 @@
+[project]
+name = "torchtitan-perlmutter-16-workload"
+version = "0.1.0"
+description = "TorchTitan training workload on Perlmutter"
+requires-python = ">=3.10.12,<3.11"
+dependencies = [
+  "torch ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "torchtitan ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "pytorch-triton ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[tool.uv]
+managed = true
+prerelease = "allow"
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu129" }]
+torchtitan = [{ index = "pytorch-cu129" }]
+pytorch-triton = [{ index = "pytorch-cu129" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu129"
+url = "https://download.pytorch.org/whl/nightly/cu129"
+explicit = true
