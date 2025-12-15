@@ -424,4 +424,3 @@ def _classify_comm_op(
         return "unknown"  # Ambiguous without NVTX
 
     return "unknown"
-

@@ -59,6 +59,4 @@ Model-executor:
 
 metric_source:
   traces: [nsys, torch_et, kineto_trace]
-  metrics_specific_trace:
-    - nvtx_ranges
-
+  metrics_specific_trace: [nvtx_ranges]

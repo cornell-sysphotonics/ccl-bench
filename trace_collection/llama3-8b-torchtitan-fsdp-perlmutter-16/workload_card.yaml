@@ -4,10 +4,12 @@
 version: 1
 
 description: >
-  LLaMA-3.1-8B training on 4 GPUs with FSDP (Fully Sharded Data Parallel) parallelism.
+  LLaMA-3.1-8B training on 4 GPUs with FSDP
+  (Fully Sharded Data Parallel) parallelism.
   Single Perlmutter GPU node with 4x NVIDIA A100 (40GB) GPUs.
   Configuration: dp_shard=4 (4-way FSDP sharding).
-  TorchTitan framework with NCCL; uses all-reduce for FSDP gradient sync.
+  TorchTitan framework with NCCL;
+  uses all-reduce for FSDP gradient sync.
 
 hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
 trace_url:  # TODO: Add Cornell Box link after uploading traces
@@ -59,6 +61,4 @@ Model-executor:
 
 metric_source:
   traces: [nsys, torch_et, kineto_trace]
-  metrics_specific_trace:
-    - nvtx_ranges
-
+  metrics_specific_trace: [nvtx_ranges]

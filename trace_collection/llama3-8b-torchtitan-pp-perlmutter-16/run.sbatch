@@ -68,4 +68,3 @@ launch_torchtitan_nsys "llama3_8b_pp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_c
 
 # Job complete
 print_job_complete
-

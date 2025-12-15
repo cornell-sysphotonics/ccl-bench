@@ -834,4 +834,3 @@ def _estimate_memory_from_model(workload_card: dict[str, Any]) -> float:
         model_memory_gb += activation_memory_gb
 
     return model_memory_gb
-

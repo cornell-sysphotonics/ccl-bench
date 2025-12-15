@@ -51,7 +51,7 @@ min_lr_factor = 0.0
 [training]
 steps = 100
 local_batch_size = 1
-global_batch_size = 4  
+global_batch_size = 4
 seq_len = 4096
 max_norm = 1.0
 dataset = "c4"
@@ -83,4 +83,3 @@ selective_ac_option = "op"
 
 [validation]
 enable = false
-

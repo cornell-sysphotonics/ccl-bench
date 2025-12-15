@@ -68,4 +68,3 @@ launch_torchtitan_nsys "llama3_8b_fsdp_tp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/tr
 
 # Job complete
 print_job_complete
-

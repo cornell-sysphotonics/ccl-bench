@@ -361,4 +361,3 @@ def _calculate_stats(values: list[float]) -> dict[str, float]:
         "min": sorted_values[0],
         "max": sorted_values[-1],
     }
-

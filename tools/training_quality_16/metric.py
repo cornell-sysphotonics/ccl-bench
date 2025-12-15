@@ -299,4 +299,3 @@ def _extract_metrics_from_trace(trace_path: Path) -> dict[str, list[tuple[int, f
         pass
 
     return result
-

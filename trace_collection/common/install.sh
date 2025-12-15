@@ -178,7 +178,9 @@ check_hf_login() {
 	return 1
 }
 
-if check_hf_login; then
+check_hf_login
+hf_login_status=$?
+if [[ ${hf_login_status} -eq 0 ]]; then
 	success "HuggingFace authentication found"
 else
 	warn "=========================================="
@@ -270,13 +272,13 @@ else
 		# Each pattern needs its own --include flag
 		if uvx hf download "${REPO_ID}" \
 			--local-dir "${MODEL_DIR}" \
-      --include "tokenizer.json" \
-      --include "tokenizer_config.json" \
-      --include "tokenizer.model" \
-      --include "vocab.txt" \
-      --include "vocab.json" \
-      --include "merges.txt" \
-      --include "special_tokens_map.json" \
+			--include "tokenizer.json" \
+			--include "tokenizer_config.json" \
+			--include "tokenizer.model" \
+			--include "vocab.txt" \
+			--include "vocab.json" \
+			--include "merges.txt" \
+			--include "special_tokens_map.json" \
 			--include "config.json" \
 			--include "generation_config.json"; then
 			success "Model assets downloaded to ${MODEL_DIR}"

@@ -402,4 +402,3 @@ def _extract_rank_from_filename(path: Path) -> int:
         return int(match.group(1))
 
     return 0
-
