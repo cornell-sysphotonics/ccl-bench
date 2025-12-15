@@ -74,7 +74,10 @@ export NCCL_DEBUG="${NCCL_DEBUG:-INFO}"
 
 # Enable async error handling for robustness
 # Note: NCCL_ASYNC_ERROR_HANDLING is deprecated, use TORCH_NCCL_ASYNC_ERROR_HANDLING
-export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
+export TORCH_NCCL_ASYNC_ERROR_HANDLING="${TORCH_NCCL_ASYNC_ERROR_HANDLING:-1}"
+
+export NCCL_NET_GDR_LEVEL="${NCCL_NET_GDR_LEVEL:-PHB}"
+export NCCL_IB_QPS_PER_CONNECTION="${NCCL_IB_QPS_PER_CONNECTION:-4}"
 
 # =============================================================================
 # Distributed Training Configuration

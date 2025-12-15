@@ -1,0 +1,106 @@
+# =============================================================================
+# DeepSeek-V2-Lite (16B MoE) Pure Pipeline Parallelism (PP=4)
+# =============================================================================
+# CS5470 CCL-Bench Configuration
+#
+# world_size = 4 (nnodes=1, nproc_per_node=4)
+# Parallelism: dp_replicate=1, dp_shard=1, tp=1, pp=4, cp=1
+# Verification: 1 × 1 × 1 × 4 × 1 = 4 ✓
+#
+# Launch command:
+#   torchrun --nnodes=1 --nproc_per_node=4 \
+#     -m torchtitan.train --job.config_file train_config.toml
+# =============================================================================
+
+[job]
+description = "DeepSeek-V2-Lite (16B MoE)"
+print_config = true
+
+[profiling]
+enable_profiling = true
+save_traces_folder = "profile_traces"
+profile_freq = 20
+profiler_active = 1
+profiler_warmup = 3
+enable_memory_snapshot = true
+save_memory_snapshot_folder = "memory_snapshot"
+
+[metrics]
+log_freq = 10
+enable_tensorboard = true
+save_tb_folder = "tb"
+save_for_all_ranks = false
+
+[model]
+name = "deepseek_v2"
+flavor = "deepseek-ai/DeepSeek-V2-Lite"
+
+[optimizer]
+name = "AdamW"
+lr = 8e-4
+beta1 = 0.9
+beta2 = 0.95
+eps = 1e-8
+weight_decay = 0.1
+implementation = "fused"
+early_step_in_backward = false
+
+[lr_scheduler]
+warmup_steps = 200
+decay_ratio = 0.1
+decay_type = "linear"
+min_lr_factor = 0.0
+
+[training]
+dataset = "c4_test"
+dataset_path = ""
+local_batch_size = 2
+global_batch_size = -1
+seq_len = 1024
+steps = 200
+max_norm = 1.0
+dtype = "bfloat16"
+mixed_precision_param = "bfloat16"
+mixed_precision_reduce = "float32"
+gc_freq = 50
+gc_debug = false
+
+[comm]
+init_timeout_seconds = 600
+train_timeout_seconds = 300
+trace_buf_size = 20000
+save_traces_folder = "comm_traces"
+save_traces_file_prefix = "rank_"
+mode = "default"
+
+[parallelism]
+data_parallel_replicate_degree = 1
+data_parallel_shard_degree = 1
+tensor_parallel_degree = 1
+pipeline_parallel_degree = 4          # PP: 4 stages
+pipeline_parallel_microbatch_size = 1
+pipeline_parallel_schedule = "1F1B"
+context_parallel_degree = 1
+expert_parallel_degree = 1
+expert_tensor_parallel_degree = 1
+
+[checkpoint]
+enable = false
+folder = "checkpoint"
+interval = 500
+last_save_model_only = true
+export_dtype = "bfloat16"
+
+[activation_checkpoint]
+mode = "selective"
+selective_ac_option = "2"
+preserve_rng_state = false
+debug = false
+
+[compile]
+enable = false
+backend = "inductor"
+components = ["model", "loss"]
+
+[validation]
+enable = false

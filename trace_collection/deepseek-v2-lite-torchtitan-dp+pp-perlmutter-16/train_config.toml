@@ -16,52 +16,65 @@
 # =============================================================================
 
 [job]
-# dump_folder is set dynamically via CLI: --job.dump_folder <path>
+description = "DeepSeek-V2-Lite (16B MoE)"
 print_config = true
-description = "CS5470 CCL-Bench run: deepseek-v2-lite-torchtitan-dp+pp-perlmutter-16"
 
 [profiling]
 enable_profiling = true
-save_traces_folder = "torch_traces"
+save_traces_folder = "profile_traces"
 profile_freq = 20
-profiler_warmup = 3
 profiler_active = 1
-enable_memory_snapshot = false
+profiler_warmup = 3
+enable_memory_snapshot = true
+save_memory_snapshot_folder = "memory_snapshot"
 
 [metrics]
 log_freq = 10
-enable_tensorboard = false
+enable_tensorboard = true
 save_tb_folder = "tb"
 save_for_all_ranks = false
-enable_wandb = false
 
 [model]
-name = "deepseek_v2_lite"
-flavor = "16B"
-# hf_assets_path is set dynamically via CLI: --model.hf_assets_path <path>
+name = "deepseek_v2"
+flavor = "deepseek-ai/DeepSeek-V2-Lite"
 
 [optimizer]
 name = "AdamW"
-lr = 3e-4
+lr = 8e-4
+beta1 = 0.9
+beta2 = 0.95
 eps = 1e-8
+weight_decay = 0.1
+implementation = "fused"
+early_step_in_backward = false
 
 [lr_scheduler]
-warmup_steps = 16
-decay_ratio = 0.5
+warmup_steps = 200
+decay_ratio = 0.1
 decay_type = "linear"
 min_lr_factor = 0.0
 
 [training]
-steps = 80
-local_batch_size = 4
+dataset = "c4_test"
+dataset_path = ""
+local_batch_size = 2
 global_batch_size = -1
-seq_len = 2048
+seq_len = 1024
+steps = 200
 max_norm = 1.0
-dataset = "c4"
 dtype = "bfloat16"
 mixed_precision_param = "bfloat16"
 mixed_precision_reduce = "float32"
 gc_freq = 50
+gc_debug = false
+
+[comm]
+init_timeout_seconds = 600
+train_timeout_seconds = 300
+trace_buf_size = 20000
+save_traces_folder = "comm_traces"
+save_traces_file_prefix = "rank_"
+mode = "default"
 
 [parallelism]
 data_parallel_replicate_degree = 2
@@ -76,13 +89,21 @@ expert_tensor_parallel_degree = 1
 
 [checkpoint]
 enable = false
+folder = "checkpoint"
+interval = 500
+last_save_model_only = true
+export_dtype = "bfloat16"
+
+[activation_checkpoint]
+mode = "selective"
+selective_ac_option = "2"
+preserve_rng_state = false
+debug = false
 
 [compile]
 enable = false
-
-[activation_checkpoint]
-mode = "full"
-selective_ac_option = "op"
+backend = "inductor"
+components = ["model", "loss"]
 
 [validation]
 enable = false
