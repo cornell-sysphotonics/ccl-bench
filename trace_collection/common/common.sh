@@ -119,7 +119,9 @@ torchrun_launcher() {
 	echo "  MASTER_PORT:    ${MASTER_PORT}"
 	echo "=========================================="
 
-	python -m torch.distributed.run \
+	# Use srun to launch across all nodes for multi-node training
+	srun --ntasks-per-node=1 \
+		python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
 		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
 		--rdzv-backend=c10d \
@@ -264,7 +266,15 @@ launch_torchtitan_nsys() {
 	echo "  NSys prefix:    ${nsys_prefix}"
 	echo "=========================================="
 
-	nsys_profile "${nsys_prefix}" \
+	# Use srun to launch across all nodes for multi-node training
+	srun --ntasks-per-node=1 \
+		nsys profile \
+		--stats=true \
+		--trace=mpi,cuda,nvtx,osrt,openmp \
+		--cuda-memory-usage=true \
+		--mpi-impl=mpich \
+		--output="${TRACE_DIR}/${nsys_prefix}_${RUN_TIMESTAMP}_%h" \
+		--force-overwrite=true \
 		python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
 		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \

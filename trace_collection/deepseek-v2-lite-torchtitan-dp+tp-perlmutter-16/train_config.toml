@@ -25,7 +25,7 @@ enable_profiling = true
 save_traces_folder = "profile_traces"
 profile_freq = 2
 profiler_active = 1
-profiler_warmup = 3
+profiler_warmup = 1
 enable_memory_snapshot = true
 save_memory_snapshot_folder = "memory_snapshot"
 
