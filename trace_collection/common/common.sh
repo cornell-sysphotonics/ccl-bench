@@ -287,6 +287,52 @@ launch_torchtitan_nsys() {
 		"${extra_args[@]}"
 }
 
+launch_torchtitan_without_nsys() {
+	local nsys_prefix="$1"
+	local workload_dir="$2"
+	local config_file="$3"
+	shift 3
+	local extra_args=("$@")
+
+	# Validate config file exists
+	if [[ ! -f ${config_file} ]]; then
+		echo "ERROR: Config file not found: ${config_file}"
+		return 1
+	fi
+
+	# Validate required environment variables
+	if [[ -z ${TRACE_DIR:-} ]]; then
+		echo "ERROR: TRACE_DIR not set. Run setup_trace_dir first."
+		return 1
+	fi
+
+	# Get model path from workload_card.yaml
+	local model_hf_path
+	model_hf_path=$(get_model_hf_path "${workload_dir}") || return 1
+
+	echo "=========================================="
+	echo "TorchTitan Configuration (with NSys):"
+	echo "  Workload dir:   ${workload_dir}"
+	echo "  Config file:    ${config_file}"
+	echo "  HF assets:      ${model_hf_path}"
+	echo "  Dump folder:    ${TRACE_DIR}"
+	echo "  NSys prefix:    ${nsys_prefix}"
+	echo "=========================================="
+
+	# Use srun to launch across all nodes for multi-node training
+	srun --ntasks-per-node=1 \
+		python -m torch.distributed.run \
+		--nnodes="${SLURM_JOB_NUM_NODES}" \
+		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \
+		--rdzv-backend=c10d \
+		--rdzv-endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
+		-m torchtitan.train \
+		--job.config_file "${config_file}" \
+		--job.dump_folder "${TRACE_DIR}" \
+		--model.hf_assets_path "${model_hf_path}" \
+		"${extra_args[@]}"
+}
+
 # =============================================================================
 # JOB SUMMARY
 # =============================================================================
