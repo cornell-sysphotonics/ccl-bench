@@ -23,6 +23,15 @@ if __name__ == "__main__":
     elif metric_name == "tpot_group_6":
         from tpot_group_6.tpot_group_6 import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "bandwidth_utilization_group_6":
+        from bandwidth_utilization_group_6.bandwidth_utilization_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "kernel_compute_time_group_6":
+        from kernel_compute_time_group_6.kernel_compute_time_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "throughput_group_6":
+        from throughput_group_6.throughput_group_6 import metric_cal
+        metric_cal_func = metric_cal
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     
