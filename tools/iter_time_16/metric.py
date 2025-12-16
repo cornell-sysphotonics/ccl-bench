@@ -6,7 +6,7 @@ from statistics import mean
 from typing import Any
 
 from tools.common.detect_profile_mode import detect_profile_mode
-from tools.common.torch_trace import load_hta_trace
+from hta.trace_analysis import TraceAnalysis
 
 
 MetricResult = dict[str, Any]
@@ -39,7 +39,7 @@ def _load_step_times_from_file(trace_dir: str) -> dict[int, float]:
 
 
 def _step_times_from_hta(trace_dir: str) -> dict[int, float]:
-    trace = load_hta_trace(trace_dir)
+    trace = TraceAnalysis(trace_dir=trace_dir)
     for candidate in ("get_step_time", "get_step_time_series", "get_step_time_df"):
         if hasattr(trace, candidate):
             func = getattr(trace, candidate)

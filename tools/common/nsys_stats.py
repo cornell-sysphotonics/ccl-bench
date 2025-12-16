@@ -49,8 +49,11 @@ def _execute_nsys(cmd: list[str]) -> None:
     asyncio.run(_run_nsys_async(cmd))
 
 
+DEFAULT_REPORTS = ("cuda_api_sum", "cuda_gpu_kern_sum")
+
+
 def run_nsys_stats(
-    rep_path: str | Path, reports: Iterable[str] = ("cuda_api", "cuda_kernel")
+    rep_path: str | Path, reports: Iterable[str] = DEFAULT_REPORTS
 ) -> dict[str, Any]:
     rep_path = Path(rep_path)
     if not rep_path.exists():
@@ -85,7 +88,7 @@ def run_nsys_stats(
 
 
 def run_nsys_stats_in_dir(
-    trace_dir: str, reports: Iterable[str] = ("cuda_api", "cuda_kernel")
+    trace_dir: str, reports: Iterable[str] = DEFAULT_REPORTS
 ) -> dict[str, Any]:
     base = Path(trace_dir)
     reps = _find_rep_files(base)
@@ -94,7 +97,11 @@ def run_nsys_stats_in_dir(
 
     aggregated: dict[str, Any] = {}
     for rep in reps:
-        rep_result = run_nsys_stats(rep, reports=reports)
+        try:
+            rep_result = run_nsys_stats(rep, reports=reports)
+        except subprocess.CalledProcessError:
+            # Skip reps that cannot be processed (e.g., missing CUDA data)
+            continue
         for key, value in rep_result.items():
             aggregated.setdefault(key, []).extend(value)
     return aggregated

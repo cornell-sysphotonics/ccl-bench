@@ -33,7 +33,7 @@ save_for_all_ranks = false
 
 [model]
 name = "llama3"
-flavor = "meta-llama/Meta-Llama-3.1-8B"
+flavor = "8B"
 
 [optimizer]
 name = "AdamW"
@@ -52,8 +52,7 @@ decay_type = "linear"
 min_lr_factor = 0.0
 
 [training]
-dataset = "c4_test"
-dataset_path = ""
+dataset = "c4"
 local_batch_size = 4
 global_batch_size = -1
 seq_len = 2048

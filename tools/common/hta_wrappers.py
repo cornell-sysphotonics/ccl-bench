@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from .torch_trace import load_hta_trace
+from hta.trace_analysis import TraceAnalysis
 
 
 def temporal_breakdown(trace_dir: str) -> dict[str, Any]:
-    trace = load_hta_trace(trace_dir)
+    trace = TraceAnalysis(trace_dir=trace_dir)
     if not hasattr(trace, "get_temporal_breakdown"):
         raise NotImplementedError("HTA version missing get_temporal_breakdown")
     df = trace.get_temporal_breakdown()
@@ -18,7 +18,7 @@ def temporal_breakdown(trace_dir: str) -> dict[str, Any]:
 
 
 def comm_comp_overlap(trace_dir: str) -> dict[str, Any]:
-    trace = load_hta_trace(trace_dir)
+    trace = TraceAnalysis(trace_dir=trace_dir)
     if not hasattr(trace, "get_comm_comp_overlap"):
         raise NotImplementedError("HTA version missing get_comm_comp_overlap")
     df = trace.get_comm_comp_overlap()
@@ -28,7 +28,7 @@ def comm_comp_overlap(trace_dir: str) -> dict[str, Any]:
 
 
 def comm_stats(trace_dir: str) -> dict[str, Any]:
-    trace = load_hta_trace(trace_dir)
+    trace = TraceAnalysis(trace_dir=trace_dir)
     if not hasattr(trace, "get_comm_stats"):
         raise NotImplementedError("HTA version missing get_comm_stats")
     df = trace.get_comm_stats()
@@ -38,7 +38,7 @@ def comm_stats(trace_dir: str) -> dict[str, Any]:
 
 
 def kernel_breakdown(trace_dir: str) -> dict[str, Any]:
-    trace = load_hta_trace(trace_dir)
+    trace = TraceAnalysis(trace_dir=trace_dir)
     if not hasattr(trace, "get_kernel_breakdown"):
         raise NotImplementedError("HTA version missing get_kernel_breakdown")
     df = trace.get_kernel_breakdown()

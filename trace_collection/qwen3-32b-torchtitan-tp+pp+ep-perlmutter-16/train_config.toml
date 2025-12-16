@@ -34,7 +34,7 @@ save_for_all_ranks = false
 
 [model]
 name = "qwen3"
-flavor = "Qwen/Qwen3-32B"
+flavor = "32B"
 
 [optimizer]
 name = "AdamW"
@@ -53,8 +53,7 @@ decay_type = "linear"
 min_lr_factor = 0.0
 
 [training]
-dataset = "c4_test"
-dataset_path = ""
+dataset = "c4"
 local_batch_size = 1
 global_batch_size = -1
 seq_len = 2048

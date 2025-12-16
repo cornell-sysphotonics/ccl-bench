@@ -26,7 +26,8 @@ def _aggregate_nsys(rows: list[dict[str, str]]) -> dict[str, int]:
         name = row.get("Name") or row.get("API Name") or ""
         if "nccl" in name.lower():
             try:
-                calls = int(row.get("Calls", 0))
+                calls_str = row.get("Num Calls") or row.get("Calls") or "0"
+                calls = int(calls_str)
             except ValueError:
                 calls = 0
             counts[name] += calls
@@ -42,8 +43,8 @@ def metric_cal(directory: str, profile_mode: str = "auto") -> MetricResult:
         return _aggregate_htc(stats)
 
     if profile_mode == "nsys":
-        tables = run_nsys_stats_in_dir(directory, reports=("cuda_api",))
-        rows = tables.get("cuda_api", [])
+        tables = run_nsys_stats_in_dir(directory, reports=("cuda_api_sum",))
+        rows = tables.get("cuda_api_sum", [])
         return _aggregate_nsys(rows)
 
     raise ValueError(f"Unknown profile_mode: {profile_mode}")
