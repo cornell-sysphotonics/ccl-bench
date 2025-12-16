@@ -37,7 +37,7 @@ MAX_CONCURRENCY=4
 ###############################################
 NSYS_SESSION="sglang"
 OUTPUT_DIR="sglang_profile_$(date +%Y%m%d_%H%M%S)_tp${TP}_pp${PP}"
-PROFILE_OUTPUT="${OUTPUT_DIR}/sglang_profile_tp${TP}_pp${PP}.nsys-rep"
+PROFILE_OUTPUT="nsys_0.nsys-rep"
 
 # Comprehensive trace options
 NSYS_TRACE="cuda,nvtx,mpi,osrt,cudnn,cublas"
@@ -150,7 +150,7 @@ python -m sglang.bench_serving \
   --random-range-ratio "$RANGE_RATIO" \
   --request-rate inf \
   --max-concurrency "$MAX_CONCURRENCY" \
-  --output-file "$OUTPUT_DIR/bench_results.jsonl" \
+  --output-file "bench_results.jsonl" \
   --output-details \
   --profile \
   | tee "$OUTPUT_DIR/benchmark_stdout.log"
@@ -174,7 +174,7 @@ wait $SERVER_PID 2>/dev/null || true
 echo ""
 echo "=== Profiling complete! ==="
 echo "Profile saved to:       $PROFILE_OUTPUT"
-echo "Benchmark results:      $OUTPUT_DIR/bench_results.jsonl"
+echo "Benchmark results:      bench_results.jsonl"
 echo "Benchmark stdout:       $OUTPUT_DIR/benchmark_stdout.log"
 echo "Server stdout:          $OUTPUT_DIR/server_stdout.log"
 echo "Server stderr:          $OUTPUT_DIR/server_stderr.log"

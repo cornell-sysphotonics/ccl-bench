@@ -71,7 +71,7 @@ MAX_CONCURRENCY=4
 ###############################################
 NSYS_SESSION="sglang_node${NODE_RANK}"
 OUTPUT_DIR="sglang_profile_$(date +%Y%m%d_%H%M%S)_tp${TP}_pp${PP}_node${NODE_RANK}"
-PROFILE_OUTPUT="${OUTPUT_DIR}/sglang_profile_tp${TP}_pp${PP}_node${NODE_RANK}.nsys-rep"
+PROFILE_OUTPUT="${BASE_DIR}/nsys_${NODE_RANK}.nsys-rep"
 
 # Comprehensive trace options
 NSYS_TRACE="cuda,nvtx,mpi,osrt,cudnn,cublas"
@@ -226,7 +226,7 @@ if [ "$NODE_RANK" -eq 0 ]; then
     --random-range-ratio "$RANGE_RATIO" \
     --request-rate inf \
     --max-concurrency "$MAX_CONCURRENCY" \
-    --output-file "$OUTPUT_DIR/bench_results_node${NODE_RANK}.jsonl" \
+    --output-file "${BASE_DIR}/bench_results.jsonl" \
     --output-details \
     --profile \
     | tee "$OUTPUT_DIR/benchmark_stdout_node${NODE_RANK}.log"
@@ -268,7 +268,7 @@ echo ""
 echo "=== Profiling complete on node ${NODE_RANK}! ==="
 echo "Profile saved to:       $PROFILE_OUTPUT"
 if [ "$NODE_RANK" -eq 0 ]; then
-  echo "Benchmark results:      $OUTPUT_DIR/bench_results_node${NODE_RANK}.jsonl"
+  echo "Benchmark results:      ${BASE_DIR}/bench_results.jsonl"
   echo "Benchmark stdout:       $OUTPUT_DIR/benchmark_stdout_node${NODE_RANK}.log"
 fi
 echo "Server stdout:          $OUTPUT_DIR/server_stdout_node${NODE_RANK}.log"
