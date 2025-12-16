@@ -20,10 +20,10 @@ workload:
     dataset: random
   hardware:
     network_topo:
-      topology:
+      topology: slingshot
       bandwidth_gbps:
         - 200
-        - 2000
+        - 600
     xpu_spec:
       type: GPU
       model: nvidia_a100
