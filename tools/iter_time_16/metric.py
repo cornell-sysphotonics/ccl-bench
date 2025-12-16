@@ -5,8 +5,9 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
-from tools.common.detect_profile_mode import detect_profile_mode
 from hta.trace_analysis import TraceAnalysis
+
+from tools.common.detect_profile_mode import detect_profile_mode
 
 
 MetricResult = dict[str, Any]

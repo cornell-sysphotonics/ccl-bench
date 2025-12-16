@@ -78,12 +78,20 @@ def run_nsys_stats(
 
         results: dict[str, Any] = {}
         for report in reports_list:
-            csv_path = Path(f"{output_prefix}.{report}.csv")
+            # Nsight Systems sometimes uses underscores instead of dots in the output
+            # filenames (e.g., `nsys_stats_cuda_gpu_kern_sum.csv` instead of
+            # `nsys_stats.cuda_gpu_kern_sum.csv`). Try both patterns.
+            dot_path = Path(f"{output_prefix}.{report}.csv")
+            underscore_path = output_prefix.parent / f"{output_prefix.name}_{report}.csv"
+
+            csv_path = dot_path if dot_path.exists() else underscore_path
             if not csv_path.exists():
                 continue
+
             with csv_path.open() as fh:
                 reader = csv.DictReader(fh)
                 results[report] = list(reader)
+
         return results
 
 

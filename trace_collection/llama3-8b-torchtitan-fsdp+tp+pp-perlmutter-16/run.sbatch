@@ -4,7 +4,7 @@
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
-#SBATCH -q regular
+#SBATCH -q debug
 #SBATCH -J llama3_8b_3d
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1

@@ -20,7 +20,7 @@ print_config = true
 [profiling]
 enable_profiling = true
 save_traces_folder = "profile_traces"
-profile_freq = 20
+profile_freq = 2
 profiler_active = 1
 profiler_warmup = 3
 enable_memory_snapshot = true
@@ -47,7 +47,7 @@ implementation = "fused"
 early_step_in_backward = false
 
 [lr_scheduler]
-warmup_steps = 200
+warmup_steps = 20
 decay_ratio = 0.1
 decay_type = "linear"
 min_lr_factor = 0.0
@@ -57,7 +57,7 @@ dataset = "c4"
 local_batch_size = 1
 global_batch_size = -1
 seq_len = 2048
-steps = 200
+steps = 20
 max_norm = 1.0
 dtype = "bfloat16"
 mixed_precision_param = "bfloat16"

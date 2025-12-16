@@ -4,7 +4,7 @@
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
-#SBATCH -q regular
+#SBATCH -q debug
 #SBATCH -J qwen3_32b_fsdp_tp
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1

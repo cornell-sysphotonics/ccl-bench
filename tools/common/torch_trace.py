@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import importlib
 from pathlib import Path
-
 
 from hta.trace_analysis import TraceAnalysis
 
@@ -23,8 +21,4 @@ def list_ranks(trace_dir: str) -> list[int]:
 
 def load_hta_trace(trace_dir: str) -> TraceAnalysis:
     """Return an HTA TraceAnalysis object for the directory."""
-
     return TraceAnalysis(trace_dir)
-
-
-
