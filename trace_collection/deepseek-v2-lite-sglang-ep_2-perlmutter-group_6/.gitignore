@@ -1,0 +1,9 @@
+*.pickle
+*.log
+*.jsonl
+*.txt
+*.gz
+*.nsys-rep
+*.qdstrm
+*.sqlite
+*.png
