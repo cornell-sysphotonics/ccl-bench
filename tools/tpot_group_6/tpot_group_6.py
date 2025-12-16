@@ -3,7 +3,7 @@ import sys
 import statistics
 import matplotlib.pyplot as plt
 from pathlib import Path
-
+from textwrap import dedent
 
 def compute_tpots_ms(record):
     """Compute per-request TPOTs (ms) from sglang 'itls'."""
@@ -17,21 +17,21 @@ def compute_tpots_ms(record):
     return tpots_ms
 
 
-def plot_and_save(ttfts, tpots, outfile, title_prefix):
-    """Plot TTFT/TPOT arrays and save figure."""
+def plot_and_save(tpots, outfile):
+    """Plot TPOT arrays and save figure."""
     plt.figure(figsize=(10, 6))
 
-    # TTFT subplot
+    # Unsorted subplot
     plt.subplot(2, 1, 1)
-    plt.plot(ttfts, marker=".", linestyle="-")
-    plt.title(f"{title_prefix} TTFTs")
-    plt.xlabel("Request index")
-    plt.ylabel("TTFT (ms)")
-
-    # TPOT subplot
-    plt.subplot(2, 1, 2)
     plt.plot(tpots, marker=".", linestyle="-")
-    plt.title(f"{title_prefix} TPOTs")
+    plt.title(f"Unsorted TPOTs")
+    plt.xlabel("Request index")
+    plt.ylabel("TPOT (ms)")
+
+    # Sorted subplot
+    plt.subplot(2, 1, 2)
+    plt.plot(sorted(tpots), marker=".", linestyle="-")
+    plt.title(f"Sorted TPOTs")
     plt.xlabel("Request index")
     plt.ylabel("TPOT (ms)")
 
@@ -40,14 +40,18 @@ def plot_and_save(ttfts, tpots, outfile, title_prefix):
     print(f"Saved: {outfile}")
 
 
-def main():
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <sglang_benchmark.jsonl>")
-        sys.exit(1)
+def metric_cal(directory: str) -> str:
+    """
+    Extract TPOTs from a sglang benchmark JSONL file and plot them.
 
-    json_path = Path(sys.argv[1])
-    out_unsorted = json_path.with_suffix("").as_posix() + "_unsorted.png"
-    out_sorted = json_path.with_suffix("").as_posix() + "_sorted.png"
+    Args:
+        directory (str): The directory path containing the sglang benchmark JSONL file.
+
+    Returns:
+        str: A pretty-printed string with the statistics of TTFTs and TPOTs.
+    """
+    json_path = Path(directory) / "bench_results.jsonl"
+    out_path = Path(directory) / "tpot.png"
 
     record = None
     num_records = 0
@@ -69,8 +73,8 @@ def main():
         print("Error: no record found.")
         sys.exit(1)
 
+
     # Load timings
-    ttfts_ms = [t * 1000.0 for t in record["ttfts"]]
     tpots_ms = compute_tpots_ms(record)
 
     # Stats check
@@ -78,31 +82,17 @@ def main():
         mean_calc = statistics.mean(tpots_ms)
         std_calc = statistics.pstdev(tpots_ms)
 
-        print("\nTPOT stats check (ms):")
-        print(f"  file mean = {record['mean_tpot_ms']:.6f}")
-        print(f"  calc mean = {mean_calc:.6f}")
-        print(f"  file std  = {record['std_tpot_ms']:.6f}")
-        print(f"  calc std  = {std_calc:.6f}")
+        assert abs(record["mean_tpot_ms"] - mean_calc) < 1e-4
+        assert abs(record["std_tpot_ms"] - std_calc) < 1e-4
 
-    # Create unsorted figure
-    plot_and_save(
-        ttfts_ms,
-        tpots_ms,
-        out_unsorted,
-        "Unsorted"
-    )
+    plot_and_save(tpots_ms, out_path)
 
-    # Create sorted figure
-    ttfts_sorted = sorted(ttfts_ms)
-    tpots_sorted = sorted(tpots_ms)
+    ret = dedent(f"""
+    -----Time per Output Token (excl. 1st token)------
+    Mean TPOT (ms):                          {record['mean_tpot_ms']:.2f}
+    Median TPOT (ms):                        {record['median_tpot_ms']:.2f}
+    Std TPOT (ms):                           {record['std_tpot_ms']:.2f}
+    P99 TPOT (ms):                           {record['p99_tpot_ms']:.2f}
+    """)
 
-    plot_and_save(
-        ttfts_sorted,
-        tpots_sorted,
-        out_sorted,
-        "Sorted"
-    )
-
-
-if __name__ == "__main__":
-    main()
+    return ret

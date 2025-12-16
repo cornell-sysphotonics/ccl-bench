@@ -17,6 +17,12 @@ if __name__ == "__main__":
     if metric_name == "coll_call_num":
         from coll_call_num.coll_call_num import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "ttft_group_6":
+        from ttft_group_6.ttft_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "tpot_group_6":
+        from tpot_group_6.tpot_group_6 import metric_cal
+        metric_cal_func = metric_cal
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     
