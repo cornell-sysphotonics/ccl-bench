@@ -100,16 +100,16 @@ def main() -> None:
         help="Name of the metric to calculate",
     )
     parser.add_argument(
-        "--profile-mode",
-        type=str,
-        choices=PROFILE_MODES,
-        default="auto",
-        help="Profile mode: 'torch' (Kineto/PyTorch), 'nsys' (Nsight Systems), or 'auto' (detect)",
-    )
-    parser.add_argument(
         "--output-json",
         action="store_true",
         help="Force JSON output (auto-enabled for dict results like traffic_distribution)",
+    )
+    parser.add_argument(
+        "--profile-mode",
+        type=str,
+        default="auto",
+        choices=PROFILE_MODES,
+        help="Trace type to use: torch, nsys, or auto-detect",
     )
     parser.add_argument(
         "--list-metrics",

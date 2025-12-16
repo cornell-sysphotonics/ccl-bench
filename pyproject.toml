@@ -355,6 +355,7 @@ no_implicit_optional = true
 strict_equality = true
 ignore_missing_imports = false
 exclude = ["build", "dist", ".venv"]
+mypy_path = ["stubs"]
 
 [[tool.mypy.overrides]]
 module = "tools.*"

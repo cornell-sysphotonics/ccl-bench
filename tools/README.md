@@ -61,3 +61,14 @@ Metric collection: Byungsoo, Jinkun
 13. `TPOT`: time per output token in inference
 
 ...
+
+## Shared runtime expectations (new)
+
+- Add a `run_metadata.json` to every trace directory. Required keys: `world_size`, `global_batch_size`, `seq_len`, `tokens_per_step` (optional, inferred from batch/seq), `model_flops_per_token`, `gpu_peak_tflops`, `gpu_hbm_bytes`.
+- Profile mode is auto-detected: Kineto/Torch ET traces -> `torch`; `.nsys-rep`/`.qdrep`/`report*.sqlite` -> `nsys`. You can override with `--profile-mode torch|nsys`.
+- Optional helper files the metric modules will read when present:
+    - `step_times.json` or `step_durations.json`: per-step durations (list or `{step: seconds}` map).
+    - `step_times_per_rank.json`: per-rank step durations for straggler lag.
+    - `memory_stats.json` (or `memory_snapshot.json`): `{rank: {peak_alloc_bytes, peak_reserved_bytes, ...}}`.
+    - `moe_assignments*.json`: per-rank MoE token→expert histograms.
+    - `training_metrics.json`: loss/perplexity/etc. for `training_quality_16`.
