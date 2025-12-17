@@ -49,6 +49,8 @@ export VENV_DIR="${SCRATCH}/ccl-bench-venv"
 # =============================================================================
 
 # Base directory for all collected traces (nsys, torch profiler, etc.)
+# Note: This is legacy/optional. Traces are now saved in <workload_dir>/traces
+# by default via setup_trace_dir() in common.sh
 export TRACE_BASE="${SCRATCH}/ccl-bench-traces"
 
 # =============================================================================

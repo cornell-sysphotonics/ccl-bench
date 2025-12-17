@@ -6,10 +6,10 @@
 #SBATCH -A m4999
 #SBATCH -q debug
 #SBATCH -J deepseek_v2_lite_tp_pp_ep
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
-#SBATCH --cpus-per-task=128
+#SBATCH --cpus-per-task=16
 #SBATCH -t 00:30:00
 #SBATCH --module=gpu,nccl-plugin
 #SBATCH --output=logs/%x_%j.out
@@ -63,8 +63,11 @@ fi
 # Change to trace directory for output
 cd "${TRACE_DIR}"
 
-# Launch training with NSys profiling
-launch_torchtitan_nsys "deepseek_v2_lite_tp_pp_ep" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+# Launch training without NSys profiling
+launch_torchtitan_without_nsys "deepseek_v2_lite_tp_pp_ep" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+
+# Run the analysis
+python "${WORKLOAD_DIR}/../tools/main.py" --workload-dir "${WORKLOAD_DIR}"
 
 # Job complete
 print_job_complete

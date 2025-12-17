@@ -1,0 +1,2 @@
+# Install PyTorch + TorchTitan with cu124
+UV_CACHE_DIR=/pscratch/sd/g/gb555/cache/uv uv pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu124 --reinstall --python /pscratch/sd/g/gb555/ccl-bench-venv/bin/python

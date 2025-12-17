@@ -3,13 +3,13 @@
 # =============================================================================
 # CS5470 CCL-Bench Configuration
 #
-# world_size = 4 (nnodes=1, nproc_per_node=4)
-# Parallelism: dp_replicate=1, dp_shard=4, tp=1, pp=1, cp=1, ep=4
-# Verification: 1 × 4 × 1 × 1 × 1 = 4 ✓
-# EP constraint (etp=1): cp*tp=1, dp_shard*cp*tp=4, ep=4 valid ✓
+# world_size = 8 (nnodes=2, nproc_per_node=4)
+# Parallelism: dp_replicate=1, dp_shard=8, tp=1, pp=1, cp=1, ep=8
+# Verification: 1 × 8 × 1 × 1 × 1 = 8 ✓
+# EP constraint (etp=1): cp*tp=1, dp_shard*cp*tp=8, ep=8 valid ✓
 #
 # Launch command:
-#   torchrun --nnodes=1 --nproc_per_node=4 \
+#   torchrun --nnodes=2 --nproc_per_node=4 \
 #     -m torchtitan.train --job.config_file train_config.toml
 # =============================================================================
 
@@ -75,14 +75,14 @@ mode = "default"
 
 [parallelism]
 data_parallel_replicate_degree = 1
-data_parallel_shard_degree = 4                   # FSDP: 4-way shard
+data_parallel_shard_degree = 8                   # FSDP: 8-way shard
 fsdp_reshard_after_forward = "default"
 tensor_parallel_degree = 1
 pipeline_parallel_degree = 1
 pipeline_parallel_microbatch_size = 2
 pipeline_parallel_schedule = "1F1B"
 context_parallel_degree = 1
-expert_parallel_degree = 4                       # EP: 4-way expert parallel
+expert_parallel_degree = 8                       # EP: 8-way expert parallel
 expert_tensor_parallel_degree = 1                # etp=1 mode
 pipeline_parallel_expert_parallel_overlap = true
 
