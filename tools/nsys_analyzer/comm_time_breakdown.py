@@ -302,9 +302,11 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
                 elif num_active == 1:
                     time_accum[active_categories[0]] += duration
                 else:
+                    # Multiple categories active - record full time for each
+                    # Note: sum of time_accum will exceed total_time (overlap counted multiple times)
                     overlap_time += duration
                     for cat in active_categories:
-                        time_accum[cat] += duration / num_active
+                        time_accum[cat] += duration  # Full time, not divided
             
             if event['type'] == 'start':
                 active_counts[event['category']] += 1
@@ -340,7 +342,7 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
             'stream_roles': {str(k): v['role'] for k, v in stream_roles.items()}
         }
         
-        # Calculate total communication time
+        # Calculate total communication time (full GPU time, may exceed wall-clock due to overlap)
         result['total_comm_time_ms'] = (
             result['comm_DP_time_ms'] + 
             result['comm_TP_time_ms'] + 
@@ -349,7 +351,8 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
             result['comm_OTHER_time_ms']
         )
         
-        # Calculate percentages
+        # Calculate ratios relative to wall-clock time
+        # Note: ratios may exceed 100% because overlap time is counted for each active category
         if total_time_ms > 0:
             result['compute_ratio'] = result['compute_time_ms'] / total_time_ms
             result['comm_DP_ratio'] = result['comm_DP_time_ms'] / total_time_ms
@@ -358,6 +361,10 @@ def analyze_timeline_by_parallelism(nsys_rep_file, tp_size=1, pp_size=1, dp_size
             result['comm_EP_ratio'] = result['comm_EP_time_ms'] / total_time_ms
             result['comm_OTHER_ratio'] = result['comm_OTHER_time_ms'] / total_time_ms
             result['idle_ratio'] = result['idle_time_ms'] / total_time_ms
+            result['overlap_ratio'] = result['overlap_time_ms'] / total_time_ms
+            
+            # GPU utilization = (compute + comm - overlap) / total = 1 - idle_ratio
+            result['gpu_utilization'] = 1.0 - result['idle_ratio']
         
         return result
         

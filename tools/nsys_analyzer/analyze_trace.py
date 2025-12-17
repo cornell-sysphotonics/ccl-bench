@@ -152,24 +152,24 @@ def run_metric_for_file(metric_key, trace_file):
             breakdown = metric_info['module'].analyze_comm_breakdown(trace_file)
             results = breakdown
         elif metric_key == 'overlap':
-                overlap_stats = metric_info['module'].analyze_overlap(trace_file)
-                if overlap_stats:
-                    # Calculate overlap percentage
-                    if overlap_stats.get("total_nccl_time_ns", 0) > 0:
-                        overlap_pct = (overlap_stats["overlap_time_ns"] / overlap_stats["total_nccl_time_ns"]) * 100
-                    else:
-                        overlap_pct = 0.0
-                    results = {
-                        'overlap_percentage': overlap_pct,
-                        'total_nccl_time_ns': overlap_stats.get("total_nccl_time_ns", 0),
-                        'total_compute_time_ns': overlap_stats.get("total_compute_time_ns", 0),
-                        'overlap_time_ns': overlap_stats.get("overlap_time_ns", 0),
-                        'is_estimated': overlap_stats.get("is_estimated", False)
-                    }
+            overlap_stats = metric_info['module'].analyze_overlap(trace_file)
+            if overlap_stats:
+                # Calculate overlap percentage
+                if overlap_stats.get("total_nccl_time_ns", 0) > 0:
+                    overlap_pct = (overlap_stats["overlap_time_ns"] / overlap_stats["total_nccl_time_ns"]) * 100
+                else:
+                    overlap_pct = 0.0
+                results = {
+                    'overlap_percentage': overlap_pct,
+                    'total_nccl_time_ns': overlap_stats.get("total_nccl_time_ns", 0),
+                    'total_compute_time_ns': overlap_stats.get("total_compute_time_ns", 0),
+                    'overlap_time_ns': overlap_stats.get("overlap_time_ns", 0),
+                    'is_estimated': overlap_stats.get("is_estimated", False)
+                }
             else:
                 results = None
         elif metric_key == 'phase_windows':
-                results = metric_info['module'].analyze_phase_windows(trace_file)
+            results = metric_info['module'].analyze_phase_windows(trace_file)
         elif metric_key == 'bandwidth':
             # Use ring model analyzer with parallelism config and hardware bandwidth
             results = metric_info['module'].analyze_bandwidth_with_model(
