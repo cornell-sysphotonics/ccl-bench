@@ -20,7 +20,7 @@ workload:
   data:
     batch_size: 1
     seq_len: 2048
-    dataset: wikitext 
+    dataset: wikitext
   hardware:
     network_topo:
       topology: slingshot
