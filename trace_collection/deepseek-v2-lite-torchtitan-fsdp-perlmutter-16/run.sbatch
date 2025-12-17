@@ -64,13 +64,14 @@ fi
 cd "${TRACE_DIR}"
 
 # Launch training with NSys profiling
-launch_torchtitan_without_nsys "deepseek_v2_lite_fsdp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+#launch_torchtitan_without_nsys "deepseek_v2_lite_fsdp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
 
 # Print that the analysis is starting
 echo "Starting analysis..."
 
-# Run the analysis
-python "${WORKLOAD_DIR}/../tools/main.py" --workload-dir "${WORKLOAD_DIR}"
+# Run the analysis using absolute path\
+PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
+python "${PROJECT_ROOT}/tools/main.py" --workload-dir "${WORKLOAD_DIR}"
 
 # Print that the analysis is complete
 echo "Analysis complete"

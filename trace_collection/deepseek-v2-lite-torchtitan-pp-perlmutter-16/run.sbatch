@@ -67,7 +67,8 @@ cd "${TRACE_DIR}"
 launch_torchtitan_without_nsys "deepseek_v2_lite_pp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
 
 # Run the analysis
-python "${WORKLOAD_DIR}/../tools/main.py" --workload-dir "${WORKLOAD_DIR}"
+PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
+python "${PROJECT_ROOT}/tools/main.py" --workload-dir "${WORKLOAD_DIR}"
 
 # Job complete
 print_job_complete

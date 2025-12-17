@@ -89,27 +89,31 @@ run_workload() {
 	local workload_name
 	workload_name="$(basename "${workload_dir}")"
 	
+	# Convert to absolute path
+	local abs_workload_dir
+	abs_workload_dir="$(cd "${SCRIPT_DIR}/${workload_dir}" && pwd)"
+	
 	echo "------------------------------------------------------------------------------"
 	echo "Running: ${workload_name}"
 	echo "------------------------------------------------------------------------------"
 	
-	if [[ ! -f "${workload_dir}/run.sh" ]]; then
-		echo "ERROR: run.sh not found in ${workload_dir}"
+	if [[ ! -f "${abs_workload_dir}/run.sh" ]]; then
+		echo "ERROR: run.sh not found in ${abs_workload_dir}"
 		return 1
 	fi
 	
-	if [[ ! -x "${workload_dir}/run.sh" ]]; then
+	if [[ ! -x "${abs_workload_dir}/run.sh" ]]; then
 		echo "Making run.sh executable..."
-		chmod +x "${workload_dir}/run.sh"
+		chmod +x "${abs_workload_dir}/run.sh"
 	fi
 	
 	if [[ ${DRY_RUN} == true ]]; then
-		echo "[DRY-RUN] Would execute: cd ${workload_dir} && ./run.sh"
+		echo "[DRY-RUN] Would execute: cd ${abs_workload_dir} && ./run.sh"
 		return 0
 	fi
 	
-	# Run the workload
-	if cd "${workload_dir}" && ./run.sh; then
+	# Run the workload (use subshell to preserve current directory)
+	if (cd "${abs_workload_dir}" && ./run.sh); then
 		echo "✓ Successfully submitted: ${workload_name}"
 		return 0
 	else
@@ -134,9 +138,9 @@ if [[ ${PARALLEL} == true ]]; then
 	# Wait for all background jobs and collect results
 	for i in "${!PIDS[@]}"; do
 		if wait "${PIDS[$i]}"; then
-			((SUCCESS_COUNT++))
+			((SUCCESS_COUNT++)) || true
 		else
-			((FAILED_COUNT++))
+			((FAILED_COUNT++)) || true
 			FAILED_WORKLOADS+=("$(basename "${WORKLOAD_DIRS[$i]}")")
 			if [[ ${STOP_ON_ERROR} == true ]]; then
 				echo ""
@@ -153,9 +157,9 @@ else
 	# Run workloads sequentially
 	for dir in "${WORKLOAD_DIRS[@]}"; do
 		if run_workload "${dir}"; then
-			((SUCCESS_COUNT++))
+			((SUCCESS_COUNT++)) || true
 		else
-			((FAILED_COUNT++))
+			((FAILED_COUNT++)) || true
 			FAILED_WORKLOADS+=("$(basename "${dir}")")
 			if [[ ${STOP_ON_ERROR} == true ]]; then
 				echo ""

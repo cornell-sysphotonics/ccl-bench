@@ -53,7 +53,7 @@ min_lr_factor = 0.0
 
 [training]
 dataset = "c4"
-local_batch_size = 2
+local_batch_size = 8
 global_batch_size = -1
 seq_len = 1024
 steps = 20
