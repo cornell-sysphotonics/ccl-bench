@@ -121,7 +121,7 @@ def metric_cal(directory: str) -> float:
         model_family = workload_card["workload"]["model"]["model_family"]
         tp = workload_card["Model-executor"]["model_plan_parallelization"]["tp"]
 
-    if model_family == "llama" and tp == 1:
+    if model_family == "llama-3.1-8B" and tp == 1:
         return "n/a"
 
     try: 
