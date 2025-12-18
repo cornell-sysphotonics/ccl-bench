@@ -28,7 +28,7 @@ def metric_cal(directory: str) -> float:
         directory (str): The directory path containing the exported sqlite file from nsys.
 
     Returns:
-        Dict[str, Dict[str, float]] | "n/a": The statistics of bandwidth utilization for allreduce, or "n/a" if the metric is not applicable.
+        Dict[str, Dict[str, float]] | "n/a": The statistics of bandwidth utilization for alltoall, or "n/a" if the metric is not applicable.
     """
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
