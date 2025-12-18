@@ -7,4 +7,5 @@
 *.qdstrm
 *.sqlite
 *.png
+*.csv
 sglang_multi_node_sync_tp4_pp2/*
