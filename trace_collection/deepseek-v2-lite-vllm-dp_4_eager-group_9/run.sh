@@ -5,7 +5,7 @@ nsys profile \
   --trace-fork-before-exec=true \
   --force-overwrite=true \
   --stats=true \
-  -o moe_dp1tp4 \
+  -o moe_dp4tp1 \
   vllm serve /pscratch/sd/c/cp724/DeepSeek-V2-Lite \
     --enforce-eager \
     --tensor-parallel-size 1 \

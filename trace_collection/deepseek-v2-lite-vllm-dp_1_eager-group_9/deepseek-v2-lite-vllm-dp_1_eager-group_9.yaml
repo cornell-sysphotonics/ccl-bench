@@ -56,4 +56,6 @@ metric_source:
   traces:
     -  nsys
   metrics_specific_trace:
-    -  # metric specific trace type, e.g., "memory_trace", "accuracy_trace".
+    -  communication_ratio
+    - total_communication_time
+    - total_kernel_time
