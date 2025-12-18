@@ -35,7 +35,7 @@ workload:
   
 Model-executor:
   framework: 
-    name: PyTorch
+    name: PyTorch DDP
     compiler_tool_selection: plain_pytorch
   model_plan_parallelization: 
     dp_replicate: 1
