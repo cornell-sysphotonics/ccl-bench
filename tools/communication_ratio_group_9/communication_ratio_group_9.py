@@ -9,13 +9,15 @@ from dataclasses import dataclass
 from typing import List, Tuple
 
 
-# ---- 你认为算“通信”的 kernel 名字规则（可按需加） ----
+# ---- Kernel-name rules for what counts as "communication" (extend as needed) ----
 # 1) NCCL GPU kernels
-# 2) 一些 backend 自定义跨设备reduce（如果你也想算进comm）
+# 2) Optional backend-specific cross-device reduce/ops (if you want to include them)
 COMM_REGEXES = [
-    re.compile(r"^nccl", re.IGNORECASE),          # ncclDevKernel_* / ncclKernel_*
-    re.compile(r"sendrecv", re.IGNORECASE),       # some nccl names include SendRecv
-    re.compile(r"cross[_\-]?device", re.IGNORECASE),  # optional: cross-device reduce/ops
+    re.compile(r"^nccl", re.IGNORECASE),  # ncclDevKernel_* / ncclKernel_*
+    re.compile(r"sendrecv", re.IGNORECASE),  # some NCCL names include SendRecv
+    re.compile(
+        r"cross[_\-]?device", re.IGNORECASE
+    ),  # optional: cross-device reduce/ops
     re.compile(r"allgather|reducescatter|allreduce|broadcast|reduce", re.IGNORECASE),
 ]
 
@@ -34,17 +36,36 @@ class TraceStat:
 
 def _run_nsys_kernsum_csv(trace_path: str) -> str:
     """
-    Run: nsys stats --report cuda_gpu_kern_sum --format csv <trace>
-    and return stdout text (CSV preceded by 'Processing...' lines).
+    Run:
+      nsys stats --report cuda_gpu_kern_sum --format csv <trace>
+    and return stdout text (CSV may be preceded by 'Processing...' lines).
     """
-    cmd = ["nsys", "stats", "--report", "cuda_gpu_kern_sum", "--format", "csv", trace_path]
+    cmd = [
+        "nsys",
+        "stats",
+        "--report",
+        "cuda_gpu_kern_sum",
+        "--format",
+        "csv",
+        trace_path,
+    ]
     try:
-        p = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        p = subprocess.run(
+            cmd,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
         return p.stdout
     except FileNotFoundError as e:
-        raise RuntimeError("Cannot find 'nsys' in PATH. Try 'which nsys' and load the Nsight Systems module.") from e
+        raise RuntimeError(
+            "Cannot find 'nsys' in PATH. Try 'which nsys' and load the Nsight Systems module."
+        ) from e
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"nsys stats failed for {trace_path}\n--- output ---\n{e.stdout}") from e
+        raise RuntimeError(
+            f"nsys stats failed for {trace_path}\n--- output ---\n{e.stdout}"
+        ) from e
 
 
 def _extract_csv_block(nsys_stdout: str) -> List[str]:
@@ -53,13 +74,18 @@ def _extract_csv_block(nsys_stdout: str) -> List[str]:
       Processing [...] with [cuda_gpu_kern_sum.py]...
       Time (%),Total Time (ns),Instances,...
       ...
-    We find the header line starting with 'Time (%)' and return all lines from there.
+    We locate the header line starting with 'Time (%)' and return all lines from there.
     """
     lines = [ln.strip("\n") for ln in nsys_stdout.splitlines() if ln.strip()]
     header_idx = None
     for i, ln in enumerate(lines):
-        # robust match for the header
-        if ln.startswith("Time (%)") and "Total Time" in ln and "Instances" in ln and "Name" in ln:
+        # Robust match for the header
+        if (
+            ln.startswith("Time (%)")
+            and "Total Time" in ln
+            and "Instances" in ln
+            and "Name" in ln
+        ):
             header_idx = i
             break
 
@@ -84,9 +110,9 @@ def _parse_kernsum_csv_lines(csv_lines: List[str]) -> Tuple[int, int, int]:
     csv_text = "\n".join(csv_lines)
     reader = csv.DictReader(io.StringIO(csv_text))
 
-    # Column names in your output:
+    # Expected columns:
     # Time (%),Total Time (ns),Instances,Avg (ns),...,Name
-    # Some Nsight versions might rename slightly; we match a few options.
+    # Some Nsight versions may rename columns; try a few candidates.
     def get_col(d, *cands):
         for c in cands:
             if c in d:
@@ -124,7 +150,7 @@ def _parse_kernsum_csv_lines(csv_lines: List[str]) -> Tuple[int, int, int]:
 
 
 def compute_comm_ratio(trace_dir: str) -> float:
-    # collect .nsys-rep and .sqlite
+    # Collect .nsys-rep and .sqlite traces
     paths = []
     for fn in os.listdir(trace_dir):
         if fn.endswith(".nsys-rep") or fn.endswith(".sqlite"):
@@ -132,28 +158,34 @@ def compute_comm_ratio(trace_dir: str) -> float:
     paths.sort()
 
     if not paths:
-        raise RuntimeError(f"No .nsys-rep or .sqlite found in: {trace_dir}")
+        raise RuntimeError(f"No .nsys-rep or .sqlite traces found in: {trace_dir}")
 
     stats: List[TraceStat] = []
     for pth in paths:
         out = _run_nsys_kernsum_csv(pth)
         csv_lines = _extract_csv_block(out)
         total_ns, comm_ns, comm_calls = _parse_kernsum_csv_lines(csv_lines)
-        stats.append(TraceStat(path=pth, total_ns=total_ns, comm_ns=comm_ns, comm_calls=comm_calls))
+        stats.append(
+            TraceStat(
+                path=pth, total_ns=total_ns, comm_ns=comm_ns, comm_calls=comm_calls
+            )
+        )
 
-    # weighted aggregate = sum(comm) / sum(total)
+    # Weighted aggregate = sum(comm) / sum(total)
     total_ns_sum = sum(s.total_ns for s in stats)
     comm_ns_sum = sum(s.comm_ns for s in stats)
     ratio = (comm_ns_sum / total_ns_sum) if total_ns_sum > 0 else 0.0
 
-    # print per-trace (sanity)
+    # Print per-trace breakdown (sanity check)
     print("=" * 80)
     for s in stats:
-        print(f"{os.path.basename(s.path):40s}  comm_ratio={s.ratio*100:6.2f}%"
-              f"  total={s.total_ns/1e6:10.3f} ms  comm={s.comm_ns/1e6:10.3f} ms"
-              f"  comm_calls~{s.comm_calls}")
+        print(
+            f"{os.path.basename(s.path):40s}  comm_ratio={s.ratio * 100:6.2f}%"
+            f"  total={s.total_ns / 1e6:10.3f} ms  comm={s.comm_ns / 1e6:10.3f} ms"
+            f"  comm_calls~{s.comm_calls}"
+        )
     print("-" * 80)
-    print(f"AGGREGATE comm_ratio = {ratio:.6f}  ({ratio*100:.2f}%)")
+    print(f"AGGREGATE comm_ratio = {ratio:.6f}  ({ratio * 100:.2f}%)")
     print("=" * 80)
 
     return ratio
@@ -161,7 +193,11 @@ def compute_comm_ratio(trace_dir: str) -> float:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--trace-dir", required=True, help="Directory containing .nsys-rep/.sqlite traces")
+    ap.add_argument(
+        "--trace-dir",
+        required=True,
+        help="Directory containing .nsys-rep/.sqlite traces",
+    )
     args = ap.parse_args()
     compute_comm_ratio(args.trace_dir)
 

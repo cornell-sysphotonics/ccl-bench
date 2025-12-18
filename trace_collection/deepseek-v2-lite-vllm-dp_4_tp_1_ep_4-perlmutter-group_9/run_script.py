@@ -5,7 +5,7 @@ import requests
 from datasets import load_dataset
 
 # ----------------------------
-# 配置
+# Configuration
 # ----------------------------
 VLLM_API_URL = "http://localhost:8000/v1/chat/completions"
 MODEL_NAME = "/pscratch/sd/c/cp724/DeepSeek-V2-Lite"
@@ -16,7 +16,7 @@ GEN_MAX_TOKENS = 512
 
 
 # ===========================================================
-# Streaming 输出一个 prompt
+# Stream a single prompt
 # ===========================================================
 def stream_chat_completion(prompt: str):
     payload = {
@@ -55,14 +55,14 @@ def stream_chat_completion(prompt: str):
                     tokens.append(tok)
                     timestamps.append(time.time())
 
-    # 如果 tokens 为空，last timestamp 就是 HTTP 结束时间
+    # If no tokens are generated, use the HTTP end time
     t_end = timestamps[-1] if timestamps else time.time()
 
     return tokens, timestamps, t_start, t_end
 
 
 # ===========================================================
-# latency metrics
+# Latency metrics
 # ===========================================================
 def compute_latency_metrics(tokens, timestamps, t_start):
     if not tokens:
@@ -77,7 +77,7 @@ def compute_latency_metrics(tokens, timestamps, t_start):
 
 
 # ===========================================================
-# 单条 prompt 测试
+# Single prompt test
 # ===========================================================
 def process_one_text(text):
     prompt = text.strip()
@@ -85,33 +85,33 @@ def process_one_text(text):
         return
 
     print("\n" + "=" * 80)
-    print("原文：")
+    print("Input text:")
     print(textwrap.fill(prompt, width=80))
 
     tokens, timestamps, t_start, t_end = stream_chat_completion(prompt)
 
     metrics = compute_latency_metrics(tokens, timestamps, t_start)
     if metrics is None:
-        print("⚠生成为空")
+        print("⚠ Empty generation")
         return
 
     ttft, itl, tpot = metrics
-    e2e = t_end - t_start  # ⭐ 新增：整条 request 耗时
+    e2e = t_end - t_start  # End-to-end request latency
 
-    print(f"\n生成 token 数: {len(tokens)}")
+    print(f"\nGenerated tokens: {len(tokens)}")
     print(f"TTFT: {ttft:.4f} s")
-    print(f"E2E Latency: {e2e:.4f} s")  # ⭐⭐⭐ 新增 ⭐⭐⭐
+    print(f"E2E Latency: {e2e:.4f} s")
 
     if tpot is None:
-        print("TPOT: N/A (only 1 token generated)")
+        print("TPOT: N/A (only one token generated)")
     else:
         print(f"TPOT: {tpot:.6f} s")
 
-    print("\nITL 列表:")
+    print("\nITL list:")
     if itl:
         print([round(x, 4) for x in itl])
     else:
-        print("N/A (only 1 token)")
+        print("N/A (only one token)")
 
     print("\n[Continuations]:")
     print(textwrap.fill("".join(tokens), width=80))
@@ -120,7 +120,7 @@ def process_one_text(text):
 
 
 # ===========================================================
-# dataset load
+# Dataset loading
 # ===========================================================
 def load_dataset_10(dataset_name):
     print(f"\n📌 Loading dataset: {dataset_name}")
@@ -128,20 +128,23 @@ def load_dataset_10(dataset_name):
     if dataset_name == "wikitext":
         from datasets import Dataset
 
-        LOCAL_WIKITEXT = "/pscratch/sd/c/cp724/hf_cache/wikitext/wikitext-2-raw-v1/0.0.0/b08601e04326c79dfdd32d625aee71d232d685c3"
+        LOCAL_WIKITEXT = (
+            "/pscratch/sd/c/cp724/hf_cache/wikitext/"
+            "wikitext-2-raw-v1/0.0.0/"
+            "b08601e04326c79dfdd32d625aee71d232d685c3"
+        )
 
         ds = Dataset.from_file(f"{LOCAL_WIKITEXT}/wikitext-test.arrow")
         raw = ds["text"]
 
     elif dataset_name == "c4":
-        print("📌 Using LOCAL C4 shard")
+        print("📌 Using local C4 shard")
         local_path = (
             "/pscratch/sd/c/cp724/datasets/c4/en/c4-validation.00000-of-00008.json.gz"
         )
 
         raw = []
         import gzip
-        import json
 
         with gzip.open(local_path, "rt") as f:
             for line in f:
@@ -163,7 +166,7 @@ def load_dataset_10(dataset_name):
     filtered = [t.strip() for t in raw if t and t.strip() and len(t.strip()) > 20]
 
     texts = filtered[:NUM_SAMPLES]
-    print(f"→ Got {len(texts)} usable prompts.")
+    print(f"→ Loaded {len(texts)} usable prompts.")
     return texts
 
 
@@ -176,7 +179,7 @@ def main():
     texts = load_dataset_10(DATASET)[:10]
 
     for i, t in enumerate(texts):
-        print(f"\n### === 处理第 {i} 行输入 === ###")
+        print(f"\n### === Processing input line {i} === ###")
         process_one_text(t)
 
 

@@ -10,11 +10,14 @@ from typing import Dict, List
 
 REPORT = "cuda_gpu_kern_sum"
 
-# ---- 你定义哪些 kernel 算 communication（和你 communication_ratio.py 保持一致） ----
+# ---- Kernel-name rules for what counts as communication
+#      (kept consistent with communication_ratio.py) ----
 COMM_REGEXES = [
     re.compile(r"^nccl", re.IGNORECASE),
     re.compile(r"sendrecv", re.IGNORECASE),
-    re.compile(r"cross[_\-]?device", re.IGNORECASE),  # optional: cross-device reduce/ops
+    re.compile(
+        r"cross[_\-]?device", re.IGNORECASE
+    ),  # optional: cross-device reduce/ops
     re.compile(r"allgather|reducescatter|allreduce|broadcast|reduce", re.IGNORECASE),
 ]
 
@@ -41,16 +44,25 @@ def _run_nsys_kernsum_csv(trace_path: str) -> str:
         )
         return p.stdout
     except FileNotFoundError as e:
-        raise RuntimeError("Cannot find 'nsys' in PATH. Try 'which nsys' / load Nsight Systems module.") from e
+        raise RuntimeError(
+            "Cannot find 'nsys' in PATH. Try 'which nsys' or load the Nsight Systems module."
+        ) from e
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"nsys stats failed for {trace_path}\n--- output ---\n{e.stdout}") from e
+        raise RuntimeError(
+            f"nsys stats failed for {trace_path}\n--- output ---\n{e.stdout}"
+        ) from e
 
 
 def _extract_csv_block(nsys_stdout: str) -> List[str]:
     lines = [ln.strip("\n") for ln in nsys_stdout.splitlines() if ln.strip()]
     header_idx = None
     for i, ln in enumerate(lines):
-        if ln.startswith("Time (%)") and "Total Time" in ln and "Instances" in ln and "Name" in ln:
+        if (
+            ln.startswith("Time (%)")
+            and "Total Time" in ln
+            and "Instances" in ln
+            and "Name" in ln
+        ):
             header_idx = i
             break
     if header_idx is None:
@@ -98,7 +110,9 @@ def _collect_traces(trace_dir: str) -> List[str]:
     if os.path.isfile(trace_dir):
         if trace_dir.endswith(".nsys-rep") or trace_dir.endswith(".sqlite"):
             return [trace_dir]
-        raise ValueError(f"Unsupported trace type: {trace_dir} (need .nsys-rep or .sqlite)")
+        raise ValueError(
+            f"Unsupported trace type: {trace_dir} (expected .nsys-rep or .sqlite)"
+        )
 
     if not os.path.isdir(trace_dir):
         raise ValueError(f"Invalid trace path: {trace_dir}")
@@ -109,14 +123,17 @@ def _collect_traces(trace_dir: str) -> List[str]:
             paths.append(os.path.join(trace_dir, fn))
     paths.sort()
     if not paths:
-        raise RuntimeError(f"No .nsys-rep or .sqlite found in: {trace_dir}")
+        raise RuntimeError(f"No .nsys-rep or .sqlite traces found in: {trace_dir}")
     return paths
 
 
 def compute_total_comm_time(trace_dir: str) -> Dict[str, float]:
     """
-    Input: trace_dir (directory) OR a single trace file.
-    Output: dict { trace_basename -> comm_kernel_time_ms }
+    Input:
+      trace_dir (directory) OR a single trace file.
+
+    Output:
+      dict { trace_basename -> communication kernel time (ms) }
     """
     traces = _collect_traces(trace_dir)
     results: Dict[str, float] = {}
@@ -127,7 +144,7 @@ def compute_total_comm_time(trace_dir: str) -> Dict[str, float]:
         comm_ns = _parse_comm_ns(csv_lines)
         results[os.path.basename(pth)] = comm_ns / 1e6
 
-    # print per-trace for sanity
+    # Print per-trace results for sanity checking
     print("=" * 80)
     for k, v in results.items():
         print(f"{k:40s}  comm_kernel_time={v:12.3f} ms")
@@ -136,14 +153,18 @@ def compute_total_comm_time(trace_dir: str) -> Dict[str, float]:
     return results
 
 
-# Optional alias if your framework expects metric_cal
+# Optional alias if the framework expects `metric_cal`
 def metric_cal(trace_dir: str):
     return compute_total_comm_time(trace_dir)
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--trace-dir", required=True, help="Directory containing .nsys-rep/.sqlite traces (or a single trace file)")
+    ap.add_argument(
+        "--trace-dir",
+        required=True,
+        help="Directory containing .nsys-rep/.sqlite traces (or a single trace file)",
+    )
     args = ap.parse_args()
     compute_total_comm_time(args.trace_dir)
 

@@ -9,7 +9,7 @@ from datasets import load_dataset
 
 
 # ----------------------------
-# 配置（可被 CLI 覆盖）
+# Configuration (can be overridden by CLI)
 # ----------------------------
 VLLM_API_URL = "http://localhost:8000/v1/chat/completions"
 MODEL_NAME = "/pscratch/sd/c/cp724/DeepSeek-V2-Lite"
@@ -19,7 +19,7 @@ GEN_MAX_TOKENS = 512
 
 
 # ===========================================================
-# Streaming 输出一个 prompt（返回 chunk timestamps）
+# Stream a single prompt (return chunk timestamps)
 # ===========================================================
 def stream_chat_completion(prompt: str, api_url: str, model_name: str, max_tokens: int):
     payload = {
@@ -63,7 +63,7 @@ def stream_chat_completion(prompt: str, api_url: str, model_name: str, max_token
 
 
 # ===========================================================
-# latency 计算（基于“stream chunk”到达时间）
+# Latency computation (based on streaming chunk arrival time)
 # ===========================================================
 def compute_latency_metrics(chunks, timestamps, t_start):
     if not chunks or not timestamps:
@@ -76,7 +76,7 @@ def compute_latency_metrics(chunks, timestamps, t_start):
 
 
 # ===========================================================
-# 数据集加载（保证只取非空文本）
+# Dataset loading (ensure non-empty text only)
 # ===========================================================
 def load_prompts(dataset_name: str, num_prompts: int):
     print(f"\n📌 Loading dataset: {dataset_name}")
@@ -92,7 +92,7 @@ def load_prompts(dataset_name: str, num_prompts: int):
         raw = ds["text"]
 
     elif dataset_name == "c4":
-        print("📌 Using LOCAL C4 shard")
+        print("📌 Using local C4 shard")
         local_path = (
             "/pscratch/sd/c/cp724/datasets/c4/en/c4-validation.00000-of-00008.json.gz"
         )
@@ -116,12 +116,12 @@ def load_prompts(dataset_name: str, num_prompts: int):
 
     filtered = [t.strip() for t in raw if t and t.strip() and len(t.strip()) > 20]
     prompts = filtered[:num_prompts]
-    print(f"→ Got {len(prompts)} usable prompts.")
+    print(f"→ Loaded {len(prompts)} usable prompts.")
     return prompts
 
 
 # ===========================================================
-# 统计工具
+# Statistics utilities
 # ===========================================================
 def pctl(xs, p):
     if not xs:
@@ -136,7 +136,7 @@ def pctl(xs, p):
 
 
 def summarize_latencies(results):
-    # results: list of dict with keys: ttft, e2e, tpot
+    # results: list of dicts with keys: ttft, e2e, tpot
     ttft = [r["ttft"] for r in results if r["ttft"] is not None]
     e2e = [r["e2e"] for r in results if r["e2e"] is not None]
     tpot = [r["tpot"] for r in results if r["tpot"] is not None]
@@ -153,7 +153,7 @@ def summarize_latencies(results):
 
 
 # ===========================================================
-# Load test：可控 request rate + 并发(batch size) + throughput
+# Load test: controlled request rate + concurrency (batch size)
 # ===========================================================
 def run_load_test(
     prompts,
@@ -166,7 +166,7 @@ def run_load_test(
     verbose=False,
     out_jsonl=None,
 ):
-    # 生成要发送的 prompt 序列
+    # Generate prompt sequence (cycled from the prompt pool)
     seq = [prompts[i % len(prompts)] for i in range(num_requests)]
 
     results = []
@@ -196,7 +196,8 @@ def run_load_test(
     with ThreadPoolExecutor(max_workers=concurrency) as ex:
         futures = []
 
-        # 按 request_rate 定时发请求（request_rate<=0 => 尽可能快）
+        # Send requests at the target request_rate
+        # (request_rate <= 0 means send as fast as possible)
         for i, prompt in enumerate(seq):
             if request_rate and request_rate > 0:
                 target = t_test_start + (i / request_rate)
@@ -207,7 +208,7 @@ def run_load_test(
             started_at.append(time.perf_counter())
             futures.append(ex.submit(one_call, i, prompt))
 
-        # 收集完成
+        # Collect completed requests
         for fut in as_completed(futures):
             r = fut.result()
             completed_at.append(time.perf_counter())
@@ -230,7 +231,7 @@ def run_load_test(
     if fout:
         fout.close()
 
-    # Throughput（完成数 / 总墙钟）
+    # Throughput = completed requests / wall-clock time
     wall = t_test_end - t_test_start
     throughput = (len(results) / wall) if wall > 0 else 0.0
 
@@ -253,24 +254,29 @@ def main():
         choices=["wikitext", "c4", "redpajama"],
     )
     parser.add_argument(
-        "--num-prompts", type=int, default=50, help="prompt 池大小（循环使用）"
+        "--num-prompts", type=int, default=50, help="Size of the prompt pool (cycled)"
     )
-    parser.add_argument("--num-requests", type=int, default=30, help="总请求数")
+    parser.add_argument(
+        "--num-requests", type=int, default=30, help="Total number of requests"
+    )
     parser.add_argument(
         "--request-rate",
         type=float,
         default=5.0,
-        help="目标发包速率 req/s；<=0 表示尽可能快",
+        help="Target request rate (req/s); <=0 means send as fast as possible",
     )
     parser.add_argument(
-        "--batch-size", type=int, default=4, help="并发数（你要的 batch size）"
+        "--batch-size", type=int, default=4, help="Concurrency level (batch size)"
     )
     parser.add_argument("--max-tokens", type=int, default=GEN_MAX_TOKENS)
     parser.add_argument("--api-url", type=str, default=VLLM_API_URL)
     parser.add_argument("--model", type=str, default=MODEL_NAME)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument(
-        "--out-jsonl", type=str, default=None, help="把每个请求的结果写到 jsonl"
+        "--out-jsonl",
+        type=str,
+        default=None,
+        help="Write per-request results to a JSONL file",
     )
     args = parser.parse_args()
 
