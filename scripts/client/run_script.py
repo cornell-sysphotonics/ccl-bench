@@ -39,7 +39,7 @@ def stream_chat_completion(prompt: str):
                 continue
 
             if line.startswith(b"data: "):
-                data = line[len(b"data: "):]
+                data = line[len(b"data: ") :]
 
                 if data == b"[DONE]":
                     break
@@ -62,7 +62,7 @@ def stream_chat_completion(prompt: str):
 
 
 # ===========================================================
-# latency 计算
+# latency metrics
 # ===========================================================
 def compute_latency_metrics(tokens, timestamps, t_start):
     if not tokens:
@@ -70,10 +70,7 @@ def compute_latency_metrics(tokens, timestamps, t_start):
 
     ttft = timestamps[0] - t_start
 
-    itl = [
-        timestamps[i] - timestamps[i - 1]
-        for i in range(1, len(timestamps))
-    ]
+    itl = [timestamps[i] - timestamps[i - 1] for i in range(1, len(timestamps))]
     tpot = sum(itl) / len(itl) if itl else None
 
     return ttft, itl, tpot
@@ -99,11 +96,11 @@ def process_one_text(text):
         return
 
     ttft, itl, tpot = metrics
-    e2e = t_end - t_start   # ⭐ 新增：整条 request 耗时
+    e2e = t_end - t_start  # ⭐ 新增：整条 request 耗时
 
     print(f"\n生成 token 数: {len(tokens)}")
     print(f"TTFT: {ttft:.4f} s")
-    print(f"E2E Latency: {e2e:.4f} s")        # ⭐⭐⭐ 新增 ⭐⭐⭐
+    print(f"E2E Latency: {e2e:.4f} s")  # ⭐⭐⭐ 新增 ⭐⭐⭐
 
     if tpot is None:
         print("TPOT: N/A (only 1 token generated)")
@@ -121,8 +118,9 @@ def process_one_text(text):
 
     print("=" * 80)
 
+
 # ===========================================================
-# 数据集加载（保证只取非空文本）
+# dataset load
 # ===========================================================
 def load_dataset_10(dataset_name):
     print(f"\n📌 Loading dataset: {dataset_name}")
@@ -137,10 +135,14 @@ def load_dataset_10(dataset_name):
 
     elif dataset_name == "c4":
         print("📌 Using LOCAL C4 shard")
-        local_path = "/pscratch/sd/c/cp724/datasets/c4/en/c4-validation.00000-of-00008.json.gz"
+        local_path = (
+            "/pscratch/sd/c/cp724/datasets/c4/en/c4-validation.00000-of-00008.json.gz"
+        )
 
         raw = []
-        import gzip, json
+        import gzip
+        import json
+
         with gzip.open(local_path, "rt") as f:
             for line in f:
                 obj = json.loads(line)
@@ -158,11 +160,7 @@ def load_dataset_10(dataset_name):
     else:
         raise ValueError("Unknown dataset name")
 
-    filtered = [
-        t.strip()
-        for t in raw
-        if t and t.strip() and len(t.strip()) > 20
-    ]
+    filtered = [t.strip() for t in raw if t and t.strip() and len(t.strip()) > 20]
 
     texts = filtered[:NUM_SAMPLES]
     print(f"→ Got {len(texts)} usable prompts.")
@@ -170,12 +168,12 @@ def load_dataset_10(dataset_name):
 
 
 # ===========================================================
-# 主流程
+# Main function
 # ===========================================================
 def main():
     DATASET = "wikitext"
 
-    texts = load_dataset_10(DATASET)[:3]
+    texts = load_dataset_10(DATASET)[:10]
 
     for i, t in enumerate(texts):
         print(f"\n### === 处理第 {i} 行输入 === ###")

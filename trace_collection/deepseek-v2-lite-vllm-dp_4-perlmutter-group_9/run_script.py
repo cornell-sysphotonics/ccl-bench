@@ -62,7 +62,7 @@ def stream_chat_completion(prompt: str):
 
 
 # ===========================================================
-# latency 计算
+# latency metrics
 # ===========================================================
 def compute_latency_metrics(tokens, timestamps, t_start):
     if not tokens:
@@ -120,7 +120,7 @@ def process_one_text(text):
 
 
 # ===========================================================
-# 数据集加载（保证只取非空文本）
+# dataset load
 # ===========================================================
 def load_dataset_10(dataset_name):
     print(f"\n📌 Loading dataset: {dataset_name}")
@@ -168,7 +168,7 @@ def load_dataset_10(dataset_name):
 
 
 # ===========================================================
-# 主流程
+# Main function
 # ===========================================================
 def main():
     DATASET = "wikitext"

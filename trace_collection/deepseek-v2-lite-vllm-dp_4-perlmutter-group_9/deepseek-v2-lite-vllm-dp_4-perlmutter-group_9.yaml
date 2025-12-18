@@ -3,8 +3,8 @@ version: 1
 
 description: >  
   Online serving of DeepSeek-V2-Lite on 4 A100 GPUs with EP=4.
-  allgather_reducescatter kernel is used as AlltoAll backend.
-  Script: https://github.com/sydpeng1/final/blob/main/run_vllm.sh
+  allgather_reducescatter(default), pplx and naive kernels are used as AlltoAll backend.
+  Script: run.sh
 
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite/tree/main
@@ -14,7 +14,7 @@ workload:
   model:
     phase: inference
     moe: true  
-    granularity: layer  # Granularity level, e.g., "model_fwd_bwd_pass", "model_fwd" "layer", "kernel".
+    granularity: layer  
     model_family: deepseek_v2
     precision: bf16
   data:
@@ -47,13 +47,14 @@ Model-executor:
     name: NCCL
     version: 2.27.3
     env:
-      NCCL_IB_QPS_PER_CONNECTION:  # NCCL environment variable, e.g., 8, 16.
+      NCCL_IB_QPS_PER_CONNECTION:  
+      VLLM_ALL2ALL_BACKEND: allgather_reducescatter
   protocol_selection:
-    - rocev2 # Communication protocol for scale-out, e.g., "tcp", "rocev2".
-    - p2p # Another communication protocol for scake-up, e.g., "p2p", "memcpy".
+    - rocev2
+    - p2p
 
 metric_source:
   traces:
     -  nsys
   metrics_specific_trace:
-    -  # metric specific trace type, e.g., "memory_trace", "accuracy_trace".
+    - communication_ratio, total_communication_time, total_kernel_time, break_down_steps

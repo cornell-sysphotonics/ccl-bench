@@ -36,28 +36,7 @@ Metric collection: Byungsoo, Jinkun
 ## Metrics 
 
 1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
-2. `throughput_tokens_sec`: throughput measured in tokens per second
-
-3. `mfu`: model flop utilization, representing the efficiency of the model's computation
-
-4. `sm`: streaming multiprocessor utilization, indicating GPU usage efficiency
-
-5. `bubble_size_pipeline`: size of idle time (bubble) in the pipeline
-
-6. `traffic_window`: time intervals between traffic in different parallelism
-
-7. `traffic_distribution`: distribution of traffic across different parallelization
-
-8. `straggler`: the relative lag of the slowest device or process in a communication group
-
-9. `comm_comp_overlap`: overlap percentage between communication and computation phases
-
-10. `token_to_expert_assignment`: per-device assignment of tokens to experts in a model
-
-11. `iteration_wall_clock_time`: total wall-clock time for one iteration
-
-12. `TTFT`: time to first token in inference
-
-13. `TPOT`: time per output token in inference
-
-...
+2.	break_down_steps: breaks down total GPU kernel time into major components (e.g., communication, attention, MoE routing, MoE expert compute, and other)
+3.	communication_ratio: percentage of communication time over total GPU kernel time
+4.	total_communication_time: total time spent in NCCL communication kernels (e.g., all-reduce/all-to-all/sendrecv)
+5.	total_kernel_time: total GPU kernel execution time across the entire iteration
