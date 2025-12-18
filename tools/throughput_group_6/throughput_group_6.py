@@ -61,12 +61,5 @@ def metric_cal(directory: str) -> Dict[str, float]:
     json_total_throughput = record.get("total_throughput")
 
     return {
-        "duration_s": duration_s,
-        "completed": float(completed),
-        "requests_per_sec": requests_per_sec,
-        "input_tokens_per_sec": input_tokens_per_sec,
-        "output_tokens_per_sec": output_tokens_per_sec,
-        "total_tokens_per_sec": total_tokens_per_sec,
-        "json_request_throughput": float(json_request_throughput) if json_request_throughput is not None else float("nan"),
-        "json_total_throughput": float(json_total_throughput) if json_total_throughput is not None else float("nan"),
+        "total_tokens_per_sec": total_tokens_per_sec
     }
