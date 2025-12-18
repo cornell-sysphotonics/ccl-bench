@@ -38,9 +38,9 @@ Model-executor:
     name: vllm
     compiler_tool_selection: 
   model_plan_parallelization:
-    dp_replicate: 4, 2, 1
+    dp_replicate: 1
     dp_shard: 1
-    tp: 1, 2, 4
+    tp: 4
     pp: 1
     cp: 1
   communication_library:
