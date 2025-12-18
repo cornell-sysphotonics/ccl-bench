@@ -27,6 +27,9 @@ if __name__ == "__main__":
     elif metric_name == "total_communication_time":
         from total_communication_time_group_9.total_communication_time_group_9  import compute_total_comm_time
         metric_cal_func = compute_total_comm_time
+    elif metric_name == "break_down_steps":
+        from break_down_steps_group_9.break_down_steps_group_9  import compute_breakdown
+        metric_cal_func = compute_breakdown
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     
