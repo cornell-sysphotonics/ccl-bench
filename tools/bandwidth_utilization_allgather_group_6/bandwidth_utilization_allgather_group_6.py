@@ -102,7 +102,7 @@ def metric_cal(directory: str) -> float:
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
     workload_card_path = Path(directory) / (dir_name + ".yaml")
-    output_csv_path = Path(directory) / "bandwidth_utilization_allgather.csv"
+    output_csv_path = Path(directory) / "bandwidth_utilization_allgather_0.csv"
 
     # Parse workload card to get metadata
     with open(workload_card_path, 'r') as f:
@@ -126,6 +126,7 @@ def metric_cal(directory: str) -> float:
         # allgather is only applicable for node 1 for qwen pp=2
         if pp == 2:
             db_path = str(Path(directory) / "nsys_1.sqlite")
+            output_csv_path = Path(directory) / "bandwidth_utilization_allgather_1.csv"
     else:
         return "n/a"
 

@@ -33,7 +33,7 @@ def metric_cal(directory: str) -> float:
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
     workload_card_path = Path(directory) / (dir_name + ".yaml")
-    output_csv_path = Path(directory) / "bandwidth_utilization_alltoall.csv"
+    output_csv_path = Path(directory) / "bandwidth_utilization_alltoall_0.csv"
 
     # Parse workload card to get metadata
     with open(workload_card_path, 'r') as f:

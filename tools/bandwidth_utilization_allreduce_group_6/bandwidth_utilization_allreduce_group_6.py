@@ -128,7 +128,7 @@ def metric_cal(directory: str) -> float:
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
     workload_card_path = Path(directory) / (dir_name + ".yaml")
-    output_csv_path = Path(directory) / "bandwidth_utilization_allreduce.csv"
+    output_csv_path = Path(directory) / "bandwidth_utilization_allreduce_0.csv"
 
     # Parse workload card to get metadata
     with open(workload_card_path, 'r') as f:
@@ -159,6 +159,8 @@ def metric_cal(directory: str) -> float:
         db_path_1 = str(Path(directory) / "nsys_1.sqlite")
         try:
             bandwidth_utilization_1 = _get_bandwidth_utilization_df(db_path_1)
+            output_csv_path_1 = Path(directory) / "bandwidth_utilization_allreduce_1.csv"
+            bandwidth_utilization_1.to_csv(output_csv_path_1)
             col = pd.concat([col, bandwidth_utilization_1["bandwidth utilization"]], axis=0, ignore_index=True)
         except Exception as e:
             print('error in querying', e)
