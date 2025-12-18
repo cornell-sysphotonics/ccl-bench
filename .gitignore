@@ -7,6 +7,7 @@ outputs
 dist/*
 .vscode
 .vs
+.env
 
 # data
 data
@@ -46,6 +47,6 @@ Sessionx.vim
 .DS_Store
 
 # trace
-*.json
+# *.json
 *.nsys-rep
 *.sqlite

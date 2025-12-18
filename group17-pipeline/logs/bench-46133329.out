@@ -1,0 +1,24 @@
+Lmod has detected the following error: The following module(s) are unknown:
+"pytorch/2.3.1"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "pytorch/2.3.1"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+========================================
+Job ID: 46133329
+Nodes: 2
+========================================
+[Phase 1] Running NCCL Baseline...
+srun: error: Unable to create step for job 46133329: Invalid generic resource (gres) specification
+[Phase 1] NCCL Baseline Completed.
+----------------------------------------
+[Phase 2] Running MSCCL++ Experiment...
+srun: error: Unable to create step for job 46133329: Invalid generic resource (gres) specification
+[Phase 2] MSCCL++ Experiment Completed.
+========================================

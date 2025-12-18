@@ -1,0 +1,12 @@
+Starting Training with MSCCL++ (Job ID: 45728500)...
+5: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+6: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+4: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+7: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+1: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+3: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+0: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+2: python: can't open file '/pscratch/sd/x/xz987/CS5470/final_project/bench_comm.py': [Errno 2] No such file or directory
+srun: error: nid001689: tasks 4-7: Exited with exit code 2
+srun: Terminating StepId=45728500.0
+srun: error: nid001688: tasks 0-3: Exited with exit code 2

@@ -1,0 +1,57 @@
+Starting Training with MSCCL++ (Job ID: 45729056)...
+6: [rank6]: Traceback (most recent call last):
+6: [rank6]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+6: [rank6]:     main()
+6: [rank6]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+6: [rank6]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+6: [rank6]: NameError: name 'num_elements' is not defined
+4: [rank4]: Traceback (most recent call last):
+4: [rank4]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+4: [rank4]:     main()
+4: [rank4]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+4: [rank4]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+4: [rank4]: NameError: name 'num_elements' is not defined
+7: [rank7]: Traceback (most recent call last):
+7: [rank7]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+7: [rank7]:     main()
+7: [rank7]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+7: [rank7]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+7: [rank7]: NameError: name 'num_elements' is not defined
+5: [rank5]: Traceback (most recent call last):
+5: [rank5]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+5: [rank5]:     main()
+5: [rank5]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+5: [rank5]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+5: [rank5]: NameError: name 'num_elements' is not defined
+4: [rank4]:[W1126 19:43:59.435193617 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+0: [rank0]: Traceback (most recent call last):
+0: [rank0]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+0: [rank0]:     main()
+0: [rank0]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+0: [rank0]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+0: [rank0]: NameError: name 'num_elements' is not defined
+2: [rank2]: Traceback (most recent call last):
+2: [rank2]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+2: [rank2]:     main()
+2: [rank2]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+2: [rank2]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+2: [rank2]: NameError: name 'num_elements' is not defined
+3: [rank3]: Traceback (most recent call last):
+3: [rank3]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+3: [rank3]:     main()
+3: [rank3]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+3: [rank3]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+3: [rank3]: NameError: name 'num_elements' is not defined
+1: [rank1]: Traceback (most recent call last):
+1: [rank1]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 85, in <module>
+1: [rank1]:     main()
+1: [rank1]:   File "/pscratch/sd/x/xz987/CS5470/final_project/torchtitan/bench_comm.py", line 55, in main
+1: [rank1]:     tensor = torch.ones(num_elements, dtype=torch.float16, device=device)
+1: [rank1]: NameError: name 'num_elements' is not defined
+0: [rank0]:[W1126 19:43:59.476233052 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+srun: error: nid001981: task 4: Exited with exit code 1
+srun: Terminating StepId=45729056.0
+0: slurmstepd: error: *** STEP 45729056.0 ON nid001948 CANCELLED AT 2025-11-27T03:44:00 ***
+srun: error: nid001981: tasks 5-7: Terminated
+srun: error: nid001948: tasks 0-3: Terminated
+srun: Force Terminated StepId=45729056.0
