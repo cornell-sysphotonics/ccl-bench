@@ -5,8 +5,7 @@ import io
 import os
 import re
 import subprocess
-from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 REPORT = "cuda_gpu_kern_sum"
 
@@ -15,44 +14,66 @@ REPORT = "cuda_gpu_kern_sum"
 # -----------------------------
 # COMM: NCCL kernels + optional sendrecv keywords
 COMM_REGEXES = [
-    re.compile(r"^nccl", re.IGNORECASE),  # ncclDevKernel_* / ncclKernel_*
+    # pplx / MoE exchange kernels (treat as comm)
+    re.compile(r"\bbatched_triton_kernel\b", re.IGNORECASE),
+    re.compile(r"\bcombineKernel\b", re.IGNORECASE),
+    re.compile(r"\bdispatchKernel\b", re.IGNORECASE),
+    # explicit a2a / cross device
+    re.compile(r"cross[_\-]?device", re.IGNORECASE),
+    re.compile(r"all[_\-]?to[_\-]?all", re.IGNORECASE),
+    re.compile(r"\ba2a\b", re.IGNORECASE),
+    # NCCL
+    re.compile(r"^nccl", re.IGNORECASE),
     re.compile(r"sendrecv", re.IGNORECASE),
-    re.compile(r"allgather|reducescatter|allreduce|broadcast|reduce", re.IGNORECASE),
+    re.compile(r"(allgather|reducescatter|allreduce|broadcast)", re.IGNORECASE),
+    # optional strict memcpy
+    re.compile(r"(nccl.*memcpy|cudaMemcpyAsync)", re.IGNORECASE),
 ]
 
 # ATTENTION: flash attention / softmax kernels often used by attention / KV cache ops
 ATTN_REGEXES = [
-    re.compile(r"flash", re.IGNORECASE),
-    re.compile(r"fmha", re.IGNORECASE),
-    re.compile(r"attention", re.IGNORECASE),
-    re.compile(r"paged", re.IGNORECASE),          # vLLM paged attention/cache
-    re.compile(r"kv", re.IGNORECASE),             # kv cache related (coarse)
-    re.compile(r"reshape.*cache", re.IGNORECASE),
-    re.compile(r"triton_.*softmax", re.IGNORECASE),  # often attention softmax (heuristic)
+    re.compile(r"flash::flash_(fwd|bwd)_kernel", re.IGNORECASE),  # <-- add
+    re.compile(r"flash(_fwd|_bwd)?", re.IGNORECASE),
+    re.compile(r"\bfmha\b", re.IGNORECASE),
+    re.compile(r"paged[_\-]?attention", re.IGNORECASE),
+    re.compile(r"vllm::concat_and_cache", re.IGNORECASE),
+    re.compile(r"triton_.*softmax", re.IGNORECASE),
+    re.compile(r"cunn_SoftMaxForward", re.IGNORECASE),
 ]
 
 # MOE ROUTING / DISPATCH: topk, routing, alignment/packing/reordering
 MOE_ROUTE_REGEXES = [
-    re.compile(r"\b(topk|sbtopk|gathertopk)\b", re.IGNORECASE),
+    re.compile(r"\b(sbtopk|gathertopk|topk)\b", re.IGNORECASE),
     re.compile(r"\b(router|routing|gate|gating)\b", re.IGNORECASE),
-    re.compile(r"\b(moe_.*align|align_block|dispatch|scatter|gather|pack|reorder|sort|bucket|hist|prefix)\b", re.IGNORECASE),
-    re.compile(r"\b(token.*expert)\b", re.IGNORECASE),
+    # vLLM MoE routing kernels (explicit)
+    re.compile(
+        r"vllm::moe::(moe_align_block_size|count_and_sort_expert_tokens)", re.IGNORECASE
+    ),
+    # generic routing/packing words BUT remove "dispatch" to avoid conflict
+    re.compile(
+        r"\b(moe_.*align|align_block|scatter|gather|pack|reorder|sort|bucket|hist|prefix)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(r"\b(histogram|prefixsum|scan|radix|sort)\b", re.IGNORECASE),
 ]
 
 # MOE EXPERT GEMM / FUSED EXPERT: fused moe kernels or grouped expert kernels
 MOE_EXPERT_REGEXES = [
-    re.compile(r"\bfused[_\-]?moe\b", re.IGNORECASE),
-    re.compile(r"\bexpert\b", re.IGNORECASE),
+    re.compile(r"fused[_\-]?moe", re.IGNORECASE),
     re.compile(r"_fwd_grouped_kernel", re.IGNORECASE),
     re.compile(r"\bgrouped\b", re.IGNORECASE),
-    re.compile(r"\bmoe\b", re.IGNORECASE),  # broad; keep last
-    re.compile(r"\bgemm\b", re.IGNORECASE), # WARNING: GEMM also used by attention/MLP; we only count as expert if other moe clues match.
+    # optional: count expert MLP epilogue as expert compute
+    re.compile(r"vllm::act_and_mul_kernel", re.IGNORECASE),
 ]
 
 # If a kernel matches "gemm" but not moe clues, we should not classify it as expert gemm.
 # We’ll treat "gemm" as expert only if kernel name ALSO matches one of these moe-hint patterns.
 MOE_HINT_FOR_GEMM = [
-    re.compile(r"\b(moe|expert|grouped|fused[_\-]?moe)\b", re.IGNORECASE),
+    # explicit MoE compute hints
+    re.compile(r"(fused[_\-]?moe|_fwd_grouped_kernel|vllm::moe::)", re.IGNORECASE),
+    re.compile(r"\bexpert\b", re.IGNORECASE),
+    # pplx MoE pipeline hints: if present, GEMM likely belongs to expert compute
+    re.compile(r"(batched_triton_kernel|combineKernel|dispatchKernel)", re.IGNORECASE),
 ]
 
 
@@ -80,7 +101,12 @@ def _extract_csv_block(nsys_stdout: str) -> List[str]:
     for i, ln in enumerate(lines):
         # typical header:
         # Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
-        if ln.startswith("Time (%)") and "Total Time" in ln and "Instances" in ln and "Name" in ln:
+        if (
+            ln.startswith("Time (%)")
+            and "Total Time" in ln
+            and "Instances" in ln
+            and "Name" in ln
+        ):
             header_idx = i
             break
     if header_idx is None:
@@ -96,30 +122,22 @@ def _is_match(name: str, regexes: List[re.Pattern]) -> bool:
 
 
 def _classify_kernel(name: str) -> str:
-    """
-    Return bucket name among:
-      COMM, ATTN, MOE_ROUTE, MOE_EXPERT, OTHER
-    Priority matters (COMM first, etc).
-    """
-    # 1) communication
-    if _is_match(name, COMM_REGEXES):
+    n = name
+
+    if _is_match(n, COMM_REGEXES):
         return "COMM"
-
-    # 2) attention
-    if _is_match(name, ATTN_REGEXES):
+    if _is_match(n, ATTN_REGEXES):
         return "ATTN"
-
-    # 3) moe routing/dispatch
-    if _is_match(name, MOE_ROUTE_REGEXES):
+    if _is_match(n, MOE_ROUTE_REGEXES):
         return "MOE_ROUTE"
-
-    # 4) moe expert compute
-    if _is_match(name, MOE_EXPERT_REGEXES):
-        # Special-case GEMM: only count as MOE_EXPERT if it also has MOE hints
-        if re.search(r"\bgemm\b", name, re.IGNORECASE):
-            if not _is_match(name, MOE_HINT_FOR_GEMM):
-                return "OTHER"
+    if _is_match(n, MOE_EXPERT_REGEXES):
         return "MOE_EXPERT"
+
+    # GEMM / matmul: decide MOE_EXPERT vs DENSE
+    if re.search(r"(gemm|matmul|cublasLt|cutlass::Kernel2)", n, re.IGNORECASE):
+        if _is_match(n, MOE_HINT_FOR_GEMM):
+            return "MOE_EXPERT"
+        return "DENSE"
 
     return "OTHER"
 
@@ -180,8 +198,16 @@ def _find_traces(trace_dir: str) -> List[str]:
     if not os.path.isdir(trace_dir):
         raise ValueError(f"Invalid path: {trace_dir}")
 
-    reps = [os.path.join(trace_dir, f) for f in os.listdir(trace_dir) if f.endswith(".nsys-rep")]
-    sqls = [os.path.join(trace_dir, f) for f in os.listdir(trace_dir) if f.endswith(".sqlite")]
+    reps = [
+        os.path.join(trace_dir, f)
+        for f in os.listdir(trace_dir)
+        if f.endswith(".nsys-rep")
+    ]
+    sqls = [
+        os.path.join(trace_dir, f)
+        for f in os.listdir(trace_dir)
+        if f.endswith(".sqlite")
+    ]
     reps.sort()
     sqls.sort()
     return reps if reps else sqls
@@ -209,19 +235,14 @@ def compute_breakdown(trace_dir: str) -> Dict[str, Dict[str, float]]:
         total = ns["TOTAL_NS"]
         row = {
             "total_ms": _fmt_ms(total),
-
             "comm_ms": _fmt_ms(ns["COMM_NS"]),
             "comm_pct": _fmt_pct(ns["COMM_NS"], total),
-
             "attn_ms": _fmt_ms(ns["ATTN_NS"]),
             "attn_pct": _fmt_pct(ns["ATTN_NS"], total),
-
             "moe_route_ms": _fmt_ms(ns["MOE_ROUTE_NS"]),
             "moe_route_pct": _fmt_pct(ns["MOE_ROUTE_NS"], total),
-
             "moe_expert_ms": _fmt_ms(ns["MOE_EXPERT_NS"]),
             "moe_expert_pct": _fmt_pct(ns["MOE_EXPERT_NS"], total),
-
             "other_ms": _fmt_ms(ns["OTHER_NS"]),
             "other_pct": _fmt_pct(ns["OTHER_NS"], total),
         }
@@ -232,15 +253,23 @@ def compute_breakdown(trace_dir: str) -> Dict[str, Dict[str, float]]:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--trace-dir", required=True, help="Directory containing .nsys-rep/.sqlite traces (or a single trace file)")
-    ap.add_argument("--no-aggregate", action="store_true", help="Do not print aggregate summary")
+    ap.add_argument(
+        "--trace-dir",
+        required=True,
+        help="Directory containing .nsys-rep/.sqlite traces (or a single trace file)",
+    )
+    ap.add_argument(
+        "--no-aggregate", action="store_true", help="Do not print aggregate summary"
+    )
     args = ap.parse_args()
 
     per_trace = compute_breakdown(args.trace_dir)
 
     # Print per-trace
     print("=" * 100)
-    print(f"{'TRACE':40s}  {'TOTAL(ms)':>10s}  {'COMM%':>7s} {'ATTN%':>7s} {'ROUTE%':>7s} {'EXPERT%':>8s} {'OTHER%':>7s}")
+    print(
+        f"{'TRACE':40s}  {'TOTAL(ms)':>10s}  {'COMM%':>7s} {'ATTN%':>7s} {'ROUTE%':>7s} {'EXPERT%':>8s} {'OTHER%':>7s}"
+    )
     print("-" * 100)
 
     # aggregate sums in ns via ms * 1e6 is fine (we’ll just rescale)
@@ -266,7 +295,10 @@ def main():
 
     if not args.no_aggregate:
         tot = agg["total_ms"]
-        def pct(x): return (100.0 * x / tot) if tot > 0 else 0.0
+
+        def pct(x):
+            return (100.0 * x / tot) if tot > 0 else 0.0
+
         print(
             f"{'AGGREGATE':40s}  {tot:10.3f}  "
             f"{pct(agg['comm_ms']):6.2f}% {pct(agg['attn_ms']):6.2f}% {pct(agg['moe_route_ms']):6.2f}% {pct(agg['moe_expert_ms']):7.2f}% {pct(agg['other_ms']):6.2f}%"
