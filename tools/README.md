@@ -60,4 +60,18 @@ Metric collection: Byungsoo, Jinkun
 
 13. `TPOT`: time per output token in inference
 
-...
+14. `ttft_group_6`: Extract the median of TTFT in milliseconds from a sglang benchmark JSONL file.
+
+15. `tpot_group_6`: Extract the median of TPOT in milliseconds from a sglang benchmark JSONL file.
+
+16. `throughput_group_6`: Extract the total tokens processed per second from a sglang benchmark JSONL file.
+
+17. `kernel_compute_time_group_6`: Calculate the kernel compute time in seconds from the exported sqlite file from nsys. If there are multiple nodes, the compute time from each node is summed.
+
+18. `bandwidth_utilization_allgather_group_6`: Calculate the median of bandwidth utilization for AllGather from the exported sqlite file from nsys. Note that AllGather has only been calculated for tp > 1 and for the last stage of pp when pp > 1. n/a for llama tp = 1 and node 0 of qwen pp = 2
+
+19. `bandwidth_utilization_allreduce_group_6`: Calculate the median of bandwidth utilization for AllReduce from the exported sqlite file from nsys. n/a for llama tp = 1. For qwen-32b with pp = 2, the metric is calculated by combining data from node 0 and node 1.
+
+20. `bandwidth_utilization_alltoall_group_6`: Calculate the average of bandwidth utilization for AllToAll from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for deepseek.
+
+21. `bandwidth_utilization_peertopeer_group_6`: Calculate the average of bandwidth utilization for PeerToPeer from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for pp > 1. If there are multiple nodes, only output the value of node 0.
