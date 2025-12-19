@@ -64,7 +64,8 @@ fi
 cd "${TRACE_DIR}"
 
 # Launch training with NSys profiling
-launch_torchtitan_nsys "qwen3_32b_tp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+# launch_torchtitan_nsys "qwen3_32b_tp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+launch_torchtitan_without_nsys "qwen3_32b_tp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
 
 # Job complete
 print_job_complete

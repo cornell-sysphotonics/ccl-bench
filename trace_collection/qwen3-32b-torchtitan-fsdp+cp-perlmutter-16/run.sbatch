@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# Qwen3-32B FSDP+EP - 1 Node, 4 GPUs
+# Qwen3-32B FSDP+CP - 2 Nodes, 8 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
 #SBATCH -q debug
-#SBATCH -J qwen3_32b_fsdp_ep
-#SBATCH --nodes=1
+#SBATCH -J qwen3_32b_fsdp_cp
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=128
@@ -64,7 +64,8 @@ fi
 cd "${TRACE_DIR}"
 
 # Launch training with NSys profiling
-launch_torchtitan_nsys "qwen3_32b_fsdp_ep" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+# launch_torchtitan_nsys "qwen3_32b_fsdp_cp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+launch_torchtitan_without_nsys "qwen3_32b_fsdp_cp" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
 
 # Job complete
 print_job_complete
