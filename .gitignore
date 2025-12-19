@@ -68,3 +68,6 @@ Sessionx.vim
 # other
 .env
 .venv
+
+traces/
+**/analysis_output/extract_metrics.py

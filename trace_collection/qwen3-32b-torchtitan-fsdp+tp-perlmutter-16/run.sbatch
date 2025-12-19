@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# Qwen3-32B FSDP+TP - 2 Nodes, 8 GPUs
+# Qwen3-32B FSDP+TP - 4 Nodes, 16 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
 #SBATCH -q debug
 #SBATCH -J qwen3_32b_fsdp_tp
-#SBATCH --nodes=2
+#SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=128
