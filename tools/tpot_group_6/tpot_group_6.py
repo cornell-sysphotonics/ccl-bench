@@ -48,7 +48,7 @@ def metric_cal(directory: str) -> Dict[str, float]:
         directory (str): The directory path containing the sglang benchmark JSONL file.
 
     Returns:
-        Dict[str, float]: A dictionary containing the mean, median, standard deviation, and P99 TPOT values.
+        float: The median TPOT in milliseconds.
     """
     json_path = Path(directory) / "bench_results.jsonl"
     out_path = Path(directory) / "tpot.png"
@@ -87,11 +87,4 @@ def metric_cal(directory: str) -> Dict[str, float]:
 
     plot_and_save(tpots_ms, out_path)
 
-    ret = {
-        "mean_tpot_ms": record["mean_tpot_ms"],
-        "median_tpot_ms": record["median_tpot_ms"],
-        "std_tpot_ms": record["std_tpot_ms"],
-        "p99_tpot_ms": record["p99_tpot_ms"],
-    }
-
-    return ret
+    return record["median_tpot_ms"]

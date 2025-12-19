@@ -216,12 +216,7 @@ def analyze_trace_comprehensive(filename, output_prefix=None):
         results[f'{op_type}_count'] = len(op_data)
         results[f'{op_type}_time_s'] = op_time
 
-    stats = {
-        "total_communication_time_s": float(results["total_comm_time_s"]),
-        "total_compute_time_s": float(results["total_compute_time_s"]),
-    }
-
-    return stats
+    return float(results["total_compute_time_s"])
 
 def metric_cal(directory: str) -> Dict[str, float]:
     """
@@ -231,7 +226,7 @@ def metric_cal(directory: str) -> Dict[str, float]:
         directory (str): The directory path containing the exported sqlite file from nsys.
 
     Returns:
-        Dict[str, float]: The kernel compute time in seconds.
+        float: The kernel compute time in seconds. If there are multiple nodes, the compute time from each node is summed.
     """
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
@@ -246,12 +241,11 @@ def metric_cal(directory: str) -> Dict[str, float]:
     if model_family not in ["deepseek-v2-lite", "llama-3.1-8B", "qwen-32b"]:
         return "n/a"
 
-    stats = analyze_trace_comprehensive(str(db_path))
+    kernel_compute_time = analyze_trace_comprehensive(str(db_path))
 
     if model_family == "qwen-32b" and pp == 2:
-        stats = {"(Node 0) " + k: v for k, v in stats.items()}
         db_path_1 = str(Path(directory) / "nsys_1.sqlite")
-        stats_1 = analyze_trace_comprehensive(db_path_1)
-        stats.update({"(Node 1) " + k: v for k, v in stats_1.items()})
+        kernel_compute_time_1 = analyze_trace_comprehensive(db_path_1)
+        kernel_compute_time += kernel_compute_time_1
         
-    return stats
+    return kernel_compute_time

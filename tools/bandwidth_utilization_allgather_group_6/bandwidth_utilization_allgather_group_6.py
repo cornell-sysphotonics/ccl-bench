@@ -97,7 +97,7 @@ def metric_cal(directory: str) -> float:
         directory (str): The directory path containing the exported sqlite file from nsys.
 
     Returns:
-        Dict[str, float] | "n/a": The statistics of bandwidth utilization for allgather, or "n/a" if the metric is not applicable.
+        float: The median bandwidth utilization for allgather, or float("nan") if the metric is not applicable.
     """
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
@@ -112,14 +112,14 @@ def metric_cal(directory: str) -> float:
         pp = workload_card["Model-executor"]["model_plan_parallelization"]["pp"]
 
     if model_family not in ["deepseek-v2-lite", "llama-3.1-8B", "qwen-32b"]:
-        return "n/a"
+        return float("nan")
 
     # vocab sizes are found from model's config.json
     if model_family == "deepseek-v2-lite":
         vocab_size=102400*2
     elif model_family == "llama-3.1-8B":
         if tp == 1:
-            return "n/a"
+            return float("nan")
         vocab_size=128256*2
     elif model_family == "qwen-32b":
         vocab_size=151936*2
@@ -128,7 +128,7 @@ def metric_cal(directory: str) -> float:
             db_path = str(Path(directory) / "nsys_1.sqlite")
             output_csv_path = Path(directory) / "bandwidth_utilization_allgather_1.csv"
     else:
-        return "n/a"
+        return float("nan")
 
     try: 
         conn = sqlite3.connect(db_path)
@@ -141,17 +141,8 @@ def metric_cal(directory: str) -> float:
         # print(f'saved to {output_csv_path}')
     except Exception as e: 
         print('error in querying', e)
-        return "n/a"
+        return float("nan")
 
     col = bandwidth_utilization["bandwidth utilization"]
 
-    stats = {
-        "mean": float(col.mean()),
-        "median": float(col.median()),
-        "std": float(col.std()),
-        "p25": float(col.quantile(0.25)),
-        "p75": float(col.quantile(0.75)),
-        "p99": float(col.quantile(0.99)),
-    }
-
-    return stats
+    return float(col.median())

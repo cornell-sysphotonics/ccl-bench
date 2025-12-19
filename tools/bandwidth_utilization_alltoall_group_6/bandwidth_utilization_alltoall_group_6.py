@@ -29,7 +29,7 @@ def metric_cal(directory: str) -> float:
         directory (str): The directory path containing the exported sqlite file from nsys.
 
     Returns:
-        Dict[str, Dict[str, float]] | "n/a": The statistics of bandwidth utilization for alltoall, or "n/a" if the metric is not applicable.
+        float: The average value of NVLink TX Responses User Data [Throughput %], or float("nan") if the metric is not applicable.
     """
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
@@ -42,7 +42,7 @@ def metric_cal(directory: str) -> float:
         model_family = workload_card["workload"]["model"]["model_family"]
 
     if model_family != "deepseek-v2-lite":
-        return "n/a"
+        return float("nan")
 
     con = duckdb.connect()
     con.execute("INSTALL sqlite; LOAD sqlite;")
@@ -115,38 +115,13 @@ def metric_cal(directory: str) -> float:
 
     results_df.to_csv(output_csv_path)
 
-    metrics_of_interest = [
-        "NVLink RX Responses User Data [Throughput %]",
-        "NVLink TX Responses User Data [Throughput %]",
-    ]
+    row = results_df.loc[results_df["metricName"] == "NVLink TX Responses User Data [Throughput %]"]
 
-    columns_to_extract = [
-        "avg_val",
-        "max_val",
-        "avg_gt_one",
-        "cnt_gt_one",
-        "min_gt_one",
-    ]
+    if row.empty:
+        return float("nan")
 
-    def to_float(value, default=0.0):
-        if pd.isna(value):
-            return default
-        return float(value)
+    row = row.iloc[0]
 
-    stats = {}
+    ret = float(row["avg_val"])
 
-    for metric in metrics_of_interest:
-        row = results_df.loc[results_df["metricName"] == metric]
-
-        # skip if metric is missing entirely
-        if row.empty:
-            continue
-
-        row = row.iloc[0]
-
-        stats[metric] = {
-            col: to_float(row[col])
-            for col in columns_to_extract
-        }
-
-    return stats
+    return ret

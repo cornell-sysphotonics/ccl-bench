@@ -36,7 +36,7 @@ def metric_cal(directory: str) -> Dict[str, float]:
         directory (str): The directory path containing the sglang benchmark JSONL file.
 
     Returns:
-        Dict[str, float]: A dictionary containing the mean, median, standard deviation, and P99 TTFT values.
+        float: The median TTFT in milliseconds.
     """
     json_path = Path(directory) / "bench_results.jsonl"
     out_path = Path(directory) / "ttft.png"
@@ -65,11 +65,4 @@ def metric_cal(directory: str) -> Dict[str, float]:
     ttfts_ms = [t * 1000.0 for t in record["ttfts"]]
     plot_and_save(ttfts_ms, out_path)
 
-    ret = {
-        "mean_ttft_ms": record["mean_ttft_ms"],
-        "median_ttft_ms": record["median_ttft_ms"],
-        "std_ttft_ms": record["std_ttft_ms"],
-        "p99_ttft_ms": record["p99_ttft_ms"],
-    }
-
-    return ret
+    return record["median_ttft_ms"]

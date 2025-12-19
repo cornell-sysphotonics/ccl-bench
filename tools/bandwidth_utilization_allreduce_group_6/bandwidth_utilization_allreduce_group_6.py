@@ -123,7 +123,7 @@ def metric_cal(directory: str) -> float:
         directory (str): The directory path containing the exported sqlite file from nsys.
 
     Returns:
-        Dict[str, float] | "n/a": The statistics of bandwidth utilization for allreduce, or "n/a" if the metric is not applicable.
+        float: The median bandwidth utilization for allreduce, or float("nan") if the metric is not applicable.
     """
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
@@ -139,10 +139,10 @@ def metric_cal(directory: str) -> float:
 
 
     if model_family not in ["deepseek-v2-lite", "llama-3.1-8B", "qwen-32b"]:
-        return "n/a"
+        return float("nan")
 
     if model_family == "llama-3.1-8B" and tp == 1:
-        return "n/a"
+        return float("nan")
 
     try: 
         bandwidth_utilization = _get_bandwidth_utilization_df(db_path)
@@ -151,7 +151,7 @@ def metric_cal(directory: str) -> float:
         # print(bandwidth_utilization.describe())
     except Exception as e: 
         print('error in querying', e)
-        return "n/a"
+        return float("nan")
 
     col = bandwidth_utilization["bandwidth utilization"]
 
@@ -164,15 +164,6 @@ def metric_cal(directory: str) -> float:
             col = pd.concat([col, bandwidth_utilization_1["bandwidth utilization"]], axis=0, ignore_index=True)
         except Exception as e:
             print('error in querying', e)
-            return "n/a"
+            return float("nan")
 
-    stats = {
-        "mean": float(col.mean()),
-        "median": float(col.median()),
-        "std": float(col.std()),
-        "p25": float(col.quantile(0.25)),
-        "p75": float(col.quantile(0.75)),
-        "p99": float(col.quantile(0.99)),
-    }
-
-    return stats
+    return float(col.median())

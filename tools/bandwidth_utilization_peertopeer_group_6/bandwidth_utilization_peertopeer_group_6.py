@@ -142,43 +142,6 @@ def _get_results_df(db_path):
     results_df = results.df()
     return results_df
 
-def _get_stats_from_df(df):
-    metrics_of_interest = [
-        "NVLink RX Responses User Data [Throughput %]",
-        "NVLink TX Responses User Data [Throughput %]",
-    ]
-
-    columns_to_extract = [
-        "avg_val",
-        "max_val",
-        "avg_gt_one",
-        "cnt_gt_one",
-        "min_gt_one",
-    ]
-
-    def to_float(value, default=0.0):
-        if pd.isna(value):
-            return default
-        return float(value)
-
-    stats = {}
-
-    for metric in metrics_of_interest:
-        row = df.loc[df["metricName"] == metric]
-
-        # skip if metric is missing entirely
-        if row.empty:
-            continue
-
-        row = row.iloc[0]
-
-        stats[metric] = {
-            col: to_float(row[col])
-            for col in columns_to_extract
-        }
-
-    return stats
-
 def metric_cal(directory: str) -> float:
     """
     Calculate the bandwidth utilization for peertopeer from the exported sqlite file from nsys.
@@ -189,7 +152,7 @@ def metric_cal(directory: str) -> float:
         directory (str): The directory path containing the exported sqlite file from nsys.
 
     Returns:
-        Dict[str, Dict[str, float]] | "n/a": The statistics of bandwidth utilization for peertopeer, or "n/a" if the metric is not applicable.
+        float: The average value of NVLink TX Responses User Data [Throughput %], or float("nan") if the metric is not applicable. If there are multiple nodes, only return the value of node 0.
     """
     dir_name = Path(directory).name
     db_path = str(Path(directory) / "nsys_0.sqlite")
@@ -203,22 +166,21 @@ def metric_cal(directory: str) -> float:
         pp = workload_card["Model-executor"]["model_plan_parallelization"]["pp"]
 
     if model_family not in ["deepseek-v2-lite", "llama-3.1-8B", "qwen-32b"]:
-        return "n/a"
+        return float("nan")
 
     if pp <= 1:
-        return "n/a"
+        return float("nan")
 
     results_df = _get_results_df(db_path)
     results_df.to_csv(output_csv_path)
-    stats = _get_stats_from_df(results_df)
 
-    if model_family == "qwen-32b" and pp == 2:
-        stats = {"(Node 0) " + k: v for k, v in stats.items()}
-        db_path_1 = str(Path(directory) / "nsys_1.sqlite")
-        results_df_1 = _get_results_df(db_path_1)
-        output_csv_path_1 = Path(directory) / "bandwidth_utilization_peertopeer_1.csv"
-        results_df_1.to_csv(output_csv_path_1)
-        stats_1 = _get_stats_from_df(results_df_1)
-        stats.update({"(Node 1) " + k: v for k, v in stats_1.items()})
+    row = results_df.loc[results_df["metricName"] == "NVLink TX Responses User Data [Throughput %]"]
 
-    return stats
+    if row.empty:
+        return float("nan")
+
+    row = row.iloc[0]
+
+    ret = float(row["avg_val"])
+
+    return ret
