@@ -3,12 +3,12 @@
 # =============================================================================
 # CS5470 CCL-Bench Configuration
 #
-# world_size = 8 (nnodes=2, nproc_per_node=4)
-# Parallelism: dp_replicate=1, dp_shard=4, tp=1, pp=1, cp=2
-# Verification: 1 × 4 × 1 × 1 × 2 = 8 ✓
+# world_size = 16 (nnodes=4, nproc_per_node=4)
+# Parallelism: dp_replicate=1, dp_shard=4, tp=1, pp=1, cp=4
+# Verification: 1 × 4 × 1 × 1 × 4 = 16 ✓
 #
 # Launch command:
-#   torchrun --nnodes=2 --nproc_per_node=4 \
+#   torchrun --nnodes=4 --nproc_per_node=4 \
 #     -m torchtitan.train --job.config_file train_config.toml
 # =============================================================================
 
@@ -80,10 +80,9 @@ tensor_parallel_degree = 1
 pipeline_parallel_degree = 1
 pipeline_parallel_microbatch_size = 1
 pipeline_parallel_schedule = "1F1B"
-context_parallel_degree = 2                      # CP: 2-way context parallel
+context_parallel_degree = 4                      # CP: 4-way context parallel
 expert_parallel_degree = 1                       
-expert_tensor_parallel_degree = 1                # etp=1 mode
-pipeline_parallel_expert_parallel_overlap = true
+expert_tensor_parallel_degree = 1                
 
 [checkpoint]
 enable = false

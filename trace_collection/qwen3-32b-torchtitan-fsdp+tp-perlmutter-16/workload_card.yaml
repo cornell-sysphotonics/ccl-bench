@@ -4,9 +4,9 @@
 version: 1
 
 description: >
-  Qwen3-32B training on 8 GPUs with FSDP + TP (2D) parallelism.
-  2 Perlmutter GPU nodes (2 nodes × 4 GPUs = 8 GPUs total).
-  Configuration: dp_shard=4, tp=2 (4-way FSDP + 2-way TP).
+  Qwen3-32B training on 16 GPUs with FSDP + TP (2D) parallelism.
+  4 Perlmutter GPU nodes (4 nodes × 4 GPUs = 16 GPUs total).
+  Configuration: dp_shard=4, tp=4 (4-way FSDP + 4-way TP).
   TorchTitan framework with NCCL;
   uses all-reduce for both FSDP and TP gradient sync.
 
@@ -35,7 +35,7 @@ workload:
     xpu_spec:
       type: GPU
       model: nvidia_a100
-      total_count: 8
+      total_count: 16
       count_per_node: 4
     driver_version: cuda_12.4
 
@@ -46,7 +46,7 @@ Model-executor:
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 4
-    tp: 2
+    tp: 4
     pp: 1
     cp: 1
     ep: 1

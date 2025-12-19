@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# Qwen3-32B TP Only - 1 Node, 4 GPUs
+# Qwen3-32B TP Only - 4 Nodes, 16 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
 #SBATCH -q debug
 #SBATCH -J qwen3_32b_tp
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
 #SBATCH --cpus-per-task=128
