@@ -1,15 +1,15 @@
 #!/bin/bash
 # =============================================================================
-# LLaMA-3.1-8B Full 3D Parallelism (FSDP+TP+PP) - 4 Nodes, 16 GPUs
+# LLaMA-3.1-8B Full 3D Parallelism (FSDP+TP+PP) - 1 Node, 4 GPUs
 # =============================================================================
 #SBATCH -C gpu
 #SBATCH -A m4999
 #SBATCH -q debug
 #SBATCH -J llama3_8b_3d
-#SBATCH --nodes=4
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=4
-#SBATCH --cpus-per-task=128
+#SBATCH --cpus-per-task=16
 #SBATCH -t 00:30:00
 #SBATCH --module=gpu,nccl-plugin
 #SBATCH --output=logs/%x_%j.out
@@ -64,7 +64,17 @@ fi
 cd "${TRACE_DIR}"
 
 # Launch training with NSys profiling
-launch_torchtitan_nsys "llama3_8b_3d" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+launch_torchtitan_without_nsys "llama3_8b_3d" "${WORKLOAD_DIR}" "${WORKLOAD_DIR}/train_config.toml"
+
+# Print that the analysis is starting
+echo "Starting analysis..."
+
+# Run the analysis using absolute path
+PROJECT_ROOT="$(cd "${WORKLOAD_DIR}/../.." && pwd)"
+python "${PROJECT_ROOT}/tools/main.py" --workload-dir "${WORKLOAD_DIR}"
+
+# Print that the analysis is complete
+echo "Analysis complete"
 
 # Job complete
 print_job_complete

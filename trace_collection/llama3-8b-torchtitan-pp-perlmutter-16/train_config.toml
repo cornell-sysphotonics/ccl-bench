@@ -19,7 +19,7 @@ print_config = true
 [profiling]
 enable_profiling = true
 save_traces_folder = "profile_traces"
-profile_freq = 2
+profile_freq = 5
 profiler_active = 1
 profiler_warmup = 1
 enable_memory_snapshot = true
@@ -56,7 +56,7 @@ dataset = "c4"
 local_batch_size = 4
 global_batch_size = -1
 seq_len = 2048
-steps = 20
+steps = 10
 max_norm = 1.0
 dtype = "bfloat16"
 mixed_precision_param = "bfloat16"
