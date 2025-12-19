@@ -18,22 +18,19 @@
 # Setup trace output directory for a workload
 # Usage: setup_trace_dir <workload_dir>
 #
-# Creates the trace directory based on the workload folder name.
+# Creates the trace directory in the workload directory under a "traces" subdirectory.
 # Sets TRACE_DIR and RUN_TIMESTAMP environment variables.
 setup_trace_dir() {
 	local workload_dir="$1"
 
-	# Ensure TRACE_BASE is set (from env.sh)
-	if [[ -z ${TRACE_BASE:-} ]]; then
-		echo "ERROR: TRACE_BASE not set. Source env.sh first."
+	# Validate workload directory
+	if [[ -z ${workload_dir} ]]; then
+		echo "ERROR: workload_dir not provided to setup_trace_dir"
 		return 1
 	fi
 
-	# Get the workload folder name from the directory path
-	local workload_name
-	workload_name=$(basename "${workload_dir}")
-
-	export TRACE_DIR="${TRACE_BASE}/${workload_name}"
+	# Create trace directory in workload directory
+	export TRACE_DIR="${workload_dir}/traces"
 	mkdir -p "${TRACE_DIR}"
 
 	# Create a run timestamp for unique trace names
