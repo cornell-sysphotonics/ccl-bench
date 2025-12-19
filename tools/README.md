@@ -74,4 +74,4 @@ Metric collection: Byungsoo, Jinkun
 
 20. `bandwidth_utilization_alltoall_group_6`: Calculate the average of non-zero values of bandwidth utilization for AllToAll from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for deepseek. Not applicable for ep=1.
 
-21. `bandwidth_utilization_peertopeer_group_6`: Calculate the average of non-zero values of bandwidth utilization for PeerToPeer from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for pp > 1. For qwen model, the value is extracted from PCIe TX Throughput [Throughput %]. If there are multiple nodes, only output the value of node 0.
+21. `bandwidth_utilization_peertopeer_group_6`: Calculate the average of non-zero values of bandwidth utilization for PeerToPeer from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for pp > 1. For qwen model, the value is extracted from "PCIe TX Throughput [Throughput %]" instead. If there are multiple nodes, only output the value of node 0.
