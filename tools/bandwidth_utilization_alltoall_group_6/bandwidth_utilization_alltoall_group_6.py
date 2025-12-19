@@ -23,7 +23,7 @@ def metric_cal(directory: str) -> float:
     """
     Calculate the bandwidth utilization for alltoall from the exported sqlite file from nsys.
 
-    Only applicable for deepseek.
+    Only applicable for deepseek. not applicable for ep=1
 
     Args:
         directory (str): The directory path containing the exported sqlite file from nsys.
@@ -40,8 +40,12 @@ def metric_cal(directory: str) -> float:
     with open(workload_card_path, 'r') as f:
         workload_card = yaml.safe_load(f)
         model_family = workload_card["workload"]["model"]["model_family"]
+        ep = workload_card["Model-executor"]["model_plan_parallelization"]["ep"]
 
     if model_family != "deepseek-v2-lite":
+        return float("nan")
+
+    if ep == 1:
         return float("nan")
 
     con = duckdb.connect()

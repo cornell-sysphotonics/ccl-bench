@@ -72,6 +72,6 @@ Metric collection: Byungsoo, Jinkun
 
 19. `bandwidth_utilization_allreduce_group_6`: Calculate the median of bandwidth utilization for AllReduce from the exported sqlite file from nsys. n/a for llama tp = 1. For qwen-32b with pp = 2, the metric is calculated by combining data from node 0 and node 1.
 
-20. `bandwidth_utilization_alltoall_group_6`: Calculate the average of bandwidth utilization for AllToAll from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for deepseek.
+20. `bandwidth_utilization_alltoall_group_6`: Calculate the average of bandwidth utilization for AllToAll from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for deepseek. Not applicable for ep=1.
 
 21. `bandwidth_utilization_peertopeer_group_6`: Calculate the average of bandwidth utilization for PeerToPeer from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for pp > 1. If there are multiple nodes, only output the value of node 0.
