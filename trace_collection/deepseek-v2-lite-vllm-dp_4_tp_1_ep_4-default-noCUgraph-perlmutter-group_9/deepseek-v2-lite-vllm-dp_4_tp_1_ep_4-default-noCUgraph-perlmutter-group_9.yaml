@@ -3,7 +3,7 @@ version: 1
 
 description: >  
   Online serving of DeepSeek-V2-Lite on 4 A100 GPUs with EP=4.
-  allgather_reducescatter(default), pplx and naive kernels are used as AlltoAll backend.
+  allgather_reducescatter(default) kernel is used as AlltoAll backend.
   Script: run.sh
 
 
