@@ -1,31 +1,28 @@
 ---
-# workload_card.yaml - DeepSeek-V2-Lite (16B MoE) FSDP Configuration
-# Workload: deepseek-v2-lite-torchtitan-fsdp-perlmutter-16
+# workload_card.yaml - DeepSeek-V2-Lite (16B MoE) Configuration
+# Workload: deepseek-v2-lite-torchtitan-fsdp-perlmutter-group-16
 version: 1
 
 description: >
-  DeepSeek-V2-Lite (16B MoE) training on 4 GPUs with FSDP
-  (Fully Sharded Data Parallel) parallelism.
-  Single Perlmutter GPU node with 4x NVIDIA A100 (40GB) GPUs.
-  Configuration: dp_shard=4 (4-way FSDP sharding).
-  TorchTitan framework with NCCL;
-  uses all-reduce for FSDP gradient sync.
+  DeepSeek-V2-Lite (16B MoE) training on 8 GPUs with FSDP parallelism. 2
+  Perlmutter GPU nodes (2 nodes × 4 GPUs = 8 GPUs total). Configuration:
+  dp_replicate=1, dp_shard=8, tp=1, pp=1, cp=1. TorchTitan framework with NCCL.
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite
-trace_url:  # TODO: Add Cornell Box link after uploading traces
+trace_url: https://drive.google.com/file/d/1PtaOJ852n0BtpG9GKv9TaWc9ZK0QnSMM
 
 workload:
   model:
     phase: training
-    moe: true
+    moe: false
     granularity: model_fwd_bwd_pass
-    model_family: deepseek-v2-lite
+    model_family: deepseek-v2-lite-16b
     precision: bf16
     epochs: 1
-    iteration: 80
+    iteration: 10
   data:
-    batch_size: 8
-    seq_len: 2048
+    batch_size: 2
+    seq_len: 1024
     dataset: c4
   hardware:
     network_topo:
@@ -36,7 +33,7 @@ workload:
     xpu_spec:
       type: GPU
       model: nvidia_a100
-      total_count: 4
+      total_count: 8
       count_per_node: 4
     driver_version: cuda_12.4
 
@@ -46,7 +43,7 @@ Model-executor:
     compiler_tool_selection: plain_pytorch
   model_plan_parallelization:
     dp_replicate: 1
-    dp_shard: 4
+    dp_shard: 8
     tp: 1
     pp: 1
     cp: 1

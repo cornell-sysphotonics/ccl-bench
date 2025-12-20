@@ -1,30 +1,27 @@
 ---
-# workload_card.yaml - Qwen3-32B FSDP Configuration
-# Workload: qwen3-32b-torchtitan-fsdp-perlmutter-16
+# workload_card.yaml - Qwen3-32B Configuration
+# Workload: qwen3-32b-torchtitan-fsdp-perlmutter-group-16
 version: 1
 
 description: >
-  Qwen3-32B training on 16 GPUs with FSDP
-  (Fully Sharded Data Parallel) parallelism.
-  Four Perlmutter GPU nodes with 4x NVIDIA A100 (40GB) GPUs each.
-  Configuration: dp_shard=16 (16-way FSDP sharding).
-  TorchTitan framework with NCCL;
-  uses all-reduce for FSDP gradient sync.
+  Qwen3-32B training on 16 GPUs with FSDP parallelism. 4 Perlmutter GPU nodes (4
+  nodes × 4 GPUs = 16 GPUs total). Configuration: dp_replicate=1, dp_shard=16,
+  tp=1, pp=1, cp=1. TorchTitan framework with NCCL.
 
 hf_url: https://huggingface.co/Qwen/Qwen3-32B
-trace_url:  # TODO: Add Cornell Box link after uploading traces
+trace_url: https://drive.google.com/file/d/1_CLKUzrmWBwzpBbmu2O9xRNi10IEPq2l
 
 workload:
   model:
     phase: training
-    moe: true
+    moe: false
     granularity: model_fwd_bwd_pass
     model_family: qwen3-32b
     precision: bf16
     epochs: 1
-    iteration: 80
+    iteration: 20
   data:
-    batch_size: 4
+    batch_size: 1
     seq_len: 2048
     dataset: c4
   hardware:

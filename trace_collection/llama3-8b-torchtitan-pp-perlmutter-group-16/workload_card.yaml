@@ -1,16 +1,15 @@
 ---
-# workload_card.yaml - LLaMA-3.1-8B PP Configuration
-# Workload: llama3-8b-torchtitan-pp-perlmutter-4
+# workload_card.yaml - Llama-3.1-8B Configuration
+# Workload: llama3-8b-torchtitan-pp-perlmutter-group-16
 version: 1
 
 description: >
-  LLaMA-3.1-8B training on 4 GPUs with Pipeline Parallel (PP) parallelism.
-  Single Perlmutter GPU node with 4x NVIDIA A100 (40GB) GPUs.
-  Configuration: pp=4 (4 pipeline stages).
-  TorchTitan framework with NCCL; uses send/recv for PP communication.
+  Llama-3.1-8B training on 4 GPUs with PP parallelism. 1 Perlmutter GPU node (1
+  node × 4 GPUs = 4 GPUs total). Configuration: dp_replicate=1, dp_shard=1,
+  tp=1, pp=4, cp=1. TorchTitan framework with NCCL.
 
 hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
-trace_url:  # TODO: Add Cornell Box link after uploading traces
+trace_url: https://drive.google.com/file/d/1aVk9hCMtKM5L0YLqiZvs5-ylahsB180C
 
 workload:
   model:
@@ -20,10 +19,10 @@ workload:
     model_family: llama3-8b
     precision: bf16
     epochs: 1
-    iteration: 100
+    iteration: 10
   data:
     batch_size: 4
-    seq_len: 4096
+    seq_len: 2048
     dataset: c4
   hardware:
     network_topo:

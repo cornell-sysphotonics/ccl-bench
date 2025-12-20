@@ -1,30 +1,28 @@
 ---
-# workload_card.yaml - DeepSeek-V2-Lite (16B MoE) FSDP+TP Configuration
-# Workload: deepseek-v2-lite-torchtitan-fsdp+tp-perlmutter-16
+# workload_card.yaml - DeepSeek-V2-Lite (16B MoE) Configuration
+# Workload: deepseek-v2-lite-torchtitan-fsdp+tp-perlmutter-group-16
 version: 1
 
 description: >
-  DeepSeek-V2-Lite (16B MoE) training on 8 GPUs with FSDP + TP (2D) parallelism.
-  2 Perlmutter GPU nodes (2 nodes × 4 GPUs = 8 GPUs total).
-  Configuration: dp_shard=4, tp=2 (4-way FSDP + 2-way TP).
-  TorchTitan framework with NCCL;
-  uses all-reduce for both FSDP and TP gradient sync.
+  DeepSeek-V2-Lite (16B MoE) training on 8 GPUs with FSDP + TP parallelism. 2
+  Perlmutter GPU nodes (2 nodes × 4 GPUs = 8 GPUs total). Configuration:
+  dp_replicate=1, dp_shard=4, tp=2, pp=1, cp=1. TorchTitan framework with NCCL.
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite
-trace_url:  # TODO: Add Cornell Box link after uploading traces
+trace_url: https://drive.google.com/file/d/1tk48BQzLu7s8HWK1gHsfvqSwrJCESsTk
 
 workload:
   model:
     phase: training
-    moe: true
+    moe: false
     granularity: model_fwd_bwd_pass
-    model_family: deepseek-v2-lite
+    model_family: deepseek-v2-lite-16b
     precision: bf16
     epochs: 1
-    iteration: 80
+    iteration: 20
   data:
-    batch_size: 8
-    seq_len: 2048
+    batch_size: 2
+    seq_len: 1024
     dataset: c4
   hardware:
     network_topo:
