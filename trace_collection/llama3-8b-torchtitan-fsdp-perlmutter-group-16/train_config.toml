@@ -1,11 +1,11 @@
 # =============================================================================
-# LLaMA-3.1-8B Hybrid FSDP + TP (dp_shard=2, tp=2)
+# LLaMA-3.1-8B FSDP (dp_shard=4, tp=1)
 # =============================================================================
 # CS5470 CCL-Bench Configuration
 #
 # world_size = 4 (nnodes=1, nproc_per_node=4)
-# Parallelism: dp_replicate=1, dp_shard=2, tp=2, pp=1, cp=1
-# Verification: 1 × 2 × 2 × 1 × 1 = 4 ✓
+# Parallelism: dp_replicate=1, dp_shard=4, tp=1, pp=1, cp=1
+# Verification: 1 × 4 × 1 × 1 × 1 = 4 ✓
 #
 # Launch command:
 #   torchrun --nnodes=1 --nproc_per_node=4 \
