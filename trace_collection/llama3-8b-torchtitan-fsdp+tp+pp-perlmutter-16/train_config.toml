@@ -74,10 +74,10 @@ mode = "default"
 
 [parallelism]
 data_parallel_replicate_degree = 1
-data_parallel_shard_degree = 1        # FSDP: 1-way shard (no FSDP sharding)
+data_parallel_shard_degree = 1         # FSDP: 1-way shard (no FSDP sharding)
 fsdp_reshard_after_forward = "default"
-tensor_parallel_degree = 2            # TP: 2-way
-pipeline_parallel_degree = 2          # PP: 2 stages
+tensor_parallel_degree = 2             # TP: 2-way
+pipeline_parallel_degree = 2           # PP: 2 stages
 pipeline_parallel_microbatch_size = 2
 pipeline_parallel_schedule = "1F1B"
 context_parallel_degree = 1

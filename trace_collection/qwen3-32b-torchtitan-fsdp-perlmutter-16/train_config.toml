@@ -74,7 +74,7 @@ mode = "default"
 
 [parallelism]
 data_parallel_replicate_degree = 1
-data_parallel_shard_degree = 16         # FSDP: 16-way shard
+data_parallel_shard_degree = 16        # FSDP: 16-way shard
 fsdp_reshard_after_forward = "default"
 tensor_parallel_degree = 1
 pipeline_parallel_degree = 1
