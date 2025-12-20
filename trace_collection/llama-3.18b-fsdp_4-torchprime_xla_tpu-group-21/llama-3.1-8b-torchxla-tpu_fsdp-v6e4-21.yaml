@@ -1,0 +1,58 @@
+# llama-3.1-8b-torchxla-tpu_fsdp-v6e4-21.yaml
+version: 1
+
+description: > # FSDP workload for llama-3.1-8b on 2x2x1 topology of TPU v6e.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B # huggingface model link, e.g., https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: https://drive.google.com/file/d/17UK_JO3x2NSZc3LJuhrNM-etKFWqYt_g/view # trace url, e.g., https://drive.google.com/file/d/1EK_YROAho2sBvYVn8idF6DbnaG3SZ0he/view
+
+workload:
+  model:
+    phase: training  # Training or inference phase, e.g., training, inference.
+    moe: false  # Mixture of Experts (MoE) enabled or not, e.g., true, false.
+    granularity: model_fwd_bwd_pass  # Granularity level, e.g., "model_fwd_bwd_pass", "model_fwd" "layer", "kernel".
+    model_family: llama-3.1-8b  # Model family name, e.g., "llama-3.1-8b".
+    precision: bf16  # Precision type, e.g., "fp32", "bf16".
+    epochs: 1  # Number of epochs (may not apply to inference), e.g., 1, 3, 5.
+    iteration: 15  # Number of iterations/epoch, e.g., 10, 500, 1000.
+  data:
+    batch_size: 4  # Batch size, e.g., 4, 8, 16.
+    seq_len: 512  # Sequence length, e.g., 512, 1024, 8192.
+    dataset: wikitext  # Dataset name, e.g., "c4", "wikitext".
+  hardware:
+    network_topo:
+      topology: 2d torus  # Network topology, e.g., "slingshot", "fat-tree".
+      bandwidth_gbps:
+        - 200 # Scale-out (inter-pod) bandwidth in Gbps, e.g., 100, 200.
+        - 6400 # Scale-up (inter-chip) bandwidth in Gbps, e.g., 1000, 2000.
+    xpu_spec:
+      type: TPU  # Processing unit type, e.g., "GPU", "TPU".
+      model: tpu_v6e  # Processing unit model, e.g., "nvidia_a100", "tpu_v4".
+      total_count: 4  # Total number of processing units, e.g., 8, 16.
+      topology: mesh-2x2x1
+      
+    driver_version: xla  # Driver version, e.g., "cuda_12.4", "rocm_5.6".
+  
+Model-executor:
+  framework: 
+    name: torchxla  # Framework name, e.g., "torchtitan", "deepspeed".
+    compiler_tool_selection: xla  # Compiler tool, e.g., "plain_pytorch", "triton".
+  model_plan_parallelization:
+    dp_replicate: 1 # Data parallel replication factor, e.g., 1, 2.
+    dp_shard: 4 # Data parallel sharding factor, e.g., 1, 2.
+    tp: 1 # Tensor parallelism factor, e.g., 2, 4.
+    pp: 1 # Pipeline parallelism factor, e.g., 1, 2.
+    cp: 1 # Context parallelism factor, e.g., 1, 2.
+  communication_library:
+    name:  ici # Communication library name, e.g., "NCCL", "Gloo".
+    version:  # Communication library version, e.g., "2.14.3", "1.10.0".
+  protocol_selection:
+    - rdma # Communication protocol for scale-out, e.g., "tcp", "rocev2".
+    - ici # Another communication protocol for scale-up, e.g., "p2p", "memcpy".
+
+metric_source:
+  traces:
+    - xla_trace # trace type, e.g., "nsys", "torch_et", "kineto_trace".
+  metrics_specific_trace:
+    - execution_trace # metric specific trace type, e.g., "memory_trace", "accuracy_trace".
+    - communication_trace
