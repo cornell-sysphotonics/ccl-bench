@@ -195,7 +195,9 @@ python3 benchmark.py --backend vllm \
     --num-prompts "$NUM_PROMPTS" \
     --dataset-name dummy \
     --long-prompts 0 \
-    --long-prompt-len 32000
+    --long-prompt-len 32000 \
+    --save-result \
+    --result-dir "$OUTPUT_DIR"
 
 echo ""
 

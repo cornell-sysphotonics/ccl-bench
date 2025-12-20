@@ -195,7 +195,9 @@ BENCHMARK_CMD="python3 benchmark.py --backend vllm \
     --num-prompts $NUM_PROMPTS \
     --dataset-name ${DATASET_NAME:-dummy} \
     --long-prompts 0 \
-    --long-prompt-len 32000"
+    --long-prompt-len 32000 \
+    --save-result \
+    --result-dir "$OUTPUT_DIR""
 
 # Add dataset path if using burstgpt
 if [ "${DATASET_NAME:-dummy}" = "burstgpt" ]; then
