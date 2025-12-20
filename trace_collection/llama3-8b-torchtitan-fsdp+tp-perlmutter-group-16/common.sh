@@ -1,1 +1,1 @@
-../common/common.sh
+../llama3-8b-torchtitan-fsdp-perlmutter-group-16/common.sh

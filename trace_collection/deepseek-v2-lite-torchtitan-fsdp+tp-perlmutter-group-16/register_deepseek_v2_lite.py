@@ -1,1 +1,1 @@
-../common/register_deepseek_v2_lite.py
+../llama3-8b-torchtitan-fsdp-perlmutter-group-16/register_deepseek_v2_lite.py

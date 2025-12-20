@@ -1,1 +1,1 @@
-../common/env.sh
+../llama3-8b-torchtitan-fsdp-perlmutter-group-16/env.sh

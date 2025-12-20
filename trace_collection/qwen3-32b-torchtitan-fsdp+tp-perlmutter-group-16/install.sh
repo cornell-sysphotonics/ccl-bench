@@ -1,1 +1,1 @@
-../common/install.sh
+../llama3-8b-torchtitan-fsdp-perlmutter-group-16/install.sh
