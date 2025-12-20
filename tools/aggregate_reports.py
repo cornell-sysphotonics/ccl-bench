@@ -10,14 +10,13 @@ This script:
 
 import argparse
 import json
-import os
+from pathlib import Path
 import shutil
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
-def get_parallelism_type(folder_name):
-    # type: (str) -> str
+def get_parallelism_type(folder_name: str) -> str:
     """Extract parallelism type from folder name.
 
     Examples:
@@ -35,8 +34,7 @@ def get_parallelism_type(folder_name):
     return after_torchtitan.split("-perlmutter")[0]
 
 
-def extract_summary_data(metric_data):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def extract_summary_data(metric_data: dict[str, Any] | None) -> dict[str, Any]:
     """Extract summary data from a metric, excluding per_rank_stats."""
     if metric_data is None:
         return {}
@@ -73,8 +71,7 @@ def extract_summary_data(metric_data):
     return summary
 
 
-def transform_report(report_data):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def transform_report(report_data: dict[str, Any]) -> dict[str, Any]:
     """Transform a report to extract just the summary data from each metric."""
     transformed = {
         "profile_dir": report_data.get("profile_dir", ""),
@@ -99,17 +96,16 @@ def transform_report(report_data):
     return transformed
 
 
-def aggregate_reports(reports):
-    # type: (Dict[str, Dict[str, Any]]) -> Dict[str, Any]
+def aggregate_reports(reports: dict[str, dict[str, Any]]) -> dict[str, Any]:
     """Aggregate all reports into a unified format.
 
     Format: metric_name -> parallelism_type -> values
     """
-    aggregated = {}
+    aggregated: dict[str, dict[str, Any]] = {}
 
     # Get all unique metric names
     all_metrics = set()
-    for parallelism, report in reports.items():
+    for report in reports.values():
         if "metrics" in report:
             all_metrics.update(report["metrics"].keys())
 
@@ -117,32 +113,30 @@ def aggregate_reports(reports):
     for metric_name in sorted(all_metrics):
         aggregated[metric_name] = {}
 
-        for parallelism, report in sorted(reports.items()):
+        for parallelism_key, report in sorted(reports.items()):
             if "metrics" in report and metric_name in report["metrics"]:
-                aggregated[metric_name][parallelism] = report["metrics"][metric_name]
+                aggregated[metric_name][parallelism_key] = report["metrics"][metric_name]
 
     return aggregated
 
 
-def find_workload_dirs(trace_collection_dir, prefix):
-    # type: (str, str) -> List[str]
+def find_workload_dirs(trace_collection_dir: Path, prefix: str) -> list[Path]:
     """Find all workload directories matching the prefix."""
-    workload_dirs = []
-
-    if not os.path.isdir(trace_collection_dir):
+    if not trace_collection_dir.is_dir():
         print(f"Error: {trace_collection_dir} is not a directory")
-        return workload_dirs
+        return []
 
-    for item in os.listdir(trace_collection_dir):
-        item_path = os.path.join(trace_collection_dir, item)
-        if os.path.isdir(item_path) and item.startswith(prefix):
-            workload_dirs.append(item_path)
+    workload_dirs = [
+        item
+        for item in trace_collection_dir.iterdir()
+        if item.is_dir() and item.name.startswith(prefix)
+    ]
 
     return sorted(workload_dirs)
 
 
 def main() -> int:
-    # type: () -> int
+    """Aggregate per-workload reports into a consolidated summary."""
     parser = argparse.ArgumentParser(
         description="Aggregate analysis reports from multiple workloads"
     )
@@ -173,12 +167,16 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    trace_collection_dir = os.path.abspath(args.trace_collection_dir)
-    output_dir = args.output_dir or os.path.join(trace_collection_dir, "aggregated_reports")
+    trace_collection_dir = Path(args.trace_collection_dir).expanduser().resolve()
+    output_dir = (
+        Path(args.output_dir).expanduser().resolve()
+        if args.output_dir
+        else trace_collection_dir / "aggregated_reports"
+    )
 
     # Create output directory
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True, exist_ok=True)
         print(f"Created output directory: {output_dir}")
 
     # Find workload directories
@@ -190,30 +188,30 @@ def main() -> int:
         return 1
 
     # Step 1 & 2: Copy and transform reports
-    copied_reports_dir = os.path.join(output_dir, "individual_reports")
-    if not os.path.exists(copied_reports_dir):
-        os.makedirs(copied_reports_dir)
+    copied_reports_dir = output_dir / "individual_reports"
+    if not copied_reports_dir.exists():
+        copied_reports_dir.mkdir(parents=True, exist_ok=True)
 
-    transformed_reports = {}  # parallelism_type -> transformed_data
+    transformed_reports: dict[str, dict[str, Any]] = {}
 
     for workload_dir in workload_dirs:
-        workload_name = os.path.basename(workload_dir)
-        report_path = os.path.join(workload_dir, "analysis_output", "report.json")
+        workload_name = workload_dir.name
+        report_path = workload_dir / "analysis_output" / "report.json"
 
-        if not os.path.exists(report_path):
+        if not report_path.exists():
             print(f"  SKIP: {workload_name} (no report.json found)")
             continue
 
         # Copy report with unique name
         dest_name = f"{workload_name}_report.json"
-        dest_path = os.path.join(copied_reports_dir, dest_name)
+        dest_path = copied_reports_dir / dest_name
         shutil.copy2(report_path, dest_path)
         print(f"  Copied: {workload_name} -> {dest_name}")
 
         # Load and transform
         try:
-            with open(report_path) as f:
-                report_data = json.load(f)
+            with report_path.open() as file:
+                report_data = json.load(file)
 
             parallelism_type = get_parallelism_type(workload_name)
             transformed = transform_report(report_data)
@@ -223,9 +221,9 @@ def main() -> int:
             transformed_reports[parallelism_type] = transformed
 
             # Save transformed report
-            transformed_path = os.path.join(copied_reports_dir, f"{workload_name}_transformed.json")
-            with open(transformed_path, "w") as f:
-                json.dump(transformed, f, indent=2)
+            transformed_path = copied_reports_dir / f"{workload_name}_transformed.json"
+            with transformed_path.open("w") as file:
+                json.dump(transformed, file, indent=2)
 
         except Exception as e:
             print(f"  ERROR processing {workload_name}: {e!s}")
@@ -253,9 +251,9 @@ def main() -> int:
     }
 
     # Save final aggregated file
-    output_file = os.path.join(output_dir, args.output_file)
-    with open(output_file, "w") as f:
-        json.dump(final_output, f, indent=2)
+    output_file = output_dir / args.output_file
+    with output_file.open("w") as file:
+        json.dump(final_output, file, indent=2)
 
     print(f"\nAggregated metrics saved to: {output_file}")
     print("\nSummary:")

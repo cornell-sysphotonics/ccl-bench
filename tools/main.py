@@ -22,6 +22,7 @@ import argparse
 from dataclasses import dataclass, field
 import importlib
 import importlib.util
+import inspect
 import json
 import logging
 from pathlib import Path
@@ -65,7 +66,7 @@ def discover_tools(tools_dir: Path) -> list[str]:
     Returns:
         List of tool names (directory names)
     """
-    tools = []
+    tools: list[str] = []
 
     for item in tools_dir.iterdir():
         if not item.is_dir():
@@ -79,7 +80,7 @@ def discover_tools(tools_dir: Path) -> list[str]:
         metric_file = item / "metric.py"
         if metric_file.exists():
             tools.append(item.name)
-            _LOGGER.info(f"Discovered tool: {item.name}")
+            _LOGGER.info("Discovered tool: %s", item.name)
 
     return sorted(tools)
 
@@ -94,24 +95,29 @@ def find_iterations(traces_dir: Path) -> list[tuple[str, Path]]:
     Returns:
         List of (iteration_name, iteration_path) tuples
     """
-    iterations = []
+    iterations: list[tuple[str, Path]] = []
 
     # Check for profile_traces/iteration_* structure
     profile_traces_dir = traces_dir / "profile_traces"
     if profile_traces_dir.exists():
-        for item in sorted(profile_traces_dir.iterdir()):
-            if item.is_dir() and item.name.startswith("iteration_"):
-                iterations.append((item.name, item))
+        iterations.extend(
+            (item.name, item)
+            for item in sorted(profile_traces_dir.iterdir())
+            if item.is_dir() and item.name.startswith("iteration_")
+        )
 
     # Also check for direct iteration_* directories in traces_dir
     for item in sorted(traces_dir.iterdir()):
-        if item.is_dir() and item.name.startswith("iteration_"):
-            if (item.name, item) not in iterations:
-                iterations.append((item.name, item))
+        if (
+            item.is_dir()
+            and item.name.startswith("iteration_")
+            and (item.name, item) not in iterations
+        ):
+            iterations.append((item.name, item))
 
     if not iterations:
         # If no iterations found, use the traces_dir itself
-        _LOGGER.warning(f"No iteration directories found, using traces_dir: {traces_dir}")
+        _LOGGER.warning("No iteration directories found, using traces_dir: %s", traces_dir)
         iterations.append(("all", traces_dir))
 
     return iterations
@@ -163,8 +169,6 @@ def run_tool(
 
         # Call the metric function
         # Check function signature to see if it accepts workload_card_path
-        import inspect
-
         sig = inspect.signature(metric_func)
 
         if "workload_card_path" in sig.parameters:
@@ -181,12 +185,12 @@ def run_tool(
             data=result if isinstance(result, dict) else {"value": result},
         )
 
-    except Exception as e:
-        _LOGGER.exception(f"Error running tool {tool_name}: {e}")
+    except Exception:
+        _LOGGER.exception("Error running tool %s", tool_name)
         return MetricResult(
             tool_name=tool_name,
             success=False,
-            error=str(e),
+            error="Error running tool; see logs for details",
         )
 
 
@@ -423,10 +427,10 @@ def generate_html_report(
 """
 
     # Write HTML file
-    with open(html_path, "w") as f:
-        f.write(html_content)
+    with html_path.open("w") as file:
+        file.write(html_content)
 
-    _LOGGER.info(f"Generated HTML report: {html_path}")
+    _LOGGER.info("Generated HTML report: %s", html_path)
     return html_path
 
 
@@ -482,27 +486,27 @@ def main() -> int:
 
     # Validate inputs
     if not workload_dir.exists():
-        _LOGGER.error(f"Workload directory does not exist: {workload_dir}")
+        _LOGGER.error("Workload directory does not exist: %s", workload_dir)
         return 1
 
     if not traces_dir.exists():
-        _LOGGER.error(f"Traces directory does not exist: {traces_dir}")
-        _LOGGER.error(f"Expected traces in: {traces_dir}")
+        _LOGGER.error("Traces directory does not exist: %s", traces_dir)
+        _LOGGER.error("Expected traces in: %s", traces_dir)
         return 1
 
     if not workload_card.exists():
-        _LOGGER.error(f"Workload card does not exist: {workload_card}")
-        _LOGGER.error(f"Expected workload card at: {workload_card}")
+        _LOGGER.error("Workload card does not exist: %s", workload_card)
+        _LOGGER.error("Expected workload card at: %s", workload_card)
         return 1
 
     if not tools_dir.exists():
-        _LOGGER.error(f"Tools directory does not exist: {tools_dir}")
+        _LOGGER.error("Tools directory does not exist: %s", tools_dir)
         return 1
 
-    _LOGGER.info(f"Workload directory: {workload_dir}")
-    _LOGGER.info(f"Traces directory: {traces_dir}")
-    _LOGGER.info(f"Workload card: {workload_card}")
-    _LOGGER.info(f"Output directory: {output_dir}")
+    _LOGGER.info("Workload directory: %s", workload_dir)
+    _LOGGER.info("Traces directory: %s", traces_dir)
+    _LOGGER.info("Workload card: %s", workload_card)
+    _LOGGER.info("Output directory: %s", output_dir)
 
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -510,10 +514,10 @@ def main() -> int:
     # Discover tools
     if args.tools:
         tools = args.tools
-        _LOGGER.info(f"Using specified tools: {tools}")
+        _LOGGER.info("Using specified tools: %s", tools)
     else:
         tools = discover_tools(tools_dir)
-        _LOGGER.info(f"Discovered {len(tools)} tools: {tools}")
+        _LOGGER.info("Discovered %s tools: %s", len(tools), tools)
 
     if not tools:
         _LOGGER.error("No tools found to run")
@@ -521,7 +525,7 @@ def main() -> int:
 
     # Find all iterations
     all_iterations = find_iterations(traces_dir)
-    _LOGGER.info(f"Found {len(all_iterations)} iterations: {[it[0] for it in all_iterations]}")
+    _LOGGER.info("Found %s iterations: %s", len(all_iterations), [it[0] for it in all_iterations])
 
     # Select the middle iteration
     if not all_iterations:
@@ -534,7 +538,7 @@ def main() -> int:
     iter_name, iter_path = iterations[0]
 
     _LOGGER.info(
-        f"Analyzing middle iteration: {iter_name} (out of {len(all_iterations)} iterations)"
+        "Analyzing middle iteration: %s (out of %s iterations)", iter_name, len(all_iterations)
     )
 
     # Initialize report
@@ -546,10 +550,10 @@ def main() -> int:
 
     # Run tools on the middle iteration only
     _LOGGER.info("Running metrics analysis...")
-    _LOGGER.info(f"Processing iteration: {iter_name}")
+    _LOGGER.info("Processing iteration: %s", iter_name)
 
     for tool_name in tools:
-        _LOGGER.info(f"  Running tool: {tool_name}")
+        _LOGGER.info("  Running tool: %s", tool_name)
         result = run_tool(tool_name, iter_path, workload_card, tools_dir)
         result.data["iteration"] = iter_name
         report.metrics.append(result)
@@ -560,7 +564,7 @@ def main() -> int:
 
     # Also save JSON report
     json_path = output_dir / "report.json"
-    with open(json_path, "w") as f:
+    with json_path.open("w") as file:
         json.dump(
             {
                 "profile_dir": report.profile_dir,
@@ -576,13 +580,13 @@ def main() -> int:
                     for m in report.metrics
                 ],
             },
-            f,
+            file,
             indent=2,
         )
 
     _LOGGER.info("Analysis complete!")
-    _LOGGER.info(f"  HTML report: {html_path}")
-    _LOGGER.info(f"  JSON report: {json_path}")
+    _LOGGER.info("  HTML report: %s", html_path)
+    _LOGGER.info("  JSON report: %s", json_path)
 
     # Flush output to ensure all logs are written
     sys.stdout.flush()

@@ -7,7 +7,7 @@ import json
 import logging
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, cast
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,10 +37,10 @@ NCCL_KERNEL_PATTERNS = {
 def _load_trace_json(path: Path) -> dict[str, Any] | None:
     """Load a torch trace JSON file."""
     try:
-        with open(path) as f:
-            return json.load(f)
+        with path.open() as file:
+            return cast("dict[str, Any]", json.load(file))
     except Exception as e:
-        _LOGGER.warning(f"Failed to load trace file {path}: {e}")
+        _LOGGER.warning("Failed to load trace file %s: %s", path, e)
         return None
 
 
@@ -105,12 +105,12 @@ def _calculate_total_time(trace_data: dict[str, Any]) -> float:
         return 0.0
 
     events = trace_data["traceEvents"]
-    timestamps = []
+    timestamps: list[float] = []
 
     for event in events:
         if isinstance(event, dict) and event.get("ts") is not None:
-            ts = event.get("ts", 0)
-            dur = event.get("dur", 0)
+            ts = float(event.get("ts", 0))
+            dur = float(event.get("dur", 0))
             timestamps.append(ts)
             if dur > 0:
                 timestamps.append(ts + dur)
@@ -201,7 +201,7 @@ def metric_cal(
     if not trace_files:
         return {"error": f"No torch trace JSON files found in {trace_dir}"}
 
-    _LOGGER.info(f"Found {len(trace_files)} trace files in {trace_dir}")
+    _LOGGER.info("Found %s trace files in %s", len(trace_files), trace_dir)
 
     # Analyze each rank
     per_rank_stats = []

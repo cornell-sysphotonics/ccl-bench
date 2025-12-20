@@ -6,19 +6,33 @@ import json
 import logging
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict, cast
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
+class RankMetricsBase(TypedDict):
+    """Timing metrics for a single rank."""
+
+    total_duration_ms: float
+    kernel_time_ms: float
+    communication_time_ms: float
+
+
+class RankMetrics(RankMetricsBase):
+    """Timing metrics with rank identifier included."""
+
+    rank: str
+
+
 def _load_trace_json(path: Path) -> dict[str, Any] | None:
     """Load a torch trace JSON file."""
     try:
-        with open(path) as f:
-            return json.load(f)
+        with path.open() as file:
+            return cast("dict[str, Any]", json.load(file))
     except Exception as e:
-        _LOGGER.warning(f"Failed to load trace file {path}: {e}")
+        _LOGGER.warning("Failed to load trace file %s: %s", path, e)
         return None
 
 
@@ -28,7 +42,7 @@ def _calculate_trace_duration(trace_data: dict[str, Any]) -> float:
         return 0.0
 
     events = trace_data["traceEvents"]
-    timestamps = []
+    timestamps: list[float] = []
 
     for event in events:
         if isinstance(event, dict):
@@ -36,9 +50,10 @@ def _calculate_trace_duration(trace_data: dict[str, Any]) -> float:
             dur = event.get("dur", 0)
 
             if ts is not None:
-                timestamps.append(ts)
+                ts_value = float(ts)
+                timestamps.append(ts_value)
                 if dur > 0:
-                    timestamps.append(ts + dur)
+                    timestamps.append(ts_value + float(dur))
 
     if not timestamps:
         return 0.0
@@ -87,7 +102,7 @@ def _calculate_communication_time(trace_data: dict[str, Any]) -> float:
     return total_comm_time
 
 
-def _analyze_rank(trace_data: dict[str, Any]) -> dict[str, float]:
+def _analyze_rank(trace_data: dict[str, Any]) -> RankMetricsBase:
     """Analyze timing metrics for a single rank."""
     total_duration = _calculate_trace_duration(trace_data)
     kernel_time = _calculate_kernel_time(trace_data)
@@ -137,7 +152,9 @@ def _calculate_statistics(values: list[float]) -> dict[str, float]:
     }
 
 
-def _detect_stragglers(rank_metrics: list[dict], threshold_std: float = 2.0) -> list[dict]:
+def _detect_stragglers(
+    rank_metrics: list[RankMetrics], threshold_std: float = 2.0
+) -> list[dict[str, float | str]]:
     """Detect straggler ranks based on duration statistics.
 
     Args:
@@ -155,7 +172,7 @@ def _detect_stragglers(rank_metrics: list[dict], threshold_std: float = 2.0) -> 
 
     threshold = stats["mean"] + threshold_std * stats["std"]
 
-    stragglers = []
+    stragglers: list[dict[str, float | str]] = []
     for r in rank_metrics:
         if r["total_duration_ms"] > threshold:
             deviation = (
@@ -172,7 +189,7 @@ def _detect_stragglers(rank_metrics: list[dict], threshold_std: float = 2.0) -> 
                 }
             )
 
-    return sorted(stragglers, key=lambda x: x["deviation_std"], reverse=True)
+    return sorted(stragglers, key=lambda x: float(x["deviation_std"]), reverse=True)
 
 
 def metric_cal(
@@ -216,19 +233,19 @@ def metric_cal(
     if not trace_files:
         return {"error": f"No torch trace JSON files found in {trace_dir}"}
 
-    _LOGGER.info(f"Found {len(trace_files)} trace files in {trace_dir}")
+    _LOGGER.info("Found %s trace files in %s", len(trace_files), trace_dir)
 
     # Analyze each rank
-    rank_metrics = []
+    rank_metrics: list[RankMetrics] = []
 
     for trace_file in sorted(trace_files):
         trace_data = _load_trace_json(trace_file)
         if trace_data is None:
             continue
 
-        metrics = _analyze_rank(trace_data)
-        metrics["rank"] = trace_file.stem
-        rank_metrics.append(metrics)
+        base_metrics = _analyze_rank(trace_data)
+        rank_metric: RankMetrics = {**base_metrics, "rank": trace_file.stem}
+        rank_metrics.append(rank_metric)
 
     if not rank_metrics:
         return {"error": "Could not analyze any trace files"}

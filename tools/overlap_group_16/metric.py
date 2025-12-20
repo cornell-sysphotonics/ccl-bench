@@ -6,7 +6,10 @@ import json
 import logging
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, cast
+
+
+Interval = tuple[float, float]
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,10 +27,10 @@ NCCL_PATTERNS = [
 def _load_trace_json(path: Path) -> dict[str, Any] | None:
     """Load a torch trace JSON file."""
     try:
-        with open(path) as f:
-            return json.load(f)
+        with path.open() as file:
+            return cast("dict[str, Any]", json.load(file))
     except Exception as e:
-        _LOGGER.warning(f"Failed to load trace file {path}: {e}")
+        _LOGGER.warning("Failed to load trace file %s: %s", path, e)
         return None
 
 
@@ -36,7 +39,7 @@ def _is_communication_kernel(name: str) -> bool:
     return any(pattern.search(name) for pattern in NCCL_PATTERNS)
 
 
-def _extract_kernel_intervals(trace_data: dict[str, Any]) -> tuple[list[tuple], list[tuple]]:
+def _extract_kernel_intervals(trace_data: dict[str, Any]) -> tuple[list[Interval], list[Interval]]:
     """Extract compute and communication kernel intervals.
 
     Returns:
@@ -46,8 +49,8 @@ def _extract_kernel_intervals(trace_data: dict[str, Any]) -> tuple[list[tuple], 
         return [], []
 
     events = trace_data["traceEvents"]
-    compute_intervals = []
-    comm_intervals = []
+    compute_intervals: list[Interval] = []
+    comm_intervals: list[Interval] = []
 
     for event in events:
         if not isinstance(event, dict):
@@ -61,8 +64,8 @@ def _extract_kernel_intervals(trace_data: dict[str, Any]) -> tuple[list[tuple], 
             continue
 
         name = event.get("name", "")
-        ts = event.get("ts", 0)
-        dur = event.get("dur", 0)
+        ts = float(event.get("ts", 0))
+        dur = float(event.get("dur", 0))
 
         if dur <= 0:
             continue
@@ -77,7 +80,7 @@ def _extract_kernel_intervals(trace_data: dict[str, Any]) -> tuple[list[tuple], 
     return compute_intervals, comm_intervals
 
 
-def _merge_intervals(intervals: list[tuple]) -> list[tuple]:
+def _merge_intervals(intervals: list[Interval]) -> list[Interval]:
     """Merge overlapping intervals."""
     if not intervals:
         return []
@@ -97,13 +100,13 @@ def _merge_intervals(intervals: list[tuple]) -> list[tuple]:
     return merged
 
 
-def _calculate_total_duration(intervals: list[tuple]) -> float:
+def _calculate_total_duration(intervals: list[Interval]) -> float:
     """Calculate total duration of merged intervals."""
     merged = _merge_intervals(intervals)
     return sum(end - start for start, end in merged)
 
 
-def _calculate_overlap(intervals_a: list[tuple], intervals_b: list[tuple]) -> float:
+def _calculate_overlap(intervals_a: list[Interval], intervals_b: list[Interval]) -> float:
     """Calculate the overlap duration between two sets of intervals."""
     if not intervals_a or not intervals_b:
         return 0.0
@@ -207,7 +210,7 @@ def metric_cal(
     if not trace_files:
         return {"error": f"No torch trace JSON files found in {trace_dir}"}
 
-    _LOGGER.info(f"Found {len(trace_files)} trace files in {trace_dir}")
+    _LOGGER.info("Found %s trace files in %s", len(trace_files), trace_dir)
 
     # Analyze each rank
     per_rank_stats = []

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 import pickle
-from typing import Any
+from typing import Any, cast
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -14,10 +14,10 @@ _LOGGER = logging.getLogger(__name__)
 def _load_memory_snapshot(path: Path) -> dict[str, Any] | None:
     """Load a torch memory snapshot pickle file."""
     try:
-        with open(path, "rb") as f:
-            return pickle.load(f)
+        with path.open("rb") as file:
+            return cast("dict[str, Any]", pickle.load(file))  # noqa: S301 safe trusted input
     except Exception as e:
-        _LOGGER.warning(f"Failed to load memory snapshot {path}: {e}")
+        _LOGGER.warning("Failed to load memory snapshot %s: %s", path, e)
         return None
 
 
@@ -163,7 +163,7 @@ def _analyze_rank_memory(snapshot_data: dict[str, Any]) -> dict[str, Any]:
 
 def _find_memory_snapshots(trace_dir: Path) -> list[Path]:
     """Find memory snapshot files in various locations."""
-    snapshots = []
+    snapshots: list[Path] = []
 
     # Check in trace_dir directly
     snapshots.extend(trace_dir.glob("*memory_snapshot.pickle"))
@@ -221,7 +221,7 @@ def metric_cal(
     if not snapshot_files:
         return {"error": f"No memory snapshot files found near {trace_dir}"}
 
-    _LOGGER.info(f"Found {len(snapshot_files)} memory snapshot files")
+    _LOGGER.info("Found %s memory snapshot files", len(snapshot_files))
 
     # Analyze each rank
     per_rank_stats = []

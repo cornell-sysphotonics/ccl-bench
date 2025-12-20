@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
+
+import yaml
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -14,10 +16,10 @@ _LOGGER = logging.getLogger(__name__)
 def _load_trace_json(path: Path) -> dict[str, Any] | None:
     """Load a torch trace JSON file."""
     try:
-        with open(path) as f:
-            return json.load(f)
+        with path.open() as file:
+            return cast("dict[str, Any]", json.load(file))
     except Exception as e:
-        _LOGGER.warning(f"Failed to load trace file {path}: {e}")
+        _LOGGER.warning("Failed to load trace file %s: %s", path, e)
         return None
 
 
@@ -56,8 +58,8 @@ def _find_iteration_time(trace_data: dict[str, Any]) -> float | None:
 
     # If no explicit markers, use first and last event timestamps
     if start_time is None or end_time is None:
-        timestamps = [
-            e.get("ts") for e in events if isinstance(e, dict) and e.get("ts") is not None
+        timestamps: list[int] = [
+            int(ts) for ts in (e.get("ts") for e in events if isinstance(e, dict)) if ts is not None
         ]
         if timestamps:
             start_time = min(timestamps)
@@ -67,7 +69,7 @@ def _find_iteration_time(trace_data: dict[str, Any]) -> float | None:
         return None
 
     # Convert from microseconds to seconds (Chrome trace format uses microseconds)
-    duration_us = end_time - start_time
+    duration_us: float = float(end_time - start_time)
     return duration_us / 1_000_000.0
 
 
@@ -81,29 +83,28 @@ def _get_tokens_per_step(workload_card_path: str | None) -> int:
         return 8192  # Default fallback
 
     try:
-        try:
-            import yaml
-        except ImportError:
-            _LOGGER.warning(
-                "PyYAML not installed, cannot parse workload card. Install with: pip install pyyaml"
-            )
-            return 8192
-
-        with open(workload_card_path) as f:
-            card = yaml.safe_load(f)
+        card_path = Path(workload_card_path)
+        with card_path.open() as file:
+            card = cast("dict[str, Any]", yaml.safe_load(file))
 
         # Extract batch size and sequence length
-        batch_size = card.get("workload", {}).get("data", {}).get("batch_size", 8)
-        seq_len = card.get("workload", {}).get("data", {}).get("seq_len", 1024)
+        batch_size = int(card.get("workload", {}).get("data", {}).get("batch_size", 8))
+        seq_len = int(card.get("workload", {}).get("data", {}).get("seq_len", 1024))
 
-        tokens_per_step = batch_size * seq_len
+        tokens_per_step = int(batch_size * seq_len)
         _LOGGER.info(
-            f"Loaded from workload card: batch_size={batch_size}, seq_len={seq_len}, tokens_per_step={tokens_per_step}"
+            "Loaded from workload card: batch_size=%s, seq_len=%s, tokens_per_step=%s",
+            batch_size,
+            seq_len,
+            tokens_per_step,
         )
-        return tokens_per_step
-    except Exception as e:
-        _LOGGER.warning(f"Failed to load workload card {workload_card_path}: {e}, using defaults")
+    except Exception as exc:
+        _LOGGER.warning(
+            "Failed to load workload card %s: %s, using defaults", workload_card_path, exc
+        )
         return 8192
+
+    return tokens_per_step
 
 
 def metric_cal(
@@ -142,7 +143,7 @@ def metric_cal(
     if not trace_files:
         return {"error": f"No torch trace JSON files found in {trace_dir}"}
 
-    _LOGGER.info(f"Found {len(trace_files)} trace files in {trace_dir}")
+    _LOGGER.info("Found %s trace files in %s", len(trace_files), trace_dir)
 
     # Get tokens per step from workload card
     tokens_per_step = _get_tokens_per_step(workload_card_path)
@@ -158,7 +159,7 @@ def metric_cal(
 
         iter_time = _find_iteration_time(trace_data)
         if iter_time is None or iter_time <= 0:
-            _LOGGER.warning(f"Could not extract iteration time from {trace_file}")
+            _LOGGER.warning("Could not extract iteration time from %s", trace_file)
             continue
 
         iteration_times.append(iter_time)
