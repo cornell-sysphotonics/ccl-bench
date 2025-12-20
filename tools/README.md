@@ -61,5 +61,7 @@ Metric collection: Byungsoo, Jinkun
 13. `TPOT`: time per output token in inference
 
 14. `comm_kernel_breakdown_tpu_group_4`: a breakdown of the number of calls and time spent on communication kernels
+15. [Tool ready] `estimated_bandwidth`: estimated aggregate bandwidth (GB/s) computed from trace data
+16. [Tool ready] `mfu`: model flop utilization, representing the efficiency of the model's computation
 
 ...
