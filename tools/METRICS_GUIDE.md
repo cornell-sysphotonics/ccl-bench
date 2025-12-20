@@ -107,7 +107,7 @@ def metric_cal(
 ) -> dict[str, Any]:
     """
     Calculate metric from profile traces.
-    
+
     Returns:
         Dictionary with metric results
     """
@@ -165,4 +165,3 @@ results = {
 
 print(json.dumps(results, indent=2))
 ```
-
