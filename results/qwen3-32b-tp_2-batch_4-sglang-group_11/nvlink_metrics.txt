@@ -1,0 +1,23 @@
+
+max_throughput:
+----------------------------------------
+  Max Throughput:   4.4547 GB/s
+  Link:             4
+  Direction:        RX
+  Timestamp (us):   1766248723130224
+  Timestamp:        2025-12-20T16:38:43.130Z
+  Interval:         1176 us
+  Bytes:            5,238,784
+
+avg_throughput:
+----------------------------------------
+  Avg Throughput:   0.0078 GB/s
+  Total Duration:   5,107,499,784 us
+  Intervals:        2875368 (905795 active)
+
+total_communication:
+----------------------------------------
+  Total Bytes:      19,918,802,944
+  Total GB:         19.9188
+  RX Bytes:         19,918,802,944
+  TX Bytes:         19,918,802,944

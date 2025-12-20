@@ -1,0 +1,54 @@
+version: 1
+
+description: >
+  Inference experiment with Qwen3-32B using SGLang.
+  Configuration: TP=2, Batch=4, running on NVIDIA A100 GPUs (Perlmutter).
+  Profiling communication via NVLink using nsys.
+
+hf_url: https://huggingface.co/Qwen/Qwen3-32B
+trace_url: https://drive.google.com/drive/folders/1k6xokFE2MAnt39YR8f-DTKK86IXitV0x?usp=drive_link
+
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: kernel
+    model_family: qwen3-32b
+    precision: bf16
+  data:
+    batch_size: 4
+    seq_len: 4096
+    dataset: dummy
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 600
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 2
+      count_per_node: 4
+    driver_version: cuda_12.4
+  
+Model-executor:
+  framework: 
+    name: sglang
+    compiler_tool_selection: triton
+  model_plan_parallelization: 
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 2
+    pp: 1
+    cp: 1
+  communication_library:
+    name: NCCL
+  protocol_selection:
+    - rocev2
+    - p2p
+
+metric_source:
+  traces:
+    - nsys
+

@@ -5,10 +5,10 @@ description: >
   Llama3 8B training on 16 GPUs with TP=4, PP=2, DP(shard)=2. Torch distributed
   runtime, NCCL comms over Slingshot/RoCEv2. No compile/fusion; selective
   activation checkpointing.
-  We modified the original train.py code to collect tracing information. #TODO link
+  We modified the original train.py code to collect tracing information.
 
 hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
-trace_url: https://drive.google.com/file/d/1EK_YROAho2sBvYVn8idF6DbnaG3SZ0he/view
+trace_url: https://drive.google.com/drive/folders/1k6xokFE2MAnt39YR8f-DTKK86IXitV0x?usp=drive_link
 
 workload:
   model:
@@ -25,8 +25,8 @@ workload:
     network_topo:
       topology: slingshot
       bandwidth_gbps:
-        - 200              # TODO adjust scale-out
-        - 2000             # TODO adjust scale-up
+        - 200
+        - 2000
     xpu_spec:
       type: GPU
       model: nvidia_a100
@@ -47,7 +47,7 @@ Model-executor:
   communication_library:
     name: NCCL
     env:
-      NCCL_IB_QPS_PER_CONNECTION: "4" # TODO verify, add more envs as needed
+      NCCL_IB_QPS_PER_CONNECTION: "4"
   protocol_selection:
     - rocev2
     - p2p

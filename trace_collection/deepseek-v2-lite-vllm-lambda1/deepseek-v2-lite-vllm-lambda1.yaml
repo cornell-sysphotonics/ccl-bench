@@ -7,7 +7,7 @@ description: >
   Script: https://github.com/vllm-project/vllm/blob/main/examples/online_serving/elastic_ep/serve_deepseek_v2.sh
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite/tree/main
-trace_url: https://drive.google.com/drive/u/0/folders/1-Hd-mcvPrcUjHTKOM2iMu5m-RsRefeBH
+trace_url: https://drive.google.com/drive/folders/1k6xokFE2MAnt39YR8f-DTKK86IXitV0x?usp=drive_link
 
 workload:
   model:
