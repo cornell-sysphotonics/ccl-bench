@@ -29,6 +29,12 @@ SERVER_PORT="${SERVER_PORT:-8000}"
 NSYS_OUTPUT="${OUTPUT_DIR}/vllm_profile"
 PROFILE_DURATION="${PROFILE_DURATION:-60}"  # Max profiling duration in seconds
 
+# Batch size experiment parameters
+MAX_NUM_SEQS="${MAX_NUM_SEQS:-1}"
+MAX_BATCHED_TOKENS="${MAX_BATCHED_TOKENS:-$((MAX_NUM_SEQS * 4096))}"
+NUM_PROMPTS="${NUM_PROMPTS:-$((MAX_NUM_SEQS * 5))}"
+REQUEST_RATE="${REQUEST_RATE:-inf}"
+
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 mkdir -p logs
@@ -37,12 +43,14 @@ echo "=== vLLM + NVLink Profiling Session ==="
 echo "Output directory: $OUTPUT_DIR"
 echo "Model: $MODEL"
 echo "Tensor Parallel Size: $TP_SIZE"
+echo "Batch Size (max-num-seqs): $MAX_NUM_SEQS"
+echo "Max Batched Tokens: $MAX_BATCHED_TOKENS"
+echo "Num Prompts: $NUM_PROMPTS"
+echo "Request Rate: $REQUEST_RATE"
 echo ""
 
 # Environment setup
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-export NCCL_DEBUG=INFO
-export NCCL_DEBUG_SUBSYS=COLL,INIT
 
 # Cleanup function
 cleanup() {
@@ -104,8 +112,8 @@ nsys profile \
         --disable-log-requests \
         --enforce-eager \
         --enable-chunked-prefill \
-        --max-num-batched-tokens 4096 \
-        --max-num-seqs 1 \
+    --max-num-batched-tokens "$MAX_BATCHED_TOKENS" \
+    --max-num-seqs "$MAX_NUM_SEQS" \
         --port "$SERVER_PORT" \
         --disable-sliding-window \
     > logs/server_nsys.log 2>&1 &
@@ -183,8 +191,8 @@ echo "[$(date)] === Phase 3: Running Client Workload ==="
 
 python3 benchmark.py --backend vllm \
     --model "$MODEL" \
-    --request-rate 1 \
-    --num-prompts 1 \
+    --request-rate "$REQUEST_RATE" \
+    --num-prompts "$NUM_PROMPTS" \
     --dataset-name dummy \
     --long-prompts 0 \
     --long-prompt-len 32000
