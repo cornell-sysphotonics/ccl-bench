@@ -4,6 +4,7 @@ nsys profile \
   -s none \
   --cpuctxsw=none \
   --force-overwrite=true \
+  --trace-fork-before-exec=true \
   --stats=true \
   -o default_eplb4 \
   vllm serve /pscratch/sd/j/jy2222/Qwen3-30B-A3B \
