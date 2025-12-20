@@ -17,12 +17,12 @@ export NUM_PROMPTS=$((MAX_NUM_SEQS * 3))
 export REQUEST_RATE=inf
 
 # Output to PSCRATCH directory
-EXPERIMENT_NAME="qwen3-30b-a3b-tp_2-batch_1-vllm-group_11"
+EXPERIMENT_NAME="qwen3-30b-a3b-tp_2-batch_4-vllm-group_11"
 export OUTPUT_DIR="$PSCRATCH/nvlink_experiments/$EXPERIMENT_NAME"
 export CUDA_VISIBLE_DEVICES=0,1
 
 echo "========================================"
-echo "Experiment: qwen3-30b-a3b-tp_2-batch_1"
+echo "Experiment: qwen3-30b-a3b-tp_2-batch_4"
 echo "========================================"
 echo "Model: $MODEL"
 echo "Tensor Parallel: $TP_SIZE"

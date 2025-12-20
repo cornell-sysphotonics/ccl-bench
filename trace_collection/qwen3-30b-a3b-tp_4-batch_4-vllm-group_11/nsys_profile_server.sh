@@ -108,6 +108,7 @@ nsys profile \
         --tensor-parallel-size "$TP_SIZE" \
         --max-model-len 4096 \
         --model "$MODEL" \
+        --enable-expert-parallel \
         --swap-space 16 \
         --disable-log-requests \
         --enforce-eager \
