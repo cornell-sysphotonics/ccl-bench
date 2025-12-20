@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+"""
+Main entry point for CCL-bench tools and metrics.
+
+This follows the CCL-bench standard interface for metric calculation tools.
+"""
+
 import argparse
 
 if __name__ == "__main__":
@@ -6,7 +13,7 @@ if __name__ == "__main__":
     metric_cal_func = None
 
     parser = argparse.ArgumentParser(description="Process trace directory and metric name.")
-    parser.add_argument("--trace", type=str, required=True, help="Path to the trace directory")
+    parser.add_argument("--trace", type=str, required=True, help="Path to the trace directory (or CSV results directory)")
     parser.add_argument("--metric", type=str, required=True, help="Name of the metric to calculate")
 
     args = parser.parse_args()
@@ -20,9 +27,14 @@ if __name__ == "__main__":
     elif metric_name == "comm_kernel_breakdown_tpu":
         from comm_kernel_breakdown_tpu.comm_kernel_breakdown_tpu import comm_kernel_breakdown_tpu
         metric_cal_func = comm_kernel_breakdown_tpu
+    elif metric_name == "ttft":
+        from ttft.ttft import ttft
+        metric_cal_func = ttft
+    elif metric_name == "tpot":
+        from tpot.tpot import tpot
+        metric_cal_func = tpot
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     
     metric = metric_cal_func(trace_directory)
     print(metric)
-
