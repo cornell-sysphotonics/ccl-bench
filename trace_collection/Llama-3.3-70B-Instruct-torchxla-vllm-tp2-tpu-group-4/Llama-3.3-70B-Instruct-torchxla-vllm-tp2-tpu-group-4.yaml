@@ -1,0 +1,57 @@
+version: 1
+
+description: >
+  Trace collection for meta-llama/Llama-3.3-70B-Instruct with TP=2.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct
+trace_url: # TODO: Add trace URL after collection
+
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: kernel
+    model_family: llama-3.3-70b-instruct
+    precision: bf16
+    epochs: 1
+    iteration: 1
+  data:
+    batch_size: [1, 2, 4, 8, 16, 32, 64, 128]
+    seq_len: 1024
+    dataset: synthetic
+  hardware:
+    network_topo:
+      topology: 2D torus
+      bandwidth_gbps:
+        - 800
+        - 800
+    xpu_spec:
+      type: TPU
+      model: v6e
+      total_count: 8
+      count_per_node: 8
+    driver_version: v2-alpha-tpuv6e
+  
+  Model-executor:
+    framework: 
+      name: vllm
+      compiler_tool_selection: xla
+    model_plan_parallelization:
+      dp_replicate: 1
+      dp_shard: 1
+      tp: 2
+      pp: 1
+      cp: 1
+    communication_library:
+      name: XLA (via Torch/XLA)
+      version: 
+      env:
+    protocol_selection:
+      - ici
+      - 
+
+metric_source:
+  traces:
+    - xplane
+  metrics_specific_trace:
+    - 
