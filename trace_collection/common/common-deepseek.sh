@@ -288,7 +288,7 @@ WRAPPER_EOF
 	# Use srun to launch across all nodes for multi-node training
 	# PYTHONPATH is set to include the trace_collection directory for custom model imports
 	PYTHONPATH="${trace_collection_dir}:${PYTHONPATH:-}" \
-	srun --ntasks-per-node=1 \
+		srun --ntasks-per-node=1 \
 		nsys profile \
 		--stats=true \
 		--trace=mpi,cuda,nvtx,osrt,openmp \
@@ -365,7 +365,7 @@ WRAPPER_EOF
 	# Use srun to launch across all nodes for multi-node training
 	# PYTHONPATH is set to include the trace_collection directory for custom model imports
 	PYTHONPATH="${trace_collection_dir}:${PYTHONPATH:-}" \
-	srun --ntasks-per-node=1 \
+		srun --ntasks-per-node=1 \
 		python -m torch.distributed.run \
 		--nnodes="${SLURM_JOB_NUM_NODES}" \
 		--nproc-per-node="${SLURM_GPUS_PER_NODE}" \

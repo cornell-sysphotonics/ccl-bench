@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Register DeepSeek-V2-Lite TrainSpec for TorchTitan.
+"""Register DeepSeek-V2-Lite TrainSpec for TorchTitan.
 
 This script registers a custom TrainSpec for DeepSeek-V2-Lite 16B model.
 Since DeepSeek-V2-Lite is similar to DeepSeek-V3 (both are MoE models),
@@ -9,7 +8,7 @@ we reuse the DeepSeek-V3 TrainSpec components.
 Usage:
     # Import this module before running torchtitan.train
     import register_deepseek_v2_lite
-    
+
     # Or run directly to register
     python register_deepseek_v2_lite.py
 """
@@ -30,6 +29,7 @@ from torchtitan.models.deepseek_v3.model.state_dict_adapter import (
 )
 from torchtitan.models.moe import MoEArgs
 from torchtitan.protocols.train_spec import TrainSpec, register_train_spec
+
 
 # DeepSeek-V2-Lite 16B model arguments
 # Note: These are based on DeepSeek-V3 16B architecture since V2-Lite is similar
@@ -63,7 +63,7 @@ deepseek_v2_lite_args = {
 }
 
 
-def register_deepseek_v2_lite():
+def register_deepseek_v2_lite() -> None:
     """Register the DeepSeek-V2-Lite TrainSpec."""
     train_spec = TrainSpec(
         model_cls=DeepSeekV3Model,
@@ -77,7 +77,7 @@ def register_deepseek_v2_lite():
         build_loss_fn=build_cross_entropy_loss,
         state_dict_adapter=DeepSeekV3StateDictAdapter,
     )
-    
+
     register_train_spec("deepseek_v2_lite", train_spec)
     print("✓ Successfully registered TrainSpec: deepseek_v2_lite")
 
@@ -89,4 +89,3 @@ if __name__ == "__main__":
 else:
     # Auto-register when imported
     register_deepseek_v2_lite()
-

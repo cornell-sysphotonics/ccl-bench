@@ -1,0 +1,1 @@
+../common/register_deepseek_v2_lite.py
