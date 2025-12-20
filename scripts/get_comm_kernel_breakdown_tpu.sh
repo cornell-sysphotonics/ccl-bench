@@ -11,4 +11,4 @@ fi
 
 TRACE_DIR=$1
 
-python ./tools/main.py --trace "$TRACE_DIR" --metric "comm_kernel_breakdown_tpu"
+python3 ./tools/main.py --trace "$TRACE_DIR" --metric "comm_kernel_breakdown_tpu_group_4"

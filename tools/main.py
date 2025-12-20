@@ -25,7 +25,7 @@ if __name__ == "__main__":
         from coll_call_num.coll_call_num import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "comm_kernel_breakdown_tpu":
-        from comm_kernel_breakdown_tpu.comm_kernel_breakdown_tpu import comm_kernel_breakdown_tpu
+        from comm_kernel_breakdown_tpu_group_4.comm_kernel_breakdown_tpu_group_4 import comm_kernel_breakdown_tpu
         metric_cal_func = comm_kernel_breakdown_tpu
     elif metric_name == "ttft":
         from ttft.ttft import ttft

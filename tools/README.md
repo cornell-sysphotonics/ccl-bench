@@ -60,6 +60,6 @@ Metric collection: Byungsoo, Jinkun
 
 13. `TPOT`: time per output token in inference
 
-14. `comm_kernel_breakdown_tpu`: a breakdown of the number of calls and time spent on communication kernels
+14. `comm_kernel_breakdown_tpu_group_4`: a breakdown of the number of calls and time spent on communication kernels
 
 ...
