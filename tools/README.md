@@ -12,52 +12,35 @@ Metric collection: Byungsoo, Jinkun
 
 2. Define metrics
 
-    Should always include a number (integer, float) that could be presented on the benchmark.
-    Other metric format could be collected in addition, such as distribution, or time series.
-
-    Example: number of communication calls for GPU 0 in one iteration
+    Metrics should include a numeric value that can be surfaced in benchmarks. Additional shapes (distributions, time series) are fine when helpful.
 
 3. Develop tools
     ```
-    Input: list[nsys_rep], list[kineto_trace], list[pytorch_et_trace] # stored in trace directory
-    Output: float | int
+    Input: list[nsys_rep], list[kineto_trace], list[pytorch_et_trace]  # stored in trace directory
+    Output: float | int | dict
     ```
+
 4. Define tool-trace mapping
 
-    Not all the metrics can be derived from one trace, and not all traces can be used to calculate one metric. So a matching checker should be implemented inside every tool to enforce certain matching constraints. An easy example would be checking that the number of GPUs is greater than 1 in the trace by reading the workload card located inside the trace folder when you are calculating network bandwidth utilization, as you need to have multiple GPUs for communication.
-4. Calculate metrics
+    Not all metrics come from the same trace source. Each tool should enforce its own trace checks (for example, minimum GPU count when computing communication bandwidth).
+
+5. Calculate metrics
 
     ```
-    python main.py --trace=<trace directory> --metric=<name of metric>
-    # or use scripts
-    ./scripts/get_<name of metric>.sh
+    python -m tools.main --workload-dir <trace directory> --tools <tool_name>
     ```
 
-## Metrics
+    Each tool directory now has a short README with inputs, outputs, and usage examples.
 
-1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
-2. `throughput_tokens_sec`: throughput measured in tokens per second
+## Available tools
 
-3. `mfu`: model flop utilization, representing the efficiency of the model's computation
-
-4. `sm`: streaming multiprocessor utilization, indicating GPU usage efficiency
-
-5. `bubble_size_pipeline`: size of idle time (bubble) in the pipeline
-
-6. `traffic_window`: time intervals between traffic in different parallelism
-
-7. `traffic_distribution`: distribution of traffic across different parallelization
-
-8. `straggler`: the relative lag of the slowest device or process in a communication group
-
-9. `comm_comp_overlap`: overlap percentage between communication and computation phases
-
-10. `token_to_expert_assignment`: per-device assignment of tokens to experts in a model
-
-11. `iteration_wall_clock_time`: total wall-clock time for one iteration
-
-12. `TTFT`: time to first token in inference
-
-13. `TPOT`: time per output token in inference
-
-...
+- [coll_call_num](./coll_call_num): Count NCCL communication kernels from a Kineto trace.
+- [communication_group_16](./communication_group_16): Collective operation time and counts from torch profile traces.
+- [fsdp_group_16](./fsdp_group_16): FSDP operation overhead, communication, and per-layer timing.
+- [gpu_utilization_group_16](./gpu_utilization_group_16): GPU busy/idle percentages from kernel and memcpy spans.
+- [kernel_group_16](./kernel_group_16): Top kernels and type breakdown from CUDA kernel events.
+- [memory_group_16](./memory_group_16): Peak/reserved/active memory plus fragmentation from memory snapshots.
+- [overlap_group_16](./overlap_group_16): Compute/communication overlap efficiency and bubble time.
+- [straggler_group_16](./straggler_group_16): Straggler detection and load-imbalance stats across ranks.
+- [throughput_group_16](./throughput_group_16): Tokens-per-second throughput using trace timing and workload card.
+- [training_phases_group_16](./training_phases_group_16): Forward/backward/optimizer time breakdown from CPU events.
