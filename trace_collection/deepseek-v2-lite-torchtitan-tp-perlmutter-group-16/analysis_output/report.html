@@ -1,0 +1,3134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCL-Bench Analysis Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: #1a1a2e;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        header .subtitle {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        section {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        section h2 {
+            color: #1a1a2e;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid #2E86AB;
+            font-size: 1.5rem;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            border-left: 4px solid #2E86AB;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .metric-card h3 {
+            color: #2E86AB;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .metric-card.error {
+            border-left-color: #C73E1D;
+            background: #fff5f5;
+        }
+
+        .metric-card.error h3 {
+            color: #C73E1D;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0.5rem 0;
+        }
+
+        .metric-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .metric-details pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2E86AB;
+        }
+
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 CCL-Bench Analysis Report</h1>
+            <p class="subtitle">Traces Directory: /pscratch/sd/g/gb555/final_proj/ccl-torchtitan-train/trace_collection/deepseek-v2-lite-torchtitan-tp-perlmutter-16/traces</p>
+            <p class="subtitle">Workload Card: /pscratch/sd/g/gb555/final_proj/ccl-torchtitan-train/trace_collection/deepseek-v2-lite-torchtitan-tp-perlmutter-16/workload_card.yaml</p>
+        </header>
+
+        <div class="summary-grid">
+            <div class="stat-card">
+                <div class="value">9</div>
+                <div class="label">Total Metrics</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">9</div>
+                <div class="label">Successful</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">0</div>
+                <div class="label">Failed</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">10</div>
+                <div class="label">Iterations</div>
+            </div>
+        </div>
+
+        <section>
+            <h2>📈 Metrics</h2>
+
+            <div class="metric-card">
+                <h3>communication</h3>
+                <div class="metric-details">
+                    <pre>{
+  "total_communication_time_ms": 292.88117537499994,
+  "total_communication_count": 2433,
+  "communication_percentage": 3.38,
+  "per_operation_stats": {
+    "reduce_scatter": {
+      "total_count": 6432,
+      "total_time_ms": 720.9565249999999,
+      "avg_time_per_rank_ms": 90.11956562499999,
+      "min_rank_time_ms": 84.37068900000001,
+      "max_rank_time_ms": 97.25745300000001
+    },
+    "all_gather": {
+      "total_count": 3264,
+      "total_time_ms": 384.180634,
+      "avg_time_per_rank_ms": 48.02257925,
+      "min_rank_time_ms": 44.50229299999995,
+      "max_rank_time_ms": 52.07620500000004
+    },
+    "all_reduce": {
+      "total_count": 9768,
+      "total_time_ms": 1237.9122439999996,
+      "avg_time_per_rank_ms": 154.73903049999996,
+      "min_rank_time_ms": 147.2672320000003,
+      "max_rank_time_ms": 165.42281199999994
+    },
+    "reduce_scatter_kernel": {
+      "total_count": 2147,
+      "total_time_ms": 9597.807812000003,
+      "avg_time_per_rank_ms": 1199.7259765000003,
+      "min_rank_time_ms": 810.4328679999999,
+      "max_rank_time_ms": 1307.7515720000004
+    },
+    "all_gather_kernel": {
+      "total_count": 1088,
+      "total_time_ms": 2814.2013230000007,
+      "avg_time_per_rank_ms": 351.7751653750001,
+      "min_rank_time_ms": 327.2332619999999,
+      "max_rank_time_ms": 371.75603500000005
+    },
+    "all_reduce_kernel": {
+      "total_count": 3268,
+      "total_time_ms": 27568.507983999993,
+      "avg_time_per_rank_ms": 3446.063497999999,
+      "min_rank_time_ms": 1453.1981450000003,
+      "max_rank_time_ms": 3836.9616310000006
+    }
+  },
+  "per_rank_stats": [
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 87976.657,
+          "total_time_ms": 87.976657,
+          "avg_time_us": 109.42370273631842,
+          "min_time_us": 54.366,
+          "max_time_us": 334.218
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 46247.400999999976,
+          "total_time_ms": 46.247400999999975,
+          "avg_time_us": 113.35147303921563,
+          "min_time_us": 58.314,
+          "max_time_us": 224.065
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 151269.15100000004,
+          "total_time_ms": 151.26915100000005,
+          "avg_time_us": 123.88955855855859,
+          "min_time_us": 53.404,
+          "max_time_us": 3033.704
+        },
+        "reduce_scatter_kernel": {
+          "count": 268,
+          "total_time_us": 1293863.1550000007,
+          "total_time_ms": 1293.8631550000007,
+          "avg_time_us": 4827.8475932835845,
+          "min_time_us": 700.159,
+          "max_time_us": 24249.844
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 345808.113,
+          "total_time_ms": 345.808113,
+          "avg_time_us": 2542.706713235294,
+          "min_time_us": 1502.91,
+          "max_time_us": 4215.063
+        },
+        "all_reduce_kernel": {
+          "count": 407,
+          "total_time_us": 3709326.3950000005,
+          "total_time_ms": 3709.3263950000005,
+          "avg_time_us": 9113.824066339068,
+          "min_time_us": 87.232,
+          "max_time_us": 74699.035
+        }
+      },
+      "total_communication_time_us": 285493.20900000003,
+      "total_communication_time_ms": 285.49320900000004,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8581064.340820312,
+      "communication_percentage": 3.327013965411057,
+      "rank": "rank0_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 97257.45300000001,
+          "total_time_ms": 97.25745300000001,
+          "avg_time_us": 120.96698134328359,
+          "min_time_us": 55.638,
+          "max_time_us": 366.19
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 51885.57900000003,
+          "total_time_ms": 51.88557900000003,
+          "avg_time_us": 127.17053676470594,
+          "min_time_us": 63.093,
+          "max_time_us": 277.267
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 165422.81199999995,
+          "total_time_ms": 165.42281199999994,
+          "avg_time_us": 135.48141850941846,
+          "min_time_us": 54.124,
+          "max_time_us": 5567.447
+        },
+        "reduce_scatter_kernel": {
+          "count": 269,
+          "total_time_us": 1260088.1239999991,
+          "total_time_ms": 1260.0881239999992,
+          "avg_time_us": 4684.3424684014835,
+          "min_time_us": 680.417,
+          "max_time_us": 23612.765
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 366620.65900000004,
+          "total_time_ms": 366.62065900000005,
+          "avg_time_us": 2695.7401397058825,
+          "min_time_us": 1502.817,
+          "max_time_us": 8030.281
+        },
+        "all_reduce_kernel": {
+          "count": 409,
+          "total_time_us": 3775950.592,
+          "total_time_ms": 3775.950592,
+          "avg_time_us": 9232.153036674817,
+          "min_time_us": 89.888,
+          "max_time_us": 104491.393
+        }
+      },
+      "total_communication_time_us": 314565.844,
+      "total_communication_time_ms": 314.56584399999997,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8788087.577148438,
+      "communication_percentage": 3.579457319223376,
+      "rank": "rank1_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 92424.10900000007,
+          "total_time_ms": 92.42410900000007,
+          "avg_time_us": 114.9553594527364,
+          "min_time_us": 55.297,
+          "max_time_us": 400.466
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 50653.05600000001,
+          "total_time_ms": 50.653056000000014,
+          "avg_time_us": 124.14964705882356,
+          "min_time_us": 56.8,
+          "max_time_us": 246.778
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 151726.07199999984,
+          "total_time_ms": 151.72607199999985,
+          "avg_time_us": 124.2637772317771,
+          "min_time_us": 51.33,
+          "max_time_us": 3166.752
+        },
+        "reduce_scatter_kernel": {
+          "count": 269,
+          "total_time_us": 1200935.7890000006,
+          "total_time_ms": 1200.9357890000006,
+          "avg_time_us": 4464.4453122676605,
+          "min_time_us": 666.939,
+          "max_time_us": 23150.574
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 335870.32000000024,
+          "total_time_ms": 335.8703200000002,
+          "avg_time_us": 2469.634705882355,
+          "min_time_us": 1460.695,
+          "max_time_us": 5632.573
+        },
+        "all_reduce_kernel": {
+          "count": 411,
+          "total_time_us": 3836961.6310000005,
+          "total_time_ms": 3836.9616310000006,
+          "avg_time_us": 9335.673068126522,
+          "min_time_us": 87.264,
+          "max_time_us": 100594.981
+        }
+      },
+      "total_communication_time_us": 294803.23699999996,
+      "total_communication_time_ms": 294.80323699999997,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8702696.345703125,
+      "communication_percentage": 3.3874930859279755,
+      "rank": "rank2_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 86673.81199999989,
+          "total_time_ms": 86.67381199999988,
+          "avg_time_us": 107.80324875621876,
+          "min_time_us": 54.195,
+          "max_time_us": 317.576
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 45900.195,
+          "total_time_ms": 45.900195,
+          "avg_time_us": 112.50047794117647,
+          "min_time_us": 56.62,
+          "max_time_us": 283.82
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 154838.13099999988,
+          "total_time_ms": 154.8381309999999,
+          "avg_time_us": 126.812556101556,
+          "min_time_us": 54.075,
+          "max_time_us": 3131.593
+        },
+        "reduce_scatter_kernel": {
+          "count": 268,
+          "total_time_us": 1251200.5210000006,
+          "total_time_ms": 1251.2005210000007,
+          "avg_time_us": 4668.658660447763,
+          "min_time_us": 636.737,
+          "max_time_us": 24717.556
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 371756.03500000003,
+          "total_time_ms": 371.75603500000005,
+          "avg_time_us": 2733.5002573529414,
+          "min_time_us": 1470.849,
+          "max_time_us": 5538.532
+        },
+        "all_reduce_kernel": {
+          "count": 408,
+          "total_time_us": 3684116.992000001,
+          "total_time_ms": 3684.116992000001,
+          "avg_time_us": 9029.698509803924,
+          "min_time_us": 23.232,
+          "max_time_us": 52445.803
+        }
+      },
+      "total_communication_time_us": 287412.1379999998,
+      "total_communication_time_ms": 287.4121379999998,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8621853.434570312,
+      "communication_percentage": 3.3335307794445654,
+      "rank": "rank3_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 89897.03500000003,
+          "total_time_ms": 89.89703500000003,
+          "avg_time_us": 111.81223258706471,
+          "min_time_us": 54.185,
+          "max_time_us": 322.684
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 48035.406,
+          "total_time_ms": 48.035406,
+          "avg_time_us": 117.73383823529413,
+          "min_time_us": 56.639,
+          "max_time_us": 288.386
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 147267.23200000028,
+          "total_time_ms": 147.2672320000003,
+          "avg_time_us": 120.61198361998385,
+          "min_time_us": 51.861,
+          "max_time_us": 2960.199
+        },
+        "reduce_scatter_kernel": {
+          "count": 268,
+          "total_time_us": 1307751.5720000004,
+          "total_time_ms": 1307.7515720000004,
+          "avg_time_us": 4879.67004477612,
+          "min_time_us": 753.498,
+          "max_time_us": 24510.164
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 344356.1279999999,
+          "total_time_ms": 344.3561279999999,
+          "avg_time_us": 2532.030352941176,
+          "min_time_us": 1537.749,
+          "max_time_us": 4651.775
+        },
+        "all_reduce_kernel": {
+          "count": 407,
+          "total_time_us": 3629250.9809999987,
+          "total_time_ms": 3629.250980999999,
+          "avg_time_us": 8917.078577395574,
+          "min_time_us": 69.215,
+          "max_time_us": 52758.349
+        }
+      },
+      "total_communication_time_us": 285199.6730000003,
+      "total_communication_time_ms": 285.1996730000003,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8571950.514648438,
+      "communication_percentage": 3.3271269183440597,
+      "rank": "rank4_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 84370.68900000001,
+          "total_time_ms": 84.37068900000001,
+          "avg_time_us": 104.93866791044778,
+          "min_time_us": 52.953,
+          "max_time_us": 307.144
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 44502.292999999954,
+          "total_time_ms": 44.50229299999995,
+          "avg_time_us": 109.07424754901949,
+          "min_time_us": 56.008,
+          "max_time_us": 280.893
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 150050.90199999997,
+          "total_time_ms": 150.05090199999998,
+          "avg_time_us": 122.89181162981161,
+          "min_time_us": 50.027,
+          "max_time_us": 3327.849
+        },
+        "reduce_scatter_kernel": {
+          "count": 268,
+          "total_time_us": 1220447.9750000003,
+          "total_time_ms": 1220.4479750000003,
+          "avg_time_us": 4553.9103544776135,
+          "min_time_us": 662.879,
+          "max_time_us": 23305.194
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 357881.06500000024,
+          "total_time_ms": 357.88106500000026,
+          "avg_time_us": 2631.4784191176486,
+          "min_time_us": 1421.566,
+          "max_time_us": 8933.879
+        },
+        "all_reduce_kernel": {
+          "count": 408,
+          "total_time_us": 3824959.283,
+          "total_time_ms": 3824.9592829999997,
+          "avg_time_us": 9374.900203431373,
+          "min_time_us": 81.857,
+          "max_time_us": 121475.437
+        }
+      },
+      "total_communication_time_us": 278923.88399999996,
+      "total_communication_time_ms": 278.923884,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8658602.01953125,
+      "communication_percentage": 3.2213500905900285,
+      "rank": "rank5_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 94948.31899999992,
+          "total_time_ms": 94.94831899999991,
+          "avg_time_us": 118.09492412935313,
+          "min_time_us": 55.978,
+          "max_time_us": 462.633
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 52076.20500000004,
+          "total_time_ms": 52.07620500000004,
+          "avg_time_us": 127.63775735294126,
+          "min_time_us": 66.058,
+          "max_time_us": 361.889
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 159053.27800000002,
+          "total_time_ms": 159.05327800000003,
+          "avg_time_us": 130.26476494676496,
+          "min_time_us": 51.058,
+          "max_time_us": 3548.024
+        },
+        "reduce_scatter_kernel": {
+          "count": 268,
+          "total_time_us": 1253087.808,
+          "total_time_ms": 1253.087808,
+          "avg_time_us": 4675.700776119403,
+          "min_time_us": 749.441,
+          "max_time_us": 22953.478
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 327233.26199999993,
+          "total_time_ms": 327.2332619999999,
+          "avg_time_us": 2406.126926470588,
+          "min_time_us": 1490.339,
+          "max_time_us": 6561.643
+        },
+        "all_reduce_kernel": {
+          "count": 407,
+          "total_time_us": 3654743.9649999975,
+          "total_time_ms": 3654.7439649999974,
+          "avg_time_us": 8979.714901719895,
+          "min_time_us": 82.656,
+          "max_time_us": 52629.589
+        }
+      },
+      "total_communication_time_us": 306077.80199999997,
+      "total_communication_time_ms": 306.07780199999996,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8630418.713867188,
+      "communication_percentage": 3.5465000267970797,
+      "rank": "rank6_trace"
+    },
+    {
+      "operation_stats": {
+        "reduce_scatter": {
+          "count": 804,
+          "total_time_us": 87408.451,
+          "total_time_ms": 87.408451,
+          "avg_time_us": 108.7169788557214,
+          "min_time_us": 53.453,
+          "max_time_us": 372.98
+        },
+        "all_gather": {
+          "count": 408,
+          "total_time_us": 44880.498999999996,
+          "total_time_ms": 44.88049899999999,
+          "avg_time_us": 110.00122303921567,
+          "min_time_us": 56.569,
+          "max_time_us": 226.047
+        },
+        "all_reduce": {
+          "count": 1221,
+          "total_time_us": 158284.6659999998,
+          "total_time_ms": 158.2846659999998,
+          "avg_time_us": 129.63527108927093,
+          "min_time_us": 51.009,
+          "max_time_us": 3343.159
+        },
+        "reduce_scatter_kernel": {
+          "count": 269,
+          "total_time_us": 810432.8679999999,
+          "total_time_ms": 810.4328679999999,
+          "avg_time_us": 3012.7615910780664,
+          "min_time_us": 638.047,
+          "max_time_us": 23166.85
+        },
+        "all_gather_kernel": {
+          "count": 136,
+          "total_time_us": 364675.741,
+          "total_time_ms": 364.67574099999996,
+          "avg_time_us": 2681.4392720588235,
+          "min_time_us": 1410.718,
+          "max_time_us": 5042.873
+        },
+        "all_reduce_kernel": {
+          "count": 411,
+          "total_time_us": 1453198.1450000003,
+          "total_time_ms": 1453.1981450000003,
+          "avg_time_us": 3535.76190997567,
+          "min_time_us": 69.984,
+          "max_time_us": 33615.283
+        }
+      },
+      "total_communication_time_us": 290573.6159999998,
+      "total_communication_time_ms": 290.5736159999998,
+      "total_communication_count": 2433,
+      "total_trace_time_us": 8715739.609375,
+      "communication_percentage": 3.3338951026880967,
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>fsdp</h3>
+                <div class="metric-details">
+                    <pre>{
+  "avg_fsdp_overhead_percentage": 0.0,
+  "avg_fsdp_time_ms": 0.0,
+  "avg_communication_time_ms": 0.0,
+  "avg_copy_overhead_ms": 0.0,
+  "operation_breakdown": {},
+  "per_rank_stats": [
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8581.064340820312,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank0_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8788.087577148437,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank1_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8702.696345703125,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank2_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8621.853434570312,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank3_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8571.950514648437,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank4_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8658.60201953125,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank5_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8630.418713867188,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank6_trace"
+    },
+    {
+      "total_fsdp_time_ms": 0.0,
+      "total_trace_time_ms": 8715.739609375,
+      "fsdp_overhead_percentage": 0.0,
+      "communication_time_ms": 0.0,
+      "copy_overhead_ms": 0.0,
+      "operation_breakdown": {},
+      "layer_breakdown": {},
+      "num_layers": 0,
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>gpu_utilization</h3>
+                <div class="metric-details">
+                    <pre>{
+  "avg_gpu_utilization_pct": 74.52,
+  "avg_kernel_utilization_pct": 74.2,
+  "avg_memcpy_utilization_pct": 0.31,
+  "avg_idle_percentage": 25.48,
+  "avg_kernel_launches": 51714.0,
+  "avg_memcpy_ops": 5566.0,
+  "device_info": {
+    "device_name": "NVIDIA A100-SXM4-40GB",
+    "total_memory_gb": 39.3812255859375,
+    "num_sms": 108,
+    "compute_capability": "8.0"
+  },
+  "per_rank_stats": [
+    {
+      "total_span_ms": 8089.873715820312,
+      "kernel_time_ms": 6384.696317382813,
+      "memcpy_time_ms": 25.4764794921875,
+      "total_busy_time_ms": 6410.172796875,
+      "idle_time_ms": 1679.7009189453124,
+      "kernel_utilization_pct": 78.92,
+      "memcpy_utilization_pct": 0.31,
+      "total_utilization_pct": 79.24,
+      "idle_percentage": 20.76,
+      "num_kernel_launches": 51663,
+      "num_memcpy_ops": 5565,
+      "rank": "rank0_trace"
+    },
+    {
+      "total_span_ms": 8184.867501953125,
+      "kernel_time_ms": 6462.492608398437,
+      "memcpy_time_ms": 25.621486328125,
+      "total_busy_time_ms": 6488.114094726562,
+      "idle_time_ms": 1696.7534072265626,
+      "kernel_utilization_pct": 78.96,
+      "memcpy_utilization_pct": 0.31,
+      "total_utilization_pct": 79.27,
+      "idle_percentage": 20.73,
+      "num_kernel_launches": 51735,
+      "num_memcpy_ops": 5567,
+      "rank": "rank1_trace"
+    },
+    {
+      "total_span_ms": 8233.401374023437,
+      "kernel_time_ms": 6425.2690546875,
+      "memcpy_time_ms": 25.6021826171875,
+      "total_busy_time_ms": 6450.871237304687,
+      "idle_time_ms": 1782.53013671875,
+      "kernel_utilization_pct": 78.04,
+      "memcpy_utilization_pct": 0.31,
+      "total_utilization_pct": 78.35,
+      "idle_percentage": 21.65,
+      "num_kernel_launches": 51727,
+      "num_memcpy_ops": 5569,
+      "rank": "rank2_trace"
+    },
+    {
+      "total_span_ms": 8099.777186523437,
+      "kernel_time_ms": 6365.761163085937,
+      "memcpy_time_ms": 25.638890625,
+      "total_busy_time_ms": 6391.400053710938,
+      "idle_time_ms": 1708.3771328125,
+      "kernel_utilization_pct": 78.59,
+      "memcpy_utilization_pct": 0.32,
+      "total_utilization_pct": 78.91,
+      "idle_percentage": 21.09,
+      "num_kernel_launches": 51728,
+      "num_memcpy_ops": 5566,
+      "rank": "rank3_trace"
+    },
+    {
+      "total_span_ms": 8105.12039453125,
+      "kernel_time_ms": 6310.210267578125,
+      "memcpy_time_ms": 25.55287890625,
+      "total_busy_time_ms": 6335.763146484375,
+      "idle_time_ms": 1769.357248046875,
+      "kernel_utilization_pct": 77.85,
+      "memcpy_utilization_pct": 0.32,
+      "total_utilization_pct": 78.17,
+      "idle_percentage": 21.83,
+      "num_kernel_launches": 51652,
+      "num_memcpy_ops": 5565,
+      "rank": "rank4_trace"
+    },
+    {
+      "total_span_ms": 8167.49005859375,
+      "kernel_time_ms": 6463.464790039063,
+      "memcpy_time_ms": 25.670923828125,
+      "total_busy_time_ms": 6489.135713867187,
+      "idle_time_ms": 1678.3543447265624,
+      "kernel_utilization_pct": 79.14,
+      "memcpy_utilization_pct": 0.31,
+      "total_utilization_pct": 79.45,
+      "idle_percentage": 20.55,
+      "num_kernel_launches": 51726,
+      "num_memcpy_ops": 5566,
+      "rank": "rank5_trace"
+    },
+    {
+      "total_span_ms": 8130.762108398438,
+      "kernel_time_ms": 6284.63805078125,
+      "memcpy_time_ms": 25.5655126953125,
+      "total_busy_time_ms": 6310.2035634765625,
+      "idle_time_ms": 1820.558544921875,
+      "kernel_utilization_pct": 77.29,
+      "memcpy_utilization_pct": 0.31,
+      "total_utilization_pct": 77.61,
+      "idle_percentage": 22.39,
+      "num_kernel_launches": 51738,
+      "num_memcpy_ops": 5565,
+      "rank": "rank6_trace"
+    },
+    {
+      "total_span_ms": 8221.855551757813,
+      "kernel_time_ms": 3684.533013671875,
+      "memcpy_time_ms": 25.5814853515625,
+      "total_busy_time_ms": 3710.1144990234375,
+      "idle_time_ms": 4511.741052734375,
+      "kernel_utilization_pct": 44.81,
+      "memcpy_utilization_pct": 0.31,
+      "total_utilization_pct": 45.13,
+      "idle_percentage": 54.87,
+      "num_kernel_launches": 51741,
+      "num_memcpy_ops": 5569,
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>kernel</h3>
+                <div class="metric-details">
+                    <pre>{
+  "avg_kernel_time_ms": 6047.63,
+  "avg_unique_kernels": 142.0,
+  "avg_kernel_launches": 51714.0,
+  "type_breakdown": {
+    "attention": {
+      "avg_count": 159.0,
+      "avg_time_ms": 5.51,
+      "avg_percentage": 0.1
+    },
+    "elementwise": {
+      "avg_count": 23986.0,
+      "avg_time_ms": 732.11,
+      "avg_percentage": 12.52
+    },
+    "embedding": {
+      "avg_count": 132.0,
+      "avg_time_ms": 9.22,
+      "avg_percentage": 0.16
+    },
+    "gemm": {
+      "avg_count": 24509.6,
+      "avg_time_ms": 159.78,
+      "avg_percentage": 2.73
+    },
+    "memory": {
+      "avg_count": 673.4,
+      "avg_time_ms": 18.53,
+      "avg_percentage": 0.32
+    },
+    "nccl": {
+      "avg_count": 188.0,
+      "avg_time_ms": 414.92,
+      "avg_percentage": 7.11
+    },
+    "other": {
+      "avg_count": 918.9,
+      "avg_time_ms": 55.66,
+      "avg_percentage": 0.96
+    },
+    "reduction": {
+      "avg_count": 1146.9,
+      "avg_time_ms": 4651.89,
+      "avg_percentage": 76.11
+    }
+  },
+  "top_kernels": [
+    {
+      "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+      "count": 326,
+      "total_time_ms": 2464.253516999999,
+      "avg_time_us": 7559.059868098157,
+      "percentage": 38.6,
+      "type": "reduction"
+    },
+    {
+      "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+      "count": 268,
+      "total_time_ms": 1293.8631550000007,
+      "avg_time_us": 4827.8475932835845,
+      "percentage": 20.27,
+      "type": "reduction"
+    },
+    {
+      "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+      "count": 78,
+      "total_time_ms": 1244.785934,
+      "avg_time_us": 15958.794025641024,
+      "percentage": 19.5,
+      "type": "reduction"
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+      "count": 6857,
+      "total_time_ms": 527.0167929999999,
+      "avg_time_us": 76.85821685868454,
+      "percentage": 8.25,
+      "type": "elementwise"
+    },
+    {
+      "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+      "count": 136,
+      "total_time_ms": 345.808113,
+      "avg_time_us": 2542.706713235294,
+      "percentage": 5.42,
+      "type": "nccl"
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+      "count": 5084,
+      "total_time_ms": 150.00561300000007,
+      "avg_time_us": 29.50543135326516,
+      "percentage": 2.35,
+      "type": "elementwise"
+    },
+    {
+      "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+      "count": 52,
+      "total_time_ms": 61.932179000000005,
+      "avg_time_us": 1191.0034423076925,
+      "percentage": 0.97,
+      "type": "nccl"
+    },
+    {
+      "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+      "count": 122,
+      "total_time_ms": 30.555882000000008,
+      "avg_time_us": 250.45804918032795,
+      "percentage": 0.48,
+      "type": "other"
+    },
+    {
+      "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+      "count": 4019,
+      "total_time_ms": 27.046154000000048,
+      "avg_time_us": 6.729573028116459,
+      "percentage": 0.42,
+      "type": "gemm"
+    },
+    {
+      "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+      "count": 3764,
+      "total_time_ms": 21.596138000000018,
+      "avg_time_us": 5.737549946865042,
+      "percentage": 0.34,
+      "type": "gemm"
+    }
+  ],
+  "per_rank_stats": [
+    {
+      "total_kernel_time_ms": 6384.6964400001125,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51663,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 326,
+          "total_time_ms": 2464.253516999999,
+          "avg_time_us": 7559.059868098157,
+          "percentage": 38.6,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 268,
+          "total_time_ms": 1293.8631550000007,
+          "avg_time_us": 4827.8475932835845,
+          "percentage": 20.27,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1244.785934,
+          "avg_time_us": 15958.794025641024,
+          "percentage": 19.5,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 527.0167929999999,
+          "avg_time_us": 76.85821685868454,
+          "percentage": 8.25,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 345.808113,
+          "avg_time_us": 2542.706713235294,
+          "percentage": 5.42,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 150.00561300000007,
+          "avg_time_us": 29.50543135326516,
+          "percentage": 2.35,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 61.932179000000005,
+          "avg_time_us": 1191.0034423076925,
+          "percentage": 0.97,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 122,
+          "total_time_ms": 30.555882000000008,
+          "avg_time_us": 250.45804918032795,
+          "percentage": 0.48,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 4019,
+          "total_time_ms": 27.046154000000048,
+          "avg_time_us": 6.729573028116459,
+          "percentage": 0.42,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3764,
+          "total_time_ms": 21.596138000000018,
+          "avg_time_us": 5.737549946865042,
+          "percentage": 0.34,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.514262999999997,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 732.1752009999816,
+          "percentage": 11.47
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.190893999999997,
+          "percentage": 0.14
+        },
+        "gemm": {
+          "count": 24512,
+          "total_time_ms": 159.46234800000198,
+          "percentage": 2.5
+        },
+        "memory": {
+          "count": 673,
+          "total_time_ms": 18.532484999999994,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 407.740292,
+          "percentage": 6.39
+        },
+        "other": {
+          "count": 868,
+          "total_time_ms": 42.81202300000003,
+          "percentage": 0.67
+        },
+        "reduction": {
+          "count": 1145,
+          "total_time_ms": 5009.2689340000115,
+          "percentage": 78.46
+        }
+      },
+      "rank": "rank0_trace"
+    },
+    {
+      "total_kernel_time_ms": 6462.492579999995,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51735,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 328,
+          "total_time_ms": 2574.068045999999,
+          "avg_time_us": 7847.768432926827,
+          "percentage": 39.83,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 269,
+          "total_time_ms": 1260.0881239999992,
+          "avg_time_us": 4684.3424684014835,
+          "percentage": 19.5,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1201.4829929999999,
+          "avg_time_us": 15403.628115384612,
+          "percentage": 18.59,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 526.890636999997,
+          "avg_time_us": 76.83981872538966,
+          "percentage": 8.15,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 366.62065900000005,
+          "avg_time_us": 2695.7401397058825,
+          "percentage": 5.67,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 149.64366099999876,
+          "avg_time_us": 29.434237018095747,
+          "percentage": 2.32,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 68.07995099999998,
+          "avg_time_us": 1309.2298269230766,
+          "percentage": 1.05,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 192,
+          "total_time_ms": 48.30488899999996,
+          "avg_time_us": 251.58796354166645,
+          "percentage": 0.75,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 3998,
+          "total_time_ms": 27.05550000000004,
+          "avg_time_us": 6.767258629314667,
+          "percentage": 0.42,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3744,
+          "total_time_ms": 21.483468000000123,
+          "avg_time_us": 5.738105769230803,
+          "percentage": 0.33,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.501421999999997,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 731.8757169999999,
+          "percentage": 11.32
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.235211,
+          "percentage": 0.14
+        },
+        "gemm": {
+          "count": 24510,
+          "total_time_ms": 159.89466700000244,
+          "percentage": 2.47
+        },
+        "memory": {
+          "count": 674,
+          "total_time_ms": 18.568499999999947,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 434.70060999999987,
+          "percentage": 6.73
+        },
+        "other": {
+          "count": 938,
+          "total_time_ms": 60.59447999999992,
+          "percentage": 0.94
+        },
+        "reduction": {
+          "count": 1148,
+          "total_time_ms": 5042.121973000008,
+          "percentage": 78.02
+        }
+      },
+      "rank": "rank1_trace"
+    },
+    {
+      "total_kernel_time_ms": 6425.268891999991,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51727,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 330,
+          "total_time_ms": 2639.259394999999,
+          "avg_time_us": 7997.7557424242395,
+          "percentage": 41.08,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 269,
+          "total_time_ms": 1200.9357890000006,
+          "avg_time_us": 4464.4453122676605,
+          "percentage": 18.69,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1196.3954600000002,
+          "avg_time_us": 15338.403333333335,
+          "percentage": 18.62,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 526.945167000001,
+          "avg_time_us": 76.84777118273311,
+          "percentage": 8.2,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 335.8703200000002,
+          "avg_time_us": 2469.634705882355,
+          "percentage": 5.23,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 149.6465329999991,
+          "avg_time_us": 29.434801927615872,
+          "percentage": 2.33,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 60.035714000000006,
+          "avg_time_us": 1154.5329615384617,
+          "percentage": 0.93,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 192,
+          "total_time_ms": 48.23003699999998,
+          "avg_time_us": 251.19810937499992,
+          "percentage": 0.75,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 3998,
+          "total_time_ms": 27.036124000000036,
+          "avg_time_us": 6.76241220610306,
+          "percentage": 0.42,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3748,
+          "total_time_ms": 21.404199000000027,
+          "avg_time_us": 5.710832177161159,
+          "percentage": 0.33,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.499541999999995,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 731.9515889999942,
+          "percentage": 11.39
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.241891999999996,
+          "percentage": 0.14
+        },
+        "gemm": {
+          "count": 24500,
+          "total_time_ms": 159.66051400000288,
+          "percentage": 2.48
+        },
+        "memory": {
+          "count": 674,
+          "total_time_ms": 18.51738799999999,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 395.9060340000001,
+          "percentage": 6.16
+        },
+        "other": {
+          "count": 938,
+          "total_time_ms": 60.50341999999995,
+          "percentage": 0.94
+        },
+        "reduction": {
+          "count": 1150,
+          "total_time_ms": 5043.988513000003,
+          "percentage": 78.5
+        }
+      },
+      "rank": "rank2_trace"
+    },
+    {
+      "total_kernel_time_ms": 6365.760755000052,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51728,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 327,
+          "total_time_ms": 2434.6030939999996,
+          "avg_time_us": 7445.26940061162,
+          "percentage": 38.25,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 268,
+          "total_time_ms": 1251.2005210000007,
+          "avg_time_us": 4668.658660447763,
+          "percentage": 19.66,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1249.3180260000004,
+          "avg_time_us": 16016.897769230773,
+          "percentage": 19.63,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 527.1080199999996,
+          "avg_time_us": 76.87152107335562,
+          "percentage": 8.28,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 371.75603500000005,
+          "avg_time_us": 2733.5002573529414,
+          "percentage": 5.84,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 149.5371979999997,
+          "avg_time_us": 29.41329622344605,
+          "percentage": 2.35,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 66.72360100000002,
+          "avg_time_us": 1283.1461730769233,
+          "percentage": 1.05,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 192,
+          "total_time_ms": 48.094947999999974,
+          "avg_time_us": 250.4945208333332,
+          "percentage": 0.76,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 4010,
+          "total_time_ms": 27.054198000000028,
+          "avg_time_us": 6.746682793017464,
+          "percentage": 0.42,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3754,
+          "total_time_ms": 21.52746000000004,
+          "avg_time_us": 5.734539158231231,
+          "percentage": 0.34,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.508933999999997,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 732.256992999983,
+          "percentage": 11.5
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.215627999999997,
+          "percentage": 0.14
+        },
+        "gemm": {
+          "count": 24506,
+          "total_time_ms": 159.94480700000148,
+          "percentage": 2.51
+        },
+        "memory": {
+          "count": 673,
+          "total_time_ms": 18.531244999999984,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 438.47963600000026,
+          "percentage": 6.89
+        },
+        "other": {
+          "count": 938,
+          "total_time_ms": 60.36662799999993,
+          "percentage": 0.95
+        },
+        "reduction": {
+          "count": 1146,
+          "total_time_ms": 4941.456883999999,
+          "percentage": 77.63
+        }
+      },
+      "rank": "rank3_trace"
+    },
+    {
+      "total_kernel_time_ms": 6310.21019900002,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51652,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 326,
+          "total_time_ms": 2355.4710799999975,
+          "avg_time_us": 7225.371411042938,
+          "percentage": 37.33,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 268,
+          "total_time_ms": 1307.7515720000004,
+          "avg_time_us": 4879.67004477612,
+          "percentage": 20.72,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1273.1952020000003,
+          "avg_time_us": 16323.015410256414,
+          "percentage": 20.18,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 527.1921129999992,
+          "avg_time_us": 76.88378489135178,
+          "percentage": 8.35,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 344.3561279999999,
+          "avg_time_us": 2532.030352941176,
+          "percentage": 5.46,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 149.97744999999944,
+          "avg_time_us": 29.499891817466448,
+          "percentage": 2.38,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 57.82429800000001,
+          "avg_time_us": 1112.005730769231,
+          "percentage": 0.92,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 109,
+          "total_time_ms": 27.321339000000016,
+          "avg_time_us": 250.65448623853223,
+          "percentage": 0.43,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 4007,
+          "total_time_ms": 26.99732300000004,
+          "avg_time_us": 6.737540054903929,
+          "percentage": 0.43,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3766,
+          "total_time_ms": 21.63243700000002,
+          "avg_time_us": 5.744141529474248,
+          "percentage": 0.34,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.509623999999999,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 732.3854100000069,
+          "percentage": 11.61
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.254139,
+          "percentage": 0.15
+        },
+        "gemm": {
+          "count": 24514,
+          "total_time_ms": 159.6627240000016,
+          "percentage": 2.53
+        },
+        "memory": {
+          "count": 673,
+          "total_time_ms": 18.51243799999999,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 402.1804259999996,
+          "percentage": 6.37
+        },
+        "other": {
+          "count": 855,
+          "total_time_ms": 39.60166400000003,
+          "percentage": 0.63
+        },
+        "reduction": {
+          "count": 1145,
+          "total_time_ms": 4943.103774000009,
+          "percentage": 78.34
+        }
+      },
+      "rank": "rank4_trace"
+    },
+    {
+      "total_kernel_time_ms": 6463.464739000003,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51726,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 327,
+          "total_time_ms": 2574.4536600000015,
+          "avg_time_us": 7872.946972477069,
+          "percentage": 39.83,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1249.517591,
+          "avg_time_us": 16019.456294871796,
+          "percentage": 19.33,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 268,
+          "total_time_ms": 1220.4479750000003,
+          "avg_time_us": 4553.9103544776135,
+          "percentage": 18.88,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 527.3970779999988,
+          "avg_time_us": 76.9136762432549,
+          "percentage": 8.16,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 357.88106500000026,
+          "avg_time_us": 2631.4784191176486,
+          "percentage": 5.54,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 150.05481399999945,
+          "avg_time_us": 29.515108969315392,
+          "percentage": 2.32,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 68.09126599999999,
+          "avg_time_us": 1309.4474230769229,
+          "percentage": 1.05,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 192,
+          "total_time_ms": 48.152903000000016,
+          "avg_time_us": 250.79636979166673,
+          "percentage": 0.75,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 4004,
+          "total_time_ms": 27.00012799999999,
+          "avg_time_us": 6.7432887112887085,
+          "percentage": 0.42,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3790,
+          "total_time_ms": 21.72652800000003,
+          "avg_time_us": 5.732593139841697,
+          "percentage": 0.34,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.519224999999997,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 732.6421500000054,
+          "percentage": 11.34
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.206616000000002,
+          "percentage": 0.14
+        },
+        "gemm": {
+          "count": 24504,
+          "total_time_ms": 159.67194000000103,
+          "percentage": 2.47
+        },
+        "memory": {
+          "count": 673,
+          "total_time_ms": 18.528077999999987,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 425.9723310000002,
+          "percentage": 6.59
+        },
+        "other": {
+          "count": 938,
+          "total_time_ms": 60.42507400000001,
+          "percentage": 0.93
+        },
+        "reduction": {
+          "count": 1146,
+          "total_time_ms": 5051.499324999999,
+          "percentage": 78.15
+        }
+      },
+      "rank": "rank5_trace"
+    },
+    {
+      "total_kernel_time_ms": 6284.637688000002,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51738,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 326,
+          "total_time_ms": 2488.6672299999977,
+          "avg_time_us": 7633.948558282202,
+          "percentage": 39.6,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 268,
+          "total_time_ms": 1253.087808,
+          "avg_time_us": 4675.700776119403,
+          "percentage": 19.94,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1164.771101,
+          "avg_time_us": 14932.962833333333,
+          "percentage": 18.53,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 526.4378069999982,
+          "avg_time_us": 76.77377964124226,
+          "percentage": 8.38,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 327.2332619999999,
+          "avg_time_us": 2406.126926470588,
+          "percentage": 5.21,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 149.76039799999978,
+          "avg_time_us": 29.457198662470454,
+          "percentage": 2.38,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 57.715354999999974,
+          "avg_time_us": 1109.9106730769226,
+          "percentage": 0.92,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 192,
+          "total_time_ms": 48.29793499999998,
+          "avg_time_us": 251.55174479166658,
+          "percentage": 0.77,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 4011,
+          "total_time_ms": 27.285073999999998,
+          "avg_time_us": 6.802561455996011,
+          "percentage": 0.43,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3792,
+          "total_time_ms": 21.85192400000003,
+          "avg_time_us": 5.762638185654016,
+          "percentage": 0.35,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.52635,
+          "percentage": 0.09
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 731.6476900000023,
+          "percentage": 11.64
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.222950999999997,
+          "percentage": 0.15
+        },
+        "gemm": {
+          "count": 24517,
+          "total_time_ms": 160.27488800000134,
+          "percentage": 2.55
+        },
+        "memory": {
+          "count": 673,
+          "total_time_ms": 18.512191000000005,
+          "percentage": 0.29
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 384.94861700000007,
+          "percentage": 6.13
+        },
+        "other": {
+          "count": 938,
+          "total_time_ms": 60.53932799999989,
+          "percentage": 0.96
+        },
+        "reduction": {
+          "count": 1145,
+          "total_time_ms": 4913.965672999998,
+          "percentage": 78.19
+        }
+      },
+      "rank": "rank6_trace"
+    },
+    {
+      "total_kernel_time_ms": 3684.5328490000766,
+      "num_unique_kernels": 142,
+      "total_kernel_launches": 51741,
+      "top_kernels": [
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 78,
+          "total_time_ms": 1038.897834,
+          "avg_time_us": 13319.203,
+          "percentage": 28.2,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_ReduceScatter_Sum_bf16_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 269,
+          "total_time_ms": 810.4328679999999,
+          "avg_time_us": 3012.7615910780664,
+          "percentage": 22.0,
+          "type": "reduction"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c1...",
+          "count": 6857,
+          "total_time_ms": 527.1880899999986,
+          "avg_time_us": 76.88319819162878,
+          "percentage": 14.31,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_AllReduce_Sum_bf16_TREE_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 330,
+          "total_time_ms": 414.0046639999997,
+          "avg_time_us": 1254.559587878787,
+          "percentage": 11.24,
+          "type": "reduction"
+        },
+        {
+          "name": "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 136,
+          "total_time_ms": 364.67574099999996,
+          "avg_time_us": 2681.4392720588235,
+          "percentage": 9.9,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::B...",
+          "count": 5084,
+          "total_time_ms": 149.53841599999967,
+          "avg_time_us": 29.41353579858373,
+          "percentage": 4.06,
+          "type": "elementwise"
+        },
+        {
+          "name": "ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)",
+          "count": 52,
+          "total_time_ms": 64.74301100000001,
+          "avg_time_us": 1245.057903846154,
+          "percentage": 1.76,
+          "type": "nccl"
+        },
+        {
+          "name": "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(a...",
+          "count": 192,
+          "total_time_ms": 48.17970799999995,
+          "avg_time_us": 250.93597916666639,
+          "percentage": 1.31,
+          "type": "other"
+        },
+        {
+          "name": "ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_nt",
+          "count": 4009,
+          "total_time_ms": 27.114393000000035,
+          "avg_time_us": 6.763380643552017,
+          "percentage": 0.74,
+          "type": "gemm"
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_64x64_64x6_tn_align8>(...",
+          "count": 3780,
+          "total_time_ms": 21.702625000000044,
+          "avg_time_us": 5.741435185185197,
+          "percentage": 0.59,
+          "type": "gemm"
+        }
+      ],
+      "type_breakdown": {
+        "attention": {
+          "count": 159,
+          "total_time_ms": 5.516142999999999,
+          "percentage": 0.15
+        },
+        "elementwise": {
+          "count": 23986,
+          "total_time_ms": 731.9771110000058,
+          "percentage": 19.87
+        },
+        "embedding": {
+          "count": 132,
+          "total_time_ms": 9.207661000000003,
+          "percentage": 0.25
+        },
+        "gemm": {
+          "count": 24514,
+          "total_time_ms": 159.6939820000012,
+          "percentage": 4.33
+        },
+        "memory": {
+          "count": 674,
+          "total_time_ms": 18.53322099999999,
+          "percentage": 0.5
+        },
+        "nccl": {
+          "count": 188,
+          "total_time_ms": 429.418752,
+          "percentage": 11.65
+        },
+        "other": {
+          "count": 938,
+          "total_time_ms": 60.45605199999997,
+          "percentage": 1.64
+        },
+        "reduction": {
+          "count": 1150,
+          "total_time_ms": 2269.729927000004,
+          "percentage": 61.6
+        }
+      },
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>memory</h3>
+                <div class="metric-details">
+                    <pre>{
+  "peak_reserved_memory_gb": 16.432,
+  "peak_allocated_memory_gb": 15.5,
+  "peak_active_memory_gb": 15.5,
+  "avg_memory_efficiency": 0.941,
+  "avg_external_fragmentation": 0.0566,
+  "avg_internal_fragmentation": 0.0025,
+  "total_segments": 4465,
+  "total_blocks": 18429,
+  "per_rank_stats": [
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2308,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 365
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank0"
+    },
+    {
+      "total_reserved_bytes": 17643339776,
+      "total_reserved_gb": 16.431640625,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 559,
+      "num_blocks": 2307,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 364
+      },
+      "avg_segment_size_mb": 30.100178890876567,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0567,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.9409,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank1"
+    },
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2298,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 355
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank2"
+    },
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2297,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 354
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank3"
+    },
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2318,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 375
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank4"
+    },
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2294,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 351
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank5"
+    },
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2302,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 359
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank6"
+    },
+    {
+      "total_reserved_bytes": 17641242624,
+      "total_reserved_gb": 16.4296875,
+      "total_allocated_bytes": 16642821120,
+      "total_allocated_gb": 15.499835014343262,
+      "total_active_bytes": 16642821120,
+      "total_active_gb": 15.499835014343262,
+      "total_requested_bytes": 16600934885,
+      "total_requested_gb": 15.460825418122113,
+      "num_segments": 558,
+      "num_blocks": 2305,
+      "block_states": {
+        "active_allocated": 1943,
+        "active_pending_free": 0,
+        "inactive": 362
+      },
+      "avg_segment_size_mb": 30.150537634408604,
+      "max_segment_size_mb": 400.0,
+      "min_segment_size_mb": 2.0,
+      "external_fragmentation_ratio": 0.0566,
+      "internal_fragmentation_ratio": 0.0025,
+      "memory_efficiency": 0.941,
+      "num_allocations": 0,
+      "num_frees": 0,
+      "avg_allocation_size_mb": 0,
+      "max_allocation_size_mb": 0,
+      "allocator_settings": {
+        "PYTORCH_CUDA_ALLOC_CONF": "",
+        "max_split_size": -1,
+        "garbage_collection_threshold": 0.0,
+        "expandable_segments": false,
+        "pinned_num_register_threads": 1,
+        "release_lock_on_cudamalloc": false,
+        "pinned_use_cuda_host_register": false,
+        "graph_capture_record_stream_reuse": false,
+        "roundup_power2_divisions": {
+          "1": 0,
+          "2": 0,
+          "4": 0,
+          "8": 0,
+          "16": 0,
+          "32": 0,
+          "64": 0,
+          "128": 0,
+          "256": 0,
+          "512": 0,
+          "1024": 0,
+          "2048": 0,
+          "4096": 0,
+          "8192": 0,
+          "16384": 0,
+          "32768": 0
+        }
+      },
+      "rank": "rank7"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>overlap</h3>
+                <div class="metric-details">
+                    <pre>{
+  "avg_overlap_efficiency": 0.0,
+  "avg_compute_time_ms": 986.93,
+  "avg_communication_time_ms": 5060.71,
+  "avg_overlap_time_ms": 0.0,
+  "avg_bubble_time_ms": 2061.0,
+  "total_compute_kernels": 406791,
+  "total_comm_kernels": 6919,
+  "per_rank_stats": [
+    {
+      "compute_time_us": 973766.482421875,
+      "compute_time_ms": 973.766482421875,
+      "communication_time_us": 5410929.8349609375,
+      "communication_time_ms": 5410.929834960937,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1672527.83984375,
+      "bubble_time_ms": 1672.52783984375,
+      "total_kernel_time_ms": 6384.696317382813,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.09,
+      "comm_percentage": 67.16,
+      "bubble_percentage": 20.76,
+      "num_compute_kernels": 50800,
+      "num_comm_kernels": 863,
+      "rank": "rank0_trace"
+    },
+    {
+      "compute_time_us": 991753.283203125,
+      "compute_time_ms": 991.753283203125,
+      "communication_time_us": 5470739.3251953125,
+      "communication_time_ms": 5470.739325195313,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1674800.6025390625,
+      "bubble_time_ms": 1674.8006025390625,
+      "total_kernel_time_ms": 6462.492608398437,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.19,
+      "comm_percentage": 67.23,
+      "bubble_percentage": 20.58,
+      "num_compute_kernels": 50869,
+      "num_comm_kernels": 866,
+      "rank": "rank1_trace"
+    },
+    {
+      "compute_time_us": 991465.6044921875,
+      "compute_time_ms": 991.4656044921875,
+      "communication_time_us": 5433803.4501953125,
+      "communication_time_ms": 5433.8034501953125,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1752437.513671875,
+      "bubble_time_ms": 1752.437513671875,
+      "total_kernel_time_ms": 6425.2690546875,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.12,
+      "comm_percentage": 66.45,
+      "bubble_percentage": 21.43,
+      "num_compute_kernels": 50859,
+      "num_comm_kernels": 868,
+      "rank": "rank2_trace"
+    },
+    {
+      "compute_time_us": 991964.0078125,
+      "compute_time_ms": 991.9640078125,
+      "communication_time_us": 5373797.1552734375,
+      "communication_time_ms": 5373.797155273437,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1728229.5830078125,
+      "bubble_time_ms": 1728.2295830078126,
+      "total_kernel_time_ms": 6365.761163085937,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.26,
+      "comm_percentage": 66.39,
+      "bubble_percentage": 21.35,
+      "num_compute_kernels": 50864,
+      "num_comm_kernels": 864,
+      "rank": "rank3_trace"
+    },
+    {
+      "compute_time_us": 971027.279296875,
+      "compute_time_ms": 971.027279296875,
+      "communication_time_us": 5339182.98828125,
+      "communication_time_ms": 5339.18298828125,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1740591.4794921875,
+      "bubble_time_ms": 1740.5914794921875,
+      "total_kernel_time_ms": 6310.210267578125,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.06,
+      "comm_percentage": 66.32,
+      "bubble_percentage": 21.62,
+      "num_compute_kernels": 50789,
+      "num_comm_kernels": 863,
+      "rank": "rank4_trace"
+    },
+    {
+      "compute_time_us": 992085.189453125,
+      "compute_time_ms": 992.085189453125,
+      "communication_time_us": 5471379.6005859375,
+      "communication_time_ms": 5471.379600585938,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1631673.1015625,
+      "bubble_time_ms": 1631.6731015625,
+      "total_kernel_time_ms": 6463.464790039063,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.26,
+      "comm_percentage": 67.59,
+      "bubble_percentage": 20.16,
+      "num_compute_kernels": 50862,
+      "num_comm_kernels": 864,
+      "rank": "rank5_trace"
+    },
+    {
+      "compute_time_us": 991857.658203125,
+      "compute_time_ms": 991.857658203125,
+      "communication_time_us": 5292780.392578125,
+      "communication_time_ms": 5292.780392578125,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 1790800.4267578125,
+      "bubble_time_ms": 1790.8004267578126,
+      "total_kernel_time_ms": 6284.63805078125,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.28,
+      "comm_percentage": 65.54,
+      "bubble_percentage": 22.18,
+      "num_compute_kernels": 50875,
+      "num_comm_kernels": 863,
+      "rank": "rank6_trace"
+    },
+    {
+      "compute_time_us": 991483.2529296875,
+      "compute_time_ms": 991.4832529296875,
+      "communication_time_us": 2693049.7607421875,
+      "communication_time_ms": 2693.0497607421876,
+      "overlap_time_us": 0.0,
+      "overlap_time_ms": 0.0,
+      "bubble_time_us": 4496918.12109375,
+      "bubble_time_ms": 4496.91812109375,
+      "total_kernel_time_ms": 3684.533013671875,
+      "overlap_efficiency": 0.0,
+      "compute_percentage": 12.12,
+      "comm_percentage": 32.92,
+      "bubble_percentage": 54.96,
+      "num_compute_kernels": 50873,
+      "num_comm_kernels": 868,
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>straggler</h3>
+                <div class="metric-details">
+                    <pre>{
+  "has_stragglers": false,
+  "num_stragglers": 0,
+  "stragglers": [],
+  "duration_stats": {
+    "mean": 8658.8,
+    "std": 73.33,
+    "min": 8571.95,
+    "max": 8788.09,
+    "range": 216.14,
+    "cv": 0.85
+  },
+  "kernel_time_stats": {
+    "mean": 6047.63,
+    "std": 957.06,
+    "min": 3684.53,
+    "max": 6463.46,
+    "range": 2778.93,
+    "cv": 15.83
+  },
+  "communication_time_stats": {
+    "mean": 10315.61,
+    "std": 1943.44,
+    "min": 5513.11,
+    "max": 11143.91,
+    "range": 5630.81,
+    "cv": 18.84
+  },
+  "slowest_rank": {
+    "rank": "rank1_trace",
+    "duration_ms": 8788.087577148437
+  },
+  "fastest_rank": {
+    "rank": "rank4_trace",
+    "duration_ms": 8571.950514648437
+  },
+  "load_imbalance_percentage": 2.5,
+  "sync_overhead_ms": 1034.31,
+  "coefficient_of_variation": 0.85,
+  "per_rank_metrics": [
+    {
+      "total_duration_ms": 8581.064340820312,
+      "kernel_time_ms": 6384.6964400001125,
+      "communication_time_ms": 11048.845300000039,
+      "rank": "rank0_trace"
+    },
+    {
+      "total_duration_ms": 8788.087577148437,
+      "kernel_time_ms": 6462.492579999995,
+      "communication_time_ms": 11128.41751100001,
+      "rank": "rank1_trace"
+    },
+    {
+      "total_duration_ms": 8702.696345703125,
+      "kernel_time_ms": 6425.268891999991,
+      "communication_time_ms": 10999.467980999974,
+      "rank": "rank2_trace"
+    },
+    {
+      "total_duration_ms": 8621.853434570312,
+      "kernel_time_ms": 6365.760755000052,
+      "communication_time_ms": 10956.838765999997,
+      "rank": "rank3_trace"
+    },
+    {
+      "total_duration_ms": 8571.950514648437,
+      "kernel_time_ms": 6310.21019900002,
+      "communication_time_ms": 10905.552994999987,
+      "rank": "rank4_trace"
+    },
+    {
+      "total_duration_ms": 8658.60201953125,
+      "kernel_time_ms": 6463.464739000003,
+      "communication_time_ms": 11143.913842999984,
+      "rank": "rank5_trace"
+    },
+    {
+      "total_duration_ms": 8630.418713867188,
+      "kernel_time_ms": 6284.637688000002,
+      "communication_time_ms": 10828.759398,
+      "rank": "rank6_trace"
+    },
+    {
+      "total_duration_ms": 8715.739609375,
+      "kernel_time_ms": 3684.5328490000766,
+      "communication_time_ms": 5513.105656000006,
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>throughput</h3>
+                <div class="metric-details">
+                    <pre>{
+  "throughput_tokens_per_sec": 473.04467796648987,
+  "tokens_per_step": 4096,
+  "iteration_time_sec": 8.658801569458006,
+  "num_ranks": 8,
+  "per_rank_throughput": [
+    477.33006504976754,
+    466.08547810228714,
+    470.6587288918063,
+    475.07186605337284,
+    477.8375695240455,
+    473.05557996090283,
+    474.60037986553624,
+    469.95437949915095
+  ],
+  "per_rank_iteration_time": [
+    8.581064340820312,
+    8.788087577148438,
+    8.702696345703124,
+    8.621853434570312,
+    8.571950514648437,
+    8.65860201953125,
+    8.630418713867188,
+    8.715739609375
+  ],
+  "min_iteration_time": 8.571950514648437,
+  "max_iteration_time": 8.788087577148438,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>training_phases</h3>
+                <div class="metric-details">
+                    <pre>{
+  "avg_forward_time_ms": 6792.94,
+  "avg_forward_percentage": 21.35,
+  "avg_backward_time_ms": 5319.68,
+  "avg_backward_percentage": 16.73,
+  "avg_optimizer_time_ms": 14668.07,
+  "avg_optimizer_percentage": 46.12,
+  "avg_fsdp_total_time_ms": 0.0,
+  "avg_fsdp_percentage": 0.0,
+  "avg_other_time_ms": 5024.86,
+  "avg_other_percentage": 15.8,
+  "layer_breakdown_ms": {},
+  "per_rank_stats": [
+    {
+      "total_cpu_time_ms": 31621.551049998943,
+      "forward_time_ms": 6635.130876999854,
+      "forward_percentage": 20.98,
+      "forward_count": 220958,
+      "backward_time_ms": 5320.646456999974,
+      "backward_percentage": 16.83,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14654.216328000002,
+      "optimizer_percentage": 46.34,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 5011.55738799999,
+      "other_percentage": 15.85,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26609.99366199983,
+      "rank": "rank0_trace"
+    },
+    {
+      "total_cpu_time_ms": 31395.100301999802,
+      "forward_time_ms": 6640.220628999931,
+      "forward_percentage": 21.15,
+      "forward_count": 220958,
+      "backward_time_ms": 5324.265355000015,
+      "backward_percentage": 16.96,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14447.179793,
+      "optimizer_percentage": 46.02,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 4983.43452500001,
+      "other_percentage": 15.87,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26411.665776999944,
+      "rank": "rank1_trace"
+    },
+    {
+      "total_cpu_time_ms": 31610.70367999962,
+      "forward_time_ms": 6833.741350999906,
+      "forward_percentage": 21.62,
+      "forward_count": 220958,
+      "backward_time_ms": 5327.648132000019,
+      "backward_percentage": 16.85,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14491.313316000002,
+      "optimizer_percentage": 45.84,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 4958.0008810000045,
+      "other_percentage": 15.68,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26652.70279899993,
+      "rank": "rank2_trace"
+    },
+    {
+      "total_cpu_time_ms": 32001.133030999932,
+      "forward_time_ms": 6843.634285999591,
+      "forward_percentage": 21.39,
+      "forward_count": 220958,
+      "backward_time_ms": 5330.355983000018,
+      "backward_percentage": 16.66,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14786.436455000001,
+      "optimizer_percentage": 46.21,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 5040.706306999997,
+      "other_percentage": 15.75,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26960.42672399961,
+      "rank": "rank3_trace"
+    },
+    {
+      "total_cpu_time_ms": 31954.237468999363,
+      "forward_time_ms": 6704.762361999784,
+      "forward_percentage": 20.98,
+      "forward_count": 220958,
+      "backward_time_ms": 5327.362528000034,
+      "backward_percentage": 16.67,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14841.169862999997,
+      "optimizer_percentage": 46.45,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 5080.942716000005,
+      "other_percentage": 15.9,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26873.294752999816,
+      "rank": "rank4_trace"
+    },
+    {
+      "total_cpu_time_ms": 31601.389649999244,
+      "forward_time_ms": 6903.033659999863,
+      "forward_percentage": 21.84,
+      "forward_count": 220958,
+      "backward_time_ms": 5327.829382999951,
+      "backward_percentage": 16.86,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14510.445964,
+      "optimizer_percentage": 45.92,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 4860.0806429999875,
+      "other_percentage": 15.38,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26741.309006999814,
+      "rank": "rank5_trace"
+    },
+    {
+      "total_cpu_time_ms": 31498.45867899917,
+      "forward_time_ms": 6367.316248999901,
+      "forward_percentage": 20.21,
+      "forward_count": 220958,
+      "backward_time_ms": 5280.048928000011,
+      "backward_percentage": 16.76,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14727.335031999997,
+      "optimizer_percentage": 46.76,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 5123.758470000008,
+      "other_percentage": 16.27,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 26374.700208999908,
+      "rank": "rank6_trace"
+    },
+    {
+      "total_cpu_time_ms": 32761.894366999073,
+      "forward_time_ms": 7415.706832999955,
+      "forward_percentage": 22.64,
+      "forward_count": 220958,
+      "backward_time_ms": 5319.300765000037,
+      "backward_percentage": 16.24,
+      "backward_count": 49889,
+      "optimizer_time_ms": 14886.487479,
+      "optimizer_percentage": 45.44,
+      "optimizer_count": 6,
+      "fsdp_forward_time_ms": 0.0,
+      "fsdp_forward_percentage": 0.0,
+      "fsdp_forward_count": 0,
+      "fsdp_backward_time_ms": 0.0,
+      "fsdp_backward_percentage": 0.0,
+      "fsdp_backward_count": 0,
+      "fsdp_other_time_ms": 0.0,
+      "fsdp_other_percentage": 0.0,
+      "fsdp_other_count": 0,
+      "other_time_ms": 5140.399290000014,
+      "other_percentage": 15.69,
+      "other_count": 21542,
+      "fsdp_total_time_ms": 0.0,
+      "fsdp_total_percentage": 0.0,
+      "pure_training_time_ms": 27621.495076999992,
+      "rank": "rank7_trace"
+    }
+  ],
+  "num_ranks": 8,
+  "iteration": "iteration_18"
+}</pre>
+                </div>
+            </div>
+
+        </section>
+
+        <footer>
+            <p>Generated by CCL-Bench Metrics Analysis Tool</p>
+        </footer>
+    </div>
+</body>
+</html>

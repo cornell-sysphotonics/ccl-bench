@@ -8,6 +8,16 @@ dist/*
 .vscode
 .vs
 
+# uv / virtual environment
+.venv/
+uv.lock
+
+# Ruff cache
+.ruff_cache/
+
+# mypy cache
+.mypy_cache/
+
 # data
 data
 out
@@ -27,6 +37,11 @@ error.json
 _remote_module_non_scriptable.py
 
 env
+
+# SLURM job logs
+logs/
+*.out
+*.err
 
 nsys-res/*
 topology.xml
@@ -49,3 +64,10 @@ Sessionx.vim
 *.json
 *.nsys-rep
 *.sqlite
+
+# other
+.env
+.venv
+
+traces/
+**/analysis_output/extract_metrics.py

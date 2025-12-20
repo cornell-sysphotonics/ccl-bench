@@ -1,0 +1,62 @@
+---
+# workload_card.yaml - Qwen3-32B Configuration
+# Workload: qwen3-32b-torchtitan-fsdp-perlmutter-group-16
+version: 1
+
+description: >
+  Qwen3-32B training on 16 GPUs with FSDP parallelism. 4 Perlmutter GPU nodes (4
+  nodes × 4 GPUs = 16 GPUs total). Configuration: dp_replicate=1, dp_shard=16,
+  tp=1, pp=1, cp=1. TorchTitan framework with NCCL.
+
+hf_url: https://huggingface.co/Qwen/Qwen3-32B
+trace_url: https://drive.google.com/file/d/1_CLKUzrmWBwzpBbmu2O9xRNi10IEPq2l
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: qwen3-32b
+    precision: bf16
+    epochs: 1
+    iteration: 20
+  data:
+    batch_size: 1
+    seq_len: 2048
+    dataset: c4
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200  # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
+        - 2000  # Scale-up: Approx NVLink/NVSwitch aggregate bandwidth (Gbps)
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 16
+      count_per_node: 4
+    driver_version: cuda_12.4
+
+Model-executor:
+  framework:
+    name: torchtitan
+    compiler_tool_selection: plain_pytorch
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 16
+    tp: 1
+    pp: 1
+    cp: 1
+    ep: 1
+  communication_library:
+    name: NCCL
+    version: 2.18.5
+    env:
+      NCCL_IB_QPS_PER_CONNECTION: '4'
+      NCCL_DEBUG: INFO
+  protocol_selection:
+    - p2p  # Intra-node GPUDirect/NVLink (FSDP communication)
+
+metric_source:
+  traces: [nsys, torch_et, kineto_trace]
+  metrics_specific_trace: [nvtx_ranges]

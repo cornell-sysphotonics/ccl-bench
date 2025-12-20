@@ -24,7 +24,7 @@ def metric_cal(directory: str) -> int:
             trace_data = json.load(f)
             # Assuming communication calls are identified by a specific event type
             for event in trace_data.get("traceEvents", []):
-                if event.get("cat") == "kernel" and any(event.get("name", "").startswith(name) for name in comm_name):  
+                if event.get("cat") == "kernel" and any(event.get("name", "").startswith(name) for name in comm_name):
                     communication_calls += 1
     except FileNotFoundError:
         print(f"File not found: {trace_file}")
@@ -32,4 +32,3 @@ def metric_cal(directory: str) -> int:
         print(f"Error decoding JSON in file: {trace_file}")
 
     return communication_calls
-

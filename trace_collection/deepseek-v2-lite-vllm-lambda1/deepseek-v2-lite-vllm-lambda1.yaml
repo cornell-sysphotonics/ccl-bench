@@ -1,3 +1,4 @@
+---
 # workload_template.yaml
 version: 1
 
@@ -7,7 +8,8 @@ description: >
   Script: https://github.com/vllm-project/vllm/blob/main/examples/online_serving/elastic_ep/serve_deepseek_v2.sh
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite/tree/main
-trace_url: https://drive.google.com/drive/u/0/folders/1-Hd-mcvPrcUjHTKOM2iMu5m-RsRefeBH
+trace_url: 
+  https://drive.google.com/drive/u/0/folders/1-Hd-mcvPrcUjHTKOM2iMu5m-RsRefeBH
 
 workload:
   model:
@@ -22,10 +24,8 @@ workload:
     dataset: random
   hardware:
     network_topo:
-      topology: 
-      bandwidth_gbps:
-        - 200
-        - 2000
+      topology:
+      bandwidth_gbps: [200, 2000]
     xpu_spec:
       type: GPU
       model: nvidia_a100
@@ -34,9 +34,9 @@ workload:
     driver_version: cuda_12.9
 
 Model-executor:
-  framework: 
+  framework:
     name: vllm
-    compiler_tool_selection: 
+    compiler_tool_selection:
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 2
@@ -47,11 +47,8 @@ Model-executor:
     name: NCCL
     env:
       NCCL_IB_QPS_PER_CONNECTION:
-  protocol_selection:
-    - rocev2
-    - p2p
+  protocol_selection: [rocev2, p2p]
 
 metric_source:
-  traces:
-    - torch_et
+  traces: [torch_et]
   metrics_specific_trace:

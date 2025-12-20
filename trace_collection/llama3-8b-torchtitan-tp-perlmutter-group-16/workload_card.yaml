@@ -1,0 +1,61 @@
+---
+# workload_card.yaml - Llama-3.1-8B Configuration
+# Workload: llama3-8b-torchtitan-tp-perlmutter-group-16
+version: 1
+
+description: >
+  Llama-3.1-8B training on 4 GPUs with TP parallelism. 1 Perlmutter GPU node (1
+  node × 4 GPUs = 4 GPUs total). Configuration: dp_replicate=1, dp_shard=1,
+  tp=4, pp=1, cp=1. TorchTitan framework with NCCL.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: https://drive.google.com/file/d/1cvUtKqZnKcQmeXKcPS_VyHH5xbmJQdn3
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama3-8b
+    precision: bf16
+    epochs: 1
+    iteration: 10
+  data:
+    batch_size: 4
+    seq_len: 2048
+    dataset: c4
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200  # Scale-out: 200 Gbps per NIC over Slingshot (inter-node)
+        - 2000  # Scale-up: Approx NVLink/NVSwitch aggregate bandwidth (Gbps)
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 4
+      count_per_node: 4
+    driver_version: cuda_12.4
+
+Model-executor:
+  framework:
+    name: torchtitan
+    compiler_tool_selection: plain_pytorch
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+  communication_library:
+    name: NCCL
+    version: 2.18.5
+    env:
+      NCCL_IB_QPS_PER_CONNECTION: '4'
+      NCCL_DEBUG: INFO
+  protocol_selection:
+    - p2p  # Intra-node GPUDirect/NVLink (TP communication)
+
+metric_source:
+  traces: [nsys, torch_et, kineto_trace]
+  metrics_specific_trace: [nvtx_ranges]
