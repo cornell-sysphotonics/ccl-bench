@@ -23,6 +23,7 @@ salloc --nodes 1 --qos interactive --time 01:00:00 --constraint gpu --gpus 4 --a
 
 # 4. Generate your traces
 cd trace_gen/torchtitan
+Set "NGPU=${NGPU:-"4"}" in trace_gen/torchtitan/run_train.sh
 
 # To generate the main trace: 
 CONFIG_FILE="../../trace_collection/qwen-3-8b-torchtitan-dp_4-perlmutter-group_5/qwen-dp-4gpu-2batch.toml" ./run_train.sh
