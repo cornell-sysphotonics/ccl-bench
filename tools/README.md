@@ -10,6 +10,13 @@ Metric collection: Byungsoo, Jinkun
 
    Example: `ccl-bench/trace_collection/llama-3.18b-fsdp_4-torchprime_xla_tpu-group-21`
 
+   This is usually a zip file, so please extract it before so you can access the files. The usual
+   file structure looks like :
+   llama-3.18b-fsdp_4-torchprime_xla_tpu-group-21`
+   --> Folder (named the date the trace was made)
+   ----> Zipped Folder (contains trace.json) -> (Unzip THIS) \*\* This is the file we need to run the script it must be extracted!
+   ----> xplane.pb file (this is used elsewhere but not for this script)
+
 2. Define metrics
 
    Metrics should always include a number (integer, float) that could be presented on the benchmark.
