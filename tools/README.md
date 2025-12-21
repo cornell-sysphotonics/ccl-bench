@@ -41,7 +41,8 @@ These metrics require traces from inference experiments (`phase: inference` in w
    - **Location**: `tokenToExpertAssignment-group_12/`
    - **Extracts**: Expert load distribution from gate logs
    - **Output Format**: JSON with totals, normalized distribution, and summary statistics (entropy, CV, max/min ratio)
-   - **Requirements**: MoE model (`moe: true` in workload YAML) with `gates_logs` directory
+   - **Requirements**: MoE model (`moe: true` in workload YAML) with `*gates_logs*` directory containing `gates_logs_*/gate_logs_*.json` files
+   - **Note**: Gate logs are typically in `scripts/load_imbalance_experiment-group12/baseline_gates_logs/` or `scripts/load_imbalance_experiment-group12/default_all2all_gates_logs/`
 
 6. **communicationOverhead** (EPLB Analysis)
    - **Location**: `communicationOverhead-group_12/`
@@ -121,18 +122,25 @@ python tools/main.py --trace <trace_directory> --metric <metric_name>
 
 **Examples**:
 ```bash
-# Extract TTFT from a baseline experiment
-python tools/main.py --trace trace_collection/Mixtral8x7B-vllmTP4-Perlmutter[baseline_32_8192]-group12 --metric TTFT
+# Extract TTFT from a baseline experiment (note: quote paths with square brackets in zsh)
+python tools/main.py --trace "trace_collection/Mixtral8x7B-vllmTP4-Perlmutter[baseline_32_8192]-group12" --metric TTFT
 
 # Extract request throughput
-python tools/main.py --trace trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_8192]-group12 --metric request_throughput
+python tools/main.py --trace "trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_8192]-group12" --metric request_throughput
 
-# Extract expert assignment metrics
-python tools/main.py --trace trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_8192]-group12 --metric token_to_expert_assignment
+# Extract expert assignment metrics (use load_imbalance_experiment directory with gates_logs)
+# Note: If multiple gates_logs directories exist, the script uses the first one alphabetically (typically baseline_gates_logs)
+python tools/main.py --trace "scripts/load_imbalance_experiment-group12" --metric token_to_expert_assignment
+
+# To specify a specific gates_logs directory, point directly to it:
+python tools/main.py --trace "scripts/load_imbalance_experiment-group12/baseline_gates_logs" --metric token_to_expert_assignment
+python tools/main.py --trace "scripts/load_imbalance_experiment-group12/default_all2all_gates_logs" --metric token_to_expert_assignment
 
 # Analyze communication overhead (EPLB comparison)
-python tools/main.py --metric communicationOverhead --csv1 EPLBOFF.csv --csv2 EPLBON.csv
+python tools/main.py --metric communicationOverhead --csv1 tools/communicationOverhead-group_12/EPLBOFF.csv --csv2 tools/communicationOverhead-group_12/EPLBON.csv
 ```
+
+**Note**: Always quote trace directory paths to avoid zsh parsing square brackets 
 
 **Available metric names**:
 - `TTFT`
@@ -152,11 +160,22 @@ python tools/main.py --metric communicationOverhead --csv1 EPLBOFF.csv --csv2 EP
 You can also run extraction scripts directly:
 
 ```bash
-python tools/TTFT-group_12/extract.py <trace_directory>
-python tools/TPOT-group_12/extract.py <trace_directory>
-python tools/requestThroughput-group_12/extract.py <trace_directory>
-python tools/outputThroughput-group_12/extract.py <trace_directory>
-python tools/tokenToExpertAssignment-group_12/extract.py <trace_directory>
+# Note: Quote paths with square brackets in zsh
+python tools/TTFT-group_12/extract.py "<trace_directory>"
+python tools/TPOT-group_12/extract.py "<trace_directory>"
+python tools/requestThroughput-group_12/extract.py "<trace_directory>"
+python tools/outputThroughput-group_12/extract.py "<trace_directory>"
+python tools/tokenToExpertAssignment-group_12/extract.py "<trace_directory>"
+```
+
+**Examples**:
+```bash
+# Extract TTFT from trace collection experiment
+python tools/TTFT-group_12/extract.py "trace_collection/Mixtral8x7B-vllmTP4-Perlmutter[baseline_32_8192]-group12"
+
+# Extract token_to_expert_assignment from load imbalance experiment
+python tools/tokenToExpertAssignment-group_12/extract.py "scripts/load_imbalance_experiment-group12"
+# This will automatically find baseline_gates_logs or default_all2all_gates_logs
 ```
 
 ### Communication Overhead Analysis (EPLB)
@@ -181,7 +200,12 @@ python tools/communicationOverhead-group_12/analyzeEPLB.py <eplb_off.csv> <eplb_
 
 **Example**:
 ```bash
-python tools/main.py --metric communicationOverhead --csv1 EPLBOFF.csv --csv2 EPLBON.csv
+# CSV files are in tools/communicationOverhead-group_12/ directory
+python tools/main.py --metric communicationOverhead --csv1 tools/communicationOverhead-group_12/EPLBOFF.csv --csv2 tools/communicationOverhead-group_12/EPLBON.csv
+
+# Or if running from tools/communicationOverhead-group_12/ directory:
+cd tools/communicationOverhead-group_12
+python ../main.py --metric communicationOverhead --csv1 EPLBOFF.csv --csv2 EPLBON.csv
 ```
 
 **Output**:

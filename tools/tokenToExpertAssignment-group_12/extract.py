@@ -2,7 +2,6 @@
 import json
 import sys
 import math
-import yaml
 from pathlib import Path
 from collections import defaultdict
 
@@ -82,48 +81,38 @@ def extract_token_to_expert_assignment(gates_logs_dir):
         }
     }
 
-def validate_trace(trace_dir):
-    trace_dir = Path(trace_dir)
-    yaml_files = list(trace_dir.glob("*.yaml"))
-    if not yaml_files:
-        return False, "No workload YAML file found in trace directory"
-    
-    try:
-        with open(yaml_files[0]) as f:
-            workload = yaml.safe_load(f)
-        
-        if not workload or "workload" not in workload:
-            return False, "Invalid workload YAML format"
-        
-        model_info = workload.get("workload", {}).get("model", {})
-        is_moe = model_info.get("moe", False)
-        
-        if not is_moe:
-            return False, "token_to_expert_assignment metric requires MoE model (moe: true)"
-        
-        return True, None
-    except Exception as e:
-        return False, f"Error reading workload YAML: {e}"
-
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         trace_dir = Path(sys.argv[1])
-        is_valid, error_msg = validate_trace(trace_dir)
-        if not is_valid:
-            print(json.dumps({"error": error_msg}), file=sys.stderr)
-            sys.exit(1)
         
-        gates_logs_dirs = list(trace_dir.glob("*gates_logs*"))
-        if gates_logs_dirs:
-            gates_logs_dir = gates_logs_dirs[0]
+        # Check if the trace_dir itself is a gates_logs directory (contains gates_logs_* subdirectories)
+        if list(trace_dir.glob("gates_logs_*")):
+            gates_logs_dir = trace_dir
         else:
-            gates_logs_dir = trace_dir / "baseline_gates_logs"
+            # Otherwise, look for gates_logs directories within trace_dir
+            gates_logs_dirs = list(trace_dir.glob("*gates_logs*"))
+            if gates_logs_dirs:
+                gates_logs_dir = gates_logs_dirs[0]
+            else:
+                gates_logs_dir = trace_dir / "baseline_gates_logs"
     else:
         gates_logs_dir = Path("baseline_gates_logs")
+    
+    if not gates_logs_dir.exists():
+        error_msg = f"Gates logs directory not found: {gates_logs_dir}. Expected directory matching '*gates_logs*' or a directory containing 'gates_logs_*' subdirectories."
+        print(json.dumps({"error": error_msg}), file=sys.stderr)
+        sys.exit(1)
+    
+    if not gates_logs_dir.is_dir():
+        error_msg = f"Path exists but is not a directory: {gates_logs_dir}"
+        print(json.dumps({"error": error_msg}), file=sys.stderr)
+        sys.exit(1)
     
     result = extract_token_to_expert_assignment(gates_logs_dir)
     if result:
         print(json.dumps(result, indent=2))
     else:
-        print(json.dumps({"error": "No data found"}))
+        error_msg = f"No gate log data found in {gates_logs_dir}. Ensure the directory contains 'gates_logs_*' subdirectories with 'gate_logs_*.json' files containing 'expert_loads' data."
+        print(json.dumps({"error": error_msg}), file=sys.stderr)
+        sys.exit(1)
 
