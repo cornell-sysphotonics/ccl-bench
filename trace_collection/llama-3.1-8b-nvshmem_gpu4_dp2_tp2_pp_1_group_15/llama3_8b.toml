@@ -38,12 +38,8 @@ dataset = "c4"
 
 [parallelism]
 data_parallel_replicate_degree = 1
-data_parallel_shard_degree = -1
-<<<<<<< HEAD
-tensor_parallel_degree = 8
-=======
-tensor_parallel_degree = 4
->>>>>>> 23096d9c10b1007373f27a01a776ceef55767422
+data_parallel_shard_degree = 2
+tensor_parallel_degree = 2
 pipeline_parallel_degree = 1
 context_parallel_degree = 1
 
