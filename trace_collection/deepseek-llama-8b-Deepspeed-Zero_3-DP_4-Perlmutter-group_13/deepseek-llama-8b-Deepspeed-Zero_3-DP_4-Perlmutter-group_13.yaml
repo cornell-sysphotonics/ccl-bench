@@ -1,0 +1,57 @@
+# workload_template.yaml
+version: 5
+
+description: >
+  Deepseek-llama-8b training with DeepSpeed ZeRO-3 without offload on 4 A100 GPUs (Single Node).
+  Captured using Nsight Systems with CUDA/NVTX trace.
+
+trace_url: # trace url
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: deepseek-llama-8b
+    precision: bf16
+    epochs: 1
+    iteration: 20
+  data:
+    batch_size: 1
+    seq_len: 512
+    dataset: wikitext
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2000
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 4
+      count_per_node: 4
+    driver_version: cuda_12.4
+  
+Model-executor:
+  framework: 
+    name: deepspeed
+    compiler_tool_selection: plain_pytorch
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 4
+    tp: 1
+    pp: 1
+    cp: 1
+  communication_library:
+    name: NCCL
+    version: 2.27.5
+    env:
+      NCCL_IB_QPS_PER_CONNECTION: 8
+  protocol_selection:
+    - rocev2
+    - p2p
+
+metric_source:
+  traces:
+    - nsys

@@ -8,6 +8,9 @@ dist/*
 .vscode
 .vs
 
+.nsys-rep
+.sqlite
+
 # data
 data
 out
@@ -28,6 +31,11 @@ _remote_module_non_scriptable.py
 
 env
 
+envs
+
+
+nsys/*
+proposal.txt
 nsys-res/*
 topology.xml
 # Editor temporaries (VIM)
