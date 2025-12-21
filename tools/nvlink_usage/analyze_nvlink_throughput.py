@@ -176,9 +176,11 @@ def load_and_filter_intervals(
     direction: Optional[str] = None
 ) -> List[NVLinkInterval]:
     """Load trace and return filtered intervals."""
-    trace_file = Path(directory) / "nvlink_trace.bin"
-    if not trace_file.exists():
-        raise FileNotFoundError(f"NVLink trace not found: {trace_file}")
+    trace_dir = Path(directory)
+    bin_files = list(trace_dir.glob("*.bin"))
+    if not bin_files:
+        raise FileNotFoundError(f"No .bin trace file found in: {trace_dir}")
+    trace_file = bin_files[0]  # Use first .bin file found
     
     samples = load_nvlink_trace(trace_file)
     intervals = compute_nvlink_intervals(samples)
@@ -344,7 +346,7 @@ def metric_cal(
     This is the main entry point for use with main.py.
     
     Args:
-        directory: Path to directory containing nvlink_trace.bin
+        directory: Path to directory containing *.bin trace file
         metric_name: One of "max_throughput", "avg_throughput", "total_communication", or "all"
         link: Optional link ID filter (None = all links)
         direction: Optional direction filter "tx"/"rx" (None = all directions)
@@ -431,7 +433,7 @@ Examples:
 """
     )
     parser.add_argument("trace_dir", type=str,
-                        help="Directory containing nvlink_trace.bin")
+                        help="Directory containing *.bin trace file")
     parser.add_argument("--metrics", "-m", type=str, nargs="+",
                         default=["all"],
                         choices=["all", "max_throughput", "avg_throughput", "total_communication"],

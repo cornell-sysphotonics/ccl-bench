@@ -33,31 +33,59 @@ Metric collection: Byungsoo, Jinkun
     ./scripts/get_<name of metric>.sh
     ```
 
-## Metrics 
+## Tool Directories
+
+| Directory | Description |
+|-----------|-------------|
+| [`coll_call_num/`](coll_call_num/README.md) | Count NCCL collective communication calls |
+| [`nvlink_usage/`](nvlink_usage/README.md) | NVLink throughput metrics (max, avg, total) |
+| [`nvlink_kernel_correlation/`](nvlink_kernel_correlation/README.md) | Correlate NVLink peaks with GPU kernels |
+| [`nvlink_plotting/`](nvlink_plotting/README.md) | Generate throughput-over-time plots |
+| [`nvlink/`](nvlink/README.md) | NVLink report generation |
+
+## Available Metrics via main.py
+
+| Metric | Tool | Description |
+|--------|------|-------------|
+| `coll_call_num` | coll_call_num | Number of NCCL communication calls |
+| `max_throughput` | nvlink_usage | Maximum NVLink throughput (GB/s) |
+| `avg_throughput` | nvlink_usage | Average NVLink throughput (GB/s) |
+| `total_communication` | nvlink_usage | Total bytes transferred |
+| `nvlink_all` | nvlink_usage | All NVLink throughput metrics |
+| `peak_kernels` | nvlink_kernel_correlation | Kernels during peak throughput |
+
+## Usage Examples
+
+```bash
+# Collective call count
+python main.py --trace /path/to/trace --metric coll_call_num
+
+# NVLink throughput metrics
+python main.py --trace /path/to/trace --metric nvlink_all --json
+python main.py --trace /path/to/trace --metric max_throughput --link 0 --direction tx
+
+# Kernel correlation
+python main.py --trace /path/to/trace --metric peak_kernels --gpu 0 --top 5
+```
+
+## All Planned Metrics 
 
 1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
-2. `throughput_tokens_sec`: throughput measured in tokens per second
-
-3. `mfu`: model flop utilization, representing the efficiency of the model's computation
-
-4. `sm`: streaming multiprocessor utilization, indicating GPU usage efficiency
-
-5. `bubble_size_pipeline`: size of idle time (bubble) in the pipeline
-
-6. `traffic_window`: time intervals between traffic in different parallelism
-
-7. `traffic_distribution`: distribution of traffic across different parallelization
-
-8. `straggler`: the relative lag of the slowest device or process in a communication group
-
-9. `comm_comp_overlap`: overlap percentage between communication and computation phases
-
-10. `token_to_expert_assignment`: per-device assignment of tokens to experts in a model
-
-11. `iteration_wall_clock_time`: total wall-clock time for one iteration
-
-12. `TTFT`: time to first token in inference
-
-13. `TPOT`: time per output token in inference
+2. [Tool ready] `max_throughput`: maximum NVLink throughput in GB/s
+3. [Tool ready] `avg_throughput`: average NVLink throughput in GB/s
+4. [Tool ready] `total_communication`: total bytes transferred over NVLink
+5. [Tool ready] `peak_kernels`: GPU kernels during peak NVLink throughput
+6. `throughput_tokens_sec`: throughput measured in tokens per second
+7. `mfu`: model flop utilization, representing the efficiency of the model's computation
+8. `sm`: streaming multiprocessor utilization, indicating GPU usage efficiency
+9. `bubble_size_pipeline`: size of idle time (bubble) in the pipeline
+10. `traffic_window`: time intervals between traffic in different parallelism
+11. `traffic_distribution`: distribution of traffic across different parallelization
+12. `straggler`: the relative lag of the slowest device or process in a communication group
+13. `comm_comp_overlap`: overlap percentage between communication and computation phases
+14. `token_to_expert_assignment`: per-device assignment of tokens to experts in a model
+15. `iteration_wall_clock_time`: total wall-clock time for one iteration
+16. `TTFT`: time to first token in inference
+17. `TPOT`: time per output token in inference
 
 ...

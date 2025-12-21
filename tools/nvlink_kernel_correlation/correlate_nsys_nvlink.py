@@ -347,9 +347,10 @@ def metric_peak_kernels(
     trace_dir = Path(directory)
 
     # Load NVLink trace
-    nvlink_file = trace_dir / "nvlink_trace.bin"
-    if not nvlink_file.exists():
-        raise FileNotFoundError(f"NVLink trace not found: {nvlink_file}")
+    bin_files = list(trace_dir.glob("*.bin"))
+    if not bin_files:
+        raise FileNotFoundError(f"No .bin trace file found in: {trace_dir}")
+    nvlink_file = bin_files[0]  # Use first .bin file found
 
     samples = load_nvlink_trace(nvlink_file)
     intervals = compute_nvlink_intervals(samples)
@@ -471,7 +472,7 @@ def metric_cal(
     This is the main entry point for use with main.py.
 
     Args:
-        directory: Path to directory containing nvlink_trace.bin and *.sqlite
+        directory: Path to directory containing *.bin and *.sqlite files
         metric_name: Currently only "peak_kernels" supported
         gpu: GPU device ID for kernel filtering (default: 0)
         link: Optional NVLink link ID filter (None = all links)
@@ -586,7 +587,7 @@ Examples:
 """
     )
     parser.add_argument("trace_dir", type=str,
-                        help="Directory containing nvlink_trace.bin and *.sqlite")
+                        help="Directory containing *.bin and *.sqlite files")
     parser.add_argument("--metrics", "-m", type=str, nargs="+",
                         default=["peak_kernels"],
                         choices=["peak_kernels"],

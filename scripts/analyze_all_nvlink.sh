@@ -63,14 +63,17 @@ if [ -n "$EXTRA_ARGS" ]; then
 fi
 echo ""
 
-# Find all directories that contain nvlink_trace.bin
+# Find all directories that contain *.bin trace files
 EXPERIMENT_DIRS=()
 while IFS= read -r -d '' dir; do
     EXPERIMENT_DIRS+=("$(dirname "$dir")")
-done < <(find "$EXPERIMENTS_DIR" -name "nvlink_trace.bin" -print0 2>/dev/null)
+done < <(find "$EXPERIMENTS_DIR" -name "*.bin" -print0 2>/dev/null)
+
+# Remove duplicates (in case multiple .bin files in same dir)
+EXPERIMENT_DIRS=($(printf "%s\n" "${EXPERIMENT_DIRS[@]}" | sort -u))
 
 if [ ${#EXPERIMENT_DIRS[@]} -eq 0 ]; then
-    echo "No directories with nvlink_trace.bin found in $EXPERIMENTS_DIR"
+    echo "No directories with *.bin trace files found in $EXPERIMENTS_DIR"
     exit 0
 fi
 
