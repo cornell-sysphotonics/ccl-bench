@@ -28,10 +28,10 @@ if __name__ == "__main__":
         from comm_kernel_breakdown_tpu_group_4.comm_kernel_breakdown_tpu_group_4 import comm_kernel_breakdown_tpu
         metric_cal_func = comm_kernel_breakdown_tpu
     elif metric_name == "ttft":
-        from ttft_group_4.ttft import ttft
+        from ttft.ttft import ttft
         metric_cal_func = ttft
     elif metric_name == "tpot":
-        from tpot_group_4.tpot import tpot
+        from tpot.tpot import tpot
         metric_cal_func = tpot
     elif metric_name == "mfu":
         from mfu_group_4.mfu import mfu
