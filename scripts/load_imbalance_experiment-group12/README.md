@@ -13,7 +13,7 @@ The experiment measures how input data characteristics affect MoE routing imbala
 - **`launch_baseline.sh`**: Launches the Baseline vLLM server with Triton MoE kernel
   - Uses Tensor Parallelism (TP=4)
   - Configurable: `MODEL`, `PORT`, `BATCH_TOKENS`, `MAX_SEQS`, `MAX_MODEL_LEN`
-  - Default: 4 GPUs, TP=4, max-num-batched-tokens=2048, max-num-seqs=32
+  - Default: 4 GPUs, TP=4, max-num-batched-tokens=8192, max-num-seqs=32
 
 - **`launch_defaultAll2All.sh`**: Launches the DefaultAll2All vLLM server with FlashInfer MoE backend
   - Uses Expert Parallelism (EP=4)
