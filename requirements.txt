@@ -1,3 +1,8 @@
 matplotlib
 numpy
 pandas
+pyyaml
+torch
+vllm==0.6.2
+transformers
+accelerate

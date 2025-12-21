@@ -1,0 +1,18 @@
+experiment_id: E3.2
+description: DeepSeek-V2-Lite with EP=2
+model:
+  name: deepseek-ai/DeepSeek-V2-Lite
+  precision: bfloat16
+parallelism:
+  tp: 2
+  pp: 1
+  dp_replicate: 1
+  dp_shard: 1
+  ep: 2
+data:
+  batch_size: 2
+  seq_len: 8192
+  max_tokens: 128
+warmup_iterations: 2
+profile_iterations: 5
+output_dir: trace_collection/deepseek-v2-lite-vllm-perlmutter-E3.2

@@ -1,6 +1,9 @@
-import json
-from typing import List
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from tools.trace_analyzer import TraceAnalyzer
 
 
 def metric_cal(directory: str) -> int:
@@ -15,21 +18,30 @@ def metric_cal(directory: str) -> int:
     """
 
     #TODO: perform trace metadata check. For example, check if the trace is from NVIDIA GPU and uses NCCL for communication.
-    communication_calls = 0
-    trace_file = os.path.join(directory, "kineto_trace_0.json")
-    comm_name = ["ncclDevKernel_AllReduce", "ncclDevKernel_ReduceScatter", "ncclDevKernel_AllGather", "ncclDevKernel_Broadcast", "ncclDevKernel_Reduce", "ncclDevKernel_SendRecv"]
+    csv_candidates = [
+        os.path.join(directory, name)
+        for name in os.listdir(directory)
+        if name.startswith("cuda_gpu_trace") and name.endswith(".csv")
+    ]
+    json_candidates = [
+        os.path.join(directory, name)
+        for name in os.listdir(directory)
+        if name.startswith("kineto_trace_") and name.endswith(".json")
+    ]
+    trace_files = sorted(csv_candidates or json_candidates)
+    if not trace_files:
+        raise FileNotFoundError(f"No cuda_gpu_trace*.csv or kineto_trace_*.json found under {directory}")
 
-    try:
-        with open(trace_file, 'r') as f:
-            trace_data = json.load(f)
-            # Assuming communication calls are identified by a specific event type
-            for event in trace_data.get("traceEvents", []):
-                if event.get("cat") == "kernel" and any(event.get("name", "").startswith(name) for name in comm_name):  
-                    communication_calls += 1
-    except FileNotFoundError:
-        print(f"File not found: {trace_file}")
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON in file: {trace_file}")
+    communication_calls = 0
+    comm_name = ["nccl", "ncclDevKernel_AllReduce", "ncclDevKernel_ReduceScatter", "ncclDevKernel_AllGather", "ncclDevKernel_Broadcast", "ncclDevKernel_Reduce", "ncclDevKernel_SendRecv"]
+
+    for trace_file in trace_files:
+        analyzer = TraceAnalyzer(trace_file)
+        for event in analyzer.events:
+            if not analyzer._is_kernel_event(event):
+                continue
+            name = event.get("name", "").lower()
+            if any(name.startswith(prefix.lower()) for prefix in comm_name):
+                communication_calls += 1
 
     return communication_calls
-

@@ -1,0 +1,52 @@
+version: 1
+description: Llama-8B tensor parallelism TP=4 on 4 GPUs
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: ''
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: model_fwd
+    model_family: llama-3.1-8b
+    precision: bfloat16
+  data:
+    batch_size: 4
+    seq_len: 2048
+    dataset: synthetic
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+      - 200
+      - 2000
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 8
+      count_per_node: 4
+    driver_version: cuda_12.4
+Model-executor:
+  framework:
+    name: vllm
+    compiler_tool_selection: plain_pytorch
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+    ep: 1
+  communication_library:
+    name: NCCL
+    version: 2.18+
+    env:
+      NCCL_IB_QPS_PER_CONNECTION: null
+  protocol_selection:
+  - rocev2
+  - p2p
+metric_source:
+  traces:
+  - torch_et
+  - kineto_trace
+  - nsys
+  metrics_specific_trace: []

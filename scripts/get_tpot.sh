@@ -5,4 +5,4 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-python ./tools/main.py --trace "./trace_collection/$1" --metric "coll_call_num"
+python ./tools/main.py --trace "./trace_collection/$1" --metric "tpot"
