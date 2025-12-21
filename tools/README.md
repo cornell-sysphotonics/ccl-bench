@@ -1,63 +1,95 @@
-# Tool Development 
+# LLM Collectives Profiler – NSys Analysis Toolkit
 
-Tool development: Byungsoo, Jamal
+This repository contains a lightweight analysis tool used to extract and summarize
+communication and performance metrics from **Nsight Systems (NSys)** traces generated
+during distributed LLM training runs. The tool is designed to work directly with
+TorchTitan training traces and produce a single human-readable text report per run.
 
-Metric collection: Byungsoo, Jinkun
+The focus of this project is understanding **communication behavior**, **overlap with
+compute**, and **network utilization** under different parallelism configurations
+(data parallelism and tensor parallelism).
 
-## Pipeline
+---
 
-1. Move target trace to `ccl-bench/trace_collection/<trace_name>`
+## Tool Development
 
-    Example: `ccl-bench/trace_collection/llama3-8B_torchtitan_perlmutter`
+The analysis pipeline is implemented in Python and is based on parsing NSys JSON trace
+files generated during training. Rather than building a new profiler from scratch,
+we extend the NSys workflow by post-processing its traces to extract higher-level,
+distributed training metrics.
 
-2. Define metrics
-    
-    Should always include a number (integer, float) that could be presented on the benchmark.
-    Other metric format could be collected in addition, such as distribution, or time series.
+The tool was originally implemented as a single script (`nsys_analyzer.py`) and later
+refactored into multiple files for clarity and maintainability. Importantly, this
+refactor preserves **all original logic and metrics**, and the final output text file
+remains identical in content.
 
-    Example: number of communication calls for GPU 0 in one iteration
+Key design goals:
+- minimal assumptions about the training framework
+- compatible with TorchTitan NSys traces
+- single command to generate a full performance report
+- easy comparison across different parallelism settings
 
-3. Develop tools
-    ```
-    Input: list[nsys_rep], list[kineto_trace], list[pytorch_et_trace] # stored in trace directory
-    Output: float | int
-    ```
-4. Define tool-trace mapping
+---
 
-    Not all the metrics can be derived from one trace, and not all traces can be used to calculate one metric. So a matching checker should be implemented inside every tool to enforce certain matching constraints. An easy example would be checking that the number of GPUs is greater than 1 in the trace by reading the workload card located inside the trace folder when you are calculating network bandwidth utilization, as you need to have multiple GPUs for communication.
-4. Calculate metrics
+## Pipeline Overview
 
-    ```
-    python main.py --trace=<trace directory> --metric=<name of metric>
-    # or use scripts
-    ./scripts/get_<name of metric>.sh
-    ```
+At a high level, the analysis pipeline consists of three stages:
 
-## Metrics 
+### 1. Trace Collection (Training Side)
 
-1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
-2. `throughput_tokens_sec`: throughput measured in tokens per second
+During training, NSys is enabled via TorchTitan’s profiling configuration. Each GPU
+(rank) produces a JSON trace file containing:
+- kernel execution events
+- NCCL collective operations
+- timestamps and durations
+- metadata about tensor sizes and data types
 
-3. `mfu`: model flop utilization, representing the efficiency of the model's computation
+These per-rank JSON traces are stored in a directory such as:
 
-4. `sm`: streaming multiprocessor utilization, indicating GPU usage efficiency
+```
+outputs/profile_trace/llama3_8B_dp2_tp2_ngpu4/iteration_10/
+```
 
-5. `bubble_size_pipeline`: size of idle time (bubble) in the pipeline
+Each directory contains one JSON file per rank.
 
-6. `traffic_window`: time intervals between traffic in different parallelism
+---
 
-7. `traffic_distribution`: distribution of traffic across different parallelization
+### 2. Trace Parsing and Metric Extraction
 
-8. `straggler`: the relative lag of the slowest device or process in a communication group
+The analysis tool:
+- loads all JSON trace files in the provided directory
+- classifies events into **communication** (NCCL collectives) and **compute**
+- infers message sizes for communication operations
+- aggregates metrics across all ranks
 
-9. `comm_comp_overlap`: overlap percentage between communication and computation phases
+All parsing and metric calculations are deterministic and based entirely on NSys data.
 
-10. `token_to_expert_assignment`: per-device assignment of tokens to experts in a model
+---
 
-11. `iteration_wall_clock_time`: total wall-clock time for one iteration
+### 3. Report Generation
 
-12. `TTFT`: time to first token in inference
+After processing all traces, the tool writes a single text report containing:
+- throughput metrics
+- communication–computation overlap
+- network bandwidth estimates
+- traffic breakdown by collective type
 
-13. `TPOT`: time per output token in inference
+The report is written to:
 
-...
+```
+trace_analysis/<timestamp>_<model>_dpXxY_tpZ_gpuN.txt
+```
+
+This makes it easy to archive and compare results across runs.
+
+---
+
+## How to Run the Analyzer (Examples)
+
+### Basic usage
+
+From the **root of the repository**, run:
+
+```
+python tools/main.py torchtitan/outputs/profile_trace/llama3_8B_dp2_tp2_ngpu4/iteration_10 --config torchtitan/torchtitan/models/llama3/train_configs/llama3_8b.toml
+```
