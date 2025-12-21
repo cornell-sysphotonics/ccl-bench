@@ -12,7 +12,7 @@ echo "[Wrapper] Global Rank $RANK (Local $LOCAL_RANK) - Device Selection: Using 
 if [ "$LOCAL_RANK" -eq 0 ]; then
     echo "[Wrapper] Rank $RANK Profiling..."
     nsys profile \
-        --trace=cuda,nvtx \
+        --trace=cuda,nvtx,osrt \
         --output=trace_2nodes_rank_${RANK} \
         --force-overwrite=true \
         --stats=true \

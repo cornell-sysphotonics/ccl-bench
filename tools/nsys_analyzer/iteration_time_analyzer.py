@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Analyze iteration time from nsys traces
-Calculates: average iteration time, P99, CDF
 
 METRIC 0 Implementation:
   - iteration_time_mean: Mean wall-clock duration of one training iteration
@@ -10,64 +9,180 @@ METRIC 0 Implementation:
 """
 
 import subprocess
+import sqlite3
 import re
 import os
 import numpy as np
+from collections import Counter
 
-# 1. Define valid iteration marker patterns (regex)
-#    Match "Train Step X" or "training step X", exclude DeepSpeed internal markers
-ITERATION_PATTERNS = [
-    r'train\s*step\s*\d+',           # "Train Step 0", "train step 1"
-    r'training\s*step\s*\d+',        # "training step 0"
-    r'iteration\s*\d+',              # "iteration 0", "Iteration 1"
-    r'step\s*\d+\s*$',               # "step 0" (end of line, avoid matching optimizer.step)
-    r'forward\s*backward',           # "forward_backward" (some frameworks use this)
+ITERATION_PATTERNS_WITH_NUM = [
+    r'train\s+step\s+(\d+)',           # "Train Step 0", "train step 1"
+    r'training\s+step\s+(\d+)',        # "training step 0"
+    r'iteration\s+(\d+)',              # "iteration 0", "Iteration 1"
+    r'^step\s+(\d+)$',                 # "step 0"
+    r'Train Step (\d+)',               # "Train Step 0"
 ]
 
-# 2. Define patterns to exclude (DeepSpeed internal markers, etc.)
+ITERATION_PATTERNS_NO_NUM = [
+    r'^DeepSpeedZeroOptimizer_Stage3\.step$',  # DeepSpeed ZeRO-3 optimizer step
+    r'^DeepSpeedZeroOptimizer_Stage2\.step$',  # DeepSpeed ZeRO-2 optimizer step
+    r'^optimizer\.step$',                       # Generic optimizer step
+    r'^DeepSpeedEngine\.forward$',              # DeepSpeed forward (fallback)
+]
+
 EXCLUDE_PATTERNS = [
-    r'optimizer',                    # DeepSpeedZeroOptimizer_Stage3.step
-    r'deepspeed',                    # DeepSpeed internal markers
-    r'_step$',                       # xxx._step
-    r'_post_step',                   # _post_step
-    r'backward_step',                # part of backward pass
-    r'reduce_step',                  # reduce operations
+    r'_post_step',
+    r'backward_step',
+    r'reduce_step',
+    r'_step$',
 ]
 
 
-def is_valid_iteration_marker(line):
+def is_valid_iteration_marker(name):
+    """    
+    Returns:
+        tuple: (is_valid, iter_num_or_none, needs_numbering)
     """
-    Check if a line is a valid iteration marker
+    for pattern in EXCLUDE_PATTERNS:
+        if re.search(pattern, name):
+            return False, None, False
     
-    Args:
-        line: A line from NVTX output
+    name_lower = name.lower()
+    for pattern in ITERATION_PATTERNS_WITH_NUM:
+        match = re.search(pattern, name_lower, re.IGNORECASE)
+        if match:
+            iter_num = int(match.group(1))
+            return True, iter_num, False
+    
+    for pattern in ITERATION_PATTERNS_NO_NUM:
+        if re.match(pattern, name):
+            return True, None, True
+    
+    return False, None, False
+
+
+def get_iteration_boundaries(cursor):
+    """
     
     Returns:
-        bool: True if this is a valid iteration marker
+        list: [{'iter_num': int, 'start': ns, 'end': ns, 'name': str, 'duration_ms': float}, ...]
     """
-    line_lower = line.lower()
+    try:
+        query = """
+        SELECT start, end, text, globalTid
+        FROM NVTX_EVENTS
+        WHERE text IS NOT NULL 
+          AND start IS NOT NULL 
+          AND end IS NOT NULL
+        ORDER BY start
+        """
+        cursor.execute(query)
+        ranges = cursor.fetchall()
+    except sqlite3.OperationalError as e:
+        print(f"  NVTX query failed: {e}")
+        return []
     
-    # 1. First check if it matches any exclude pattern
-    for pattern in EXCLUDE_PATTERNS:
-        if re.search(pattern, line_lower):
-            return False
+    numbered_markers = []
+    unnumbered_markers = []
     
-    # 2. Then check if it matches any iteration pattern
-    for pattern in ITERATION_PATTERNS:
-        if re.search(pattern, line_lower):
-            return True
+    for start, end, name, tid in ranges:
+        if name is None:
+            continue
+        name_str = str(name)
+        is_valid, iter_num, needs_numbering = is_valid_iteration_marker(name_str)
+        
+        if is_valid:
+            if needs_numbering:
+                unnumbered_markers.append({
+                    'start': start,
+                    'end': end,
+                    'name': name_str,
+                    'tid': tid
+                })
+            else:
+                numbered_markers.append({
+                    'iter_num': iter_num,
+                    'start': start,
+                    'end': end,
+                    'name': name_str,
+                    'tid': tid
+                })
     
-    return False
+    if numbered_markers:
+        iter_map = {}
+        for m in numbered_markers:
+            iter_num = m['iter_num']
+            if iter_num not in iter_map:
+                iter_map[iter_num] = {
+                    'iter_num': iter_num,
+                    'start': m['start'],
+                    'end': m['end'],
+                    'name': m['name']
+                }
+            else:
+                iter_map[iter_num]['start'] = min(iter_map[iter_num]['start'], m['start'])
+                iter_map[iter_num]['end'] = max(iter_map[iter_num]['end'], m['end'])
+        
+        iterations = list(iter_map.values())
+        iterations.sort(key=lambda x: x['iter_num'])
+        
+        for it in iterations:
+            it['duration_ms'] = (it['end'] - it['start']) / 1e6
+        
+        return iterations
+    
+    if unnumbered_markers:
+        tid_counts = Counter(m['tid'] for m in unnumbered_markers)
+        main_tid = tid_counts.most_common(1)[0][0]
+        
+        main_markers = [m for m in unnumbered_markers if m['tid'] == main_tid]
+        main_markers.sort(key=lambda x: x['start'])
+        
+        iterations = []
+        for i in range(len(main_markers)):
+            start = main_markers[i]['start']
+            if i < len(main_markers) - 1:
+                end = main_markers[i + 1]['start'] - 1
+            else:
+                end = main_markers[i]['end']
+            
+            duration_ms = (end - start) / 1e6
+            iterations.append({
+                'iter_num': i,
+                'start': start,
+                'end': end,
+                'name': f"{main_markers[i]['name']} (auto #{i})",
+                'duration_ms': duration_ms
+            })
+        
+        return iterations
+    
+    return []
+
+
+def export_to_sqlite(nsys_rep_file):
+    sqlite_file = nsys_rep_file.replace('.nsys-rep', '.sqlite')
+    
+    if os.path.exists(sqlite_file):
+        return sqlite_file
+    
+    print(f"  Exporting to SQLite...")
+    nsys_cmd = os.environ.get('NSYS', 'nsys')
+    cmd = [nsys_cmd, 'export', '--type=sqlite', f'--output={sqlite_file}', 
+           '--force-overwrite=true', nsys_rep_file]
+    
+    try:
+        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+        if os.path.exists(sqlite_file):
+            return sqlite_file
+    except Exception as e:
+        print(f"  Export failed: {e}")
+    
+    return None
 
 
 def analyze_iteration_time(nsys_rep_file):
     """
-    Extract iteration timing information from nsys-rep file
-    
-    Method:
-      1. Use nsys stats --report nvtx_sum to read NVTX markers
-      2. Match valid iteration markers (Train Step X)
-      3. Calculate statistics
     
     Returns:
         dict: Iteration time statistics
@@ -78,135 +193,102 @@ def analyze_iteration_time(nsys_rep_file):
     
     print(f"Analyzing iteration times in {nsys_rep_file}...")
     
-    # Use nsys stats to get NVTX ranges
-    cmd = ["nsys", "stats", "--report", "nvtx_sum", nsys_rep_file]
+    if nsys_rep_file.endswith('.sqlite'):
+        sqlite_file = nsys_rep_file
+    else:
+        sqlite_file = nsys_rep_file.replace('.nsys-rep', '.sqlite')
+        if not os.path.exists(sqlite_file):
+            sqlite_file = export_to_sqlite(nsys_rep_file)
+            if not sqlite_file:
+                print("  Failed to get SQLite file")
+                return None
     
-    try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
-        output = result.stdout.decode('utf-8')
-        
-        iteration_times = []
-        matched_markers = []  # For debugging: record matched markers
-        
-        # Parse NVTX ranges
-        # Format: Time(%)  TotalTime(ns)  Instances  Avg(ns)  Med(ns)  Min(ns)  Max(ns)  StdDev(ns)  Style  Range
-        lines = output.split('\n')
-        in_data_section = False
-        
-        for line in lines:
-            # Skip header lines until we see the separator
-            if '--------' in line:
-                in_data_section = True
-                continue
-            
-            if not in_data_section:
-                continue
-            
-            # Use precise matching logic
-            if not is_valid_iteration_marker(line):
-                continue
-            
-            # Parse data columns
-            parts = line.split()
-            if len(parts) < 4:
-                continue
-            
-            try:
-                # Column indices: 0=Time%, 1=TotalTime, 2=Instances, 3=Avg, 4=Med, 5=Min, 6=Max, 7=StdDev
-                avg_time_ns = float(parts[3].replace(',', ''))
-                
-                # Validate time range is reasonable (> 100ms and < 1 hour)
-                # Iteration time is typically between 1-60 seconds
-                if 1e8 < avg_time_ns < 3600e9:  # 100ms - 1hour
-                    iteration_times.append(avg_time_ns)
-                    marker_name = ' '.join(parts[-3:]) if len(parts) >= 3 else line.strip()
-                    matched_markers.append(marker_name)
-                    print(f"  ✓ Found iteration marker: {marker_name} -> {avg_time_ns/1e6:.2f} ms")
-            except (ValueError, IndexError):
-                continue
-        
-        if not iteration_times:
-            print("  ✗ No valid iteration markers found")
-            print("  Hint: Make sure training script uses NVTX markers, e.g. nvtx.range_push('Train Step X')")
-            return None
-        
-        # Calculate statistics
-        iteration_times_ms = [t / 1e6 for t in iteration_times]
-        
-        stats = {
-            # METRIC 0 core metrics
-            "iteration_time_mean": np.mean(iteration_times_ms),      # Mean iteration time
-            "iteration_time_p99": np.percentile(iteration_times_ms, 99),  # P99 iteration time
-            
-            # Additional statistics
-            "avg_iteration_time_ms": np.mean(iteration_times_ms),    # For backward compatibility
-            "p50_iteration_time_ms": np.percentile(iteration_times_ms, 50),
-            "p99_iteration_time_ms": np.percentile(iteration_times_ms, 99),
-            "min_iteration_time_ms": np.min(iteration_times_ms),
-            "max_iteration_time_ms": np.max(iteration_times_ms),
-            "std_iteration_time_ms": np.std(iteration_times_ms),
-            "num_iterations": len(iteration_times_ms),
-            "iteration_times_ms": iteration_times_ms,
-            "matched_markers": matched_markers
-        }
-        
-        # Print summary
-        print(f"\n  === METRIC 0 Summary ===")
-        print(f"  Number of iterations: {stats['num_iterations']}")
-        print(f"  iteration_time_mean: {stats['iteration_time_mean']:.2f} ms")
-        print(f"  iteration_time_p99: {stats['iteration_time_p99']:.2f} ms")
-        
-        return stats
-        
-    except subprocess.TimeoutExpired:
-        print(f"  Timeout analyzing {nsys_rep_file}")
+    conn = sqlite3.connect(sqlite_file)
+    cursor = conn.cursor()
+    
+    iterations = get_iteration_boundaries(cursor)
+    conn.close()
+    
+    if not iterations:
+        print("  ✗ No valid iteration markers found")
+        print("  Hint: Make sure training script uses NVTX markers")
         return None
-    except Exception as e:
-        print(f"  Error: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+    
+    marker_type = iterations[0]['name'].split('(')[0].strip() if '(auto' in iterations[0]['name'] else iterations[0]['name']
+    print(f"  ✓ Found {len(iterations)} iterations using marker: {marker_type}")
+    
+    iteration_times_ms = [it['duration_ms'] for it in iterations]
+    
+    stats = {
+        "iteration_time_mean": np.mean(iteration_times_ms),
+        "iteration_time_p99": np.percentile(iteration_times_ms, 99),
+        "avg_iteration_time_ms": np.mean(iteration_times_ms),
+        "p50_iteration_time_ms": np.percentile(iteration_times_ms, 50),
+        "p99_iteration_time_ms": np.percentile(iteration_times_ms, 99),
+        "min_iteration_time_ms": np.min(iteration_times_ms),
+        "max_iteration_time_ms": np.max(iteration_times_ms),
+        "std_iteration_time_ms": np.std(iteration_times_ms),
+        "num_iterations": len(iteration_times_ms),
+        "iteration_times_ms": iteration_times_ms,
+        "marker_type": marker_type
+    }
+    
+    print(f"\n  === METRIC 0 Summary ===")
+    print(f"  Number of iterations: {stats['num_iterations']}")
+    print(f"  iteration_time_mean: {stats['iteration_time_mean']:.2f} ms")
+    print(f"  iteration_time_p99: {stats['iteration_time_p99']:.2f} ms")
+    
+    return stats
+
 
 def metric_cal(directory):
     """
     Calculate iteration time metrics
     
     Args:
-        directory: Trace directory or nsys directory
+        directory: Trace directory, nsys directory, or .nsys-rep/.sqlite file path
     
     Returns:
         float: Average iteration time in milliseconds
     """
-    # Find nsys-rep files
-    if os.path.exists(os.path.join(directory, "..", "..", "nsys")):
-        nsys_dir = os.path.join(directory, "..", "..", "nsys")
-    elif any(f.endswith(".nsys-rep") for f in os.listdir(directory)):
-        nsys_dir = directory
-    else:
-        print("No nsys-rep files found")
+    nsys_file = None
+    
+    if os.path.isfile(directory):
+        if directory.endswith('.nsys-rep') or directory.endswith('.sqlite'):
+            nsys_file = directory
+    
+    elif os.path.isdir(directory):
+        for f in os.listdir(directory):
+            if f.endswith('.sqlite'):
+                nsys_file = os.path.join(directory, f)
+                break
+        if not nsys_file:
+            for f in os.listdir(directory):
+                if f.endswith('.nsys-rep'):
+                    nsys_file = os.path.join(directory, f)
+                    break
+    
+    if not nsys_file:
+        print("No nsys-rep or sqlite files found")
         return 0.0
     
-    # Analyze first nsys file found
-    for filename in os.listdir(nsys_dir):
-        if filename.endswith(".nsys-rep"):
-            nsys_file = os.path.join(nsys_dir, filename)
-            stats = analyze_iteration_time(nsys_file)
-            
-            if stats:
-                print("\n" + "="*60)
-                print("Iteration Time Analysis Results")
-                print("="*60)
-                print(f"Number of iterations: {stats['num_iterations']}")
-                print(f"Average iteration time: {stats['avg_iteration_time_ms']:.2f} ms")
-                print(f"Median (P50) iteration time: {stats['p50_iteration_time_ms']:.2f} ms")
-                print(f"P99 iteration time: {stats['p99_iteration_time_ms']:.2f} ms")
-                print(f"Min iteration time: {stats['min_iteration_time_ms']:.2f} ms")
-                print(f"Max iteration time: {stats['max_iteration_time_ms']:.2f} ms")
-                print(f"Std deviation: {stats['std_iteration_time_ms']:.2f} ms")
-                print("="*60)
-                
-                return stats['avg_iteration_time_ms']
-            break
+    stats = analyze_iteration_time(nsys_file)
+    
+    if stats:
+        print("\n" + "="*60)
+        print("Iteration Time Analysis Results")
+        print("="*60)
+        print(f"Marker type: {stats.get('marker_type', 'N/A')}")
+        print(f"Number of iterations: {stats['num_iterations']}")
+        print(f"Average iteration time: {stats['avg_iteration_time_ms']:.2f} ms")
+        print(f"Median (P50) iteration time: {stats['p50_iteration_time_ms']:.2f} ms")
+        print(f"P99 iteration time: {stats['p99_iteration_time_ms']:.2f} ms")
+        print(f"Min iteration time: {stats['min_iteration_time_ms']:.2f} ms")
+        print(f"Max iteration time: {stats['max_iteration_time_ms']:.2f} ms")
+        print(f"Std deviation: {stats['std_iteration_time_ms']:.2f} ms")
+        print("="*60)
+        
+        return stats['avg_iteration_time_ms']
     
     return 0.0
 
@@ -217,5 +299,4 @@ if __name__ == "__main__":
         result = metric_cal(directory)
         print(f"\nAverage iteration time: {result:.2f} ms")
     else:
-        print("Usage: python iteration_time_analyzer.py <nsys_directory>")
-
+        print("Usage: python iteration_time_analyzer.py <nsys_directory_or_file>")

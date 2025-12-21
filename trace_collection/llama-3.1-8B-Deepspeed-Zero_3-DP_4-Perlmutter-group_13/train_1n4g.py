@@ -8,44 +8,22 @@ from transformers import (
     AutoTokenizer, 
     TrainingArguments, 
     Trainer,
-    DataCollatorForLanguageModeling
+    DataCollatorForLanguageModeling,
+    TrainerCallback
 )
-from deepspeed.accelerator import get_accelerator
-from deepspeed.runtime.engine import DeepSpeedEngine
-from deepspeed.runtime.zero.partition_parameters import Init
 from datasets import load_dataset
 
-original_set_device = get_accelerator().set_device
-def patched_set_device(device_index):
-    original_set_device(0)
-get_accelerator().set_device = patched_set_device
-
-original_device_name = get_accelerator().device_name
-def patched_device_name(device_index=None):
-    return "cuda:0"
-get_accelerator().device_name = patched_device_name
-
-original_configure = DeepSpeedEngine._configure_distributed_model
-def patched_configure(self, model):
-    self.device = torch.device("cuda:0")
-    return original_configure(self, model)
-DeepSpeedEngine._configure_distributed_model = patched_configure
-
-original_convert = Init._convert_to_zero_parameters
-def patched_convert(self, param_list):
-    target_device = torch.device("cuda:0")
-    self.local_device = target_device
-    self.device = target_device
-    self.remote_device = target_device
-    return original_convert(self, param_list)
-Init._convert_to_zero_parameters = patched_convert
-
-# =================================================================
-
-MODEL_PATH = "/pscratch/sd/q/qiaox226/huggingface/hub/models--meta-llama--Llama-3.1-8B/snapshots/d04e592bb4f6aa9cfee91e2e20afa771667e1d4b"
+MODEL_PATH = "/pscratch/sd/r/rb945/huggingface/hub/models--meta-llama--Llama-3.1-8B/snapshots/d04e592bb4f6aa9cfee91e2e20afa771667e1d4b"
 DATA_CACHE_DIR = os.path.expandvars("$PSCRATCH/huggingface_datasets")
 OUTPUT_DIR = "./output_llama_trace"
 MAX_LENGTH = 512
+
+class NvtxCallback(TrainerCallback):
+    def on_step_begin(self, args, state, control, **kwargs):
+        torch.cuda.nvtx.range_push(f"Train Step {state.global_step}")
+
+    def on_step_end(self, args, state, control, **kwargs):
+        torch.cuda.nvtx.range_pop()
 
 class CustomTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
@@ -59,14 +37,9 @@ class CustomTrainer(Trainer):
 def train():
     local_rank = int(os.environ.get("LOCAL_RANK", -1))
     
-    if local_rank != -1:
-        torch.cuda.set_device(0)
-        if not dist.is_initialized():
-            dist.init_process_group(backend="nccl")
-            print(f"[Rank {local_rank}] Dist initialized. Physical isolation enabled (Mapped to cuda:0).")
-
     print(f"Loading tokenizer from {MODEL_PATH}...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+    tokenizer.pad_token = tokenizer.eos_token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -82,7 +55,6 @@ def train():
         )
 
     print("Tokenizing dataset...")
-    # only use 1000 data for test
     small_dataset = dataset.select(range(1000)) 
     tokenized_dataset = small_dataset.map(tokenize_function, batched=True, remove_columns=["text"])
 
@@ -100,26 +72,27 @@ def train():
         gradient_accumulation_steps=1,
         learning_rate=2e-5,
         num_train_epochs=1,
-        max_steps=10,
+        max_steps=50,
         bf16=True,
-        logging_steps=5,
+        logging_steps=10,
         save_strategy="no",
         report_to="none",
         optim="sgd",
         deepspeed="ds_config.json"
     )
 
-    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False, return_tensors="pt")
+    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
-    print("Initializing Custom Trainer...")
+    print("Initializing Custom Trainer with NVTX Callback...")
     trainer = CustomTrainer(
         model=model,
         args=training_args,
         train_dataset=tokenized_dataset,
         data_collator=data_collator,
+        callbacks=[NvtxCallback()] 
     )
 
-    print("Starting training (Native Transformers)...")
+    print("Starting training (Native Transformers with DeepSpeed)...")
     trainer.train()
     print("Training finished.")
 
