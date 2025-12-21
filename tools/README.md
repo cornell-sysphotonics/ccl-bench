@@ -75,7 +75,7 @@ Metric collection: Byungsoo, Jinkun
    ./scripts/get_<name of metric>.sh
    ```
 
-#Note: not all of these metrics have their own script, they are all calculated in some degree and are included in our original metrics script. This was orginally in a collab notebook so it would be easier to share and collaborate on the code, so we had to split it up after
+#Note: not all of these metrics have their own script, they are all calculated in some degree and are included in our original metrics script. This was orginally in a Colab notebook so it would be easier to share and collaborate on the code, so we had to split it up after
 
 ## Metrics
 
@@ -95,26 +95,24 @@ Metric collection: Byungsoo, Jinkun
 
 7. `num_comm_kernels` _N_CHIP_: number of communication kernels executed in the trace (requires `--n_chips`)
 
-8. `num_comm_kernels_w_size_and_time` _N_CHIP_: number of communication kernels with valid message size and execution time (requires `--n_chips`)
+8. `avg_comm_bandwidth_GBps` _N_CHIP_: average achieved communication bandwidth across valid kernels (GB/s) (requires `--n_chips`)
 
-9. `avg_comm_bandwidth_GBps` _N_CHIP_: average achieved communication bandwidth across valid kernels (GB/s) (requires `--n_chips`)
+9. `allreduce_comm_time_s`: total time spent in AllReduce communication operations
 
-10. `allreduce_comm_time_s`: total time spent in AllReduce communication operations
+10. `hockney_alpha_s` _N_CHIP_: latency term (α) from fitting the AllReduce Hockney communication model (requires `--n_chips`)
 
-11. `hockney_alpha_s` _N_CHIP_: latency term (α) from fitting the AllReduce Hockney communication model (requires `--n_chips`)
+11. `hockney_beta_s_per_byte` _N_CHIP_: bandwidth cost term (β) from the AllReduce Hockney model (requires `--n_chips`)
 
-12. `hockney_beta_s_per_byte` _N_CHIP_: bandwidth cost term (β) from the AllReduce Hockney model (requires `--n_chips`)
+12. `hockney_inverse_beta_Bps` _N_CHIP_: inverse of β, representing effective communication bandwidth (bytes/sec) (requires `--n_chips`)
 
-13. `hockney_inverse_beta_Bps` _N_CHIP_: inverse of β, representing effective communication bandwidth (bytes/sec) (requires `--n_chips`)
+13. `achieved_flops_from_trace_json`: achieved model FLOPs per second estimated from trace events
 
-14. `achieved_flops_from_trace_json`: achieved model FLOPs per second estimated from trace events
+14. `total_model_flops_from_args`: total model FLOPs summed from trace event arguments
 
-15. `total_model_flops_from_args`: total model FLOPs summed from trace event arguments
+15. `flops_per_token_used` _M_PARAMS_: FLOPs per token value used for throughput estimation (optional `--model_params`)
 
-16. `flops_per_token_used` _M_PARAMS_: FLOPs per token value used for throughput estimation (optional `--model_params`)
+16. `estimated_total_tokens` _M_PARAMS_: estimated number of tokens processed during the trace (optional `--model_params`)
 
-17. `estimated_total_tokens` _M_PARAMS_: estimated number of tokens processed during the trace (optional `--model_params`)
-
-18. `estimated_throughput_tokens_per_s` _M_PARAMS_: estimated throughput measured in tokens per second (optional `--model_params`)
+17. `estimated_throughput_tokens_per_s` _M_PARAMS_: estimated throughput measured in tokens per second (optional `--model_params`)
 
 ...
