@@ -16,4 +16,4 @@ module load conda
 conda activate straggler_infer
 
 # run your script
-~/ccl-bench-straggler-scale-up/trace_gen/inference/run_experiment_sweep.sh
+~/ccl-bench-straggler-scale-up/trace_gen/vllm-inference-trace-gen-group_5/run_experiment_sweep.sh

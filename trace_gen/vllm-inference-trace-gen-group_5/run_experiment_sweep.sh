@@ -5,8 +5,8 @@ BASE_TRACE_ROOT="/pscratch/sd/b/bck/inference_sweep_output"
 BENCH_NUM_PROMPTS=50
 BENCH_QPS=10
 
+# Uncomment whichever experiments you would like to run!
 EXPERIMENTS=(
-
     # Llama 3 Pure Parallelism
     # "llama3_2gpu_dp2:model=meta-llama/Llama-3.1-8B;dp=2;tp=1;pp=1;gpus=0,1"
     # "llama3_2gpu_tp2:model=meta-llama/Llama-3.1-8B;dp=1;tp=2;pp=1;gpus=0,1"
@@ -37,14 +37,14 @@ EXPERIMENTS=(
     # "llama3_4gpu_dp2_pp2:model=meta-llama/Llama-3.1-8B;dp=2;tp=1;pp=2;gpus=0,1,2,3"
 
     # Qwen 3 Mixed Parallelism
-    "qwen3_4gpu_tp2_dp2:model=Qwen/Qwen3-8B;dp=2;tp=2;pp=1;gpus=0,1,2,3"
-    "qwen3_4gpu_tp2_pp2:model=Qwen/Qwen3-8B;dp=1;tp=2;pp=2;gpus=0,1,2,3"
-    "qwen3_4gpu_dp2_pp2:model=Qwen/Qwen3-8B;dp=2;tp=1;pp=2;gpus=0,1,2,3"
+    # "qwen3_4gpu_tp2_dp2:model=Qwen/Qwen3-8B;dp=2;tp=2;pp=1;gpus=0,1,2,3"
+    # "qwen3_4gpu_tp2_pp2:model=Qwen/Qwen3-8B;dp=1;tp=2;pp=2;gpus=0,1,2,3"
+    # "qwen3_4gpu_dp2_pp2:model=Qwen/Qwen3-8B;dp=2;tp=1;pp=2;gpus=0,1,2,3"
 
     # Mistral 7B Mixed Parallelism
-    "mistral_4gpu_tp2_dp2:model=mistralai/Mistral-7B-Instruct-v0.2;dp=2;tp=2;pp=1;gpus=0,1,2,3"
-    "mistral_4gpu_tp2_pp2:model=mistralai/Mistral-7B-Instruct-v0.2;dp=1;tp=2;pp=2;gpus=0,1,2,3"
-    "mistral_4gpu_dp2_pp2:model=mistralai/Mistral-7B-Instruct-v0.2;dp=2;tp=1;pp=2;gpus=0,1,2,3"
+    # "mistral_4gpu_tp2_dp2:model=mistralai/Mistral-7B-Instruct-v0.2;dp=2;tp=2;pp=1;gpus=0,1,2,3"
+    # "mistral_4gpu_tp2_pp2:model=mistralai/Mistral-7B-Instruct-v0.2;dp=1;tp=2;pp=2;gpus=0,1,2,3"
+    # "mistral_4gpu_dp2_pp2:model=mistralai/Mistral-7B-Instruct-v0.2;dp=2;tp=1;pp=2;gpus=0,1,2,3"
 )
 
 for exp in "${EXPERIMENTS[@]}"; do
