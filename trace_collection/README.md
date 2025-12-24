@@ -10,6 +10,14 @@ Sample traces are stored in the [Google drive](https://drive.google.com/drive/u/
 ## Current list of traces
 1. `llama3.1-8b-torchtitan-perlmutter`
 2. `deepseekv2lite-vllm-lambda1`
+3. `deepseek-v2-lite-sglang-ep_1-perlmutter-group_6`: Online serving of Deepseek-V2-Lite on 4 A100 GPUs with TP=4, EP=1.
+4. `deepseek-v2-lite-sglang-ep_2-perlmutter-group_6`: Online serving of Deepseek-V2-Lite on 4 A100 GPUs with TP=4, EP=2.
+5. `deepseek-v2-lite-sglang-ep_4-perlmutter-group_6`: Online serving of Deepseek-V2-Lite on 4 A100 GPUs with TP=4, EP=4.
+6. `llama-3.1-8b-sglang-tp_1-pp_4-perlmutter-group_6`: Online serving of Llama-3.1-8B on 4 A100 GPUs with TP=1, PP=4.
+7. `llama-3.1-8b-sglang-tp_2-pp_2-perlmutter-group_6`: Online serving of Llama-3.1-8B on 4 A100 GPUs with TP=2, PP=2.
+8. `llama-3.1-8b-sglang-tp_4-pp_1-perlmutter-group_6`: Online serving of Llama-3.1-8B on 4 A100 GPUs with TP=4, PP=1.
+9. `qwen-32b-sglang-pp_1-perlmutter-group_6`: Online serving of Qwen3-32b on 4 A100 GPUs with TP=4, PP=1.
+10. `qwen-32b-sglang-pp_2-perlmutter-group_6`: Online serving of Qwen3-32b on 8 A100 GPUs on 2 nodes with TP=4, PP=2.
 3. `[Qwen3-4B-torchxla-vllm-tp8-tpu-group-4](./Qwen3-4B-torchxla-vllm-tp8-tpu-group-4)`
 4. `[Qwen3-4B-torchxla-vllm-tp4-tpu-group-4](./Qwen3-4B-torchxla-vllm-tp4-tpu-group-4)`
 5. `[Qwen3-4B-torchxla-vllm-tp2-tpu-group-4](./Qwen3-4B-torchxla-vllm-tp2-tpu-group-4)`

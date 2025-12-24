@@ -24,6 +24,29 @@ if __name__ == "__main__":
     if metric_name == "coll_call_num":
         from coll_call_num.coll_call_num import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "ttft_group_6":
+        from ttft_group_6.ttft_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "tpot_group_6":
+        from tpot_group_6.tpot_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "bandwidth_utilization_allgather_group_6":
+        from bandwidth_utilization_allgather_group_6.bandwidth_utilization_allgather_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "bandwidth_utilization_allreduce_group_6":
+        from bandwidth_utilization_allreduce_group_6.bandwidth_utilization_allreduce_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "bandwidth_utilization_alltoall_group_6":
+        from bandwidth_utilization_alltoall_group_6.bandwidth_utilization_alltoall_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "bandwidth_utilization_peertopeer_group_6":
+        from bandwidth_utilization_peertopeer_group_6.bandwidth_utilization_peertopeer_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "kernel_compute_time_group_6":
+        from kernel_compute_time_group_6.kernel_compute_time_group_6 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "throughput_group_6":
+        from throughput_group_6.throughput_group_6 import metric_cal
     elif metric_name == "straggler_metrics":
         # group 5
         from straggler.straggler_metrics import metric_cal
