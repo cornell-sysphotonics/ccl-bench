@@ -1,0 +1,37 @@
+# Steps to generate traces with torchtitan
+******************************************
+# 1. Install torchtitan by following steps at https://github.com/pytorch/torchtitan if not completed already
+
+# Steps we followed:
+cd trace_gen # We put torchtitan into our trace_gen folder
+git clone https://github.com/pytorch/torchtitan
+cd torchtitan
+pip install -r requirements.txt
+pip3 install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu126 --force-reinstall
+pip install fsspec==2025.10.0
+pip install --pre torchtitan --index-url https://download.pytorch.org/whl/nightly/cu126
+pip install torchtitan
+hf auth login
+export HF_HOME=$PSCRATCH/huggingface
+
+# 2. Install Llama 3.1 tokenizer
+python scripts/download_hf_assets.py --repo_id meta-llama/Llama-3.1-8B --assets tokenizer
+
+# 3. salloc a node with 4 GPUs
+export HF_HOME=$PSCRATCH/huggingface
+salloc --nodes 1 --qos interactive --time 01:00:00 --constraint gpu --gpus 4 --account <account-number>
+
+# 4. Generate your traces
+cd trace_gen/torchtitan
+Set "NGPU=${NGPU:-"4"}" in trace_gen/torchtitan/run_train.sh
+
+# To generate the main trace: 
+CONFIG_FILE="../../trace_collection/qwen-3-8b-torchtitan-tp_4-perlmutter-group_5/qwen-tp-4gpu-2batch.toml" ./run_train.sh
+
+# Traces with other batch sizes + sequence lenghts: 
+CONFIG_FILE="../../trace_collection/qwen-3-8b-torchtitan-tp_4-perlmutter-group_5/qwen-tp-4gpu-1batch.toml" ./run_train.sh
+CONFIG_FILE="../../trace_collection/qwen-3-8b-torchtitan-tp_4-perlmutter-group_5/qwen-tp-4gpu-4batch.toml" ./run_train.sh
+
+5. Once your trace has been generated, run the commands below to produce straggler delay/slowdown metrics:
+cd back to ccl-bench-straggler-scale-up
+python /tools/main.py --trace "<put-path-to-trace-folder-here>" --metric "straggler_metrics"

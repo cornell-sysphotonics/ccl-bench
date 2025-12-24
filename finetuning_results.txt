@@ -1,0 +1,132 @@
+***************************************
+**** Finetuning Experiment Results ****
+***************************************
+- skip first iteration in profiling
+- steps = 50 (aka iterations)
+
+----------
+* LLAMA: *
+----------
+********************************************************************
+
+FSDP on Llama 3.1 8B with Torchtitan on Perlmutter on 1 node with 4 GPUS
+- data_parallel_shard_degree = 4
+- local_batch_size = 2
+    seq_len = 1024:
+        Straggler Delay:  0.07647990586007967
+        Straggler Slowdown:  1.0828134724359255
+    seq_len = 2048: 
+        Straggler Delay: 0.1568638554834126
+        Straggler Slowdown: 1.186048073616095
+
+- local_batch_size = 4
+    seq_len = 1024:
+        Straggler Delay:  0.10109734351034688
+        Straggler Slowdown:  1.1124675100028594
+    # not enough memory for batch size of 4 and seq length of 2048
+
+********************************************************************
+
+Tensor Parallelism on Llama 3.1 8B with Torchtitan on Perlmutter on 1 node with 4 GPUS
+- tensor_parallel_degree = 4
+
+- local_batch_size = 2
+    seq_len = 1024:
+        Straggler Delay:  0.19500364058833317
+        Straggler Slowdown:  1.242241642845257
+    seq_len = 2048:
+        Straggler Delay:  0.03987708183012887
+        Straggler Slowdown:  1.0415333089914574
+
+- local_batch_size = 4
+    seq_len = 1024:
+        Straggler Delay:  0.015796089666565122
+        Straggler Slowdown:  1.0160496107571992
+
+********************************************************************
+
+Pipeline Parallelism on Llama 3.1 8B with Torchtitan on Perlmutter on 1 node with 4 GPUS
+- pipeline_parallel_degree = 4
+
+- local_batch_size = 4 # has to be greater than or equal to pipeline_parallel_degree
+    seq_len = 512:
+        Straggler Delay:  0.1439889409951021
+        Straggler Slowdown:  1.168209206505448
+    # not enough memory for higher sequence lengths
+
+
+********************************************************************
+
+FSDP & TP on Llama 3.1 8B with Torchtitan on Perlmutter on 1 node with 4 GPUS
+- local_batch_size = 2
+- seq_len = 1024
+
+    Straggler Delay:  0.10903784368806896
+    Straggler Slowdown:  1.1223821269125758
+
+********************************************************************
+
+TP & PP:
+- local_batch_size = 4
+- seq_len = 512
+    Straggler Delay:  0.22174988362164813
+    Straggler Slowdown:  1.28493395497784
+
+FSDP + PP
+# broken in torchtitan no matter what configs are used
+
+FSDP + TP + PP
+- need 8 GPUs for all three parallelisms (not scale up domain anymore)
+
+********************************************************************
+
+
+
+---------
+* QWEN: *
+---------
+********************************************************************
+
+FSDP on Qwen 3 8B with Torchtitan on Perlmutter on 1 node with 4 GPUS
+- data_parallel_shard_degree = 4
+- seq_len = 1024
+
+local_batch_size = 1: 
+    Straggler Delay:  0.19369118092570067
+    Straggler Slowdown:  1.2402195986744535
+
+local_batch_size = 2: 
+    Straggler Delay: 0.1074101445075549
+    Straggler Slowdown: 1.1203353856719516
+
+# not enough memory for higher batch sizes
+
+********************************************************************
+
+Tensor Parallelism on Qwen 3 8B with Torchtitan on Perlmutter on 1 node with 4 GPUS
+- tensor_parallel_degree = 4
+- seq_len = 1024
+
+local_batch_size = 1:
+    Straggler Delay:  0.8180599421073073
+    Straggler Slowdown:  5.496315718387836
+
+local_batch_size = 2:
+    Straggler Delay:  0.1970835109562599
+    Straggler Slowdown:  1.245459538626468
+
+local_batch_size = 4:
+    Straggler Delay:  0.030754125504352005
+    Straggler Slowdown:  1.031729952444064
+
+********************************************************************
+
+FSDP & TP:
+- local_batch_size = 2
+- seq_len = 1024
+    Straggler Delay:  0.3034388732650684
+    Straggler Slowdown:  1.435624185184452
+
+********************************************************************
+
+** TorchTitan does not support pipeline parallelism for Qwen 3 **

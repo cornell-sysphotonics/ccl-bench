@@ -1,0 +1,67 @@
+version: 1
+
+description: > 
+  Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend.
+  This workload is for meta-llama/Llama-3.1-8B with TP=4.
+  Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead, 
+  MFU (Model FLOPs Utilization), and aggregate memory bandwidth.
+  Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+
+trace_url: # Traces stored in trace_collection/ directory
+  # See trace_collection/README.md for complete list of traces
+
+workload:
+  model:
+    phase: inference  # Inference phase
+    moe: false  # No Mixture of Experts models
+    granularity: model_fwd  # Model forward pass granularity
+    model_family: llama
+    precision: bf16  # bfloat16 precision for all experiments
+    epochs: 1  # Not applicable to inference
+    iteration: 3  # Number of measurement runs per configuration
+  data:
+    batch_size: [1, 2, 4, 8, 16, 32, 64, 128] # Range from 1 to 128
+    seq_len: 1024  # Fixed input sequence length
+    dataset: custom  # Custom prompts for inference testing
+  hardware:
+    network_topo:
+      topology: torus  # TPU Inter-Core Interconnect (ICI) uses 2D torus topology
+      bandwidth_gbps:
+        - N/A  # Scale-out bandwidth: Not applicable - all 8 TPU chips are in a single TPU VM
+        - 800  # Scale-up bandwidth: ICI (Inter-Core Interconnect) provides 800 GBps per chip
+    xpu_spec:
+      type: TPU  # Tensor Processing Unit
+      model: tpu_v6e  # TPU v6e hardware
+      total_count: 8  # Maximum 8 chips used (TP=8)
+      count_per_node: 8  # All chips in single TPU VM
+    driver_version: v2-alpha-tpuv6e  # TPU VM runtime version
+  
+  Model-executor:
+    framework: 
+      name: vllm  # vLLM inference engine
+      compiler_tool_selection: xla  # XLA compiler via TorchXLA/JAX
+    model_plan_parallelization:
+      dp_replicate: 1  # No data parallelism
+      dp_shard: 1  # No data parallelism sharding
+      tp: 4 # Tensor parallelism
+      pp: 1  # No pipeline parallelism
+      cp: 1  # No context parallelism
+    communication_library:
+      name: xla  # XLA orchestrated communication (not NCCL)
+      version: # XLA version via JAX/TorchXLA
+      env:
+        JAX_PLATFORMS: ""  # JAX platform configuration
+        PJRT_DEVICE: "TPU"  # PJRT device type
+    protocol_selection:
+      - xla_collectives  # XLA collective operations
+      - ici  # Inter-Core Interconnect for TPU communication
+
+metric_source:
+  traces:
+    - tpu_profiler  # TPU Profiler traces (.xplane.pb, .trace.json.gz)
+    - xla_trace  # XLA execution traces
+  metrics_specific_trace:
+    - communication_trace  # Communication operation traces
+    - kernel_trace  # Kernel execution traces
