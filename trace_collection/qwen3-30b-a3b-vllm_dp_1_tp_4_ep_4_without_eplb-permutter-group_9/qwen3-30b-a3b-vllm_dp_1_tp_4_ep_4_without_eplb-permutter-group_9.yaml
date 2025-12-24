@@ -1,0 +1,57 @@
+version: 1
+
+description: >
+  vLLM online serving trace for Qwen3-30B-A3B on 4x NVIDIA A100.
+  Config: DP=4, TP=1, Expert Parallel enabled.
+  Collected with nsys (CUDA trace) for kernel-time breakdown and NCCL ratios.
+
+workload:
+  model:
+    phase: inference
+    model_family: qwen3
+    moe: true                
+    granularity: request
+    precision: bf16         
+  data:
+    dataset: wikitext       
+    batch_size: 1           
+    seq_len: null           
+    max_tokens: 512       
+  hardware:
+    network_topo:
+      topology: slingshot     
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 4
+      count_per_node: 4
+    driver_version: cuda_12.4  
+
+Model-executor:
+  framework:
+    name: vllm
+  model_plan_parallelization:
+    dp_replicate: 4
+    dp_shard: 1
+    tp: 1
+    pp: 1
+    cp: 1
+    ep: 4                
+  communication_library:
+    name: NCCL
+    version:  2.27.3        
+    env:
+      VLLM_ALL2ALL_BACKEND: allgather_reducescatter 
+  serving:
+    served_model_name: "Qwen"
+    gpu_memory_utilization: 0.85
+
+metric_source:
+  traces:
+    - nsys
+  metrics_specific_trace:
+    - coll_call_num
+    - break_down_steps
+    - communication_ratio
+    - total_communication_time
+    - total_kernel_time
