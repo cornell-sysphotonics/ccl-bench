@@ -26,3 +26,9 @@ Sample traces are stored in the [Google drive](https://drive.google.com/drive/u/
 16. `[Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4](./Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4)`
 17. `[Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4](./Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4)`
 18. `[Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4](./Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4)`
+3. `deepseek_r1_distill_qwen_7b-megatron_lm-dp_2-tp_4-pp_2-perlmutter-group_1`
+4. `deepseek_r1_distill_qwen_7b-megatron_lm-dp_4-tp_4-perlmutter-group_1`
+5. `llama_31_8b-megatron_lm-dp_2-tp_4-perlmutter-group_1`
+6. `llama_31_8b-megatron_lm-dp_4-tp_2-perlmutter-group_1`
+7. `mistral_7b_instruct_v02-megatron_lm-dp_2-tp_2-pp_2-perlmutter-group_1`
+8. `mistral_7b_instruct_v02-megatron_lm-dp_2-tp_4-perlmutter-group_1`
