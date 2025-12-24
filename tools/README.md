@@ -38,13 +38,13 @@ Metric collection: Byungsoo, Jinkun
 1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
 2. `throughput_tokens_sec`: throughput measured in tokens per second
 
-3. `mfu`: model flop utilization, representing the efficiency of the model's computation
+3. [Tool ready] `mfu`: model flop utilization, representing the efficiency of the model's computation
 
 4. `sm`: streaming multiprocessor utilization, indicating GPU usage efficiency
 
 5. `bubble_size_pipeline`: size of idle time (bubble) in the pipeline
 
-6. `traffic_window`: time intervals between traffic in different parallelism
+6. [Tool ready] `traffic_window`: time intervals between traffic in different parallelism
 
 7. `traffic_distribution`: distribution of traffic across different parallelization
 
@@ -59,5 +59,9 @@ Metric collection: Byungsoo, Jinkun
 12. `TTFT`: time to first token in inference
 
 13. `TPOT`: time per output token in inference
+
+14. [Tool ready] `bandwidth_utilization`: fraction of observed NCCL communication bandwidth relative to the expected hardware bandwidth
+
+15. [Tool ready] `communication_overhead`: fraction of total GPU kernel time spent in NCCL communication kernels
 
 ...
