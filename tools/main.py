@@ -99,7 +99,6 @@ if __name__ == "__main__":
         delay, slowdown = metric_cal(trace_directory)
         print("Straggler Delay: ", delay)
         print("Straggler Slowdown: ", slowdown)
-        return
     elif metric_name == "comm_kernel_breakdown_tpu":
         from comm_kernel_breakdown_tpu_group_4.comm_kernel_breakdown_tpu_group_4 import comm_kernel_breakdown_tpu
         metric_cal_func = comm_kernel_breakdown_tpu
