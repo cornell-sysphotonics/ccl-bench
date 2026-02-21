@@ -47,3 +47,4 @@ python3 tools/straggler_delay-group_8/straggler_delay-group_8.py \
   --marker "ProfilerStep#" \
   --out_csv straggler_delay.csv \
   --out_summary summary.json
+```
