@@ -1,0 +1,30 @@
+{"id": "single_programming_0", "text": "How do I implement a binary search tree in Python?", "category": "single_domain_programming"}
+{"id": "single_programming_1", "text": "What is the difference between async and await in JavaScript?", "category": "single_domain_programming"}
+{"id": "single_programming_2", "text": "Explain the concept of garbage collection in Java", "category": "single_domain_programming"}
+{"id": "single_programming_3", "text": "How do I optimize SQL queries for better performance?", "category": "single_domain_programming"}
+{"id": "single_programming_4", "text": "What are design patterns and when should I use them?", "category": "single_domain_programming"}
+{"id": "single_programming_5", "text": "How do I handle memory leaks in C++?", "category": "single_domain_programming"}
+{"id": "single_programming_6", "text": "What is the difference between REST and GraphQL APIs?", "category": "single_domain_programming"}
+{"id": "single_programming_7", "text": "How do I implement authentication using JWT tokens?", "category": "single_domain_programming"}
+{"id": "single_programming_8", "text": "Explain the concept of dependency injection", "category": "single_domain_programming"}
+{"id": "single_programming_9", "text": "What are microservices and how do they differ from monoliths?", "category": "single_domain_programming"}
+{"id": "single_programming_10", "text": "How do I write unit tests for async functions?", "category": "single_domain_programming"}
+{"id": "single_programming_11", "text": "What is the difference between let, const, and var in JavaScript?", "category": "single_domain_programming"}
+{"id": "single_programming_12", "text": "How do I implement a hash table from scratch?", "category": "single_domain_programming"}
+{"id": "single_programming_13", "text": "Explain the concept of recursion and when to use it", "category": "single_domain_programming"}
+{"id": "single_programming_14", "text": "What are the best practices for code review?", "category": "single_domain_programming"}
+{"id": "single_programming_15", "text": "How do I optimize database queries with indexes?", "category": "single_domain_programming"}
+{"id": "single_programming_16", "text": "What is the difference between shallow copy and deep copy?", "category": "single_domain_programming"}
+{"id": "single_programming_17", "text": "How do I implement a queue using stacks?", "category": "single_domain_programming"}
+{"id": "single_programming_18", "text": "Explain the concept of polymorphism in object-oriented programming", "category": "single_domain_programming"}
+{"id": "single_programming_19", "text": "What are the SOLID principles in software design?", "category": "single_domain_programming"}
+{"id": "single_programming_20", "text": "How do I handle errors in Python exception handling?", "category": "single_domain_programming"}
+{"id": "single_programming_21", "text": "What is the difference between process and thread?", "category": "single_domain_programming"}
+{"id": "single_programming_22", "text": "How do I implement caching strategies in web applications?", "category": "single_domain_programming"}
+{"id": "single_programming_23", "text": "Explain the concept of closures in JavaScript", "category": "single_domain_programming"}
+{"id": "single_programming_24", "text": "What are the differences between TCP and UDP protocols?", "category": "single_domain_programming"}
+{"id": "single_programming_25", "text": "How do I optimize React component rendering?", "category": "single_domain_programming"}
+{"id": "single_programming_26", "text": "What is the difference between compiled and interpreted languages?", "category": "single_domain_programming"}
+{"id": "single_programming_27", "text": "How do I implement a linked list data structure?", "category": "single_domain_programming"}
+{"id": "single_programming_28", "text": "Explain the concept of virtual memory", "category": "single_domain_programming"}
+{"id": "single_programming_29", "text": "What are the best practices for API versioning?", "category": "single_domain_programming"}
