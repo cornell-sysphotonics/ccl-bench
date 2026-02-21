@@ -49,3 +49,6 @@ Sessionx.vim
 *.json
 *.nsys-rep
 *.sqlite
+*.zip
+
+API_KEY
