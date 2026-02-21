@@ -30,6 +30,8 @@ env
 
 nsys-res/*
 topology.xml
+trace_analysis
+
 # Editor temporaries (VIM)
 [._]*.s[a-v][a-z]
 [._]*.sw[a-p]
@@ -49,3 +51,6 @@ Sessionx.vim
 *.json
 *.nsys-rep
 *.sqlite
+*.zip
+
+API_KEY

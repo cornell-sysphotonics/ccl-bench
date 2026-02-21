@@ -40,6 +40,13 @@ Naming of the workload and workload card:
 Naming of the metrics and tools for the metrics:
 `<metric_name>-<group_number>`
 
+## Development
+- Configure Claude API key
+
+```
+export ANTHROPIC_API_KEY=$(cat agent/API_KEY)
+```
+
 
 ## Layout
 ```
@@ -50,3 +57,4 @@ Naming of the metrics and tools for the metrics:
 ├── tools   # main.py, and various plug-ins for different metrics
 └── trace_collection # place to store temparary traces locally, which are downloaded from Google Drive.
 ```
+

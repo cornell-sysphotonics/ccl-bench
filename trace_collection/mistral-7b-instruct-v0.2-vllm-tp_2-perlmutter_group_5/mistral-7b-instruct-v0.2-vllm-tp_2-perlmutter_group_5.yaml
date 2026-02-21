@@ -1,0 +1,55 @@
+# workload_template.yaml
+version: 1
+
+description: >
+  Mistral 7B Instruct v0.2 inference on Perlmutter with 2 GPUs using TP2.
+  vLLM framework, NCCL communications over Slingshot-11 + NVLink.
+  Profiling traces collected using PyTorch Profiler (Kineto).
+
+hf_url: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2
+trace_url: https://cornell.app.box.com/  # TODO: fill with specific trace location
+
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: model_fwd_pass
+    model_family: mistral_7b_instruct_v0.2
+    precision: bf16
+  data:
+    batch_size: 2
+    seq_len: 1024
+    dataset: vllm_random
+  hardware:
+    network_topo:
+      topology: slingshot-11
+      bandwidth_gbps:
+        - 600
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100_40gb
+      total_count: 2
+      count_per_node: 2
+    driver_version: cuda_12.6
+  
+Model-executor:
+  framework: 
+    name: vllm
+    compiler_tool_selection: plain_pytorch
+  model_plan_parallelization: 
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 2
+    pp: 1
+    cp: 1
+  communication_library:
+    name: NCCL
+    env:
+      TORCH_NCCL_ASYNC_ERROR_HANDLING: "3"
+  protocol_selection:
+    - slingshot-11
+    - nvlink
+
+metric_source:
+  traces:
+    - kineto_trace
