@@ -1,0 +1,49 @@
+{
+  "_comment": "Add (trace, metrics) pairs here. Run 'python website/generate_data.py' from the repo root to regenerate data.",
+  "pairs": [
+    {
+      "trace": "./trace_collection/Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Qwen3-4B-torchxla-vllm-tp1-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Qwen3-4B-torchxla-vllm-tp4-tpu-group-4",
+      "metrics": ["mfu"]
+    },
+    {
+      "trace": "./trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
+      "metrics": ["mfu"]
+    }
+  ],
+  "metric_info": {
+    "mfu": {
+      "label": "MFU (%)",
+      "description": "Model FLOPs Utilization — percentage of peak hardware FLOPs utilized during active compute windows",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 25
+      }
+    }
+  }
+}
