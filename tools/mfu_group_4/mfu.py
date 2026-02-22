@@ -20,7 +20,7 @@ def mfu(trace_directory: str, peak_tflops_per_chip: float = 918.0) -> float:
     
     # If the user passed a specific trace file or a dir with one trace, we take the first.
     run_dir, trace_path = traces[0] 
-    
+    print(trace_path)
     meta = parse_run_dir(run_dir)
     metrics = extract_metrics_from_trace(trace_path)
     

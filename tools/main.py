@@ -122,8 +122,8 @@ if __name__ == "__main__":
     elif metric_name == "estimated_bandwidth":
         from estimated_bandwidth_group_4.estimated_bandwidth import estimated_bandwidth
         metric_cal_func = estimated_bandwidth
-    elif metric_name == "mfu":
-        from mfu_group_1.mfu_group_1 import metric_cal
+    # elif metric_name == "mfu":
+    #     from mfu_group_1.mfu_group_1 import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "traffic_window":
         from traffic_window_group_1.traffic_window_group_1 import traffic_window_cal

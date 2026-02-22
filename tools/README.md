@@ -51,7 +51,6 @@ Metric collection: Byungsoo, Jinkun
 14. Group 9 `memory_bound_fraction` - % of time in memory-bound kernels
 15. Group 9 `load_imbalance_ratio` - Max/Min GPU time ratio (for multi-GPU)
 16. Group 9 `communication_overlap_ratio` - Ratio of overlapping communication
-1. [Group 1 Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
 2. `throughput_tokens_sec`: throughput measured in tokens per second
 
 3. [Group 1 Tool ready] `mfu`: model flop utilization, representing the efficiency of the model's computation
@@ -92,7 +91,8 @@ Metric collection: Byungsoo, Jinkun
 
 21. `bandwidth_utilization_peertopeer_group_6`: Calculate the average of non-zero values of bandwidth utilization for PeerToPeer from the exported sqlite file from nsys, which is the value of "NVLink TX Responses User Data [Throughput %]". Only applicable for pp > 1. For qwen model, the value is extracted from "PCIe TX Throughput [Throughput %]" instead. If there are multiple nodes, only output the value of node 0.
 14. [Group 1 Tool ready] `comm_kernel_breakdown_tpu_group_4`: a breakdown of the number of calls and time spent on communication kernels
-15. [Group 1 Tool ready] `estimated_bandwidth`: estimated aggregate bandwidth (GB/s) computed from trace data
+
+15. [Group 4 tool checked, it calculates memory bw] `estimated_bandwidth`: estimated aggregate bandwidth (GB/s) computed from trace data
 
 
 17. [Group 4 Tool ready] `mfu`: model flop utilization, representing the efficiency of the model's computation

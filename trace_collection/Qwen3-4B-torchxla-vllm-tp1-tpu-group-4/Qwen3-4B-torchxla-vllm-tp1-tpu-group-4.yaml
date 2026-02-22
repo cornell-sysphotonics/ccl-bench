@@ -22,7 +22,7 @@ workload:
     epochs: 1  # Not applicable to inference
     iteration: 3  # Number of measurement runs per configuration
   data:
-    batch_size: [1, 2, 4, 8, 16, 32, 64, 128] # Range from 1 to 128
+    batch_size: 128 # Range from 1 to 128
     seq_len: 1024  # Fixed input sequence length
     dataset: custom  # Custom prompts for inference testing
   hardware:

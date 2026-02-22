@@ -12,8 +12,8 @@ def estimated_bandwidth(trace_directory: str) -> float:
         return float("nan")
 
     run_dir, trace_path = traces[0]
-    
+    print(trace_path)
     # meta = parse_run_dir(run_dir) # Not strictly needed for bw if we just take raw bytes / wall time
     metrics = extract_metrics_from_trace(trace_path)
-    
+    print(metrics)
     return metrics["bandwidth_wall_gbs"]
