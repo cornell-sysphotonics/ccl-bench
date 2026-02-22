@@ -138,7 +138,7 @@ def find_trace_files(root: str) -> List[Tuple[str, str]]:
     for dirpath, dirnames, filenames in os.walk(root):
         for fn in filenames:
             # match "....trace.json" or "....trace.json.gz"
-            if fn.endswith(".trace.json") or fn.endswith(".trace.json.gz"):
+            if fn.endswith(".json") or fn.endswith(".trace.json.gz") or fn.endswith(".trace.json"):
                 trace_path = os.path.join(dirpath, fn)
                 
                 # Use the provided root or suitable parent as run_dir
