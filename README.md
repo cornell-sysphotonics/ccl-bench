@@ -47,6 +47,9 @@ Naming of the metrics and tools for the metrics:
 export ANTHROPIC_API_KEY=$(cat agent/API_KEY)
 ```
 
+## Trace
+Stored on our local server
+`/data/ccl-bench_trace_collection`, `/data/ccl-bench_trace_collection_backlog`
 
 ## Layout
 ```
