@@ -22,7 +22,7 @@
       "metrics": ["mfu"]
     },
     {
-      "trace": "/data/ccl-bench_trace_collection]/Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
+      "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
       "metrics": ["mfu"]
     },
     {
