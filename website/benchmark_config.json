@@ -32,6 +32,10 @@
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
       "metrics":  ["avg_step_time", "mfu"]
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+      "metrics":  ["avg_step_time"]
     }
   ],
   "metric_info": {
@@ -51,8 +55,8 @@
       "higher_is_better": false,
       "unit": "s",
       "thresholds": {
-        "high": 100,
-        "mid": 100
+        "high": 10,
+        "mid": 5
       }
     }
   }

@@ -50,33 +50,67 @@ def extract_metadata(yaml_data: dict | None, trace_dir: str) -> dict:
     if not yaml_data:
         return meta
 
-    w   = yaml_data.get("workload", {}) or {}
-    mod = w.get("model", {}) or {}
-    dat = w.get("data", {}) or {}
-    hw  = (w.get("hardware", {}) or {}).get("xpu_spec", {}) or {}
-    ex  = w.get("Model-executor", {}) or {}
-    fw  = ex.get("framework", {}) or {}
-    par = ex.get("model_plan_parallelization", {}) or {}
-    cl  = ex.get("communication_library", {}) or {}
+    w    = yaml_data.get("workload", {}) or {}
+    mod  = w.get("model", {}) or {}
+    dat  = w.get("data", {}) or {}
+    hw   = w.get("hardware", {}) or {}
+    xpu  = hw.get("xpu_spec", {}) or {}
+    net  = hw.get("network_topo", {}) or {}
+    ex   = yaml_data.get("Model-executor", {}) or {}
+    fw   = ex.get("framework", {}) or {}
+    par  = ex.get("model_plan_parallelization", {}) or {}
+    cl   = ex.get("communication_library", {}) or {}
+    ms   = yaml_data.get("metric_source", {}) or {}
+
+    bw = net.get("bandwidth_gbps") or []
 
     meta.update({
-        "description":    (yaml_data.get("description") or "").strip(),
-        "hf_url":         yaml_data.get("hf_url") or "",
-        "model_family":   mod.get("model_family") or "",
-        "phase":          mod.get("phase") or "",
-        "precision":      mod.get("precision") or "",
-        "moe":            mod.get("moe", False),
-        "batch_size":     dat.get("batch_size") or "",
-        "seq_len":        dat.get("seq_len") or "",
-        "hardware_type":  hw.get("type") or "",
-        "hardware_model": hw.get("model") or "",
-        "total_count":    hw.get("total_count") or "",
-        "framework":      fw.get("name") or "",
-        "compiler":       fw.get("compiler_tool_selection") or "",
-        "tp":             par.get("tp") or "",
-        "pp":             par.get("pp") or "",
-        "dp":             par.get("dp_replicate") or "",
-        "comm_library":   cl.get("name") or "",
+        # Top-level
+        "description":        (yaml_data.get("description") or "").strip(),
+        "hf_url":             yaml_data.get("hf_url") or "",
+        "trace_url":          yaml_data.get("trace_url") or "",
+        # Model
+        "model_family":       mod.get("model_family") or "",
+        "phase":              mod.get("phase") or "",
+        "precision":          mod.get("precision") or "",
+        "moe":                mod.get("moe", False),
+        "granularity":        mod.get("granularity") or "",
+        "epochs":             mod.get("epochs") or "",
+        "iteration":          mod.get("iteration") or "",
+        # Data
+        "batch_size":         dat.get("batch_size") or "",
+        "seq_len":            dat.get("seq_len") or "",
+        "dataset":            dat.get("dataset") or "",
+        # Hardware — XPU
+        "hardware_type":      xpu.get("type") or "",
+        "hardware_model":     xpu.get("model") or "",
+        "total_count":        xpu.get("total_count") or "",
+        "count_per_node":     xpu.get("count_per_node") or "",
+        # Hardware — network
+        "network_topology":   net.get("topology") or "",
+        "bandwidth_scaleout": bw[0] if len(bw) > 0 else "",
+        "bandwidth_scaleup":  bw[1] if len(bw) > 1 else "",
+        # Hardware — driver
+        "driver_version":     hw.get("driver_version") or "",
+        # Framework
+        "framework":          fw.get("name") or "",
+        "compiler":           fw.get("compiler_tool_selection") or "",
+        # Parallelism
+        "tp":                 par.get("tp") or "",
+        "pp":                 par.get("pp") or "",
+        "dp":                 par.get("dp_replicate") or "",
+        "dp_shard":           par.get("dp_shard") or "",
+        "ep":                 par.get("ep") or "",
+        "cp":                 par.get("cp") or "",
+        # Communication library
+        "comm_library":       cl.get("name") or "",
+        "comm_library_ver":   cl.get("version") or "",
+        "comm_env":           cl.get("env") or {},
+        # Protocol selection
+        "protocol_selection": ex.get("protocol_selection") or [],
+        # Metric source
+        "trace_types":        ms.get("traces") or [],
+        "metric_traces":      ms.get("metrics_specific_trace") or [],
     })
     return meta
 

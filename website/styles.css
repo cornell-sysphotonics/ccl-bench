@@ -60,6 +60,31 @@ body {
   text-align: right;
   white-space: nowrap;
 }
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-logo {
+  height: 48px;
+  width: auto;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ── About strip ────────────────────────────────────────────────────────── */
+.about-strip {
+  background: var(--accent-dim);
+  border-bottom: 1px solid #bfdbfe;
+  padding: 12px 28px;
+  font-size: 13px;
+  color: #1e3a5f;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+.about-strip p + p { margin-top: 4px; }
+.about-strip a { color: var(--accent); text-decoration: none; }
+.about-strip a:hover { text-decoration: underline; }
 
 /* ── Stats strip ────────────────────────────────────────────────────────── */
 .stats-strip {

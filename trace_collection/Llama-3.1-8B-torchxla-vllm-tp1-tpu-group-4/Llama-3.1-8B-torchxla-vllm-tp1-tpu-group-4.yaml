@@ -38,25 +38,25 @@ workload:
       count_per_node: 8  # All chips in single TPU VM
     driver_version: v2-alpha-tpuv6e  # TPU VM runtime version
   
-  Model-executor:
-    framework: 
-      name: vllm  # vLLM inference engine
-      compiler_tool_selection: xla  # XLA compiler via TorchXLA/JAX
-    model_plan_parallelization:
-      dp_replicate: 1  # No data parallelism
-      dp_shard: 1  # No data parallelism sharding
-      tp: 1 # Tensor parallelism
-      pp: 1  # No pipeline parallelism
-      cp: 1  # No context parallelism
-    communication_library:
-      name: xla  # XLA orchestrated communication (not NCCL)
-      version: # XLA version via JAX/TorchXLA
-      env:
-        JAX_PLATFORMS: ""  # JAX platform configuration
-        PJRT_DEVICE: "TPU"  # PJRT device type
-    protocol_selection:
-      - xla_collectives  # XLA collective operations
-      - ici  # Inter-Core Interconnect for TPU communication
+Model-executor:
+  framework: 
+    name: vllm  # vLLM inference engine
+    compiler_tool_selection: xla  # XLA compiler via TorchXLA/JAX
+  model_plan_parallelization:
+    dp_replicate: 1  # No data parallelism
+    dp_shard: 1  # No data parallelism sharding
+    tp: 1 # Tensor parallelism
+    pp: 1  # No pipeline parallelism
+    cp: 1  # No context parallelism
+  communication_library:
+    name: xla  # XLA orchestrated communication (not NCCL)
+    version: # XLA version via JAX/TorchXLA
+    env:
+      JAX_PLATFORMS: ""  # JAX platform configuration
+      PJRT_DEVICE: "TPU"  # PJRT device type
+  protocol_selection:
+    - xla_collectives  # XLA collective operations
+    - ici  # Inter-Core Interconnect for TPU communication
 
 metric_source:
   traces:

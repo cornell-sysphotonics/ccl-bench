@@ -55,7 +55,11 @@ Workload cards should be stored under those folders. In addition, we maintain wo
 
 Update workload cards:
 ```
-mv ./trace_collection/<folder>/* /data/ccl-bench_trace_collection/<folder>/
+for folder in ./trace_collection/*; do  
+    if [ -d "$folder" ]; then  
+        cp "$folder"/*.yaml /data/ccl-bench_trace_collection/"$(basename "$folder")"/  
+    fi  
+done
 ```
 
 ## Layout

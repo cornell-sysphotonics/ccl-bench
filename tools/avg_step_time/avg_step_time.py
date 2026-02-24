@@ -2,32 +2,10 @@ import json
 from typing import List
 import os
 import statistics
+import yaml
+import re
 
-
-def metric_cal(directory: str) -> float:
-    """
-    Calculate average step time (inference: decode of the batch, training: forward + backward)
-
-    Args:
-        directory (str): Path to the directory containing PyTorch ET trace JSON files.
-
-    Returns:
-        float: Average step time in seconds.
-    """
-
-    trace_file = None
-    for file in os.listdir(directory):
-        if file.endswith(".json"):
-            trace_file = os.path.join(directory, file)
-            break
-
-    if trace_file is None:
-        raise FileNotFoundError(f"No JSON file found in directory: {directory}")
-
-
-    with open(trace_file, "r") as f:
-        data = json.load(f)
-
+def tpu(data):
     events = data.get("traceEvents", [])
 
     # ── 1. Identify step events ────────────────────────────────────────────────
@@ -92,3 +70,89 @@ def metric_cal(directory: str) -> float:
     #               f"host_dur={k['dur']/1000:.3f} ms")
 
     return avg_ms / 1000  # Convert ms to seconds
+
+
+def gpu(data):
+    events = data.get("traceEvents", [])
+
+    # ── 1. Identify step events ────────────────────────────────────────────────
+    # PyTorch profiler annotates each train step as 'ProfilerStep#N' (phase 'X' = complete event)
+    # We use the CPU-side user_annotation (not gpu_user_annotation) to match wall-clock time.
+    STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
+    step_events = sorted(
+        [
+            e for e in events
+            if e.get("ph") == "X"
+            and e.get("cat") == "user_annotation"
+            and STEP_PATTERN.match(e.get("name", ""))
+        ],
+        key=lambda e: int(STEP_PATTERN.match(e["name"]).group(1)),
+    )
+
+    num_steps = len(step_events)
+
+    if num_steps == 0:
+        print("No ProfilerStep#N events found.")
+        return None
+
+    # ── 2. Per-step latencies (duration already in ms per displayTimeUnit) ────
+    # PyTorch traces use ms as the display unit; dur is in ms directly.
+    latencies_ms = [e["dur"] for e in step_events]
+
+    # ── 3. Summary statistics ──────────────────────────────────────────────────
+    # Exclude first and last steps (warmup / incomplete capture), matching TPU convention.
+    inner = latencies_ms[1:-1] if num_steps > 2 else latencies_ms
+    avg_ms = statistics.mean(inner)
+
+    return avg_ms / 1000000  # Return seconds, matching TPU function convention
+
+
+def metric_cal(directory: str) -> float:
+    """
+    Calculate average step time (inference: decode of the batch, training: forward + backward)
+
+    Args:
+        directory (str): Path to the directory containing PyTorch ET trace JSON files.
+
+    Returns:
+        float: Average step time in seconds.
+    """
+
+    trace_file = None
+    for file in os.listdir(directory):
+        if file.endswith(".json"):
+            trace_file = os.path.join(directory, file)
+            break
+
+    yaml_file = None
+
+    for file in os.listdir(directory):
+        if file.endswith(".yaml"):
+            yaml_file = os.path.join(directory, file)
+            break
+
+    if yaml_file is not None:
+        with open(yaml_file, "r") as f:
+            yaml_data = yaml.safe_load(f)
+            xpu_type = yaml_data.get("workload", {}).get("hardware", {}).get("xpu_spec", {}).get("type", "")
+            # print(f"Detected XPU type: {xpu_type}")
+
+            if xpu_type.lower() == "tpu":
+                # print("Processing TPU trace...")
+                with open(trace_file, "r") as f:
+                    data = json.load(f)
+                    return tpu(data)
+            
+            elif xpu_type.lower() == "gpu":
+                with open(trace_file, "r") as f:
+                    data = json.load(f)
+                    return gpu(data)
+
+    if trace_file is None:
+        raise FileNotFoundError(f"No JSON file found in directory: {directory}")
+
+
+    
+
+
+    return -1

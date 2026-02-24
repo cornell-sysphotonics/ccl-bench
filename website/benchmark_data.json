@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T03:16:17.252389+00:00",
+  "generated_at": "2026-02-24T20:14:30.091274+00:00",
   "all_metrics": [
     "avg_step_time",
     "mfu"
@@ -21,8 +21,8 @@
       "higher_is_better": false,
       "unit": "s",
       "thresholds": {
-        "high": 100,
-        "mid": 100
+        "high": 10,
+        "mid": 5
       }
     }
   },
@@ -33,21 +33,51 @@
         "workload_name": "Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=1. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
         "model_family": "llama",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 1,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.2218,
@@ -60,21 +90,51 @@
         "workload_name": "Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=2. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
         "model_family": "llama",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 2,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.1778,
@@ -87,21 +147,51 @@
         "workload_name": "Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=4. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
         "model_family": "llama",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 4,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.0851,
@@ -114,21 +204,51 @@
         "workload_name": "Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=8. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
         "model_family": "llama",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 8,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.0977,
@@ -141,21 +261,51 @@
         "workload_name": "Qwen3-4B-torchxla-vllm-tp1-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=1. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
         "model_family": "qwen",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 1,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.1944,
@@ -168,21 +318,51 @@
         "workload_name": "Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=2. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
         "model_family": "qwen",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 2,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.1456,
@@ -195,21 +375,51 @@
         "workload_name": "Qwen3-4B-torchxla-vllm-tp4-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=4. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
         "model_family": "qwen",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 4,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.0973,
@@ -222,25 +432,108 @@
         "workload_name": "Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=8. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
         "model_family": "qwen",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
+        "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
         "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
         "framework": "vllm",
         "compiler": "xla",
         "tp": 8,
         "pp": 1,
         "dp": 1,
-        "comm_library": "xla"
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
       },
       "metrics": {
         "avg_step_time": 0.0754,
         "mfu": 17.1789
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 1,
+        "pp": 1,
+        "dp": 1,
+        "dp_shard": 8,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": 8
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 4.4259
       }
     }
   ]
