@@ -98,7 +98,7 @@ def extract_metadata(yaml_data: dict | None, trace_dir: str) -> dict:
         # Parallelism
         "tp":                 par.get("tp") or "",
         "pp":                 par.get("pp") or "",
-        "dp":                 par.get("dp_replicate") or "",
+        "dp_replicate":       par.get("dp_replicate") or "",
         "dp_shard":           par.get("dp_shard") or "",
         "ep":                 par.get("ep") or "",
         "cp":                 par.get("cp") or "",

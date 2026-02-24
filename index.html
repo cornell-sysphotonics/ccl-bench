@@ -36,6 +36,8 @@
     Part of the <a href="https://cornell.network/" target="_blank" rel="noopener">Cornell Systems &amp; Networking Lab</a>.
     &nbsp;&middot;&nbsp;
     Contact: <a href="mailto:ericding@cs.cornell.edu">Eric Ding</a>
+    &nbsp;&middot;&nbsp;
+    Contributing: <a href="https://github.com/cornell-sysphotonics/ccl-bench">GitHub</a>
   </p>
 </div>
 
@@ -113,7 +115,9 @@ const META_COLS = [
   { key: 'framework',      label: 'Framework',   group: 'Config',       sortable: true  },
   { key: 'tp',             label: 'TP',          group: 'Config',       sortable: true, numeric: true },
   { key: 'pp',             label: 'PP',          group: 'Config',       sortable: true, numeric: true },
-  { key: 'dp',             label: 'DP',          group: 'Config',       sortable: true, numeric: true },
+  { key: 'dp_replicate',   label: 'DP',          group: 'Config',       sortable: true, numeric: true },
+  { key: 'dp_shard',       label: 'DP Shard',    group: 'Config',       sortable: true, numeric: true },
+  { key: 'ep',             label: 'EP',          group: 'Config',       sortable: true, numeric: true },
   { key: 'batch_size',     label: 'Batch',       group: 'Data',         sortable: true, numeric: true },
   { key: 'seq_len',        label: 'Seq Len',     group: 'Data',         sortable: true, numeric: true },
 ];
@@ -234,6 +238,9 @@ function applyFilterSort() {
       } else if (col.key === '__accel') {
         va = a.metadata.total_count ?? null;
         vb = b.metadata.total_count ?? null;
+      } else if (col.key === 'dp_replicate') {
+        va = a.metadata.dp_replicate ?? null;
+        vb = b.metadata.dp_replicate ?? null;
       } else {
         va = a.metadata[col.key] ?? null;
         vb = b.metadata[col.key] ?? null;
@@ -427,7 +434,7 @@ function showModal(idx) {
     ['Compiler',   m.compiler],
     ['TP',         m.tp],
     ['PP',         m.pp],
-    ['DP Replicate', m.dp],
+    ['DP Replicate', m.dp_replicate],
     ['DP Shard',   m.dp_shard],
     ['EP',         m.ep],
     ['CP',         m.cp],
