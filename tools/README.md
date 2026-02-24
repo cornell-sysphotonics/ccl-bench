@@ -34,8 +34,12 @@ Metric collection: Byungsoo, Jinkun
     ```
 
 ## Metrics 
-
+### Public
 1. [Tool ready] `coll_call_num`: number of NCCL communication calls from one GPU in one iteration
+17. [Group 4 Tool ready] `mfu`: model flop utilization, representing the efficiency of the model's computation
+1. `avg_step_time` (second): average step time (inference: decode, training: forward + backward)
+
+### Private
 2.	Group 9 `break_down_steps`: breaks down total GPU kernel time into major components (e.g., communication, attention, MoE routing, MoE expert compute, and other)
 3.	Group 9 `communication_ratio`: percentage of communication time over total GPU kernel time
 4.	Group 9 `total_communication_time`: total time spent in NCCL communication kernels (e.g., all-reduce/all-to-all/sendrecv)

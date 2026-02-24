@@ -48,8 +48,15 @@ export ANTHROPIC_API_KEY=$(cat agent/API_KEY)
 ```
 
 ## Trace
-Stored on our local server
+Stored on our local server.
 `/data/ccl-bench_trace_collection`, `/data/ccl-bench_trace_collection_backlog`
+
+Workload cards should be stored under those folders. In addition, we maintain workload cards in the main repo.
+
+Update workload cards:
+```
+mv ./trace_collection/<folder>/* /data/ccl-bench_trace_collection/<folder>/
+```
 
 ## Layout
 ```

@@ -33,6 +33,12 @@ if __name__ == "__main__":
     if metric_name == "coll_call_num":
         from coll_call_num.coll_call_num import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "mfu":
+        from mfu_group_4.mfu import mfu
+        metric_cal_func = mfu
+    elif metric_name == "avg_step_time":
+        from avg_step_time.avg_step_time import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "communication_ratio":
         from communication_ratio_group_9.communication_ratio_group_9  import compute_comm_ratio
         metric_cal_func = compute_comm_ratio
@@ -116,9 +122,6 @@ if __name__ == "__main__":
     elif metric_name == "tpot":
         from tpot_group_4.tpot import tpot
         metric_cal_func = tpot
-    elif metric_name == "mfu":
-        from mfu_group_4.mfu import mfu
-        metric_cal_func = mfu
     elif metric_name == "estimated_bandwidth":
         from estimated_bandwidth_group_4.estimated_bandwidth import estimated_bandwidth
         metric_cal_func = estimated_bandwidth

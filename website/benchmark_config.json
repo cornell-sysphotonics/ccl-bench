@@ -3,35 +3,35 @@
   "pairs": [
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics": ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp1-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp4-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
-      "metrics": ["mfu"]
+      "metrics":  ["avg_step_time", "mfu"]
     }
   ],
   "metric_info": {
@@ -43,6 +43,16 @@
       "thresholds": {
         "high": 50,
         "mid": 25
+      }
+    },
+    "avg_step_time": {
+      "label": "Step Time (s)",
+      "description": "Average step time (inference: decode, training: forward + backward)",
+      "higher_is_better": false,
+      "unit": "s",
+      "thresholds": {
+        "high": 100,
+        "mid": 100
       }
     }
   }
