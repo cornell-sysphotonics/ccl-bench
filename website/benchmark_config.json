@@ -34,7 +34,15 @@
       "metrics":  ["avg_step_time", "mfu"]
     },
     {
-      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
+      "metrics":  ["avg_step_time"]
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter",
+      "metrics":  ["avg_step_time"]
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
       "metrics":  ["avg_step_time"]
     }
   ],

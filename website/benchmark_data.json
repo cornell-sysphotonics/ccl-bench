@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T20:34:18.130636+00:00",
+  "generated_at": "2026-02-25T04:28:33.929353+00:00",
   "all_metrics": [
     "avg_step_time",
     "mfu"
@@ -484,9 +484,9 @@
       }
     },
     {
-      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
       "metadata": {
-        "workload_name": "deepseek-v3-16b-torchtitan-perlmutter",
+        "workload_name": "deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
         "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
         "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
         "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
@@ -534,6 +534,112 @@
       },
       "metrics": {
         "avg_step_time": 4.4259
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 4,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 13.4455
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 4,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": 8
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.4799
       }
     }
   ]
