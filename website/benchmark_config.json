@@ -42,6 +42,10 @@
       "metrics":  ["avg_step_time"]
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter",
+      "metrics":  ["avg_step_time"]
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
       "metrics":  ["avg_step_time"]
     }

@@ -38,8 +38,8 @@ Model-executor:
     compiler_tool_selection: pytorch-2.10.0, triton
   model_plan_parallelization:
     dp_replicate: 1
-    dp_shard: 2
-    tp: 4
+    dp_shard: 4
+    tp: 2
     pp: 1
     cp: 1
     ep: 4
@@ -54,6 +54,6 @@ Model-executor:
 
 metric_source:
   traces:
-    - /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter
+    - /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter
   metrics_specific_trace:
     - 
