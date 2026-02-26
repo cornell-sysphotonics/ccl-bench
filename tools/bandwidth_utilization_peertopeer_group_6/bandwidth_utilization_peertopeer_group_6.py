@@ -56,7 +56,7 @@ def _get_cpu_ends(con, nvtx_events, cpu_events, tolerance=100000):
     WITH filtered_nvtx AS (
         SELECT * FROM nvtx_events 
         WHERE text LIKE '%{search_text}%'
-          AND 'end' IS NOT NULL
+          AND "end" IS NOT NULL
     )
     SELECT 
         n.*, 

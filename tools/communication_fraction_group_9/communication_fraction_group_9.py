@@ -79,7 +79,7 @@ def calculate_metric(path):
         # Identify communication kernels
         comm_patterns = [
             'nccl', 'allreduce', 'allgather', 'reducescatter',
-            'broadcast', 'reduce', 'send', 'recv', 'p2p',
+            'broadcast', 'send', 'recv', 'p2p',
             'cross_device', 'communicate', 'all_reduce', 'all_gather'
         ]
         pattern = '|'.join(comm_patterns)

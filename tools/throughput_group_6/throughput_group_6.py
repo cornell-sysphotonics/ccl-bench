@@ -42,9 +42,8 @@ def metric_cal(directory: str) -> float:
 
     duration_s = float(record["duration"])          # seconds
 
-    total_input_tokens = int(record.get("total_input_tokens", 0))
     total_output_tokens = int(record.get("total_output_tokens", 0))
-    total_tokens = total_input_tokens + total_output_tokens
+    total_tokens = total_output_tokens
 
     if duration_s <= 0:
         raise ValueError(f"Invalid duration (<=0) in {json_path}: {duration_s}")

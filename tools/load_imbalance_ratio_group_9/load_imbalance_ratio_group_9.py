@@ -56,9 +56,9 @@ def calculate_metric(path):
         
         # Load kernel data with device IDs
         kernels = pd.read_sql_query("""
-            SELECT 
+            SELECT
                 deviceId,
-                (end - start) as duration
+                start, end
             FROM CUPTI_ACTIVITY_KIND_KERNEL
         """, conn)
         
@@ -74,12 +74,21 @@ def calculate_metric(path):
             # Single GPU or no data - no imbalance possible
             return -1
         
-        # Calculate total execution time per GPU
+        # Calculate merged active time per GPU (handles concurrent streams)
         gpu_times = []
         for gpu_id in unique_gpus:
             gpu_kernels = kernels[kernels['deviceId'] == gpu_id]
-            total_time = gpu_kernels['duration'].sum()
-            gpu_times.append(total_time)
+            intervals = sorted(zip(gpu_kernels['start'].values, gpu_kernels['end'].values))
+            merged_time = 0
+            cur_start, cur_end = intervals[0]
+            for s, e in intervals[1:]:
+                if s <= cur_end:
+                    cur_end = max(cur_end, e)
+                else:
+                    merged_time += cur_end - cur_start
+                    cur_start, cur_end = s, e
+            merged_time += cur_end - cur_start
+            gpu_times.append(merged_time)
         
         gpu_times = np.array(gpu_times)
         

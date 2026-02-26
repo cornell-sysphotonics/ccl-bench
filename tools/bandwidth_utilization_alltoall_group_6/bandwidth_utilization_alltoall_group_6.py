@@ -74,8 +74,8 @@ def metric_cal(directory: str) -> float:
 
     # 5. Extract Metric IDs
     all_metrics = con.sql("""
-        SELECT DISTINCT metricId, 
-        FROM sqlite_db.TARGET_INFO_GPU_METRICS 
+        SELECT DISTINCT metricId
+        FROM sqlite_db.TARGET_INFO_GPU_METRICS
         WHERE metricName LIKE '%NVLink%'
     """).df()
     raw_stats = con.sql("""

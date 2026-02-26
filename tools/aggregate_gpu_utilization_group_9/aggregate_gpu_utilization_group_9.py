@@ -64,14 +64,26 @@ def calculate_metric(path):
         
         if len(kernels) == 0:
             return -1
-        
-        total_kernel_time = kernels['duration'].sum()
+
+        # Merge overlapping kernel intervals to avoid double-counting
+        # concurrent streams (e.g., compute + NCCL running simultaneously)
+        intervals = sorted(zip(kernels['start'].values, kernels['end'].values))
+        merged_time = 0
+        cur_start, cur_end = intervals[0]
+        for s, e in intervals[1:]:
+            if s <= cur_end:
+                cur_end = max(cur_end, e)
+            else:
+                merged_time += cur_end - cur_start
+                cur_start, cur_end = s, e
+        merged_time += cur_end - cur_start
+
         trace_duration = kernels['end'].max() - kernels['start'].min()
-        
+
         if trace_duration == 0:
             return -1
-        
-        return float((total_kernel_time / trace_duration) * 100)
+
+        return float((merged_time / trace_duration) * 100)
         
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

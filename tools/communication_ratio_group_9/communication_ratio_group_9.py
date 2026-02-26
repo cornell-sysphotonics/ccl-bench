@@ -18,7 +18,7 @@ COMM_REGEXES = [
     re.compile(
         r"cross[_\-]?device", re.IGNORECASE
     ),  # optional: cross-device reduce/ops
-    re.compile(r"allgather|reducescatter|allreduce|broadcast|reduce", re.IGNORECASE),
+    re.compile(r"allgather|reducescatter|allreduce|broadcast", re.IGNORECASE),
 ]
 
 
@@ -188,7 +188,7 @@ def compute_comm_ratio(trace_dir: str) -> float:
     print(f"AGGREGATE comm_ratio = {ratio:.6f}  ({ratio * 100:.2f}%)")
     print("=" * 80)
 
-    return ratio
+    return ratio * 100  # return as percentage (0-100)
 
 
 def main():

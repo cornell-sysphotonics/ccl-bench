@@ -1,8 +1,8 @@
 """
 Metric: communication_overlap_ratio
-Description: Ratio of overlapping communication kernels to total communication kernels.
-             Higher values indicate better overlap between communication operations, which
-             can improve overall throughput in distributed training.
+Description: Fraction of communication time that is overlapped (hidden) by concurrent
+             computation. Higher values indicate better pipelining of communication and
+             compute, reducing the effective cost of communication.
 Unit: Ratio (0-1)
 Returns: Float between 0-1, or -1 if data unavailable
 """
@@ -83,45 +83,67 @@ def calculate_metric(path):
         # Identify communication kernels
         comm_patterns = [
             'nccl', 'allreduce', 'allgather', 'reducescatter',
-            'broadcast', 'reduce', 'send', 'recv', 'p2p',
+            'broadcast', 'send', 'recv', 'p2p',
             'cross_device', 'communicate', 'all_reduce', 'all_gather'
         ]
         pattern = '|'.join(comm_patterns)
         is_comm = kernels['kernel_name'].str.lower().str.contains(
             pattern, na=False, regex=True
         )
-        
-        comm_kernels = kernels[is_comm].copy()
-        
-        if len(comm_kernels) <= 1:
+
+        comm_kernels = kernels[is_comm]
+        compute_kernels = kernels[~is_comm]
+
+        if len(comm_kernels) == 0:
             return -1
-        
-        # Sort by start time
-        comm_kernels = comm_kernels.sort_values('start')
-        
-        # Count overlaps (when a kernel starts before the previous one ends)
-        overlaps = 0
-        total_pairs = 0
-        
+
+        # Helper: merge overlapping intervals and return list of (start, end)
+        def _merge_intervals(starts, ends):
+            intervals = sorted(zip(starts, ends))
+            merged = [intervals[0]]
+            for s, e in intervals[1:]:
+                if s <= merged[-1][1]:
+                    merged[-1] = (merged[-1][0], max(merged[-1][1], e))
+                else:
+                    merged.append((s, e))
+            return merged
+
+        # Helper: compute total intersection time between two merged interval lists
+        def _intersection_time(a_intervals, b_intervals):
+            total = 0
+            i = j = 0
+            while i < len(a_intervals) and j < len(b_intervals):
+                start = max(a_intervals[i][0], b_intervals[j][0])
+                end = min(a_intervals[i][1], b_intervals[j][1])
+                if start < end:
+                    total += end - start
+                if a_intervals[i][1] < b_intervals[j][1]:
+                    i += 1
+                else:
+                    j += 1
+            return total
+
+        total_comm_time = 0
+        total_overlap_time = 0
+
         for device_id in comm_kernels['deviceId'].unique():
-            device_kernels = comm_kernels[comm_kernels['deviceId'] == device_id].sort_values('start')
-            
-            if len(device_kernels) <= 1:
+            dev_comm = comm_kernels[comm_kernels['deviceId'] == device_id]
+            dev_compute = compute_kernels[compute_kernels['deviceId'] == device_id]
+
+            comm_merged = _merge_intervals(dev_comm['start'].values, dev_comm['end'].values)
+            comm_time = sum(e - s for s, e in comm_merged)
+            total_comm_time += comm_time
+
+            if len(dev_compute) == 0:
                 continue
-            
-            for i in range(len(device_kernels) - 1):
-                current_end = device_kernels.iloc[i]['end']
-                next_start = device_kernels.iloc[i + 1]['start']
-                
-                if next_start < current_end:
-                    overlaps += 1
-                
-                total_pairs += 1
-        
-        if total_pairs == 0:
+
+            compute_merged = _merge_intervals(dev_compute['start'].values, dev_compute['end'].values)
+            total_overlap_time += _intersection_time(comm_merged, compute_merged)
+
+        if total_comm_time == 0:
             return -1
-        
-        return float(overlaps / total_pairs)
+
+        return float(total_overlap_time / total_comm_time)
         
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

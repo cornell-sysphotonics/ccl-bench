@@ -86,9 +86,10 @@ def calculate_metric(path):
         kernels['blocks_per_grid'] = kernels['gridX'] * kernels['gridY'] * kernels['gridZ']
         kernels['sm_coverage'] = (kernels['blocks_per_grid'] / num_sms).clip(upper=1.0) * 100
         
-        # Classify as compute-bound: high SM coverage (>70%) and longer than median duration
-        median_duration = kernels['duration'].median()
-        compute_bound = (kernels['sm_coverage'] > 70) & (kernels['duration'] > median_duration)
+        # Classify as compute-bound: high SM coverage (>70%) and duration > 10µs
+        # Using an absolute threshold (not median) so results are comparable across traces
+        DURATION_THRESHOLD_NS = 10000  # 10 microseconds
+        compute_bound = (kernels['sm_coverage'] > 70) & (kernels['duration'] > DURATION_THRESHOLD_NS)
         
         total_time = kernels['duration'].sum()
         compute_bound_time = kernels[compute_bound]['duration'].sum()
