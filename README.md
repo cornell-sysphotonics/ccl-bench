@@ -40,6 +40,27 @@ Naming of the workload and workload card:
 Naming of the metrics and tools for the metrics:
 `<metric_name>-<group_number>`
 
+## Development
+- Configure Claude API key
+
+```
+export ANTHROPIC_API_KEY=$(cat agent/API_KEY)
+```
+
+## Trace
+Stored on our local server.
+`/data/ccl-bench_trace_collection`, `/data/ccl-bench_trace_collection_backlog`
+
+Workload cards should be stored under those folders. In addition, we maintain workload cards in the main repo.
+
+Update workload cards:
+```
+for folder in ./trace_collection/*; do  
+    if [ -d "$folder" ]; then  
+        cp "$folder"/*.yaml /data/ccl-bench_trace_collection/"$(basename "$folder")"/  
+    fi  
+done
+```
 
 ## Layout
 ```
@@ -50,3 +71,4 @@ Naming of the metrics and tools for the metrics:
 ├── tools   # main.py, and various plug-ins for different metrics
 └── trace_collection # place to store temparary traces locally, which are downloaded from Google Drive.
 ```
+

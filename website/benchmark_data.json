@@ -1,0 +1,1342 @@
+{
+  "generated_at": "2026-02-27T05:14:56.357260+00:00",
+  "all_metrics": [
+    "aggregate_gpu_utilization",
+    "average_memory_bandwidth",
+    "avg_step_time",
+    "bandwidth_utilization_allgather_group_6",
+    "bandwidth_utilization_allreduce_group_6",
+    "bandwidth_utilization_alltoall_group_6",
+    "bandwidth_utilization_peertopeer_group_6",
+    "communication_fraction",
+    "communication_overlap_ratio",
+    "communication_ratio",
+    "compute_bound_fraction",
+    "dominant_kernel_concentration",
+    "kernel_compute_time_group_6",
+    "load_imbalance_ratio",
+    "mean_sm_coverage",
+    "memory_bound_fraction",
+    "memory_transfer_overhead",
+    "mfu",
+    "moe_fraction",
+    "throughput_group_6",
+    "total_communication_time",
+    "total_kernel_time",
+    "tpot_group_6",
+    "ttft_group_6"
+  ],
+  "metric_info": {
+    "mfu": {
+      "label": "MFU (%)",
+      "description": "Model FLOPs Utilization \u2014 percentage of peak hardware FLOPs utilized during active compute windows",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 25
+      }
+    },
+    "avg_step_time": {
+      "label": "Step Time (s)",
+      "description": "Average step time (inference: decode, training: forward + backward)",
+      "higher_is_better": false,
+      "unit": "s",
+      "thresholds": {
+        "high": 10,
+        "mid": 5
+      }
+    },
+    "dominant_kernel_concentration": {
+      "label": "Top Kernel (%)",
+      "description": "Percentage of total GPU time spent in the single most time-consuming kernel",
+      "higher_is_better": false,
+      "unit": "%",
+      "thresholds": {
+        "high": 70,
+        "mid": 40
+      }
+    },
+    "mean_sm_coverage": {
+      "label": "SM Coverage (%)",
+      "description": "Average Streaming Multiprocessor coverage across all kernels",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 80,
+        "mid": 50
+      }
+    },
+    "memory_bound_fraction": {
+      "label": "Mem Bound (%)",
+      "description": "Fraction of kernels classified as memory-bound (SM coverage < 50%)",
+      "higher_is_better": false,
+      "unit": "%",
+      "thresholds": {
+        "high": 60,
+        "mid": 30
+      }
+    },
+    "average_memory_bandwidth": {
+      "label": "Avg Mem BW (GB/s)",
+      "description": "Average memory copy bandwidth across all memcpy operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "thresholds": {
+        "high": 1000,
+        "mid": 500
+      }
+    },
+    "communication_ratio": {
+      "label": "Comm Ratio (%)",
+      "description": "Percentage of total kernel time spent in communication kernels (NCCL, cross-device)",
+      "higher_is_better": false,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      }
+    },
+    "memory_transfer_overhead": {
+      "label": "Mem Transfer OH (%)",
+      "description": "Percentage of trace time spent on memory transfers (memcpy)",
+      "higher_is_better": false,
+      "unit": "%",
+      "thresholds": {
+        "high": 20,
+        "mid": 5
+      }
+    },
+    "aggregate_gpu_utilization": {
+      "label": "GPU Util (%)",
+      "description": "Overall GPU utilization \u2014 merged active kernel time as percentage of trace duration",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 80,
+        "mid": 50
+      }
+    },
+    "load_imbalance_ratio": {
+      "label": "Load Imbalance",
+      "description": "Ratio of max to min GPU active time across GPUs (1.0 = perfectly balanced)",
+      "higher_is_better": false,
+      "unit": "ratio",
+      "thresholds": {
+        "high": 1.5,
+        "mid": 1.2
+      }
+    },
+    "communication_overlap_ratio": {
+      "label": "Comm Overlap",
+      "description": "Fraction of communication time overlapped (hidden) by concurrent computation",
+      "higher_is_better": true,
+      "unit": "ratio",
+      "thresholds": {
+        "high": 0.7,
+        "mid": 0.3
+      }
+    },
+    "communication_fraction": {
+      "label": "Comm Fraction (%)",
+      "description": "Percentage of GPU time in communication kernels (NCCL, cross-device, P2P)",
+      "higher_is_better": false,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      }
+    },
+    "moe_fraction": {
+      "label": "MoE Fraction (%)",
+      "description": "Percentage of GPU time in Mixture of Experts kernels (expert compute, routing, gating, pplx dispatch/combine)",
+      "higher_is_better": false,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      }
+    },
+    "compute_bound_fraction": {
+      "label": "Compute Bound (%)",
+      "description": "Percentage of time in compute-bound kernels (SM coverage > 70%, duration > 10us)",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 60,
+        "mid": 30
+      }
+    },
+    "total_kernel_time": {
+      "label": "Kernel Time (ms)",
+      "description": "Total GPU kernel execution time summed across all kernels",
+      "higher_is_better": false,
+      "unit": "ms",
+      "thresholds": {
+        "high": 10000,
+        "mid": 1000
+      }
+    },
+    "total_communication_time": {
+      "label": "Comm Time (ms)",
+      "description": "Total time in communication kernels (NCCL, cross-device)",
+      "higher_is_better": false,
+      "unit": "ms",
+      "thresholds": {
+        "high": 5000,
+        "mid": 500
+      }
+    },
+    "ttft_group_6": {
+      "label": "TTFT (ms)",
+      "description": "Median time to first token",
+      "higher_is_better": false,
+      "unit": "ms",
+      "thresholds": {
+        "high": 500,
+        "mid": 100
+      }
+    },
+    "tpot_group_6": {
+      "label": "TPOT (ms)",
+      "description": "Median time per output token",
+      "higher_is_better": false,
+      "unit": "ms",
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      }
+    },
+    "throughput_group_6": {
+      "label": "Throughput (tok/s)",
+      "description": "Output tokens generated per second",
+      "higher_is_better": true,
+      "unit": "tok/s",
+      "thresholds": {
+        "high": 1000,
+        "mid": 200
+      }
+    },
+    "kernel_compute_time_group_6": {
+      "label": "Kernel Time (s)",
+      "description": "Total GPU kernel compute time",
+      "higher_is_better": false,
+      "unit": "s",
+      "thresholds": {
+        "high": 60,
+        "mid": 10
+      }
+    },
+    "bandwidth_utilization_allgather_group_6": {
+      "label": "AllGather BW (GB/s)",
+      "description": "Median effective bandwidth utilization for AllGather operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "thresholds": {
+        "high": 200,
+        "mid": 50
+      }
+    },
+    "bandwidth_utilization_allreduce_group_6": {
+      "label": "AllReduce BW",
+      "description": "Median bandwidth utilization for AllReduce operations",
+      "higher_is_better": true,
+      "unit": "ratio",
+      "thresholds": {
+        "high": 0.5,
+        "mid": 0.1
+      }
+    },
+    "bandwidth_utilization_alltoall_group_6": {
+      "label": "AllToAll BW (%)",
+      "description": "Average NVLink TX throughput utilization during AllToAll operations",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      }
+    },
+    "bandwidth_utilization_peertopeer_group_6": {
+      "label": "P2P BW (%)",
+      "description": "Average NVLink/PCIe TX throughput utilization during peer-to-peer (pipeline parallelism) operations",
+      "higher_is_better": true,
+      "unit": "%",
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      }
+    }
+  },
+  "rows": [
+    {
+      "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4",
+      "metadata": {
+        "workload_name": "Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=1. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
+        "model_family": "llama",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 1,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.2218,
+        "mfu": 68.7375
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
+      "metadata": {
+        "workload_name": "Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=2. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
+        "model_family": "llama",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 2,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.1778,
+        "mfu": 41.6562
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4",
+      "metadata": {
+        "workload_name": "Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=4. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
+        "model_family": "llama",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 4,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.0851,
+        "mfu": 33.4094
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4",
+      "metadata": {
+        "workload_name": "Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=8. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
+        "model_family": "llama",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 8,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.0977,
+        "mfu": 20.515
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp1-tpu-group-4",
+      "metadata": {
+        "workload_name": "Qwen3-4B-torchxla-vllm-tp1-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=1. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 1,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.1944,
+        "mfu": 64.0365
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
+      "metadata": {
+        "workload_name": "Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=2. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 2,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.1456,
+        "mfu": 34.7506
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp4-tpu-group-4",
+      "metadata": {
+        "workload_name": "Qwen3-4B-torchxla-vllm-tp4-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=4. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 4,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.0973,
+        "mfu": 29.1951
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
+      "metadata": {
+        "workload_name": "Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
+        "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=8. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 3,
+        "batch_size": 128,
+        "seq_len": 1024,
+        "dataset": "custom",
+        "hardware_type": "TPU",
+        "hardware_model": "tpu_v6e",
+        "total_count": 8,
+        "count_per_node": 8,
+        "network_topology": "torus",
+        "bandwidth_scaleout": "N/A",
+        "bandwidth_scaleup": 800,
+        "driver_version": "v2-alpha-tpuv6e",
+        "framework": "vllm",
+        "compiler": "xla",
+        "tp": 8,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "xla",
+        "comm_library_ver": "",
+        "comm_env": {
+          "JAX_PLATFORMS": "",
+          "PJRT_DEVICE": "TPU"
+        },
+        "protocol_selection": [
+          "xla_collectives",
+          "ici"
+        ],
+        "trace_types": [
+          "tpu_profiler",
+          "xla_trace"
+        ],
+        "metric_traces": [
+          "communication_trace",
+          "kernel_trace"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.0754,
+        "mfu": 17.1789
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 1,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 8,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": 8
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 4.4259
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 4,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": 8
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.4799
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 2,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 13.4455
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
+        "description": "DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter",
+        "model_family": "deepseek_v3_16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan-0.1.0",
+        "compiler": "pytorch-2.10.0, triton",
+        "tp": 4,
+        "pp": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.28.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": 8
+        },
+        "protocol_selection": [
+          "rocev2",
+          "nvlink"
+        ],
+        "trace_types": [
+          "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 3.6338
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-naive-noCUgraph-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-naive-noCUgraph-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_2_tp_2_ep_4-default-noCUgraph-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_2_tp_2_ep_4-default-noCUgraph-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_2_tp_2_ep_4-naive-noCUgraph-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_2_tp_2_ep_4-naive-noCUgraph-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-default-noCUgraph-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-default-noCUgraph-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-default-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-default-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-noCUgraph-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-noCUgraph-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-pplx-perlmutter-group_9",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-pplx-perlmutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_without_eplb-permutter-group_9",
+      "metadata": {
+        "workload_name": "qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_without_eplb-permutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep4-permutter-group_9",
+      "metadata": {
+        "workload_name": "qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep4-permutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep8-permutter-group_9",
+      "metadata": {
+        "workload_name": "qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep8-permutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep16-permutter-group_9",
+      "metadata": {
+        "workload_name": "qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep16-permutter-group_9"
+      },
+      "metrics": {
+        "dominant_kernel_concentration": -1.0,
+        "mean_sm_coverage": -1.0,
+        "memory_bound_fraction": -1.0,
+        "average_memory_bandwidth": -1.0,
+        "communication_ratio": null,
+        "memory_transfer_overhead": -1.0,
+        "aggregate_gpu_utilization": -1.0,
+        "load_imbalance_ratio": -1.0,
+        "communication_overlap_ratio": -1.0,
+        "communication_fraction": -1.0,
+        "moe_fraction": -1.0,
+        "compute_bound_fraction": -1.0,
+        "total_kernel_time": null,
+        "total_communication_time": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_1-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-sglang-ep_1-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_2-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-sglang-ep_2-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_4-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "deepseek-v2-lite-sglang-ep_4-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_1-pp_4-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-sglang-tp_1-pp_4-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_2-pp_2-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-sglang-tp_2-pp_2-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_4-pp_1-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-sglang-tp_4-pp_1-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen-32b-sglang-pp_1-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "qwen-32b-sglang-pp_1-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen-32b-sglang-pp_2-perlmutter-group_6",
+      "metadata": {
+        "workload_name": "qwen-32b-sglang-pp_2-perlmutter-group_6"
+      },
+      "metrics": {
+        "ttft_group_6": null,
+        "tpot_group_6": null,
+        "throughput_group_6": null,
+        "kernel_compute_time_group_6": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    }
+  ]
+}
