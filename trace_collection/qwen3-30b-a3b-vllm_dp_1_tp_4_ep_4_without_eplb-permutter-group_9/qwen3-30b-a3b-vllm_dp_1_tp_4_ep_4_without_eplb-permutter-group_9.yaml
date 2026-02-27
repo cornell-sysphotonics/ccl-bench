@@ -19,7 +19,10 @@ workload:
     max_tokens: 512       
   hardware:
     network_topo:
-      topology: slingshot     
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400     
     xpu_spec:
       type: GPU
       model: nvidia_a100

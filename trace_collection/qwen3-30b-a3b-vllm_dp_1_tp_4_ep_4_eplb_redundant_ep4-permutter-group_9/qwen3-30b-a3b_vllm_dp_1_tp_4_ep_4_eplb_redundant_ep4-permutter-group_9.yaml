@@ -20,6 +20,9 @@ workload:
   hardware:
     network_topo:
       topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400
     xpu_spec:
       type: GPU
       model: nvidia_a100
