@@ -94,20 +94,20 @@ def _get_bandwidth_utilization(combined_df, NGPUS=4, bandwidth=600):
     # reduce is 2*(N-1)/N
     # we cannot join from different slices, but we will assume that each slice has the same number
     # we calculate for each gpu indiviudally and presumably, final outputs should have 4x of each transfer 
-    combined_df['effective bandwidth(GB/s)'] = (combined_df['bytes'] * 4) / (2**30) * (2 * (NGPUS-1)/(NGPUS)) / combined_df['kernel duration(s)']
+    combined_df['effective bandwidth(GB/s)'] = (combined_df['bytes'] * NGPUS) / (2**30) * (2 * (NGPUS-1)/(NGPUS)) / combined_df['kernel duration(s)']
     combined_df['bandwidth utilization'] = combined_df['effective bandwidth(GB/s)']/bandwidth
     return combined_df
 
-def _get_bandwidth_utilization_df(db_path):
+def _get_bandwidth_utilization_df(db_path, NGPUS=4):
     conn = sqlite3.connect(db_path)
     df_list=[]
-    for i in range(4): 
+    for i in range(NGPUS):
         memcpy_df = _get_dtod_memcpy_for_device(conn, i)
         reduce_kernels = _get_reduce_kernels_for_device(conn, i)
         df = _find_reduce_pattern(memcpy_df, reduce_kernels)
         df_list.append(df.copy())
     combined_df = pd.concat(df_list, axis=0, ignore_index=True)
-    bandwidth_utilization = _get_bandwidth_utilization(combined_df)
+    bandwidth_utilization = _get_bandwidth_utilization(combined_df, NGPUS=NGPUS)
     return bandwidth_utilization
 
 

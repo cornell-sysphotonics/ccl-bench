@@ -76,10 +76,12 @@ def calculate_metric(path):
             kernels['demangledName_str']
         ).fillna('Unknown')
         
-        # Identify MoE kernels
+        # Identify MoE kernels (word boundaries on short patterns to avoid false positives)
         moe_patterns = [
-            'moe', 'expert', 'routing', 'gating', 'gate',
-            'fused_expert', 'expert_kernel', 'topk'
+            'moe', 'expert', 'routing', 'gating',
+            r'\bgate\b', r'\btopk\b',
+            'fused_expert', 'expert_kernel',
+            'dispatchkernel', 'combinekernel'  # pplx MoE backend
         ]
         pattern = '|'.join(moe_patterns)
         is_moe = kernels['kernel_name'].str.lower().str.contains(

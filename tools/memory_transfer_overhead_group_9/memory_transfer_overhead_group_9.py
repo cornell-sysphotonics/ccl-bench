@@ -83,8 +83,11 @@ def calculate_metric(path):
             return -1
         
         total_memcpy_time = memcpy['duration'].sum()
-        trace_duration = kernels['end'].max() - kernels['start'].min()
-        
+        # Use the full activity span including both kernels and memcpy
+        trace_start = min(kernels['start'].min(), memcpy['start'].min())
+        trace_end = max(kernels['end'].max(), memcpy['end'].max())
+        trace_duration = trace_end - trace_start
+
         if trace_duration == 0:
             return -1
         

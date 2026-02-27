@@ -112,27 +112,23 @@ def _collect_traces(trace_dir: str) -> List[str]:
     return paths
 
 
-def compute_total_kernel_time(trace_dir: str) -> Dict[str, float]:
+def compute_total_kernel_time(trace_dir: str) -> float:
     """
     Input: trace_dir (directory) OR a single trace file.
-    Output: dict { trace_basename -> total_kernel_time_ms }
+    Output: total kernel time in milliseconds (summed across all traces).
     """
     traces = _collect_traces(trace_dir)
-    results: Dict[str, float] = {}
+    total_ms = 0.0
 
     for pth in traces:
         out = _run_nsys_kernsum_csv(pth)
         csv_lines = _extract_csv_block(out)
         total_ns = _parse_total_ns(csv_lines)
-        results[os.path.basename(pth)] = total_ns / 1e6
+        trace_ms = total_ns / 1e6
+        print(f"{os.path.basename(pth):40s}  total_kernel_time={trace_ms:12.3f} ms", file=__import__('sys').stderr)
+        total_ms += trace_ms
 
-    # print per-trace for sanity
-    print("=" * 80)
-    for k, v in results.items():
-        print(f"{k:40s}  total_kernel_time={v:12.3f} ms")
-    print("=" * 80)
-
-    return results
+    return total_ms
 
 
 # Optional: keep metric_cal alias (some frameworks expect metric_cal)

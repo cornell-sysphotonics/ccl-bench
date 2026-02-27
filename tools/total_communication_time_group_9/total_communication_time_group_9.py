@@ -18,7 +18,7 @@ COMM_REGEXES = [
     re.compile(
         r"cross[_\-]?device", re.IGNORECASE
     ),  # optional: cross-device reduce/ops
-    re.compile(r"allgather|reducescatter|allreduce|broadcast|reduce", re.IGNORECASE),
+    re.compile(r"allgather|reducescatter|allreduce|broadcast", re.IGNORECASE),
 ]
 
 
@@ -127,30 +127,23 @@ def _collect_traces(trace_dir: str) -> List[str]:
     return paths
 
 
-def compute_total_comm_time(trace_dir: str) -> Dict[str, float]:
+def compute_total_comm_time(trace_dir: str) -> float:
     """
-    Input:
-      trace_dir (directory) OR a single trace file.
-
-    Output:
-      dict { trace_basename -> communication kernel time (ms) }
+    Input: trace_dir (directory) OR a single trace file.
+    Output: total communication kernel time in milliseconds (summed across all traces).
     """
     traces = _collect_traces(trace_dir)
-    results: Dict[str, float] = {}
+    total_ms = 0.0
 
     for pth in traces:
         out = _run_nsys_kernsum_csv(pth)
         csv_lines = _extract_csv_block(out)
         comm_ns = _parse_comm_ns(csv_lines)
-        results[os.path.basename(pth)] = comm_ns / 1e6
+        trace_ms = comm_ns / 1e6
+        print(f"{os.path.basename(pth):40s}  comm_kernel_time={trace_ms:12.3f} ms", file=__import__('sys').stderr)
+        total_ms += trace_ms
 
-    # Print per-trace results for sanity checking
-    print("=" * 80)
-    for k, v in results.items():
-        print(f"{k:40s}  comm_kernel_time={v:12.3f} ms")
-    print("=" * 80)
-
-    return results
+    return total_ms
 
 
 # Optional alias if the framework expects `metric_cal`
