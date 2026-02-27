@@ -113,6 +113,7 @@ if __name__ == "__main__":
         delay, slowdown = metric_cal(trace_directory)
         print("Straggler Delay: ", delay)
         print("Straggler Slowdown: ", slowdown)
+        sys.exit(0)
     elif metric_name == "comm_kernel_breakdown_tpu":
         from comm_kernel_breakdown_tpu_group_4.comm_kernel_breakdown_tpu_group_4 import comm_kernel_breakdown_tpu
         metric_cal_func = comm_kernel_breakdown_tpu
@@ -125,8 +126,8 @@ if __name__ == "__main__":
     elif metric_name == "estimated_bandwidth":
         from estimated_bandwidth_group_4.estimated_bandwidth import estimated_bandwidth
         metric_cal_func = estimated_bandwidth
-    # elif metric_name == "mfu":
-    #     from mfu_group_1.mfu_group_1 import metric_cal
+    elif metric_name == "mfu_group_1":
+        from mfu_group_1.mfu_group_1 import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "traffic_window":
         from traffic_window_group_1.traffic_window_group_1 import traffic_window_cal
