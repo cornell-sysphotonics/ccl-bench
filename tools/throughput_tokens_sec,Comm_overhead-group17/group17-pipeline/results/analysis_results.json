@@ -1,0 +1,49 @@
+{
+  "analysis_config": {
+    "model": {
+      "name": "Llama-3.1-8B-LoRA",
+      "total_params": 8000000000,
+      "trainable_params": 3407872,
+      "batch_size": 10,
+      "sequence_length": 512,
+      "dtype_bytes": 2
+    },
+    "hardware": {
+      "gpu_model": "A100",
+      "gpu_count": 1,
+      "node_count": 2,
+      "nvlink_bandwidth": 600.0,
+      "slingshot_bandwidth": 25.0
+    },
+    "trace_files": {
+      "nccl": "group-17/llama-3.1-8b-kineto_trace_nccl_DDP-group17.json",
+      "mscclpp": "group-17/llama-3.1-8b-kineto_trace_mscclpp_DDP-group17.json"
+    }
+  },
+  "results": [
+    {
+      "backend": "NCCL",
+      "trace_file": "group-17/llama-3.1-8b-kineto_trace_nccl_DDP-group17.json",
+      "throughput_tokens_per_sec": 10756.302521008403,
+      "avg_step_time_sec": 0.476,
+      "communication_overhead_percent": 0.47093736384379054,
+      "bandwidth_utilization_percent": 0.007322064118758802,
+      "actual_bandwidth_gbps": 0.0018305160296897003,
+      "compute_to_comm_ratio": 211.34246351531772,
+      "step_count": 1661,
+      "analysis_timestamp": "2026-02-27T13:03:06.617467"
+    },
+    {
+      "backend": "MSCCL++",
+      "trace_file": "group-17/llama-3.1-8b-kineto_trace_mscclpp_DDP-group17.json",
+      "throughput_tokens_per_sec": 10666.666666666668,
+      "avg_step_time_sec": 0.48,
+      "communication_overhead_percent": 0.45833905754565313,
+      "bandwidth_utilization_percent": 0.007460630373748325,
+      "actual_bandwidth_gbps": 0.0018651575934370813,
+      "compute_to_comm_ratio": 217.17909330155533,
+      "step_count": 1661,
+      "analysis_timestamp": "2026-02-27T13:03:07.133504"
+    }
+  ]
+}
