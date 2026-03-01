@@ -100,7 +100,16 @@ body {
 }
 .stat { display: flex; align-items: baseline; gap: 5px; }
 .stat strong { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1; }
-.stats-chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.stats-chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chips-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+.chips-cat-label:first-child { margin-left: 0; }
 .chip {
   padding: 2px 9px;
   border-radius: 10px;
@@ -406,6 +415,18 @@ td.td-metric { text-align: center; }
 .kv-k { font-size: 12px; color: var(--muted); }
 .kv-v { font-size: 12px; font-weight: 500; word-break: break-word; }
 .kv-v a { color: var(--accent); }
+
+.m-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--accent);
+  margin: 12px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #bfdbfe;
+}
+.m-cat-label:first-child { margin-top: 0; }
 
 .metric-row {
   display: flex;

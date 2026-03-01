@@ -202,17 +202,36 @@ function metricPill(val, info) {
 }
 
 // ── Build full column list ────────────────────────────────────────────────────
-function buildCols(allMetrics, metricInfo) {
-  const mCols = allMetrics.map(m => ({
-    key:        '__m__' + m,
-    label:      (metricInfo[m] && metricInfo[m].label) || m,
-    group:      'Metrics',
-    sortable:   true,
-    numeric:    true,
-    isMetric:   true,
-    metricName: m,
-    metricInfo: metricInfo[m] || {},
-  }));
+function buildCols(allMetrics, metricInfo, metricCategories) {
+  const cats = metricCategories || [];
+  const catOrder  = {};
+  const catLabels = {};
+  cats.forEach((c, i) => { catOrder[c.id] = i; catLabels[c.id] = c.label; });
+
+  // Sort metrics by category order, then alphabetically within each category
+  const sorted = [...allMetrics].sort((a, b) => {
+    const ca = (metricInfo[a] && metricInfo[a].category) || '';
+    const cb = (metricInfo[b] && metricInfo[b].category) || '';
+    const oa = catOrder[ca] ?? 999;
+    const ob = catOrder[cb] ?? 999;
+    if (oa !== ob) return oa - ob;
+    return a.localeCompare(b);
+  });
+
+  const mCols = sorted.map(m => {
+    const info  = metricInfo[m] || {};
+    const catId = info.category || '';
+    return {
+      key:        '__m__' + m,
+      label:      info.label || m,
+      group:      catLabels[catId] || 'Metrics',
+      sortable:   true,
+      numeric:    true,
+      isMetric:   true,
+      metricName: m,
+      metricInfo: info,
+    };
+  });
   return [...META_COLS, ...mCols];
 }
 
@@ -508,10 +527,23 @@ function showModal(idx) {
       </div>`);
   }
 
-  // Metrics
+  // Metrics — grouped by category
   const metricEntries = Object.entries(row.metrics);
   if (metricEntries.length) {
-    const rows = metricEntries.map(([name, val]) => {
+    const cats = S.data.metric_categories || [];
+    const catOrder  = {};
+    const catLabels = {};
+    cats.forEach((c, i) => { catOrder[c.id] = i; catLabels[c.id] = c.label; });
+
+    const byCat = {};
+    const noCat = [];
+    metricEntries.forEach(([name, val]) => {
+      const cat = (mi[name] && mi[name].category) || '';
+      if (cat) { (byCat[cat] = byCat[cat] || []).push([name, val]); }
+      else      { noCat.push([name, val]); }
+    });
+
+    const renderMetricRow = ([name, val]) => {
       const info  = mi[name] || {};
       const label = info.label || name;
       const desc  = info.description || '';
@@ -523,11 +555,23 @@ function showModal(idx) {
           </div>
           ${metricPill(val, info)}
         </div>`;
-    }).join('');
+    };
+
+    const sections = [];
+    for (const catDef of cats) {
+      const entries = byCat[catDef.id];
+      if (!entries || !entries.length) continue;
+      sections.push(
+        `<div class="m-cat-label">${esc(catDef.label)}</div>` +
+        entries.map(renderMetricRow).join('')
+      );
+    }
+    if (noCat.length) { sections.push(noCat.map(renderMetricRow).join('')); }
+
     parts.push(`
       <div class="m-section">
         <div class="m-title">Metric Results</div>
-        ${rows}
+        ${sections.join('')}
       </div>`);
   }
 
@@ -582,19 +626,43 @@ function init() {
   const nRows    = S.data.rows.length;
   const nMetrics = S.data.all_metrics.length;
   const mi       = S.data.metric_info || {};
-  const chips    = S.data.all_metrics.map(m =>
-    `<span class="chip">${esc((mi[m] && mi[m].label) || m)}</span>`
-  ).join('');
+  const cats     = S.data.metric_categories || [];
+  const catLabels = {};
+  cats.forEach(c => { catLabels[c.id] = c.label; });
+
+  const byCatChips = {};
+  const uncatChips = [];
+  S.data.all_metrics.forEach(m => {
+    const cat = (mi[m] && mi[m].category) || '';
+    if (cat) { (byCatChips[cat] = byCatChips[cat] || []).push(m); }
+    else      { uncatChips.push(m); }
+  });
+
+  const chipGroups = [];
+  for (const catDef of cats) {
+    const metrics = byCatChips[catDef.id];
+    if (!metrics || !metrics.length) continue;
+    chipGroups.push(
+      `<span class="chips-cat-label">${esc(catDef.label)}</span>` +
+      metrics.map(m => `<span class="chip">${esc((mi[m] && mi[m].label) || m)}</span>`).join('')
+    );
+  }
+  if (uncatChips.length) {
+    chipGroups.push(uncatChips.map(m =>
+      `<span class="chip">${esc((mi[m] && mi[m].label) || m)}</span>`
+    ).join(''));
+  }
+
   document.getElementById('stats-strip').innerHTML = `
     <div class="stat"><strong>${nRows}</strong> workload${nRows !== 1 ? 's' : ''}</div>
     <div class="stat"><strong>${nMetrics}</strong> metric${nMetrics !== 1 ? 's' : ''}</div>
-    <div class="stats-chips">${chips}</div>`;
+    <div class="stats-chips">${chipGroups.join(' ')}</div>`;
 
   // Rows
   S.rows = S.data.rows.map((r, i) => ({ ...r, __idx: i }));
 
   // Columns
-  S.cols = buildCols(S.data.all_metrics, mi);
+  S.cols = buildCols(S.data.all_metrics, mi, S.data.metric_categories || []);
 
   // Render
   renderAll();

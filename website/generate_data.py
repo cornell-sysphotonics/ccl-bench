@@ -11,6 +11,14 @@ Outputs:
 
 Prerequisites:
     pip install pyyaml
+
+Incremental updates (via benchmark_config.json flags):
+    - Set "required_update": true on a trace entry  → recompute all its metrics.
+    - Set "required_update": true on a metric_info entry → recompute that metric
+      across every trace that lists it.
+    - Entries with "required_update": false reuse cached values from the existing
+      benchmark_data.json (if present) and are skipped entirely.
+    - New traces/metrics (not yet in the cache) are always computed.
 """
 
 import json
@@ -155,6 +163,25 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
         return None
 
 
+# ── Cache helpers ──────────────────────────────────────────────────────────────
+
+def load_cache(json_path: Path) -> dict[str, dict]:
+    """
+    Load existing benchmark_data.json and return a mapping
+    { trace_dir: { metric: value, ... } }.
+    Returns an empty dict if the file does not exist or cannot be parsed.
+    """
+    if not json_path.exists():
+        return {}
+    try:
+        with open(json_path) as f:
+            data = json.load(f)
+        return {row["trace"]: row.get("metrics", {}) for row in data.get("rows", [])}
+    except Exception as e:
+        print(f"  Warning: could not load cache from {json_path}: {e}")
+        return {}
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -170,28 +197,56 @@ def main() -> None:
     with open(config_path) as f:
         config = json.load(f)
 
-    pairs       = config.get("pairs", [])
-    metric_info = config.get("metric_info", {})
+    pairs             = config.get("pairs", [])
+    metric_info       = config.get("metric_info", {})
+    metric_categories = config.get("metric_categories", [])
+
+    # Metrics whose implementation changed → must recompute across all traces.
+    stale_metrics: set[str] = {
+        m for m, info in metric_info.items() if info.get("required_update", False)
+    }
+    if stale_metrics:
+        print(f"Metrics marked required_update: {sorted(stale_metrics)}")
+
+    json_path = Path("website/benchmark_data.json")
+    cache = load_cache(json_path)
+    if cache:
+        print(f"Loaded cache with {len(cache)} trace(s) from {json_path}")
+
     all_metrics: set = set()
     rows = []
 
     for i, entry in enumerate(pairs):
-        trace_dir = entry["trace"]
-        metrics   = entry.get("metrics", [])
-        name      = Path(trace_dir).name
+        trace_dir        = entry["trace"]
+        metrics          = entry.get("metrics", [])
+        trace_needs_full = entry.get("required_update", True)  # new entries default to needing update
+        name             = Path(trace_dir).name
 
         print(f"[{i+1}/{len(pairs)}] {name}")
 
         yaml_data = find_yaml(trace_dir)
         metadata  = extract_metadata(yaml_data, trace_dir)
 
+        cached_metrics = cache.get(trace_dir, {})
         metric_results: dict = {}
+
         for metric in metrics:
-            print(f"  → {metric} ...", end=" ", flush=True)
-            val = run_metric(trace_dir, metric)
-            metric_results[metric] = val
             all_metrics.add(metric)
-            print(val)
+
+            needs_compute = (
+                trace_needs_full              # whole trace flagged for update
+                or metric in stale_metrics    # metric implementation changed
+                or metric not in cached_metrics  # not yet in cache
+            )
+
+            if needs_compute:
+                print(f"  → {metric} ...", end=" ", flush=True)
+                val = run_metric(trace_dir, metric)
+                metric_results[metric] = val
+                print(val)
+            else:
+                metric_results[metric] = cached_metrics[metric]
+                print(f"  ✓ {metric} (cached: {cached_metrics[metric]})")
 
         rows.append({
             "trace":    trace_dir,
@@ -200,14 +255,14 @@ def main() -> None:
         })
 
     output = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "all_metrics":  sorted(all_metrics),
-        "metric_info":  metric_info,
-        "rows":         rows,
+        "generated_at":      datetime.now(timezone.utc).isoformat(),
+        "all_metrics":       sorted(all_metrics),
+        "metric_categories": metric_categories,
+        "metric_info":       metric_info,
+        "rows":              rows,
     }
 
     # ── Write JSON ────────────────────────────────────────────────────────────
-    json_path = Path("website/benchmark_data.json")
     json_path.write_text(json.dumps(output, indent=2))
     print(f"\n✓ {json_path}  ({len(rows)} rows, {len(all_metrics)} metrics)")
 
