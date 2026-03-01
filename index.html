@@ -209,7 +209,8 @@ function buildCols(allMetrics, metricInfo, metricCategories) {
   cats.forEach((c, i) => { catOrder[c.id] = i; catLabels[c.id] = c.label; });
 
   // Sort metrics by category order, then alphabetically within each category
-  const sorted = [...allMetrics].sort((a, b) => {
+  // Only show metrics that have an entry in metricInfo (acts as the display allow-list)
+  const sorted = [...allMetrics].filter(m => metricInfo[m]).sort((a, b) => {
     const ca = (metricInfo[a] && metricInfo[a].category) || '';
     const cb = (metricInfo[b] && metricInfo[b].category) || '';
     const oa = catOrder[ca] ?? 999;
@@ -303,6 +304,11 @@ function renderHead() {
     const active  = sc && sc.key === col.key;
     const sortCls = active ? (S.sort.dir === 1 ? 'sorted-asc' : 'sorted-desc') : '';
     const mCls    = col.isMetric ? 'th-metric' : '';
+    if (col.isMetric && col.metricInfo) {
+      const dir     = col.metricInfo.higher_is_better ? ' \u2191' : ' \u2193';
+      const infoBtn = `<span class="th-info-btn" onclick="event.stopPropagation();showMetricInfo('${col.metricName}')" title="View metric details">\u24d8</span>`;
+      return `<th class="${sortCls} ${mCls}" onclick="onSort('${col.key}')">${esc(col.label)}${dir}${infoBtn}</th>`;
+    }
     return `<th class="${sortCls} ${mCls}" onclick="onSort('${col.key}')">${esc(col.label)}</th>`;
   }).join('');
 
@@ -581,6 +587,32 @@ function showModal(idx) {
 
 function closeModal() {
   document.getElementById('modal-backdrop').classList.remove('open');
+}
+
+function showMetricInfo(name) {
+  const mi   = (S.data && S.data.metric_info) || {};
+  const cats = (S.data && S.data.metric_categories) || [];
+  const catLabels = {};
+  cats.forEach(c => { catLabels[c.id] = c.label; });
+  const info = mi[name] || {};
+  document.getElementById('modal-title').textContent = info.label || name;
+  const dir = info.higher_is_better != null
+    ? (info.higher_is_better ? 'Higher is better \u2191' : 'Lower is better \u2193') : '';
+  const kvs = [
+    ['Description', info.description],
+    ['Unit',        info.unit],
+    ['Direction',   dir],
+    ['Category',    catLabels[info.category] || info.category],
+  ].filter(([, v]) => v);
+  document.getElementById('modal-body').innerHTML = `
+    <div class="m-section">
+      <div class="kv-grid">
+        ${kvs.map(([k, v]) =>
+          `<span class="kv-k">${esc(k)}</span><span class="kv-v">${esc(v)}</span>`
+        ).join('')}
+      </div>
+    </div>`;
+  document.getElementById('modal-backdrop').classList.add('open');
 }
 
 function onBackdropClick(e) {

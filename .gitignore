@@ -56,3 +56,6 @@ trace_collection_backlog/*/*/*.json
 *.zip
 
 API_KEY
+
+# claude
+pytorch_docs

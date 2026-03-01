@@ -151,6 +151,8 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
             val = float(raw)
             if val != val:          # NaN → treat as missing
                 return None
+            if val == -1.0:         # sentinel used by group_9 tools for "data unavailable"
+                return None
             return round(val, 4)
         except ValueError:
             return raw              # return raw string for non-numeric metrics
@@ -176,7 +178,13 @@ def load_cache(json_path: Path) -> dict[str, dict]:
     try:
         with open(json_path) as f:
             data = json.load(f)
-        return {row["trace"]: row.get("metrics", {}) for row in data.get("rows", [])}
+        return {
+            row["trace"]: {
+                k: (None if v == -1.0 else v)
+                for k, v in row.get("metrics", {}).items()
+            }
+            for row in data.get("rows", [])
+        }
     except Exception as e:
         print(f"  Warning: could not load cache from {json_path}: {e}")
         return {}
@@ -218,7 +226,7 @@ def main() -> None:
 
     for i, entry in enumerate(pairs):
         trace_dir        = entry["trace"]
-        metrics          = entry.get("metrics", [])
+        metrics_spec     = entry.get("metrics", "auto")
         trace_needs_full = entry.get("required_update", True)  # new entries default to needing update
         name             = Path(trace_dir).name
 
@@ -226,6 +234,22 @@ def main() -> None:
 
         yaml_data = find_yaml(trace_dir)
         metadata  = extract_metadata(yaml_data, trace_dir)
+
+        # ── Resolve metric list ────────────────────────────────────────────
+        if metrics_spec == "auto":
+            trace_types = set(metadata.get("trace_types", []))
+            if not trace_types:
+                print(f"  Warning: no trace_types in YAML — skipping auto-selection")
+                metrics = []
+            else:
+                metrics = [
+                    m for m, info in metric_info.items()
+                    if set(info.get("trace_types", [])) & trace_types
+                ]
+                print(f"  Auto-selected {len(metrics)} metrics for {sorted(trace_types)}: "
+                      f"{', '.join(metrics)}")
+        else:
+            metrics = metrics_spec
 
         cached_metrics = cache.get(trace_dir, {})
         metric_results: dict = {}

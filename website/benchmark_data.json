@@ -1,21 +1,25 @@
 {
-  "generated_at": "2026-03-01T18:49:38.524289+00:00",
+  "generated_at": "2026-03-01T21:18:05.371691+00:00",
   "all_metrics": [
+    "aggregate_gpu_utilization",
     "average_memory_bandwidth",
     "avg_step_time",
+    "bandwidth_utilization_allgather_group_6",
+    "bandwidth_utilization_allreduce_group_6",
+    "bandwidth_utilization_alltoall_group_6",
+    "bandwidth_utilization_peertopeer_group_6",
     "communication_fraction",
-    "communication_overlap_ratio",
-    "communication_ratio",
     "compute_bound_fraction",
     "dominant_kernel_concentration",
-    "load_imbalance_ratio",
+    "kernel_compute_time_group_6",
     "mean_sm_coverage",
     "memory_bound_fraction",
     "memory_transfer_overhead",
     "mfu",
     "moe_fraction",
     "total_communication_time",
-    "total_kernel_time"
+    "total_kernel_time",
+    "total_trace_time"
   ],
   "metric_categories": [
     {
@@ -40,12 +44,33 @@
     }
   ],
   "metric_info": {
+    "total_trace_time": {
+      "label": "Trace Time (s)",
+      "description": "Wall-clock duration of the profiled trace window (first to last recorded event)",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "trace_types": [
+        "json",
+        "tpu_profiler",
+        "nsys"
+      ],
+      "thresholds": {
+        "high": 30,
+        "mid": 5
+      },
+      "required_update": false
+    },
     "avg_step_time": {
       "label": "Step Time (s)",
       "description": "Average step time (inference: decode, training: forward + backward). Serving traces is not reported",
       "higher_is_better": false,
       "unit": "s",
       "category": "model_execution",
+      "trace_types": [
+        "tpu_profiler",
+        "json"
+      ],
       "thresholds": {
         "high": 10,
         "mid": 5
@@ -58,6 +83,9 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "model_execution",
+      "trace_types": [
+        "xla_trace"
+      ],
       "thresholds": {
         "high": 50,
         "mid": 25
@@ -70,6 +98,9 @@
       "higher_is_better": false,
       "unit": "ms",
       "category": "model_execution",
+      "trace_types": [
+        "sglang"
+      ],
       "thresholds": {
         "high": 500,
         "mid": 100
@@ -82,6 +113,9 @@
       "higher_is_better": false,
       "unit": "ms",
       "category": "model_execution",
+      "trace_types": [
+        "sglang"
+      ],
       "thresholds": {
         "high": 50,
         "mid": 20
@@ -94,6 +128,9 @@
       "higher_is_better": true,
       "unit": "tok/s",
       "category": "model_execution",
+      "trace_types": [
+        "sglang"
+      ],
       "thresholds": {
         "high": 1000,
         "mid": 200
@@ -106,6 +143,10 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys",
+        "json"
+      ],
       "thresholds": {
         "high": 80,
         "mid": 50
@@ -118,6 +159,10 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys",
+        "json"
+      ],
       "thresholds": {
         "high": 80,
         "mid": 50
@@ -130,6 +175,10 @@
       "higher_is_better": false,
       "unit": "%",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys",
+        "json"
+      ],
       "thresholds": {
         "high": 70,
         "mid": 40
@@ -142,6 +191,9 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 60,
         "mid": 30
@@ -154,6 +206,9 @@
       "higher_is_better": false,
       "unit": "%",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 60,
         "mid": 30
@@ -166,33 +221,29 @@
       "higher_is_better": false,
       "unit": "%",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys",
+        "json"
+      ],
       "thresholds": {
         "high": 50,
         "mid": 20
       },
       "required_update": false
     },
-    "load_imbalance_ratio": {
-      "label": "Load Imbalance",
-      "description": "Ratio of max to min GPU active time across GPUs (1.0 = perfectly balanced)",
-      "higher_is_better": false,
-      "unit": "ratio",
-      "category": "gpu_efficiency",
-      "thresholds": {
-        "high": 1.5,
-        "mid": 1.2
-      },
-      "required_update": false
-    },
     "total_kernel_time": {
-      "label": "Kernel Time (ms)",
+      "label": "Kernel Time (s)",
       "description": "Total GPU kernel execution time summed across all kernels",
       "higher_is_better": false,
-      "unit": "ms",
+      "unit": "s",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys",
+        "json"
+      ],
       "thresholds": {
-        "high": 10000,
-        "mid": 1000
+        "high": 10,
+        "mid": 1
       },
       "required_update": false
     },
@@ -202,6 +253,9 @@
       "higher_is_better": false,
       "unit": "s",
       "category": "gpu_efficiency",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 60,
         "mid": 10
@@ -214,6 +268,9 @@
       "higher_is_better": true,
       "unit": "GB/s",
       "category": "memory",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 1000,
         "mid": 500
@@ -226,6 +283,9 @@
       "higher_is_better": false,
       "unit": "%",
       "category": "memory",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 20,
         "mid": 5
@@ -234,49 +294,35 @@
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",
-      "description": "Percentage of GPU time in communication kernels (NCCL, cross-device, P2P)",
+      "description": "Percentage of GPU/TPU time in communication kernels (NCCL, cross-device, P2P, XLA collectives)",
       "higher_is_better": false,
       "unit": "%",
       "category": "communication",
+      "trace_types": [
+        "nsys",
+        "json",
+        "tpu_profiler"
+      ],
       "thresholds": {
         "high": 50,
         "mid": 20
-      },
-      "required_update": false
-    },
-    "communication_ratio": {
-      "label": "Comm Ratio (%)",
-      "description": "Percentage of total kernel time spent in communication kernels (NCCL, cross-device)",
-      "higher_is_better": false,
-      "unit": "%",
-      "category": "communication",
-      "thresholds": {
-        "high": 50,
-        "mid": 20
-      },
-      "required_update": false
-    },
-    "communication_overlap_ratio": {
-      "label": "Comm Overlap",
-      "description": "Fraction of communication time overlapped (hidden) by concurrent computation",
-      "higher_is_better": true,
-      "unit": "ratio",
-      "category": "communication",
-      "thresholds": {
-        "high": 0.7,
-        "mid": 0.3
       },
       "required_update": false
     },
     "total_communication_time": {
-      "label": "Comm Time (ms)",
-      "description": "Total time in communication kernels (NCCL, cross-device)",
+      "label": "Comm Time (s)",
+      "description": "Total time in communication kernels (NCCL, cross-device, XLA collectives)",
       "higher_is_better": false,
-      "unit": "ms",
+      "unit": "s",
       "category": "communication",
+      "trace_types": [
+        "nsys",
+        "json",
+        "tpu_profiler"
+      ],
       "thresholds": {
-        "high": 5000,
-        "mid": 500
+        "high": 5,
+        "mid": 0.5
       },
       "required_update": false
     },
@@ -286,6 +332,9 @@
       "higher_is_better": true,
       "unit": "GB/s",
       "category": "communication",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 200,
         "mid": 50
@@ -298,6 +347,9 @@
       "higher_is_better": true,
       "unit": "ratio",
       "category": "communication",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 0.5,
         "mid": 0.1
@@ -310,6 +362,9 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "communication",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 50,
         "mid": 20
@@ -322,6 +377,9 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "communication",
+      "trace_types": [
+        "nsys"
+      ],
       "thresholds": {
         "high": 50,
         "mid": 20
@@ -383,8 +441,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0036,
         "avg_step_time": 0.2218,
-        "mfu": 68.7375
+        "mfu": 68.7375,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0001
       }
     },
     {
@@ -440,8 +501,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0004,
         "avg_step_time": 0.1778,
-        "mfu": 41.6562
+        "mfu": 41.6562,
+        "communication_fraction": 16.5455,
+        "total_communication_time": 217.94
       }
     },
     {
@@ -497,8 +561,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0003,
         "avg_step_time": 0.0851,
-        "mfu": 33.4094
+        "mfu": 33.4094,
+        "communication_fraction": 19.3455,
+        "total_communication_time": 337.5787
       }
     },
     {
@@ -554,8 +621,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0002,
         "avg_step_time": 0.0977,
-        "mfu": 20.515
+        "mfu": 20.515,
+        "communication_fraction": 26.9272,
+        "total_communication_time": 717.6775
       }
     },
     {
@@ -611,8 +681,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0004,
         "avg_step_time": 0.1944,
-        "mfu": 64.0365
+        "mfu": 64.0365,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0
       }
     },
     {
@@ -668,8 +741,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0003,
         "avg_step_time": 0.1456,
-        "mfu": 34.7506
+        "mfu": 34.7506,
+        "communication_fraction": 15.0425,
+        "total_communication_time": 156.9316
       }
     },
     {
@@ -725,8 +801,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0002,
         "avg_step_time": 0.0973,
-        "mfu": 29.1951
+        "mfu": 29.1951,
+        "communication_fraction": 18.4459,
+        "total_communication_time": 227.7851
       }
     },
     {
@@ -782,8 +861,11 @@
         ]
       },
       "metrics": {
+        "total_trace_time": 0.0002,
         "avg_step_time": 0.0754,
-        "mfu": 17.1789
+        "mfu": 17.1789,
+        "communication_fraction": 25.5013,
+        "total_communication_time": 515.0127
       }
     },
     {
@@ -836,7 +918,15 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 4.4259
+        "total_trace_time": 4.4242,
+        "avg_step_time": 4.4259,
+        "aggregate_gpu_utilization": 92.4962,
+        "mean_sm_coverage": 14.2438,
+        "dominant_kernel_concentration": 39.8263,
+        "moe_fraction": 0.0096,
+        "total_kernel_time": 29478.6422,
+        "communication_fraction": 90.1896,
+        "total_communication_time": 26588.7397
       }
     },
     {
@@ -889,7 +979,15 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 12.4799
+        "total_trace_time": 12.501,
+        "avg_step_time": 12.4799,
+        "aggregate_gpu_utilization": 97.7759,
+        "mean_sm_coverage": 8.7742,
+        "dominant_kernel_concentration": 46.6868,
+        "moe_fraction": 0.0057,
+        "total_kernel_time": 123499.7756,
+        "communication_fraction": 95.0665,
+        "total_communication_time": 117450.0991
       }
     },
     {
@@ -942,7 +1040,15 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 13.4455
+        "total_trace_time": 13.4433,
+        "avg_step_time": 13.4455,
+        "aggregate_gpu_utilization": 98.6153,
+        "mean_sm_coverage": 7.9576,
+        "dominant_kernel_concentration": 45.2445,
+        "moe_fraction": 0.0033,
+        "total_kernel_time": 135746.8587,
+        "communication_fraction": 95.5984,
+        "total_communication_time": 129860.9342
       }
     },
     {
@@ -995,7 +1101,15 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 3.6338
+        "total_trace_time": 3.6295,
+        "avg_step_time": 3.6338,
+        "aggregate_gpu_utilization": 86.0349,
+        "mean_sm_coverage": 14.4299,
+        "dominant_kernel_concentration": 38.1559,
+        "moe_fraction": 0.0168,
+        "total_kernel_time": 32712.4481,
+        "communication_fraction": 89.6675,
+        "total_communication_time": 29345.5768
       }
     },
     {
@@ -1049,19 +1163,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 75.6585,
-        "memory_transfer_overhead": 3.8319,
-        "load_imbalance_ratio": 2.9674,
-        "communication_overlap_ratio": 0.0,
-        "communication_fraction": 75.6585,
-        "moe_fraction": 4.9012,
+        "total_trace_time": 1051.7377,
+        "aggregate_gpu_utilization": 4.9449,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
         "compute_bound_fraction": 4.4733,
+        "memory_bound_fraction": null,
+        "moe_fraction": 4.9012,
         "total_kernel_time": 223645.316,
-        "total_communication_time": 169206.6523
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 3.8319,
+        "communication_fraction": 75.6585,
+        "total_communication_time": 169206.6523,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1115,19 +1233,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 87.6409,
-        "memory_transfer_overhead": 9.7623,
-        "load_imbalance_ratio": -1.0,
-        "communication_overlap_ratio": 0.1407,
-        "communication_fraction": 87.6409,
-        "moe_fraction": 3.2006,
+        "total_trace_time": 190.9734,
+        "aggregate_gpu_utilization": 45.7167,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
         "compute_bound_fraction": 5.2094,
+        "memory_bound_fraction": null,
+        "moe_fraction": 3.2006,
         "total_kernel_time": 525381.7773,
-        "total_communication_time": 460449.2269
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 9.7623,
+        "communication_fraction": 87.6409,
+        "total_communication_time": 460449.2269,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1181,19 +1303,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 84.6295,
-        "memory_transfer_overhead": 17.9366,
-        "load_imbalance_ratio": 1.0014,
-        "communication_overlap_ratio": 0.1182,
-        "communication_fraction": 84.6295,
-        "moe_fraction": 4.3843,
+        "total_trace_time": 251.3169,
+        "aggregate_gpu_utilization": 33.2352,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
         "compute_bound_fraction": 6.3438,
+        "memory_bound_fraction": null,
+        "moe_fraction": 4.3843,
         "total_kernel_time": 421323.2136,
-        "total_communication_time": 356563.8087
+        "kernel_compute_time_group_6": null,
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 17.9366,
+        "communication_fraction": 84.6295,
+        "total_communication_time": 356563.8087,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1247,19 +1373,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 88.9071,
-        "memory_transfer_overhead": 8.8291,
-        "load_imbalance_ratio": 1.072,
-        "communication_overlap_ratio": 0.0948,
-        "communication_fraction": 88.9071,
-        "moe_fraction": 3.1346,
+        "total_trace_time": 195.7235,
+        "aggregate_gpu_utilization": 55.4952,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
         "compute_bound_fraction": 4.4822,
+        "memory_bound_fraction": null,
+        "moe_fraction": 3.1346,
         "total_kernel_time": 584752.1294,
-        "total_communication_time": 519885.9912
+        "kernel_compute_time_group_6": null,
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 8.8291,
+        "communication_fraction": 88.9071,
+        "total_communication_time": 519885.9912,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1313,19 +1443,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 84.0106,
-        "memory_transfer_overhead": 15.4846,
-        "load_imbalance_ratio": -1.0,
-        "communication_overlap_ratio": 0.1788,
-        "communication_fraction": 84.0106,
-        "moe_fraction": 4.256,
+        "total_trace_time": 114.7813,
+        "aggregate_gpu_utilization": 55.7135,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
         "compute_bound_fraction": 6.9219,
+        "memory_bound_fraction": null,
+        "moe_fraction": 4.256,
         "total_kernel_time": 386303.1358,
-        "total_communication_time": 324535.6371
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 15.4846,
+        "communication_fraction": 84.0106,
+        "total_communication_time": 324535.6371,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1379,19 +1513,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 66.7988,
-        "memory_transfer_overhead": 20.3366,
-        "load_imbalance_ratio": -1.0,
-        "communication_overlap_ratio": 0.2098,
-        "communication_fraction": 66.7988,
+        "total_trace_time": 257.4787,
+        "aggregate_gpu_utilization": 4.7525,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
+        "compute_bound_fraction": null,
+        "memory_bound_fraction": null,
         "moe_fraction": 6.3175,
-        "compute_bound_fraction": -1.0,
         "total_kernel_time": 57101.5979,
-        "total_communication_time": 38143.1537
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 20.3366,
+        "communication_fraction": 66.7988,
+        "total_communication_time": 38143.1537,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1445,19 +1583,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 87.4407,
-        "memory_transfer_overhead": 5.4169,
-        "load_imbalance_ratio": -1.0,
-        "communication_overlap_ratio": 0.1425,
-        "communication_fraction": 87.4407,
-        "moe_fraction": 3.2496,
+        "total_trace_time": 355.3101,
+        "aggregate_gpu_utilization": 24.4771,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
         "compute_bound_fraction": 5.2878,
+        "memory_bound_fraction": null,
+        "moe_fraction": 3.2496,
         "total_kernel_time": 521035.2969,
-        "total_communication_time": 455596.9867
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 5.4169,
+        "communication_fraction": 87.4407,
+        "total_communication_time": 455596.9867,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1511,19 +1653,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 68.7353,
-        "memory_transfer_overhead": 18.2433,
-        "load_imbalance_ratio": -1.0,
-        "communication_overlap_ratio": 0.2513,
-        "communication_fraction": 68.7353,
+        "total_trace_time": 98.5547,
+        "aggregate_gpu_utilization": 6.2856,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
+        "compute_bound_fraction": null,
+        "memory_bound_fraction": null,
         "moe_fraction": 11.308,
-        "compute_bound_fraction": -1.0,
         "total_kernel_time": 32433.5773,
-        "total_communication_time": 22293.3079
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 18.2433,
+        "communication_fraction": 68.7353,
+        "total_communication_time": 22293.3079,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1577,19 +1723,23 @@
         ]
       },
       "metrics": {
-        "dominant_kernel_concentration": -1.0,
-        "mean_sm_coverage": -1.0,
-        "memory_bound_fraction": -1.0,
-        "average_memory_bandwidth": -1.0,
-        "communication_ratio": 11.9033,
-        "memory_transfer_overhead": 13.2594,
-        "load_imbalance_ratio": -1.0,
-        "communication_overlap_ratio": 0.1636,
-        "communication_fraction": 11.9033,
+        "total_trace_time": 138.301,
+        "aggregate_gpu_utilization": 13.2432,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
+        "compute_bound_fraction": null,
+        "memory_bound_fraction": null,
         "moe_fraction": 45.8103,
-        "compute_bound_fraction": -1.0,
         "total_kernel_time": 111427.6593,
-        "total_communication_time": 13263.594
+        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": 13.2594,
+        "communication_fraction": 11.9033,
+        "total_communication_time": 13263.594,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     }
   ]

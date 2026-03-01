@@ -213,6 +213,20 @@ th.no-sort            { cursor: default; }
 th.th-metric          { background: #1a3050; text-align: center; }
 th.th-metric:hover    { background: #1f3a5f; }
 
+/* Metric column header info icon */
+.th-info-btn {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #7ab3d8;
+  opacity: 0.75;
+  vertical-align: middle;
+  line-height: 1;
+  transition: opacity .12s, color .12s;
+}
+.th-info-btn:hover { opacity: 1; color: #fff; }
+
 /* Body rows */
 td {
   padding: 8px 12px;
