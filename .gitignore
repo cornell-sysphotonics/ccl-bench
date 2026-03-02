@@ -58,4 +58,4 @@ trace_collection_backlog/*/*/*.json
 API_KEY
 
 # claude
-pytorch_docs
+tools/pytorch_docs
