@@ -54,6 +54,7 @@ trace_collection_backlog/*/*/*.json
 *.nsys-rep
 *.sqlite
 *.zip
+tmp* 
 
 API_KEY
 
