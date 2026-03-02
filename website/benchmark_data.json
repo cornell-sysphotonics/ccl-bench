@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-02T17:22:20.383815+00:00",
+  "generated_at": "2026-03-02T20:58:33.815780+00:00",
   "all_metrics": [
     "aggregate_gpu_utilization",
     "average_memory_bandwidth",
@@ -324,7 +324,7 @@
         "high": 5,
         "mid": 0.5
       },
-      "required_update": false
+      "required_update": true
     },
     "bandwidth_utilization_allgather_group_6": {
       "label": "AllGather BW (GB/s)",
@@ -446,7 +446,7 @@
         "avg_step_time": 0.2218,
         "mfu": 68.7375,
         "communication_fraction": 0.0,
-        "total_communication_time": 0.0001
+        "total_communication_time": 0.0
       }
     },
     {
@@ -507,7 +507,7 @@
         "avg_step_time": 0.1778,
         "mfu": 41.6562,
         "communication_fraction": 16.5455,
-        "total_communication_time": 217.94
+        "total_communication_time": 0.0016
       }
     },
     {
@@ -568,7 +568,7 @@
         "avg_step_time": 0.0851,
         "mfu": 33.4094,
         "communication_fraction": 19.3455,
-        "total_communication_time": 337.5787
+        "total_communication_time": 0.0013
       }
     },
     {
@@ -629,7 +629,7 @@
         "avg_step_time": 0.0977,
         "mfu": 20.515,
         "communication_fraction": 26.9272,
-        "total_communication_time": 717.6775
+        "total_communication_time": 0.0013
       }
     },
     {
@@ -751,7 +751,7 @@
         "avg_step_time": 0.1456,
         "mfu": 34.7506,
         "communication_fraction": 15.0425,
-        "total_communication_time": 156.9316
+        "total_communication_time": 0.0013
       }
     },
     {
@@ -812,7 +812,7 @@
         "avg_step_time": 0.0973,
         "mfu": 29.1951,
         "communication_fraction": 18.4459,
-        "total_communication_time": 227.7851
+        "total_communication_time": 0.0008
       }
     },
     {
@@ -873,7 +873,7 @@
         "avg_step_time": 0.0754,
         "mfu": 17.1789,
         "communication_fraction": 25.5013,
-        "total_communication_time": 515.0127
+        "total_communication_time": 0.0008
       }
     },
     {
@@ -935,7 +935,7 @@
         "moe_fraction": 0.0096,
         "total_kernel_time": 29478.6422,
         "communication_fraction": 90.1896,
-        "total_communication_time": 26588.7397
+        "total_communication_time": null
       }
     },
     {
@@ -997,7 +997,7 @@
         "moe_fraction": 0.0057,
         "total_kernel_time": 123499.7756,
         "communication_fraction": 95.0665,
-        "total_communication_time": 117450.0991
+        "total_communication_time": 12.2136
       }
     },
     {
@@ -1059,7 +1059,7 @@
         "moe_fraction": 0.0033,
         "total_kernel_time": 135746.8587,
         "communication_fraction": 95.5984,
-        "total_communication_time": 129860.9342
+        "total_communication_time": 12.7151
       }
     },
     {
@@ -1121,7 +1121,7 @@
         "moe_fraction": 0.0168,
         "total_kernel_time": 32712.4481,
         "communication_fraction": 89.6675,
-        "total_communication_time": 29345.5768
+        "total_communication_time": 3.1853
       }
     },
     {
@@ -1183,7 +1183,7 @@
         "moe_fraction": 0.0198,
         "total_kernel_time": 63.8874,
         "communication_fraction": 90.6411,
-        "total_communication_time": 57.9089
+        "total_communication_time": 3.275
       }
     },
     {
@@ -1250,7 +1250,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 3.8319,
         "communication_fraction": 75.6585,
-        "total_communication_time": 169206.6523,
+        "total_communication_time": 84.6033,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1321,7 +1321,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 9.7623,
         "communication_fraction": 87.6409,
-        "total_communication_time": 460449.2269,
+        "total_communication_time": 230.2246,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1392,7 +1392,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 17.9366,
         "communication_fraction": 84.6295,
-        "total_communication_time": 356563.8087,
+        "total_communication_time": 178.2819,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1463,7 +1463,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 8.8291,
         "communication_fraction": 88.9071,
-        "total_communication_time": 519885.9912,
+        "total_communication_time": 259.943,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1534,7 +1534,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 15.4846,
         "communication_fraction": 84.0106,
-        "total_communication_time": 324535.6371,
+        "total_communication_time": 162.2678,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1605,7 +1605,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 20.3366,
         "communication_fraction": 66.7988,
-        "total_communication_time": 38143.1537,
+        "total_communication_time": 19.0716,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1676,7 +1676,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 5.4169,
         "communication_fraction": 87.4407,
-        "total_communication_time": 455596.9867,
+        "total_communication_time": 227.7985,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1747,7 +1747,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 18.2433,
         "communication_fraction": 68.7353,
-        "total_communication_time": 22293.3079,
+        "total_communication_time": 11.1467,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1818,7 +1818,7 @@
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 13.2594,
         "communication_fraction": 11.9033,
-        "total_communication_time": 13263.594,
+        "total_communication_time": 6.6318,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,

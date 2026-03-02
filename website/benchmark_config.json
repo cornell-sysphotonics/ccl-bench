@@ -310,7 +310,7 @@
     },
     "total_communication_time": {
       "label": "Comm Time (s)",
-      "description": "Total time in communication kernels (NCCL, cross-device, XLA collectives)",
+      "description": "Total exposed time in communication kernels (NCCL, cross-device, XLA collectives). We don't double-count overlapped portion.",
       "higher_is_better": false,
       "unit": "s",
       "category": "communication",

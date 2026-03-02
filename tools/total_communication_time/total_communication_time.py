@@ -6,7 +6,7 @@ Returns: Float >= 0, or -1 if data unavailable
 
 Supported trace types (dispatched via workload YAML):
   nsys        — delegates to total_communication_time_group_9 (nsys stats kernsum)
-  json        — reads PyTorch-profiler JSON files (rank0_trace.json, …)
+  json        — reads a single PyTorch-profiler JSON file (rank0_trace.json)
   tpu_profiler — reads TPU profiler Chrome-trace JSON (XLA collective ops)
 """
 
@@ -85,42 +85,67 @@ def _load_json_events(path: str):
     return []
 
 
+def _merge_intervals(intervals: list) -> float:
+    """Merge overlapping (start, end) intervals and return total covered length."""
+    if not intervals:
+        return 0.0
+    intervals.sort()
+    merged_end = intervals[0][1]
+    total = 0.0
+    cur_start = intervals[0][0]
+    for start, end in intervals[1:]:
+        if start <= merged_end:
+            merged_end = max(merged_end, end)
+        else:
+            total += merged_end - cur_start
+            cur_start, merged_end = start, end
+    total += merged_end - cur_start
+    return total
+
+
 def _calc_json(directory: str) -> float:
     """
-    Total communication time from PyTorch-profiler JSON files.
-    Sums NCCL kernel durations across all rank files, returns ms.
+    Total communication time from a single PyTorch-profiler JSON file (rank0).
+    Merges overlapping comm kernel intervals across CUDA streams to avoid
+    double-counting parallel communication. Returns seconds.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
-    if not json_files:
-        print(f"Error: No JSON files found in {directory}", file=sys.stderr)
-        return -1
+    rank0 = os.path.join(directory, "rank0_trace.json")
+    if os.path.exists(rank0):
+        path = rank0
+    else:
+        json_files = sorted(
+            os.path.join(directory, fn)
+            for fn in os.listdir(directory)
+            if fn.endswith(".json")
+        )
+        if not json_files:
+            print(f"Error: No JSON files found in {directory}", file=sys.stderr)
+            return -1
+        path = json_files[0]
 
-    comm_us = 0.0
+    comm_intervals = []
     any_data = False
 
-    for path in json_files:
-        for e in _load_json_events(path):
-            if (
-                isinstance(e, dict)
-                and e.get("ph") == "X"
-                and e.get("cat") == "kernel"
-            ):
-                dur = e.get("dur")
-                if dur is None:
-                    continue
-                any_data = True
-                if _COMM_RE.search(e.get("name", "")):
-                    comm_us += float(dur)
+    for e in _load_json_events(path):
+        if (
+            isinstance(e, dict)
+            and e.get("ph") == "X"
+            and e.get("cat") == "kernel"
+        ):
+            ts = e.get("ts")
+            dur = e.get("dur")
+            if ts is None or dur is None:
+                continue
+            any_data = True
+            if _COMM_RE.search(e.get("name", "")):
+                ts = float(ts)
+                comm_intervals.append((ts, ts + float(dur)))
 
     if not any_data:
-        print(f"Error: No kernel data found in {directory}", file=sys.stderr)
+        print(f"Error: No kernel data found in {path}", file=sys.stderr)
         return -1
 
-    return float(comm_us / 1e6)   # µs → s
+    return _merge_intervals(comm_intervals) / 1e6   # µs → s
 
 
 def _calc_tpu(directory: str) -> float:
@@ -146,7 +171,7 @@ def _calc_tpu(directory: str) -> float:
 
     events = data.get("traceEvents", []) if isinstance(data, dict) else []
 
-    tpu_pids: set = set()
+    first_tpu_pid = None
     for e in events:
         if (
             isinstance(e, dict)
@@ -154,18 +179,20 @@ def _calc_tpu(directory: str) -> float:
             and e.get("name") == "process_name"
             and "/device:TPU:" in e.get("args", {}).get("name", "")
         ):
-            tpu_pids.add(e["pid"])
+            first_tpu_pid = e["pid"]
+            break
 
-    comm_ns = 0.0
+    comm_intervals = []
     any_data = False
 
     for e in events:
         if not isinstance(e, dict) or e.get("ph") != "X":
             continue
-        if tpu_pids and e.get("pid") not in tpu_pids:
+        if first_tpu_pid is not None and e.get("pid") != first_tpu_pid:
             continue
         args = e.get("args", {}) or {}
         dev_ps = args.get("device_duration_ps")
+        ts = float(e.get("ts") or 0)
         dur = float(dev_ps) / 1000.0 if dev_ps is not None else float(e.get("dur") or 0)
         if dur <= 0:
             continue
@@ -173,13 +200,13 @@ def _calc_tpu(directory: str) -> float:
         name = (e.get("name") or "").lower()
         hlo_cat = (args.get("hlo_category") or "").lower()
         if name in _TPU_COMM_OPS or hlo_cat in _TPU_COMM_OPS:
-            comm_ns += dur
+            comm_intervals.append((ts, ts + dur))
 
     if not any_data:
         print(f"Error: No TPU device events found in {directory}", file=sys.stderr)
         return -1
 
-    return float(comm_ns / 1e9)   # ns → s
+    return _merge_intervals(comm_intervals) / 1e9   # ns → s
 
 
 def metric_cal(directory: str) -> float:
