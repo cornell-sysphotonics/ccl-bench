@@ -10,7 +10,7 @@ contact: # your email please
 
 workload:
   model:
-    phase: training  # Training or inference phase, e.g., training, inference.
+    phase: training  # Training or inference phase, e.g., training, inference, serving
     moe: false  # Mixture of Experts (MoE) enabled or not, e.g., true, false.
     granularity: model_fwd_bwd_pass  # Granularity level, e.g., "model_fwd_bwd_pass", "model_fwd" "layer", "kernel".
     model_family: llama-3.1-8b  # Model family name, e.g., "llama-3.1-8b".
