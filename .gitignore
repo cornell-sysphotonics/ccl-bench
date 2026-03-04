@@ -60,3 +60,9 @@ API_KEY
 
 # claude
 tools/pytorch_docs
+
+# upload server
+upload_server/venv/
+upload_server/server-basic.py
+upload_server/uploads/
+venv/

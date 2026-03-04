@@ -474,6 +474,387 @@ footer {
   background: var(--surface);
   flex-shrink: 0;
 }
+
+/* ── Upload Button ─────────────────────────────────────────────────────── */
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s;
+  white-space: nowrap;
+}
+.upload-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 0 0 3px #dbeafe;
+}
+.upload-btn .upload-icon { font-size: 15px; line-height: 1; }
+
+/* ── Upload Panel (slide-over) ─────────────────────────────────────────── */
+.upload-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.45);
+  z-index: 100;
+}
+.upload-backdrop.open { display: block; }
+
+.upload-panel {
+  position: fixed;
+  top: 0;
+  right: -580px;
+  width: 560px;
+  max-width: 94vw;
+  height: 100vh;
+  background: var(--surface);
+  box-shadow: -8px 0 40px rgba(0,0,0,.18);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  transition: right .28s cubic-bezier(.4,0,.2,1);
+}
+.upload-panel.open { right: 0; }
+
+.upload-panel-hd {
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.upload-panel-hd h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.upload-panel-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s;
+}
+.upload-panel-close:hover { background: #f1f5f9; color: var(--text); }
+
+.upload-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed #94a3b8;
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  margin-bottom: 18px;
+}
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.drop-zone .dz-icon { font-size: 36px; margin-bottom: 10px; }
+.drop-zone .dz-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.drop-zone .dz-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+.drop-zone .dz-browse {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Form fields */
+.upload-field { margin-bottom: 14px; }
+.upload-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 5px;
+}
+.upload-field input,
+.upload-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.upload-field input:focus,
+.upload-field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #dbeafe;
+}
+.upload-field textarea { resize: vertical; min-height: 60px; }
+
+/* File list */
+.file-list { margin-bottom: 18px; }
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.file-item .fi-name {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+.file-item .fi-size { color: var(--muted); white-space: nowrap; margin-left: 8px; }
+.file-item .fi-remove {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, color .12s;
+}
+.file-item .fi-remove:hover { background: var(--red-bg); color: var(--red); }
+
+/* Submit button */
+.upload-submit {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+}
+.upload-submit:hover { background: #1d4ed8; }
+.upload-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Progress bar */
+.upload-progress {
+  display: none;
+  margin-top: 14px;
+}
+.upload-progress.active { display: block; }
+.progress-bar-outer {
+  width: 100%;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress-bar-inner {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width .2s;
+}
+.progress-text {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* Upload result */
+.upload-result {
+  display: none;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.upload-result.active { display: block; }
+.upload-result.success {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid #bbf7d0;
+}
+.upload-result.error {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid #fecaca;
+}
+
+/* ── Upload wizard steps ───────────────────────────────────────────────── */
+.wizard-steps {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.wizard-step {
+  flex: 1;
+  text-align: center;
+  padding: 8px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.wizard-step:last-child { border-right: none; }
+.wizard-step.active {
+  background: var(--accent);
+  color: #fff;
+}
+.wizard-step.done {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.wizard-page { display: none; }
+.wizard-page.active { display: block; }
+
+.wizard-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.wizard-nav button {
+  flex: 1;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .12s;
+  background: var(--surface);
+  color: var(--text);
+}
+.wizard-nav button:hover { background: var(--bg); }
+.wizard-nav button.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.wizard-nav button.primary:hover { background: #1d4ed8; }
+
+/* ── Collapsible sections ──────────────────────────────────────────────── */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 6px;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.section-toggle .chevron {
+  font-size: 10px;
+  transition: transform .15s;
+  color: var(--muted);
+}
+.section-toggle.collapsed .chevron { transform: rotate(-90deg); }
+.section-body { margin-bottom: 16px; }
+.section-body.collapsed { display: none; }
+.optional-tag {
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+/* ── Form grid ─────────────────────────────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+.upload-field select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.upload-field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #dbeafe;
+}
+.req-star { color: var(--red); font-weight: 700; }
+
+/* ── Inline validation ─────────────────────────────────────────────────── */
+.field-error {
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 3px;
+  display: none;
+}
+.field-error.visible { display: block; }
+.upload-field input.invalid,
+.upload-field select.invalid,
+.upload-field textarea.invalid {
+  border-color: var(--red);
+}
 </style>
 <!-- STYLES_END -->
 </head>
@@ -526,6 +907,9 @@ footer {
     <input id="search" type="search" placeholder="Filter workloads, models, hardware…" autocomplete="off">
   </div>
   <span class="filter-count" id="filter-count"></span>
+  <button class="upload-btn" onclick="openUploadPanel()" title="Upload trace files">
+    <span class="upload-icon">&#8679;</span> Upload Traces
+  </button>
 </div>
 
 <!-- ── Table ───────────────────────────────────────────────────────────────── -->
@@ -535,6 +919,358 @@ footer {
     <tbody id="bench-tbody"></tbody>
   </table>
   <div id="empty-state" style="display:none"></div>
+</div>
+
+<!-- ── Upload Panel (slide-over) ────────────────────────────────────────────── -->
+<div class="upload-backdrop" id="upload-backdrop" onclick="closeUploadPanel()"></div>
+<div class="upload-panel" id="upload-panel">
+  <div class="upload-panel-hd">
+    <h2>&#8679; Upload Trace &amp; Workload Card</h2>
+    <button class="upload-panel-close" onclick="closeUploadPanel()" title="Close">&#10005;</button>
+  </div>
+  <div class="upload-panel-body">
+
+    <!-- Wizard step indicators -->
+    <div class="wizard-steps">
+      <div class="wizard-step active" data-step="0" onclick="goToStep(0)">① Contributor</div>
+      <div class="wizard-step" data-step="1" onclick="goToStep(1)">② Model &amp; Data</div>
+      <div class="wizard-step" data-step="2" onclick="goToStep(2)">③ Hardware</div>
+      <div class="wizard-step" data-step="3" onclick="goToStep(3)">④ Framework</div>
+      <div class="wizard-step" data-step="4" onclick="goToStep(4)">⑤ Files &amp; Upload</div>
+    </div>
+
+    <!-- ═══ STEP 0: Contributor Info ═══ -->
+    <div class="wizard-page active" id="wiz-page-0">
+      <div class="form-grid">
+        <div class="upload-field full">
+          <label>Workload Name <span class="req-star">*</span></label>
+          <input type="text" id="wl-name" placeholder="e.g. llama-3.1-8b-sglang-tp4-perlmutter-group6">
+          <div class="field-error" id="err-wl-name">Workload name is required</div>
+        </div>
+        <div class="upload-field">
+          <label>Contributor Name <span class="req-star">*</span></label>
+          <input type="text" id="wl-contributor" placeholder="Your name">
+          <div class="field-error" id="err-wl-contributor">Contributor name is required</div>
+        </div>
+        <div class="upload-field">
+          <label>Contact Email <span class="req-star">*</span></label>
+          <input type="email" id="wl-contact" placeholder="you@example.com">
+          <div class="field-error" id="err-wl-contact">Valid email is required</div>
+        </div>
+        <div class="upload-field full">
+          <label>Description <span class="optional-tag">(optional)</span></label>
+          <textarea id="wl-description" placeholder="Brief description of this workload run…"></textarea>
+        </div>
+        <div class="upload-field">
+          <label>HuggingFace URL <span class="optional-tag">(optional)</span></label>
+          <input type="url" id="wl-hf-url" placeholder="https://huggingface.co/…">
+        </div>
+        <div class="upload-field">
+          <label>Trace URL <span class="optional-tag">(optional)</span></label>
+          <input type="text" id="wl-trace-url" placeholder="Drive / S3 link or local path">
+        </div>
+      </div>
+      <div class="wizard-nav">
+        <div></div>
+        <button class="primary" onclick="goToStep(1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 1: Model & Data ═══ -->
+    <div class="wizard-page" id="wiz-page-1">
+      <!-- Model (required) -->
+      <button class="section-toggle" onclick="toggleSection(this)">
+        Model <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Model Family <span class="req-star">*</span></label>
+            <input type="text" id="wl-model-family" placeholder="e.g. llama-3.1-8b">
+            <div class="field-error" id="err-wl-model-family">Model family is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Phase <span class="req-star">*</span></label>
+            <select id="wl-phase">
+              <option value="">— Select —</option>
+              <option value="training">Training</option>
+              <option value="inference">Inference</option>
+              <option value="serving">Serving</option>
+            </select>
+            <div class="field-error" id="err-wl-phase">Phase is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Precision</label>
+            <select id="wl-precision">
+              <option value="bf16">bf16</option>
+              <option value="fp32">fp32</option>
+              <option value="fp16">fp16</option>
+              <option value="int8">int8</option>
+              <option value="fp8">fp8</option>
+            </select>
+          </div>
+          <div class="upload-field">
+            <label>MoE</label>
+            <select id="wl-moe">
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+          <div class="upload-field">
+            <label>Granularity <span class="optional-tag">(optional)</span></label>
+            <select id="wl-granularity">
+              <option value="">— Select —</option>
+              <option value="model_fwd_bwd_pass">model_fwd_bwd_pass</option>
+              <option value="model_fwd">model_fwd</option>
+              <option value="layer">layer</option>
+              <option value="kernel">kernel</option>
+            </select>
+          </div>
+          <div class="upload-field">
+            <label>Epochs <span class="optional-tag">(optional)</span></label>
+            <input type="number" id="wl-epochs" placeholder="e.g. 1" min="0">
+          </div>
+          <div class="upload-field">
+            <label>Iterations <span class="optional-tag">(optional)</span></label>
+            <input type="number" id="wl-iteration" placeholder="e.g. 5" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Data (required) -->
+      <button class="section-toggle" onclick="toggleSection(this)">
+        Data <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Batch Size <span class="req-star">*</span></label>
+            <input type="number" id="wl-batch-size" placeholder="e.g. 4" min="1">
+            <div class="field-error" id="err-wl-batch-size">Batch size is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Sequence Length <span class="req-star">*</span></label>
+            <input type="number" id="wl-seq-len" placeholder="e.g. 8192" min="1">
+            <div class="field-error" id="err-wl-seq-len">Sequence length is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Dataset <span class="optional-tag">(optional)</span></label>
+            <input type="text" id="wl-dataset" placeholder="e.g. c4, wikitext, random">
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button onclick="goToStep(0)">← Back</button>
+        <button class="primary" onclick="goToStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 2: Hardware ═══ -->
+    <div class="wizard-page" id="wiz-page-2">
+      <button class="section-toggle" onclick="toggleSection(this)">
+        Accelerator <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Type <span class="req-star">*</span></label>
+            <select id="wl-hw-type">
+              <option value="">— Select —</option>
+              <option value="GPU">GPU</option>
+              <option value="TPU">TPU</option>
+            </select>
+            <div class="field-error" id="err-wl-hw-type">Hardware type is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Model <span class="req-star">*</span></label>
+            <input type="text" id="wl-hw-model" placeholder="e.g. nvidia_a100, tpu_v6e">
+            <div class="field-error" id="err-wl-hw-model">Hardware model is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Total Count <span class="req-star">*</span></label>
+            <input type="number" id="wl-hw-total" placeholder="e.g. 16" min="1">
+            <div class="field-error" id="err-wl-hw-total">Total count is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Per Node</label>
+            <input type="number" id="wl-hw-per-node" placeholder="e.g. 4" min="1">
+          </div>
+          <div class="upload-field">
+            <label>Driver Version <span class="optional-tag">(optional)</span></label>
+            <input type="text" id="wl-driver" placeholder="e.g. cuda_12.4, rocm_5.6">
+          </div>
+        </div>
+      </div>
+
+      <button class="section-toggle collapsed" onclick="toggleSection(this)">
+        Network Topology <span class="optional-tag">(optional)</span> <span class="chevron">▼</span>
+      </button>
+      <div class="section-body collapsed">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Topology</label>
+            <input type="text" id="wl-net-topo" placeholder="e.g. slingshot, fat-tree, torus">
+          </div>
+          <div class="upload-field">
+            <label>Scale-out BW (Gbps)</label>
+            <input type="number" id="wl-bw-scaleout" placeholder="e.g. 200">
+          </div>
+          <div class="upload-field">
+            <label>Scale-up BW (Gbps)</label>
+            <input type="number" id="wl-bw-scaleup" placeholder="e.g. 2400">
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button onclick="goToStep(1)">← Back</button>
+        <button class="primary" onclick="goToStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 3: Framework & Parallelism ═══ -->
+    <div class="wizard-page" id="wiz-page-3">
+      <button class="section-toggle" onclick="toggleSection(this)">
+        Framework <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Framework <span class="req-star">*</span></label>
+            <input type="text" id="wl-framework" placeholder="e.g. torchtitan, sglang, vllm, deepspeed">
+            <div class="field-error" id="err-wl-framework">Framework is required</div>
+          </div>
+          <div class="upload-field">
+            <label>Compiler <span class="optional-tag">(optional)</span></label>
+            <input type="text" id="wl-compiler" placeholder="e.g. plain_pytorch, xla, triton">
+          </div>
+        </div>
+      </div>
+
+      <button class="section-toggle" onclick="toggleSection(this)">
+        Parallelism <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>TP</label>
+            <input type="number" id="wl-tp" placeholder="1" min="1" value="1">
+          </div>
+          <div class="upload-field">
+            <label>PP</label>
+            <input type="number" id="wl-pp" placeholder="1" min="1" value="1">
+          </div>
+          <div class="upload-field">
+            <label>DP Replicate</label>
+            <input type="number" id="wl-dp-rep" placeholder="1" min="1" value="1">
+          </div>
+          <div class="upload-field">
+            <label>DP Shard</label>
+            <input type="number" id="wl-dp-shard" placeholder="1" min="1" value="1">
+          </div>
+          <div class="upload-field">
+            <label>EP <span class="optional-tag">(optional)</span></label>
+            <input type="number" id="wl-ep" placeholder="1" min="1">
+          </div>
+          <div class="upload-field">
+            <label>CP <span class="optional-tag">(optional)</span></label>
+            <input type="number" id="wl-cp" placeholder="1" min="1">
+          </div>
+          <div class="upload-field">
+            <label>PP Microbatch <span class="optional-tag">(optional)</span></label>
+            <input type="number" id="wl-pp-mb" placeholder="1" min="1">
+          </div>
+        </div>
+      </div>
+
+      <button class="section-toggle collapsed" onclick="toggleSection(this)">
+        Communication <span class="optional-tag">(optional)</span> <span class="chevron">▼</span>
+      </button>
+      <div class="section-body collapsed">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Comm Library</label>
+            <input type="text" id="wl-comm-lib" placeholder="e.g. NCCL, Gloo, xla">
+          </div>
+          <div class="upload-field">
+            <label>Comm Library Version</label>
+            <input type="text" id="wl-comm-ver" placeholder="e.g. 2.28.3">
+          </div>
+          <div class="upload-field full">
+            <label>Protocols <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated)</span></label>
+            <input type="text" id="wl-protocols" placeholder="e.g. rocev2, p2p, nvlink">
+          </div>
+          <div class="upload-field full">
+            <label>Comm Env Vars <span style="font-weight:400;text-transform:none;letter-spacing:0">(KEY=VALUE, comma-separated)</span></label>
+            <input type="text" id="wl-comm-env" placeholder="e.g. NCCL_IB_QPS_PER_CONNECTION=8, NCCL_NET_GDR_LEVEL=5">
+          </div>
+        </div>
+      </div>
+
+      <button class="section-toggle collapsed" onclick="toggleSection(this)">
+        Metric Source <span class="optional-tag">(optional)</span> <span class="chevron">▼</span>
+      </button>
+      <div class="section-body collapsed">
+        <div class="form-grid">
+          <div class="upload-field">
+            <label>Trace Types <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated)</span></label>
+            <input type="text" id="wl-trace-types" placeholder="e.g. nsys, json, tpu_profiler">
+          </div>
+          <div class="upload-field">
+            <label>Metric-specific Traces <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated)</span></label>
+            <input type="text" id="wl-metric-traces" placeholder="e.g. nsys_sqlite, memory_trace">
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button onclick="goToStep(2)">← Back</button>
+        <button class="primary" onclick="goToStep(4)">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 4: Files & Upload ═══ -->
+    <div class="wizard-page" id="wiz-page-4">
+      <div class="drop-zone" id="drop-zone">
+        <div class="dz-icon">&#128230;</div>
+        <div class="dz-text">Drag &amp; drop trace files here</div>
+        <div class="dz-sub">or <span class="dz-browse" id="dz-browse">browse your computer</span></div>
+        <div class="dz-sub" style="margin-top:6px;font-size:11px;color:#94a3b8">
+          .nsys-rep, .json, .tar, .gz, .tgz, .zip, .bz2, .xz, .zst &nbsp;·&nbsp; Max 500 MB
+        </div>
+        <input type="file" id="file-input" multiple hidden>
+      </div>
+
+      <div class="file-list" id="file-list"></div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.6;">
+        <strong style="color:var(--text)">What happens on upload:</strong><br>
+        ① Your trace files are saved to the server<br>
+        ② A <code>workload_card.yaml</code> is auto-generated from the form fields above<br>
+        ③ Both are stored under <code>uploads/&lt;workload-name&gt;/</code>
+      </div>
+
+      <button class="upload-submit" id="upload-submit" onclick="submitUpload()" disabled>
+        Upload Trace Files &amp; Generate Workload Card
+      </button>
+
+      <div class="upload-progress" id="upload-progress">
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="progress-bar"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Uploading…</div>
+      </div>
+
+      <div class="upload-result" id="upload-result"></div>
+
+      <div class="wizard-nav" style="margin-top:12px">
+        <button onclick="goToStep(3)">← Back</button>
+        <div></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- ── Modal ───────────────────────────────────────────────────────────────── -->
@@ -1176,6 +1912,312 @@ function init() {
 }
 
 init();
+
+// ── Upload Panel ──────────────────────────────────────────────────────────────
+const UPLOAD_SERVER_URL = window.location.port === '5000'
+  ? window.location.origin
+  : 'http://localhost:5000';
+
+const uploadState = { files: [], currentStep: 0 };
+const TOTAL_STEPS = 5;
+
+function openUploadPanel() {
+  document.getElementById('upload-backdrop').classList.add('open');
+  document.getElementById('upload-panel').classList.add('open');
+}
+function closeUploadPanel() {
+  document.getElementById('upload-backdrop').classList.remove('open');
+  document.getElementById('upload-panel').classList.remove('open');
+}
+
+// ── Wizard navigation ─────────────────────────────────────────────────────────
+function goToStep(n) {
+  if (n < 0 || n >= TOTAL_STEPS) return;
+  // Mark previous steps as "done"
+  document.querySelectorAll('.wizard-step').forEach((el, i) => {
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+  document.querySelectorAll('.wizard-page').forEach((el, i) => {
+    el.classList.toggle('active', i === n);
+  });
+  uploadState.currentStep = n;
+  // Scroll panel body to top
+  document.querySelector('.upload-panel-body').scrollTop = 0;
+}
+
+// ── Collapsible sections ──────────────────────────────────────────────────────
+function toggleSection(btn) {
+  btn.classList.toggle('collapsed');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('collapsed');
+}
+
+// ── File selection (click + drag-and-drop) ────────────────────────────────────
+(function initUploadUI() {
+  const dropZone  = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const browse    = document.getElementById('dz-browse');
+
+  browse.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', () => {
+    addFiles(Array.from(fileInput.files));
+    fileInput.value = '';
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) addFiles(Array.from(e.dataTransfer.files));
+  });
+})();
+
+function addFiles(newFiles) {
+  for (const f of newFiles) {
+    const dup = uploadState.files.find(ex => ex.name === f.name && ex.size === f.size);
+    if (!dup) uploadState.files.push(f);
+  }
+  renderFileList();
+}
+function removeFile(index) {
+  uploadState.files.splice(index, 1);
+  renderFileList();
+}
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+}
+function renderFileList() {
+  const list = document.getElementById('file-list');
+  const btn  = document.getElementById('upload-submit');
+  if (!uploadState.files.length) { list.innerHTML = ''; btn.disabled = true; return; }
+  btn.disabled = false;
+  list.innerHTML = uploadState.files.map((f, i) => `
+    <div class="file-item">
+      <span class="fi-name" title="${esc(f.name)}">${esc(f.name)}</span>
+      <span class="fi-size">${formatBytes(f.size)}</span>
+      <button class="fi-remove" onclick="removeFile(${i})" title="Remove">&#10005;</button>
+    </div>`).join('');
+}
+
+// ── Validation helpers ────────────────────────────────────────────────────────
+function val(id) { return (document.getElementById(id).value || '').trim(); }
+function showErr(id, show) {
+  const el = document.getElementById('err-' + id);
+  const input = document.getElementById(id);
+  if (el) el.classList.toggle('visible', show);
+  if (input) input.classList.toggle('invalid', show);
+}
+function validateRequired() {
+  const checks = [
+    ['wl-name',        val('wl-name') !== ''],
+    ['wl-contributor', val('wl-contributor') !== ''],
+    ['wl-contact',     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('wl-contact'))],
+    ['wl-model-family',val('wl-model-family') !== ''],
+    ['wl-phase',       val('wl-phase') !== ''],
+    ['wl-batch-size',  val('wl-batch-size') !== '' && Number(val('wl-batch-size')) > 0],
+    ['wl-seq-len',     val('wl-seq-len') !== '' && Number(val('wl-seq-len')) > 0],
+    ['wl-hw-type',     val('wl-hw-type') !== ''],
+    ['wl-hw-model',    val('wl-hw-model') !== ''],
+    ['wl-hw-total',    val('wl-hw-total') !== '' && Number(val('wl-hw-total')) > 0],
+    ['wl-framework',   val('wl-framework') !== ''],
+  ];
+  let allOk = true;
+  for (const [id, ok] of checks) { showErr(id, !ok); if (!ok) allOk = false; }
+  return allOk;
+}
+
+// ── Collect form data into workload card object ───────────────────────────────
+function buildWorkloadCard() {
+  const csvToList = s => s ? s.split(',').map(x => x.trim()).filter(Boolean) : [];
+  const parseEnvVars = s => {
+    if (!s) return null;
+    const obj = {};
+    s.split(',').map(x => x.trim()).filter(Boolean).forEach(pair => {
+      const eq = pair.indexOf('=');
+      if (eq > 0) obj[pair.slice(0, eq).trim()] = pair.slice(eq + 1).trim();
+    });
+    return Object.keys(obj).length ? obj : null;
+  };
+  return {
+    version: 1,
+    description: val('wl-description') || '',
+    hf_url: val('wl-hf-url') || '',
+    trace_url: val('wl-trace-url') || '',
+    contributor: val('wl-contributor'),
+    contact: val('wl-contact'),
+    workload: {
+      model: {
+        phase: val('wl-phase'),
+        moe: val('wl-moe') === 'true',
+        granularity: val('wl-granularity') || null,
+        model_family: val('wl-model-family'),
+        precision: val('wl-precision') || 'bf16',
+        epochs: Number(val('wl-epochs')) || null,
+        iteration: Number(val('wl-iteration')) || null,
+      },
+      data: {
+        batch_size: Number(val('wl-batch-size')),
+        seq_len: Number(val('wl-seq-len')),
+        dataset: val('wl-dataset') || null,
+      },
+      hardware: {
+        network_topo: {
+          topology: val('wl-net-topo') || null,
+          bandwidth_gbps: [
+            Number(val('wl-bw-scaleout')) || null,
+            Number(val('wl-bw-scaleup')) || null,
+          ].filter(Boolean),
+        },
+        xpu_spec: {
+          type: val('wl-hw-type'),
+          model: val('wl-hw-model'),
+          total_count: Number(val('wl-hw-total')),
+          count_per_node: Number(val('wl-hw-per-node')) || null,
+        },
+        driver_version: val('wl-driver') || null,
+      },
+    },
+    'Model-executor': {
+      framework: {
+        name: val('wl-framework'),
+        compiler_tool_selection: val('wl-compiler') || null,
+      },
+      model_plan_parallelization: {
+        dp_replicate: Number(val('wl-dp-rep')) || 1,
+        dp_shard: Number(val('wl-dp-shard')) || 1,
+        tp: Number(val('wl-tp')) || 1,
+        pp: Number(val('wl-pp')) || 1,
+        cp: Number(val('wl-cp')) || 1,
+        ep: Number(val('wl-ep')) || null,
+        pp_mb: Number(val('wl-pp-mb')) || null,
+      },
+      communication_library: {
+        name: val('wl-comm-lib') || null,
+        version: val('wl-comm-ver') || null,
+        env: parseEnvVars(val('wl-comm-env')),
+      },
+      protocol_selection: csvToList(val('wl-protocols')),
+    },
+    metric_source: {
+      traces: csvToList(val('wl-trace-types')),
+      metrics_specific_trace: csvToList(val('wl-metric-traces')),
+    },
+  };
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+function submitUpload() {
+  // Validate all required fields
+  if (!validateRequired()) {
+    // Jump to the first step with an error
+    const firstErr = document.querySelector('.field-error.visible');
+    if (firstErr) {
+      const page = firstErr.closest('.wizard-page');
+      if (page) {
+        const stepIdx = Number(page.id.replace('wiz-page-', ''));
+        goToStep(stepIdx);
+      }
+    }
+    return;
+  }
+
+  const files       = uploadState.files;
+  const workloadName = val('wl-name');
+  const submitBtn   = document.getElementById('upload-submit');
+  const progressEl  = document.getElementById('upload-progress');
+  const progressBar = document.getElementById('progress-bar');
+  const progressTxt = document.getElementById('progress-text');
+  const resultEl    = document.getElementById('upload-result');
+
+  if (!files.length) return;
+
+  // Build workload card and convert to YAML-ish JSON (server will write YAML)
+  const card = buildWorkloadCard();
+
+  const formData = new FormData();
+  files.forEach(f => formData.append('files', f));
+  formData.append('group_name', workloadName);
+  formData.append('description', card.description);
+  formData.append('workload_card', JSON.stringify(card));
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Uploading…';
+  progressEl.classList.add('active');
+  resultEl.classList.remove('active');
+  progressBar.style.width = '0%';
+  progressTxt.textContent = 'Uploading…';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', UPLOAD_SERVER_URL + '/api/upload');
+
+  xhr.upload.addEventListener('progress', e => {
+    if (e.lengthComputable) {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      progressBar.style.width = pct + '%';
+      progressTxt.textContent = `Uploading… ${pct}% (${formatBytes(e.loaded)} / ${formatBytes(e.total)})`;
+    }
+  });
+
+  xhr.addEventListener('load', () => {
+    progressEl.classList.remove('active');
+    submitBtn.textContent = 'Upload Trace Files & Generate Workload Card';
+    try {
+      const resp = JSON.parse(xhr.responseText);
+      if (xhr.status === 200 && resp.status === 'ok') {
+        resultEl.className = 'upload-result active success';
+        const fileNames = resp.uploaded.map(f => f.filename).join(', ');
+        resultEl.innerHTML = `
+          <strong>✓ Upload successful!</strong><br>
+          <span style="font-size:12px">
+            Upload ID: <code>${esc(resp.upload_id)}</code><br>
+            Workload: <code>${esc(resp.group_name)}</code><br>
+            Files: ${esc(fileNames)}
+            ${resp.workload_card_generated ? '<br>✓ Workload card YAML generated' : ''}
+            ${resp.rejected && resp.rejected.length
+              ? '<br><span style="color:var(--amber)">Rejected: ' + resp.rejected.map(r => esc(r.original + ' – ' + r.reason)).join(', ') + '</span>'
+              : ''}
+          </span>`;
+        uploadState.files = [];
+        renderFileList();
+      } else {
+        resultEl.className = 'upload-result active error';
+        resultEl.innerHTML = `<strong>✗ Upload failed</strong><br><span style="font-size:12px">${esc(resp.message || 'Unknown error')}</span>`;
+        submitBtn.disabled = false;
+      }
+    } catch {
+      resultEl.className = 'upload-result active error';
+      resultEl.innerHTML = `<strong>✗ Upload failed</strong><br><span style="font-size:12px">Server returned status ${xhr.status}. Response could not be parsed as JSON.</span>`;
+      submitBtn.disabled = false;
+    }
+  });
+
+  xhr.addEventListener('error', () => {
+    progressEl.classList.remove('active');
+    submitBtn.textContent = 'Upload Trace Files & Generate Workload Card';
+    submitBtn.disabled = false;
+    resultEl.className = 'upload-result active error';
+    resultEl.innerHTML = `<strong>✗ Connection error</strong><br><span style="font-size:12px">Could not reach upload server at <code>${esc(UPLOAD_SERVER_URL)}</code>.<br>This may be caused by a CORS policy block or the server being unreachable. Check the browser console for details.</span>`;
+  });
+
+  xhr.addEventListener('timeout', () => {
+    progressEl.classList.remove('active');
+    submitBtn.textContent = 'Upload Trace Files & Generate Workload Card';
+    submitBtn.disabled = false;
+    resultEl.className = 'upload-result active error';
+    resultEl.innerHTML = `<strong>✗ Upload timed out</strong><br><span style="font-size:12px">The server at <code>${esc(UPLOAD_SERVER_URL)}</code> did not respond in time. Try again or check server status.</span>`;
+  });
+
+  xhr.send(formData);
+}
+
 </script>
 
 </body>
