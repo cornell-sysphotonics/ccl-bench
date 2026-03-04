@@ -44,6 +44,7 @@ Model-executor:
     tp: 4 # Tensor parallelism factor, e.g., 2, 4.
     pp: 2 # Pipeline parallelism factor, e.g., 1, 2.
     cp: 1 # Context parallelism factor, e.g., 1, 2.
+    ep: 1 # Expert parallelism factor (for MoE models), e.g., 1, 2.
     pp_mb: 1 # Pipeline model parallel micro-batch size, e.g., 1, 2.
   communication_library:
     name:  # Communication library name, e.g., "NCCL", "Gloo".
