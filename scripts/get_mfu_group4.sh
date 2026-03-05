@@ -1,14 +1,3 @@
 #!/bin/bash
 
-# Example usage:
-# ./scripts/get_mfu.sh <TRACE_DIR>
-# e.g. ./scripts/get_mfu.sh ./trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4
-
-if [ -z "$1" ]; then
-  echo "Usage: $0 <TRACE_DIR>"
-  exit 1
-fi
-
-TRACE_DIR=$1
-
-python3 ./tools/main.py --trace "$TRACE_DIR" --metric "mfu"
+python3 ./tools/main.py --trace "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter" --metric "mfu"

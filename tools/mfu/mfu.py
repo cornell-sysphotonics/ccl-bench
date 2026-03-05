@@ -5,16 +5,6 @@ import statistics
 import sys
 import yaml
 
-# ── Model architecture lookup (model_family → total parameter count) ──────────
-# Used in the standard FLOPs estimate: 6 * N * B * S (forward + backward).
-# For MoE models, N should reflect the total (not active) parameter count,
-# which gives the theoretical peak utilization.
-# Add entries here as new model families are onboarded.
-_MODEL_ARCH = {
-    "deepseek_v3_16b": {"num_params": 16e9},   # DeepSeek-V3 16B test config
-    "llama":           {"num_params":  8e9},    # Llama-3.1-8B
-}
-
 # ── Hardware peak BF16 TFLOPs lookup (hardware_model) ─────────────────────────
 _HARDWARE_PEAK_TFLOPS = {
     "nvidia_a100": 312.0,
@@ -85,32 +75,54 @@ _STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
 def _calc_json(directory: str, yaml_data: dict) -> float:
     """
     Compute MFU from PyTorch-profiler JSON traces (torchtitan format).
-    MFU = (2 * B * S * L * H²) / (step_time * world_size * peak_TFLOPS * 1e12)
+
+    Formula (from "Efficient Large Scale Language Modeling with Mixtures of Experts"):
+      FLOP/token = 6(N - N_emb) + 12·L·H·Q·S
+      Observed FLOPS = (FLOP/token) × (tokens/second)
+      MFU = Observed FLOPS / (world_size × peak_TFLOPS)
+
+    Where:
+      N     = total parameter count         (from YAML model_arch.num_params)
+      N_emb = embedding parameter count     (from YAML model_arch.num_params_embedding)
+      L     = number of transformer layers  (from YAML model_arch.num_layers)
+      H     = per-head dimension (head_dim) (from YAML model_arch.head_dim)
+      Q     = number of attention heads     (from YAML model_arch.num_heads)
+      S     = sequence length               (from YAML workload.data.seq_len)
+      tokens/second = (batch_size × seq_len) / step_time
     """
     workload = yaml_data.get("workload", {})
-    data_cfg  = workload.get("data", {})
-    hw_cfg    = workload.get("hardware", {}).get("xpu_spec", {})
-    model_cfg = workload.get("model", {})
+    data_cfg = workload.get("data", {})
+    hw_cfg   = workload.get("hardware", {}).get("xpu_spec", {})
+    arch     = workload.get("model", {}).get("model_arch", {})
 
-    batch_size   = data_cfg.get("batch_size") or 1
-    seq_len      = data_cfg.get("seq_len") or 1
-    world_size   = hw_cfg.get("total_count") or 1
-    model_family = (model_cfg.get("model_family") or "").lower()
-    hw_model     = (hw_cfg.get("model") or "").lower()
-
-    arch = _MODEL_ARCH.get(model_family)
     if arch is None:
-        print(f"[mfu/json] Unknown model_family '{model_family}'; add to _MODEL_ARCH.", file=sys.stderr)
+        model_family = workload.get("model", {}).get("model_family", "unknown")
+        print(f"[mfu/json] No model_arch in YAML for '{model_family}'; add model_arch section.", file=sys.stderr)
         return -1.0
 
-    num_params  = arch["num_params"]
+    # ── Architecture params from YAML ─────────────────────────────────────────
+    N     = arch.get("num_params")
+    N_emb = arch.get("num_params_embedding", 0) or 0
+    L     = arch.get("num_layers")
+    H     = arch.get("head_dim")
+    Q     = arch.get("num_heads")
+
+    if any(v is None for v in (N, L, H, Q)):
+        print(f"[mfu/json] model_arch missing required fields (num_params, num_layers, head_dim, num_heads).", file=sys.stderr)
+        return -1.0
+
+    # ── Workload params from YAML ─────────────────────────────────────────────
+    batch_size = data_cfg.get("batch_size") or 1
+    seq_len    = data_cfg.get("seq_len") or 1
+    world_size = hw_cfg.get("total_count") or 1
+    hw_model   = (hw_cfg.get("model") or "").lower()
 
     peak_tflops = _HARDWARE_PEAK_TFLOPS.get(hw_model)
     if peak_tflops is None:
         print(f"[mfu/json] Unknown hardware_model '{hw_model}'; add to _HARDWARE_PEAK_TFLOPS.", file=sys.stderr)
         return -1.0
 
-    # ── Step time: median of ProfilerStep#N durations across all rank files ──
+    # ── Step time from ProfilerStep#N events across rank trace files ──────────
     rank_files = sorted(
         os.path.join(directory, fn)
         for fn in os.listdir(directory)
@@ -120,7 +132,6 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
         print(f"[mfu/json] No rank trace files found in {directory}", file=sys.stderr)
         return -1.0
 
-    # Collect per-rank average step times (exclude first and last step)
     per_rank_avg = []
     for path in rank_files:
         events = _load_json_events(path)
@@ -143,20 +154,18 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
         print(f"[mfu/json] No ProfilerStep events found in {directory}", file=sys.stderr)
         return -1.0
 
-    step_time_us = statistics.mean(per_rank_avg)
-    step_time_s  = step_time_us / 1e6
+    step_time_s = statistics.mean(per_rank_avg) / 1e6  # µs → s
 
     # ── MFU ──────────────────────────────────────────────────────────────────
-    # Theoretical FLOPs for one forward+backward pass (PaLM convention):
-    #   6 * N * B * S  (≈ 3x forward, which is 2 * N * B * S for each of fwd+bwd)
-    theoretical_flops = 6.0 * num_params * batch_size * seq_len
-    peak_flops_total  = peak_tflops * 1e12 * world_size * step_time_s
+    flop_per_token  = 6 * (N - N_emb) + 12 * L * H * Q * seq_len
+    tokens_per_sec  = (batch_size * seq_len) / step_time_s
+    observed_flops  = flop_per_token * tokens_per_sec
+    peak_flops_total = peak_tflops * 1e12 * world_size
 
     if peak_flops_total <= 0:
         return -1.0
 
-    mfu_pct = (theoretical_flops / peak_flops_total) * 100.0
-    return round(mfu_pct, 4)
+    return round((observed_flops / peak_flops_total) * 100.0, 4)
 
 
 # ── Unified entry point ────────────────────────────────────────────────────────
