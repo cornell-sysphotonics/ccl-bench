@@ -301,6 +301,7 @@ td:last-child          { border-right: none; }
 }
 .b-inference { background: #dbeafe; color: #1d4ed8; }
 .b-training  { background: #dcfce7; color: #15803d; }
+.b-serving   { background: #fef3c7; color: #b45309; }
 .b-tpu       { background: #fce7f3; color: #be185d; }
 .b-gpu       { background: #ede9fe; color: #6d28d9; }
 .b-moe       { background: #fef9c3; color: #854d0e; margin-left: 4px; }
@@ -587,6 +588,7 @@ const META_COLS = [
   { key: 'hardware_model', label: 'HW Model',    group: 'Hardware',     sortable: true  },
   { key: '__accel',        label: 'Accelerators',group: 'Hardware',     sortable: true, numeric: true },
   { key: 'framework',      label: 'Framework',   group: 'Config',       sortable: true  },
+  { key: 'compiler',      label: 'Compiler',    group: 'Config',       sortable: true  },
   { key: 'tp',             label: 'TP',          group: 'Config',       sortable: true, numeric: true },
   { key: 'pp',             label: 'PP',          group: 'Config',       sortable: true, numeric: true },
   { key: 'dp_replicate',   label: 'DP',          group: 'Config',       sortable: true, numeric: true },
@@ -628,7 +630,7 @@ function cellWorkload(row) {
 function cellPhase(row) {
   const p = row.metadata.phase || '';
   if (!p) return fmt('');
-  const cls = p === 'inference' ? 'b-inference' : p === 'training' ? 'b-training' : '';
+  const cls = p === 'inference' ? 'b-inference' : p === 'training' ? 'b-training' : p === 'serving' ? 'b-serving' : '';
   return `<span class="badge ${cls}">${esc(p)}</span>`;
 }
 

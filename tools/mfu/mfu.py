@@ -5,6 +5,9 @@ import statistics
 import sys
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
+
 # ── Hardware peak BF16 TFLOPs lookup (hardware_model) ─────────────────────────
 _HARDWARE_PEAK_TFLOPS = {
     "nvidia_a100": 312.0,
@@ -123,11 +126,10 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
         return -1.0
 
     # ── Step time from ProfilerStep#N events across rank trace files ──────────
-    rank_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json") and (fn.startswith("rank") or fn.startswith("kineto"))
-    )
+    rank_files = [
+        f for f in select_json_files(directory)
+        if os.path.basename(f).startswith(("rank", "kineto"))
+    ]
     if not rank_files:
         print(f"[mfu/json] No rank trace files found in {directory}", file=sys.stderr)
         return -1.0

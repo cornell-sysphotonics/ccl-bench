@@ -16,6 +16,9 @@ import re
 import sys
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
+
 
 # Kernel name patterns that identify MoE-related operations
 _MOE_RE = re.compile(
@@ -80,11 +83,7 @@ def _calc_json(directory: str) -> float:
     MoE fraction from PyTorch-profiler JSON files.
     Aggregates across all rank files: moe_kernel_time / total_kernel_time.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
+    json_files = select_json_files(directory)
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1

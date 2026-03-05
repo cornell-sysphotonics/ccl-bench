@@ -292,6 +292,7 @@ td:last-child          { border-right: none; }
 }
 .b-inference { background: #dbeafe; color: #1d4ed8; }
 .b-training  { background: #dcfce7; color: #15803d; }
+.b-serving   { background: #fef3c7; color: #b45309; }
 .b-tpu       { background: #fce7f3; color: #be185d; }
 .b-gpu       { background: #ede9fe; color: #6d28d9; }
 .b-moe       { background: #fef9c3; color: #854d0e; margin-left: 4px; }

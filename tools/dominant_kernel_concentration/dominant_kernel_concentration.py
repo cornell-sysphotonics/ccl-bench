@@ -15,6 +15,9 @@ import os
 import sys
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
+
 
 def _load_yaml(directory: str) -> dict:
     for fn in os.listdir(directory):
@@ -71,11 +74,7 @@ def _calc_json(directory: str) -> float:
     Aggregates kernel durations by name across all rank files, returns
     the top kernel's share of total kernel time.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
+    json_files = select_json_files(directory)
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1

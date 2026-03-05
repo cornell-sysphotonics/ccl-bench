@@ -1,11 +1,11 @@
 [job]
-dump_folder = "./outputs"
+dump_folder = "/pscratch/sd/e/ericding/torchtitan-256-correct-trace"
 description = "DeepSeek-V3 236B model training"
 print_args = false
 
 [profiling]
 enable_profiling = true
-save_traces_folder = "profile_trace"
+save_traces_folder = "profile_trace_256"
 profile_freq = 10
 enable_memory_snapshot = false
 save_memory_snapshot_folder = "memory_snapshot"
@@ -37,7 +37,7 @@ min_lr_factor = 0.0
 
 [training]
 local_batch_size = 8
-seq_len = 512 # previously was 1024
+seq_len = 1024 # previously was 2048 (too large), 512, 1024
 max_norm = 1.0  # grad norm clipping
 steps = 10
 dataset = "c4_test"  # supported datasets: c4_test (2K), c4 (177M)
