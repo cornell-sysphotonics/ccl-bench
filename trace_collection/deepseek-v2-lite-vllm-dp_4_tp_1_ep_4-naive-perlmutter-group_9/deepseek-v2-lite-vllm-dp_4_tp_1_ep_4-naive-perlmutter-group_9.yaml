@@ -12,7 +12,7 @@ trace_url: /data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4
 
 workload:
   model:
-    phase: inference
+    phase: serving
     moe: true  
     granularity: layer  
     model_family: deepseek_v2
