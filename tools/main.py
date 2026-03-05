@@ -40,32 +40,35 @@ if __name__ == "__main__":
         from avg_step_time.avg_step_time import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "communication_ratio":
-        from communication_ratio_group_9.communication_ratio_group_9  import compute_comm_ratio
-        metric_cal_func = compute_comm_ratio
+        from communication_ratio.communication_ratio import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "total_trace_time":
+        from total_trace_time.total_trace_time import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "total_kernel_time":
-        from total_kernel_time_group_9.total_kernel_time_group_9  import compute_total_kernel_time
-        metric_cal_func = compute_total_kernel_time
+        from total_kernel_time.total_kernel_time import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "total_communication_time":
-        from total_communication_time_group_9.total_communication_time_group_9  import compute_total_comm_time
-        metric_cal_func = compute_total_comm_time
+        from total_communication_time.total_communication_time import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "break_down_steps":
         from break_down_steps_group_9.break_down_steps_group_9  import compute_breakdown
         metric_cal_func = compute_breakdown
     elif metric_name == "communication_fraction":
-        from communication_fraction_group_9.communication_fraction_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from communication_fraction.communication_fraction import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "moe_fraction":
-        from moe_fraction_group_9.moe_fraction_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from moe_fraction.moe_fraction import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "dominant_kernel_concentration":
-        from dominant_kernel_concentration_group_9.dominant_kernel_concentration_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from dominant_kernel_concentration.dominant_kernel_concentration import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "aggregate_gpu_utilization":
-        from aggregate_gpu_utilization_group_9.aggregate_gpu_utilization_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from aggregate_gpu_utilization.aggregate_gpu_utilization import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "mean_sm_coverage":
-        from mean_sm_coverage_group_9.mean_sm_coverage_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from mean_sm_coverage.mean_sm_coverage import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "memory_transfer_overhead":
         from memory_transfer_overhead_group_9.memory_transfer_overhead_group_9 import calculate_metric
         metric_cal_func = calculate_metric
@@ -79,11 +82,11 @@ if __name__ == "__main__":
         from memory_bound_fraction_group_9.memory_bound_fraction_group_9 import calculate_metric
         metric_cal_func = calculate_metric
     elif metric_name == "load_imbalance_ratio":
-        from load_imbalance_ratio_group_9.load_imbalance_ratio_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from load_imbalance_ratio.load_imbalance_ratio import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "communication_overlap_ratio":
-        from communication_overlap_ratio_group_9.communication_overlap_ratio_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from communication_overlap_ratio.communication_overlap_ratio import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "ttft_group_6":
         from ttft_group_6.ttft_group_6 import metric_cal
         metric_cal_func = metric_cal

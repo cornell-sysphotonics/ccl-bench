@@ -13,6 +13,9 @@ The search space is huge. It is impossible to explore all the possible implement
 conda create --name ccl-bench python=3.10.12
 conda activate ccl-bench
 pip install -r requirements.txt
+
+# Install/update nsys on this machine to ≥ 2025.6.1
+
 ```
 
 ## Process FLow
@@ -52,6 +55,15 @@ Stored on our local server.
 `/data/ccl-bench_trace_collection`, `/data/ccl-bench_trace_collection_backlog`
 
 Workload cards should be stored under those folders. In addition, we maintain workload cards in the main repo.
+
+Move folder to /data:
+```
+for folder in ./<original_trace_location>/*; do  
+    if [ -d "$folder" ]; then  
+        cp -r "$folder" /data/ccl-bench_trace_collection/"$(basename "$folder")"/  
+    fi  
+done
+```
 
 Update workload cards:
 ```

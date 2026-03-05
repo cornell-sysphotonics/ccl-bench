@@ -4,7 +4,7 @@ version: 1
 description: DeepSeek-V3 16B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration.
 
 hf_url: https://huggingface.co/deepseek-ai/deepseek-moe-16b-base
-trace_url: /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-perlmutter
+trace_url: /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep32-dp8-pp4-tp4-perlmutter
 
 workload:
   model:
@@ -16,8 +16,8 @@ workload:
     epochs: 1
     iteration: 1
   data:
-    batch_size: 8
-    seq_len: 1024
+    batch_size: 64
+    seq_len: 2048
     dataset: c4_test
   hardware:
     network_topo:
@@ -28,7 +28,7 @@ workload:
     xpu_spec:
       type: GPU
       model: nvidia_a100
-      total_count: 8
+      total_count: 128
       count_per_node: 4
     driver_version: cuda_12.8
 
@@ -39,15 +39,15 @@ Model-executor:
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 8
-    tp: 1
-    pp: 1
+    tp: 4
+    pp: 4
     cp: 1
-    ep: 8
+    ep: 32
+    pp_mb: 2
   communication_library:
     name: NCCL
     version: 2.28.3
     env:
-      NCCL_IB_QPS_PER_CONNECTION: 8
   protocol_selection:
     - rocev2
     - nvlink

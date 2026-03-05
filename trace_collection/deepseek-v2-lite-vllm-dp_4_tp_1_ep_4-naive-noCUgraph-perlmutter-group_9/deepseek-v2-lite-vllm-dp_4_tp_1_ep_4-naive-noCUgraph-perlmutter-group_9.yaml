@@ -8,7 +8,7 @@ description: >
 
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite/tree/main
-trace_url: # trace url, e.g., https://drive.google.com/file/d/1EK_YROAho2sBvYVn8idF6DbnaG3SZ0he/view
+trace_url: /data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-noCUgraph-perlmutter-group_9/
 
 workload:
   model:
@@ -44,12 +44,13 @@ Model-executor:
     tp: 1
     pp: 1
     cp: 1
+    ep: 4
   communication_library:
     name: NCCL
     version: 2.27.3
     env:
       NCCL_IB_QPS_PER_CONNECTION:  
-      VLLM_ALL2ALL_BACKEND: allgather_reducescatter
+      VLLM_ALL2ALL_BACKEND: all-reduce
   protocol_selection:
     - rocev2
     - p2p

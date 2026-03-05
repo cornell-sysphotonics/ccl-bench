@@ -54,6 +54,6 @@ Model-executor:
 
 metric_source:
   traces:
-    - /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter
+    - json
   metrics_specific_trace:
     - 

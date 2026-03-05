@@ -1,469 +1,372 @@
 {
-  "_comment": "Add (trace, metrics) pairs here. Run 'python website/generate_data.py' from the repo root to regenerate data.",
+  "_comment": "Add (trace, metrics) pairs here. Run 'python website/generate_data.py' from the repo root to regenerate data. Set 'required_update': true on a trace entry to force recomputation of its metrics. Set 'required_update': true on a metric_info entry to force recomputation of that metric across ALL traces that include it. Set 'metrics': 'auto' to have the generator select all metrics whose trace_types match the workload YAML's metric_source.traces field. Provide an explicit list to override.",
   "pairs": [
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp1-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp4-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp1-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp2-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp4-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
-      "metrics": ["avg_step_time", "mfu"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
-      "metrics": ["avg_step_time"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter",
-      "metrics": ["avg_step_time"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp4-tp2-perlmutter",
-      "metrics": ["avg_step_time"]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter",
-      "metrics": ["avg_step_time"]
+      "metrics": "auto",
+      "required_update": false
     },
-
-{
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-pp2-tp4-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep32-dp8-pp4-tp4-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-naive-noCUgraph-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_2_tp_2_ep_4-default-noCUgraph-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_2_tp_2_ep_4-naive-noCUgraph-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-default-noCUgraph-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-default-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-noCUgraph-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-pplx-perlmutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
-    },
-
-{
-      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_without_eplb-permutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "metrics": "auto",
+      "required_update": false
+    }
+  ],
+  "metric_categories": [
+    {
+      "id": "model_execution",
+      "label": "Model Execution",
+      "description": "High-level model throughput and latency metrics"
     },
     {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep4-permutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "id": "gpu_efficiency",
+      "label": "GPU Efficiency",
+      "description": "GPU utilization, SM coverage, kernel mix, and load balance"
     },
     {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep8-permutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
+      "id": "memory",
+      "label": "Memory",
+      "description": "Memory bandwidth and transfer overhead"
     },
     {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep16-permutter-group_9",
-      "metrics": [
-        "dominant_kernel_concentration", "mean_sm_coverage",
-        "memory_bound_fraction", "average_memory_bandwidth",
-        "communication_ratio", "memory_transfer_overhead",
-        "aggregate_gpu_utilization", "load_imbalance_ratio",
-        "communication_overlap_ratio", "communication_fraction",
-        "moe_fraction", "compute_bound_fraction",
-        "total_kernel_time", "total_communication_time"
-      ]
-    },
-
-{
-      "_comment": "ep=1, tp=4, pp=1. No alltoall (ep=1). No peertopeer (pp=1).",
-      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_1-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6"
-      ]
-    },
-    {
-      "_comment": "ep=2, tp=4, pp=1. Has alltoall (ep>1). No peertopeer (pp=1).",
-      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_2-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6",
-        "bandwidth_utilization_alltoall_group_6"
-      ]
-    },
-    {
-      "_comment": "ep=4, tp=4, pp=1. Has alltoall (ep>1). No peertopeer (pp=1).",
-      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_4-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6",
-        "bandwidth_utilization_alltoall_group_6"
-      ]
-    },
-
-{
-      "_comment": "tp=1, pp=4. No allgather (tp=1). No allreduce (tp=1). Has peertopeer (pp>1).",
-      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_1-pp_4-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_peertopeer_group_6"
-      ]
-    },
-    {
-      "_comment": "tp=2, pp=2. Has allgather, allreduce, peertopeer.",
-      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_2-pp_2-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6",
-        "bandwidth_utilization_peertopeer_group_6"
-      ]
-    },
-    {
-      "_comment": "tp=4, pp=1. Has allgather, allreduce. No peertopeer (pp=1).",
-      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_4-pp_1-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6"
-      ]
-    },
-
-{
-      "_comment": "tp=4, pp=1. Has allgather, allreduce. No peertopeer (pp=1).",
-      "trace": "/data/ccl-bench_trace_collection/qwen-32b-sglang-pp_1-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6"
-      ]
-    },
-    {
-      "_comment": "tp=4, pp=2. Has allgather, allreduce, peertopeer.",
-      "trace": "/data/ccl-bench_trace_collection/qwen-32b-sglang-pp_2-perlmutter-group_6",
-      "metrics": [
-        "ttft_group_6", "tpot_group_6", "throughput_group_6",
-        "kernel_compute_time_group_6",
-        "bandwidth_utilization_allgather_group_6",
-        "bandwidth_utilization_allreduce_group_6",
-        "bandwidth_utilization_peertopeer_group_6"
-      ]
+      "id": "communication",
+      "label": "Communication",
+      "description": "Collective communication performance, overlap, and bandwidth"
     }
   ],
   "metric_info": {
+    "total_trace_time": {
+      "label": "Trace Time (s)",
+      "description": "Wall-clock duration of the profiled trace window (first to last recorded event)",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "trace_types": ["json", "tpu_profiler", "nsys"],
+      "thresholds": { "high": 30, "mid": 5 },
+      "required_update": false
+    },
+    "avg_step_time": {
+      "label": "Step Time (s)",
+      "description": "Average step time (inference: decode, training: forward + backward). Serving traces is not reported",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "trace_types": ["tpu_profiler", "json"],
+      "thresholds": { "high": 10, "mid": 5 },
+      "required_update": false
+    },
     "mfu": {
       "label": "MFU (%)",
       "description": "Model FLOPs Utilization — percentage of peak hardware FLOPs utilized during active compute windows",
       "higher_is_better": true,
       "unit": "%",
-      "thresholds": { "high": 50, "mid": 25 }
+      "category": "model_execution",
+      "trace_types": ["xla_trace"],
+      "thresholds": { "high": 50, "mid": 25 },
+      "required_update": false
     },
-    "avg_step_time": {
-      "label": "Step Time (s)",
-      "description": "Average step time (inference: decode, training: forward + backward)",
-      "higher_is_better": false,
-      "unit": "s",
-      "thresholds": { "high": 10, "mid": 5 }
-    },
-
-    "dominant_kernel_concentration": {
-      "label": "Top Kernel (%)",
-      "description": "Percentage of total GPU time spent in the single most time-consuming kernel",
-      "higher_is_better": false,
-      "unit": "%",
-      "thresholds": { "high": 70, "mid": 40 }
-    },
-    "mean_sm_coverage": {
-      "label": "SM Coverage (%)",
-      "description": "Average Streaming Multiprocessor coverage across all kernels",
-      "higher_is_better": true,
-      "unit": "%",
-      "thresholds": { "high": 80, "mid": 50 }
-    },
-    "memory_bound_fraction": {
-      "label": "Mem Bound (%)",
-      "description": "Fraction of kernels classified as memory-bound (SM coverage < 50%)",
-      "higher_is_better": false,
-      "unit": "%",
-      "thresholds": { "high": 60, "mid": 30 }
-    },
-    "average_memory_bandwidth": {
-      "label": "Avg Mem BW (GB/s)",
-      "description": "Average memory copy bandwidth across all memcpy operations",
-      "higher_is_better": true,
-      "unit": "GB/s",
-      "thresholds": { "high": 1000, "mid": 500 }
-    },
-    "communication_ratio": {
-      "label": "Comm Ratio (%)",
-      "description": "Percentage of total kernel time spent in communication kernels (NCCL, cross-device)",
-      "higher_is_better": false,
-      "unit": "%",
-      "thresholds": { "high": 50, "mid": 20 }
-    },
-    "memory_transfer_overhead": {
-      "label": "Mem Transfer OH (%)",
-      "description": "Percentage of trace time spent on memory transfers (memcpy)",
-      "higher_is_better": false,
-      "unit": "%",
-      "thresholds": { "high": 20, "mid": 5 }
-    },
-    "aggregate_gpu_utilization": {
-      "label": "GPU Util (%)",
-      "description": "Overall GPU utilization — merged active kernel time as percentage of trace duration",
-      "higher_is_better": true,
-      "unit": "%",
-      "thresholds": { "high": 80, "mid": 50 }
-    },
-    "load_imbalance_ratio": {
-      "label": "Load Imbalance",
-      "description": "Ratio of max to min GPU active time across GPUs (1.0 = perfectly balanced)",
-      "higher_is_better": false,
-      "unit": "ratio",
-      "thresholds": { "high": 1.5, "mid": 1.2 }
-    },
-    "communication_overlap_ratio": {
-      "label": "Comm Overlap",
-      "description": "Fraction of communication time overlapped (hidden) by concurrent computation",
-      "higher_is_better": true,
-      "unit": "ratio",
-      "thresholds": { "high": 0.7, "mid": 0.3 }
-    },
-    "communication_fraction": {
-      "label": "Comm Fraction (%)",
-      "description": "Percentage of GPU time in communication kernels (NCCL, cross-device, P2P)",
-      "higher_is_better": false,
-      "unit": "%",
-      "thresholds": { "high": 50, "mid": 20 }
-    },
-    "moe_fraction": {
-      "label": "MoE Fraction (%)",
-      "description": "Percentage of GPU time in Mixture of Experts kernels (expert compute, routing, gating, pplx dispatch/combine)",
-      "higher_is_better": false,
-      "unit": "%",
-      "thresholds": { "high": 50, "mid": 20 }
-    },
-    "compute_bound_fraction": {
-      "label": "Compute Bound (%)",
-      "description": "Percentage of time in compute-bound kernels (SM coverage > 70%, duration > 10us)",
-      "higher_is_better": true,
-      "unit": "%",
-      "thresholds": { "high": 60, "mid": 30 }
-    },
-    "total_kernel_time": {
-      "label": "Kernel Time (ms)",
-      "description": "Total GPU kernel execution time summed across all kernels",
-      "higher_is_better": false,
-      "unit": "ms",
-      "thresholds": { "high": 10000, "mid": 1000 }
-    },
-    "total_communication_time": {
-      "label": "Comm Time (ms)",
-      "description": "Total time in communication kernels (NCCL, cross-device)",
-      "higher_is_better": false,
-      "unit": "ms",
-      "thresholds": { "high": 5000, "mid": 500 }
-    },
-
     "ttft_group_6": {
       "label": "TTFT (ms)",
       "description": "Median time to first token",
       "higher_is_better": false,
       "unit": "ms",
-      "thresholds": { "high": 500, "mid": 100 }
+      "category": "model_execution",
+      "trace_types": ["sglang"],
+      "thresholds": { "high": 500, "mid": 100 },
+      "required_update": false
     },
     "tpot_group_6": {
       "label": "TPOT (ms)",
       "description": "Median time per output token",
       "higher_is_better": false,
       "unit": "ms",
-      "thresholds": { "high": 50, "mid": 20 }
+      "category": "model_execution",
+      "trace_types": ["sglang"],
+      "thresholds": { "high": 50, "mid": 20 },
+      "required_update": false
     },
     "throughput_group_6": {
       "label": "Throughput (tok/s)",
       "description": "Output tokens generated per second",
       "higher_is_better": true,
       "unit": "tok/s",
-      "thresholds": { "high": 1000, "mid": 200 }
+      "category": "model_execution",
+      "trace_types": ["sglang"],
+      "thresholds": { "high": 1000, "mid": 200 },
+      "required_update": false
+    },
+
+    "aggregate_gpu_utilization": {
+      "label": "GPU Util (%)",
+      "description": "Overall GPU utilization — merged active kernel time as percentage of trace duration",
+      "higher_is_better": true,
+      "unit": "%",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys", "json"],
+      "thresholds": { "high": 80, "mid": 50 },
+      "required_update": false
+    },
+    "mean_sm_coverage": {
+      "label": "SM Coverage (%)",
+      "description": "Average Streaming Multiprocessor coverage across all kernels",
+      "higher_is_better": true,
+      "unit": "%",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys", "json"],
+      "thresholds": { "high": 80, "mid": 50 },
+      "required_update": false
+    },
+    "dominant_kernel_concentration": {
+      "label": "Top Kernel (%)",
+      "description": "Percentage of total GPU time spent in the single most time-consuming kernel",
+      "higher_is_better": false,
+      "unit": "%",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys", "json"],
+      "thresholds": { "high": 70, "mid": 40 },
+      "required_update": false
+    },
+    "compute_bound_fraction": {
+      "label": "Compute Bound (%)",
+      "description": "Percentage of time in compute-bound kernels (SM coverage > 70%, duration > 10us)",
+      "higher_is_better": true,
+      "unit": "%",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 60, "mid": 30 },
+      "required_update": false
+    },
+    "memory_bound_fraction": {
+      "label": "Mem Bound (%)",
+      "description": "Fraction of kernels classified as memory-bound (SM coverage < 50%)",
+      "higher_is_better": false,
+      "unit": "%",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 60, "mid": 30 },
+      "required_update": false
+    },
+    "moe_fraction": {
+      "label": "MoE Fraction (%)",
+      "description": "Percentage of GPU time in Mixture of Experts kernels (expert compute, routing, gating, pplx dispatch/combine)",
+      "higher_is_better": false,
+      "unit": "%",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys", "json"],
+      "thresholds": { "high": 50, "mid": 20 },
+      "required_update": false
+    },
+    "total_kernel_time": {
+      "label": "Kernel Time (s)",
+      "description": "Total GPU kernel execution time summed across all kernels",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys", "json"],
+      "thresholds": { "high": 10, "mid": 1 },
+      "required_update": false
     },
     "kernel_compute_time_group_6": {
       "label": "Kernel Time (s)",
       "description": "Total GPU kernel compute time",
       "higher_is_better": false,
       "unit": "s",
-      "thresholds": { "high": 60, "mid": 10 }
+      "category": "gpu_efficiency",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 60, "mid": 10 },
+      "required_update": false
+    },
+
+    "average_memory_bandwidth": {
+      "label": "Avg Mem BW (GB/s)",
+      "description": "Average memory copy bandwidth across all memcpy operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "category": "memory",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 1000, "mid": 500 },
+      "required_update": false
+    },
+    "memory_transfer_overhead": {
+      "label": "Mem Transfer OH (%)",
+      "description": "Percentage of trace time spent on memory transfers (memcpy)",
+      "higher_is_better": false,
+      "unit": "%",
+      "category": "memory",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 20, "mid": 5 },
+      "required_update": false
+    },
+
+    "communication_fraction": {
+      "label": "Comm Fraction (%)",
+      "description": "Percentage of GPU/TPU time in communication kernels (NCCL, cross-device, P2P, XLA collectives)",
+      "higher_is_better": false,
+      "unit": "%",
+      "category": "communication",
+      "trace_types": ["nsys", "json", "tpu_profiler"],
+      "thresholds": { "high": 50, "mid": 20 },
+      "required_update": false
+    },
+    "total_communication_time": {
+      "label": "Comm Time (s)",
+      "description": "Total exposed time in communication kernels (NCCL, cross-device, XLA collectives). We don't double-count overlapped portion.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "communication",
+      "trace_types": ["nsys", "json", "tpu_profiler"],
+      "thresholds": { "high": 5, "mid": 0.5 },
+      "required_update": false
     },
     "bandwidth_utilization_allgather_group_6": {
       "label": "AllGather BW (GB/s)",
       "description": "Median effective bandwidth utilization for AllGather operations",
       "higher_is_better": true,
       "unit": "GB/s",
-      "thresholds": { "high": 200, "mid": 50 }
+      "category": "communication",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 200, "mid": 50 },
+      "required_update": false
     },
     "bandwidth_utilization_allreduce_group_6": {
       "label": "AllReduce BW",
       "description": "Median bandwidth utilization for AllReduce operations",
       "higher_is_better": true,
       "unit": "ratio",
-      "thresholds": { "high": 0.5, "mid": 0.1 }
+      "category": "communication",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 0.5, "mid": 0.1 },
+      "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
       "label": "AllToAll BW (%)",
       "description": "Average NVLink TX throughput utilization during AllToAll operations",
       "higher_is_better": true,
       "unit": "%",
-      "thresholds": { "high": 50, "mid": 20 }
+      "category": "communication",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 50, "mid": 20 },
+      "required_update": false
     },
     "bandwidth_utilization_peertopeer_group_6": {
       "label": "P2P BW (%)",
       "description": "Average NVLink/PCIe TX throughput utilization during peer-to-peer (pipeline parallelism) operations",
       "higher_is_better": true,
       "unit": "%",
-      "thresholds": { "high": 50, "mid": 20 }
+      "category": "communication",
+      "trace_types": ["nsys"],
+      "thresholds": { "high": 50, "mid": 20 },
+      "required_update": false
     }
   }
 }

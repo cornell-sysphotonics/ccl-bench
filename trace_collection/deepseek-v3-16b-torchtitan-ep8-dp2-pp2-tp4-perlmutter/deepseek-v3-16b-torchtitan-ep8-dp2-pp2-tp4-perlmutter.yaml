@@ -17,7 +17,7 @@ workload:
     iteration: 1
   data:
     batch_size: 8
-    seq_len: 1024
+    seq_len: 2048
     dataset: c4_test
   hardware:
     network_topo:
@@ -28,7 +28,7 @@ workload:
     xpu_spec:
       type: GPU
       model: nvidia_a100
-      total_count: 8
+      total_count: 16
       count_per_node: 4
     driver_version: cuda_12.8
 
@@ -38,16 +38,17 @@ Model-executor:
     compiler_tool_selection: pytorch-2.10.0, triton
   model_plan_parallelization:
     dp_replicate: 1
-    dp_shard: 8
-    tp: 1
-    pp: 1
+    dp_shard: 2
+    tp: 4
+    pp: 2
     cp: 1
     ep: 8
+    pp_mb: 2
   communication_library:
     name: NCCL
     version: 2.28.3
     env:
-      NCCL_IB_QPS_PER_CONNECTION: 8
+      NCCL_IB_QPS_PER_CONNECTION:
   protocol_selection:
     - rocev2
     - nvlink

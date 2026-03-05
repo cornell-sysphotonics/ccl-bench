@@ -11,9 +11,18 @@ Outputs:
 
 Prerequisites:
     pip install pyyaml
+
+Incremental updates (via benchmark_config.json flags):
+    - Set "required_update": true on a trace entry  → recompute all its metrics.
+    - Set "required_update": true on a metric_info entry → recompute that metric
+      across every trace that lists it.
+    - Entries with "required_update": false reuse cached values from the existing
+      benchmark_data.json (if present) and are skipped entirely.
+    - New traces/metrics (not yet in the cache) are always computed.
 """
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -98,6 +107,7 @@ def extract_metadata(yaml_data: dict | None, trace_dir: str) -> dict:
         # Parallelism
         "tp":                 par.get("tp") or "",
         "pp":                 par.get("pp") or "",
+        "pp_mb":              par.get("pp_mb") or "",
         "dp_replicate":       par.get("dp_replicate") or "",
         "dp_shard":           par.get("dp_shard") or "",
         "ep":                 par.get("ep") or "",
@@ -143,6 +153,8 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
             val = float(raw)
             if val != val:          # NaN → treat as missing
                 return None
+            if val == -1.0:         # sentinel used by group_9 tools for "data unavailable"
+                return None
             return round(val, 4)
         except ValueError:
             return raw              # return raw string for non-numeric metrics
@@ -153,6 +165,31 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
     except Exception as e:
         print(f"    [error] {e}")
         return None
+
+
+# ── Cache helpers ──────────────────────────────────────────────────────────────
+
+def load_cache(json_path: Path) -> dict[str, dict]:
+    """
+    Load existing benchmark_data.json and return a mapping
+    { trace_dir: { metric: value, ... } }.
+    Returns an empty dict if the file does not exist or cannot be parsed.
+    """
+    if not json_path.exists():
+        return {}
+    try:
+        with open(json_path) as f:
+            data = json.load(f)
+        return {
+            row["trace"]: {
+                k: (None if v == -1.0 else v)
+                for k, v in row.get("metrics", {}).items()
+            }
+            for row in data.get("rows", [])
+        }
+    except Exception as e:
+        print(f"  Warning: could not load cache from {json_path}: {e}")
+        return {}
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -170,28 +207,72 @@ def main() -> None:
     with open(config_path) as f:
         config = json.load(f)
 
-    pairs       = config.get("pairs", [])
-    metric_info = config.get("metric_info", {})
+    pairs             = config.get("pairs", [])
+    metric_info       = config.get("metric_info", {})
+    metric_categories = config.get("metric_categories", [])
+
+    # Metrics whose implementation changed → must recompute across all traces.
+    stale_metrics: set[str] = {
+        m for m, info in metric_info.items() if info.get("required_update", False)
+    }
+    if stale_metrics:
+        print(f"Metrics marked required_update: {sorted(stale_metrics)}")
+
+    json_path = Path("website/benchmark_data.json")
+    cache = load_cache(json_path)
+    if cache:
+        print(f"Loaded cache with {len(cache)} trace(s) from {json_path}")
+
     all_metrics: set = set()
     rows = []
 
     for i, entry in enumerate(pairs):
-        trace_dir = entry["trace"]
-        metrics   = entry.get("metrics", [])
-        name      = Path(trace_dir).name
+        trace_dir        = entry["trace"]
+        metrics_spec     = entry.get("metrics", "auto")
+        trace_needs_full = entry.get("required_update", True)  # new entries default to needing update
+        name             = Path(trace_dir).name
 
         print(f"[{i+1}/{len(pairs)}] {name}")
 
         yaml_data = find_yaml(trace_dir)
         metadata  = extract_metadata(yaml_data, trace_dir)
 
+        # ── Resolve metric list ────────────────────────────────────────────
+        if metrics_spec == "auto":
+            trace_types = set(metadata.get("trace_types", []))
+            if not trace_types:
+                print(f"  Warning: no trace_types in YAML — skipping auto-selection")
+                metrics = []
+            else:
+                metrics = [
+                    m for m, info in metric_info.items()
+                    if set(info.get("trace_types", [])) & trace_types
+                ]
+                print(f"  Auto-selected {len(metrics)} metrics for {sorted(trace_types)}: "
+                      f"{', '.join(metrics)}")
+        else:
+            metrics = metrics_spec
+
+        cached_metrics = cache.get(trace_dir, {})
         metric_results: dict = {}
+
         for metric in metrics:
-            print(f"  → {metric} ...", end=" ", flush=True)
-            val = run_metric(trace_dir, metric)
-            metric_results[metric] = val
             all_metrics.add(metric)
-            print(val)
+
+            needs_compute = (
+                trace_needs_full              # whole trace flagged for update
+                or metric in stale_metrics    # metric implementation changed
+                or metric not in cached_metrics  # not yet in cache
+            )
+
+            if needs_compute:
+                print(f"  → {metric} ...", end=" ", flush=True)
+                val = run_metric(trace_dir, metric)
+                metric_results[metric] = val
+                print(val)
+            else:
+                metric_results[metric] = cached_metrics[metric]
+                print(f"  ✓ {metric} (cached: {cached_metrics[metric]})")
 
         rows.append({
             "trace":    trace_dir,
@@ -200,18 +281,18 @@ def main() -> None:
         })
 
     output = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "all_metrics":  sorted(all_metrics),
-        "metric_info":  metric_info,
-        "rows":         rows,
+        "generated_at":      datetime.now(timezone.utc).isoformat(),
+        "all_metrics":       sorted(all_metrics),
+        "metric_categories": metric_categories,
+        "metric_info":       metric_info,
+        "rows":              rows,
     }
 
     # ── Write JSON ────────────────────────────────────────────────────────────
-    json_path = Path("website/benchmark_data.json")
     json_path.write_text(json.dumps(output, indent=2))
     print(f"\n✓ {json_path}  ({len(rows)} rows, {len(all_metrics)} metrics)")
 
-    # ── Write data.js (works directly from file:// — no server needed) ────────
+    # ── Write data.js ─────────────────────────────────────────────────────────
     js_path = Path("website/data.js")
     js_path.write_text(
         "// Auto-generated by website/generate_data.py — do not edit manually\n"
@@ -219,14 +300,24 @@ def main() -> None:
     )
     print(f"✓ {js_path}")
 
+    # ── Refresh inline CSS in index.html ──────────────────────────────────────
+    html_path = Path("index.html")
+    html = html_path.read_text()
+    css = Path("website/styles.css").read_text()
+    css_block = f"<!-- STYLES_START -->\n<style>\n{css}</style>\n<!-- STYLES_END -->"
+    updated = re.sub(
+        r"<!-- STYLES_START -->.*?<!-- STYLES_END -->",
+        lambda _: css_block,
+        html, flags=re.DOTALL,
+    )
+    if updated != html:
+        html_path.write_text(updated)
+        print(f"✓ {html_path}  (CSS refreshed)")
+
     print()
     print("Open the website:")
-    print("  open website/index.html          # macOS (file:// works — no server needed)")
-    print("  xdg-open website/index.html      # Linux")
-    print()
-    print("Or serve with a local HTTP server:")
-    print("  python -m http.server 8080 --directory website/")
-    print("  → http://localhost:8080")
+    print("  open index.html          # macOS")
+    print("  xdg-open index.html      # Linux")
 
 
 if __name__ == "__main__":
