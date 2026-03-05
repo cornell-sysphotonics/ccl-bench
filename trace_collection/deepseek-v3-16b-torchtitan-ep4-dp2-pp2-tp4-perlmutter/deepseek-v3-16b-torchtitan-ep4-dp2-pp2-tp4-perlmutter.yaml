@@ -15,6 +15,14 @@ workload:
     precision: bf16
     epochs: 1
     iteration: 1
+    model_arch:
+      # DeepSeek-MoE-16B base architecture
+      # Reference: https://huggingface.co/deepseek-ai/deepseek-moe-16b-base
+      num_params: 16380544000         # total parameter count
+      num_params_embedding: 204800000 # vocab_size(100000) * hidden_size(2048)
+      num_layers: 28                  # L: transformer decoder layers
+      num_heads: 16                   # Q: number of attention heads
+      head_dim: 128                   # H: per-head dimension (hidden_size / num_heads)
   data:
     batch_size: 8
     seq_len: 2048
@@ -58,3 +66,4 @@ metric_source:
     - json
   metrics_specific_trace:
     - 
+

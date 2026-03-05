@@ -1,37 +1,37 @@
-# llama_31_8b-megatron_lm-dp_4-tp_2-perlmutter-group_1.yaml
+# deepseek_r1_distill_qwen_7b-megatron_lm-dp_4-tp_4-perlmutter-group_1.yaml
 version: 1
 
 description: >
-  Llama-3.1-8B training on 8 NVIDIA A100 GPUs across 2 nodes. 
-  Configured with 4-way Data Parallelism and 2-way Tensor Parallelism 
-  using Megatron-LM (mcore). Profiled at iteration 25 with JIT/Compile disabled.
+  DeepSeek-Qwen2-7B (Distill) training profile on 16 NVIDIA A100 GPUs across 4 nodes. 
+  Configured with 4-way Tensor Parallelism (TP=4) and 4-way Data Parallelism (DP=4). 
+  Features a specific 7B shape with 28 layers and a large 151k vocabulary.
 
-hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
-trace_url: https://drive.google.com/file/d/1kWScXZkiSCFWIzZMxe5KhDG609bHfITN/view?usp=drive_link
+hf_url: https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+trace_url: https://drive.google.com/file/d/1r7w8rFpDraiPFNObYXivgHT-lXkDT2X3/view?usp=drive_link
 
 workload:
   model:
     phase: training
     moe: false
     granularity: model_fwd_bwd_pass
-    model_family: llama-3.1-8b
+    model_family: deepseek-qwen2-7b
     precision: bf16
     epochs: 1
-    iteration: 50
+    iteration: 40
   data:
-    batch_size: 1 
-    seq_len: 1024
+    batch_size: 2
+    seq_len: 4096
     dataset: wikitext
   hardware:
     network_topo:
       topology: slingshot
       bandwidth_gbps:
-        - 200 
-        - 2000
+        - 200
+        - 2400
     xpu_spec:
       type: GPU
       model: nvidia_a100
-      total_count: 8
+      total_count: 16
       count_per_node: 4
     driver_version: cuda_12.4
 
@@ -41,13 +41,13 @@ Model-executor:
     compiler_tool_selection: plain_pytorch
   model_plan_parallelization:
     dp_replicate: 4
-    dp_shard: 1    
-    tp: 2          
-    pp: 1         
-    cp: 1   
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
   communication_library:
     name: NCCL
-    version: 2.21.0 
+    version: 2.21.0
     env:
       NCCL_DEBUG: INFO
       CUDA_DEVICE_MAX_CONNECTIONS: 1

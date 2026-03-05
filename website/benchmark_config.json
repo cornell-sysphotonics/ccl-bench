@@ -171,7 +171,7 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "model_execution",
-      "trace_types": ["xla_trace"],
+      "trace_types": ["xla_trace", "json"],
       "thresholds": { "high": 50, "mid": 25 },
       "required_update": false
     },
