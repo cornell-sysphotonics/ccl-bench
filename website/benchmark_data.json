@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-05T02:39:20.304499+00:00",
+  "generated_at": "2026-03-05T04:00:40.558342+00:00",
   "all_metrics": [
     "aggregate_gpu_utilization",
     "average_memory_bandwidth",
@@ -84,7 +84,8 @@
       "unit": "%",
       "category": "model_execution",
       "trace_types": [
-        "xla_trace"
+        "xla_trace",
+        "json"
       ],
       "thresholds": {
         "high": 50,
@@ -395,7 +396,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=1. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
         "trace_url": "",
-        "model_family": "llama",
+        "model_family": "llama-3.1-8b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -456,7 +457,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=2. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
         "trace_url": "",
-        "model_family": "llama",
+        "model_family": "llama-3.1-8b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -517,7 +518,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=4. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
         "trace_url": "",
-        "model_family": "llama",
+        "model_family": "llama-3.1-8b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -578,7 +579,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for meta-llama/Llama-3.1-8B with TP=8. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
         "trace_url": "",
-        "model_family": "llama",
+        "model_family": "llama-3.1-8b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -639,7 +640,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=1. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
         "trace_url": "",
-        "model_family": "qwen",
+        "model_family": "qwen-3-4b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -700,7 +701,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=2. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
         "trace_url": "",
-        "model_family": "qwen",
+        "model_family": "qwen-3-4b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -761,7 +762,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=4. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
         "trace_url": "",
-        "model_family": "qwen",
+        "model_family": "qwen-3-4b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -822,7 +823,7 @@
         "description": "Large language model inference on Google Cloud TPU v6e hardware using vLLM with TorchXLA/JAX backend. This workload is for Qwen/Qwen3-4B with TP=8. Experiments measure TTFT (Time-to-First-Token), TPOT (Time-per-Output-Token), communication overhead,  MFU (Model FLOPs Utilization), and aggregate memory bandwidth. Batch sizes range from 1 to 128 requests with fixed input sequence length of 1024 tokens.",
         "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
         "trace_url": "",
-        "model_family": "qwen",
+        "model_family": "qwen-3-4b",
         "phase": "inference",
         "precision": "bf16",
         "moe": false,
@@ -929,6 +930,7 @@
       "metrics": {
         "total_trace_time": 4.4242,
         "avg_step_time": 4.4259,
+        "mfu": 7.1195,
         "aggregate_gpu_utilization": 92.4962,
         "mean_sm_coverage": 14.2438,
         "dominant_kernel_concentration": 39.8263,
@@ -991,6 +993,7 @@
       "metrics": {
         "total_trace_time": 12.501,
         "avg_step_time": 12.4799,
+        "mfu": 2.5235,
         "aggregate_gpu_utilization": 97.7759,
         "mean_sm_coverage": 8.7742,
         "dominant_kernel_concentration": 46.6868,
@@ -1053,6 +1056,7 @@
       "metrics": {
         "total_trace_time": 13.4433,
         "avg_step_time": 13.4455,
+        "mfu": 2.3435,
         "aggregate_gpu_utilization": 98.6153,
         "mean_sm_coverage": 7.9576,
         "dominant_kernel_concentration": 45.2445,
@@ -1115,6 +1119,7 @@
       "metrics": {
         "total_trace_time": 3.6295,
         "avg_step_time": 3.6338,
+        "mfu": 8.6752,
         "aggregate_gpu_utilization": 86.0349,
         "mean_sm_coverage": 14.4299,
         "dominant_kernel_concentration": 38.1559,
@@ -1177,6 +1182,7 @@
       "metrics": {
         "total_trace_time": 3.791,
         "avg_step_time": 3.7949,
+        "mfu": 8.3048,
         "aggregate_gpu_utilization": 96.2574,
         "mean_sm_coverage": 12.5278,
         "dominant_kernel_concentration": 56.4729,
@@ -1239,6 +1245,7 @@
       "metrics": {
         "total_trace_time": 9.6617,
         "avg_step_time": 9.6669,
+        "mfu": 3.2604,
         "aggregate_gpu_utilization": 98.6904,
         "mean_sm_coverage": 9.3679,
         "dominant_kernel_concentration": 40.0632,
@@ -1284,9 +1291,7 @@
         "cp": 1,
         "comm_library": "NCCL",
         "comm_library_ver": "2.28.3",
-        "comm_env": {
-          "NCCL_IB_QPS_PER_CONNECTION": 8
-        },
+        "comm_env": {},
         "protocol_selection": [
           "rocev2",
           "nvlink"
@@ -1301,6 +1306,7 @@
       "metrics": {
         "total_trace_time": 11.7377,
         "avg_step_time": 11.7414,
+        "mfu": 2.6831,
         "aggregate_gpu_utilization": 99.406,
         "mean_sm_coverage": 6.4579,
         "dominant_kernel_concentration": 75.3582,

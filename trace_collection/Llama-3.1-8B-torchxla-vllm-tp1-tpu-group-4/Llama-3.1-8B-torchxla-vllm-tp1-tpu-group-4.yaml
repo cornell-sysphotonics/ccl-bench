@@ -17,7 +17,7 @@ workload:
     phase: inference  # Inference phase
     moe: false  # No Mixture of Experts models
     granularity: model_fwd  # Model forward pass granularity
-    model_family: llama
+    model_family: llama-3.1-8b
     precision: bf16  # bfloat16 precision for all experiments
     epochs: 1  # Not applicable to inference
     iteration: 3  # Number of measurement runs per configuration

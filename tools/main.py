@@ -34,8 +34,8 @@ if __name__ == "__main__":
         from coll_call_num.coll_call_num import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "mfu":
-        from mfu_group_4.mfu import mfu
-        metric_cal_func = mfu
+        from mfu.mfu import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "avg_step_time":
         from avg_step_time.avg_step_time import metric_cal
         metric_cal_func = metric_cal
