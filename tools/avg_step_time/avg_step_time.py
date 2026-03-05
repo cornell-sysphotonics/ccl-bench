@@ -107,6 +107,35 @@ def gpu(data):
     return avg_ms / 1000000  # Return seconds, matching TPU function convention
 
 
+def _load_json(path: str) -> dict:
+    """Load a PyTorch-profiler JSON file with partial-parse fallback for truncated files."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        pass
+
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            content = f.read()
+        idx = content.find('"traceEvents"')
+        if idx != -1:
+            bracket = content.find('[', idx)
+            if bracket != -1:
+                partial = content[bracket:]
+                for suffix in (']}', ']}}}'):
+                    try:
+                        events = json.loads(partial + suffix)
+                        if isinstance(events, list):
+                            return {"traceEvents": events}
+                    except json.JSONDecodeError:
+                        pass
+    except Exception:
+        pass
+
+    return {}
+
+
 def metric_cal(directory: str) -> float:
     """
     Calculate average step time (inference: decode of the batch, training: forward + backward)
@@ -139,14 +168,10 @@ def metric_cal(directory: str) -> float:
 
             if xpu_type.lower() == "tpu":
                 # print("Processing TPU trace...")
-                with open(trace_file, "r") as f:
-                    data = json.load(f)
-                    return tpu(data)
-            
+                return tpu(_load_json(trace_file))
+
             elif xpu_type.lower() == "gpu":
-                with open(trace_file, "r") as f:
-                    data = json.load(f)
-                    return gpu(data)
+                return gpu(_load_json(trace_file))
 
     if trace_file is None:
         raise FileNotFoundError(f"No JSON file found in directory: {directory}")
