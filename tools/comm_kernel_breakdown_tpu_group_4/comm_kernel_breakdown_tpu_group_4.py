@@ -62,16 +62,16 @@ def iter_trace_events(path: Path):
 
 
 def parse_batch_tp(path: Path) -> tuple[str | None, str | None]:
-    """Extract batch size and TP from the model directory name."""
+    """Extract batch size and TP from the filename.'."""
     batch = None
     tp = None
-    for part in path.parts:
-        if part.startswith("MODEL_"):
-            for token in part.split(","):
-                if token.startswith("BATCH_"):
-                    batch = token.split("_", 1)[1]
-                if token.startswith("TP_"):
-                    tp = token.split("_", 1)[1]
+    filename = path.name.replace(".json.gz", "").replace(".json", "")
+    tokens = filename.split("-")
+    for i, token in enumerate(tokens):
+        if token == "TP" and i + 1 < len(tokens):
+            tp = tokens[i + 1]
+        elif token == "BATCH" and i + 1 < len(tokens):
+            batch = tokens[i + 1]
     return batch, tp
 
 
@@ -80,7 +80,7 @@ def comm_kernel_breakdown_tpu(trace_path, print_output=False):
     
     if trace_path.is_dir():
         # Find all .json.gz files in the directory recursively
-        trace_files = list(trace_path.rglob("*trace.json.gz"))
+        trace_files = list(trace_path.rglob("*.json.gz"))
         if len(trace_files) == 0:
             raise SystemExit(f"No .json.gz trace files found in directory: {trace_path}")
         elif len(trace_files) > 1:

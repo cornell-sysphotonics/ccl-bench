@@ -31,6 +31,7 @@ exclude:
   - trace_collection_backlog
   - trace_gen
   - workloads
+  - tools/pytorch_docs
 
 # Optional: reduce Jekyll processing noise / avoid touching repo files unnecessarily
 markdown: kramdown

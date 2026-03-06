@@ -130,20 +130,16 @@ def _collect_traces(trace_dir: str) -> List[str]:
 def compute_total_comm_time(trace_dir: str) -> float:
     """
     Input: trace_dir (directory) OR a single trace file.
-    Output: total communication kernel time in milliseconds (summed across all traces).
+    Output: total communication kernel time in milliseconds (single trace only).
     """
     traces = _collect_traces(trace_dir)
-    total_ms = 0.0
-
-    for pth in traces:
-        out = _run_nsys_kernsum_csv(pth)
-        csv_lines = _extract_csv_block(out)
-        comm_ns = _parse_comm_ns(csv_lines)
-        trace_ms = comm_ns / 1e6
-        print(f"{os.path.basename(pth):40s}  comm_kernel_time={trace_ms:12.3f} ms", file=__import__('sys').stderr)
-        total_ms += trace_ms
-
-    return total_ms
+    pth = traces[0]
+    out = _run_nsys_kernsum_csv(pth)
+    csv_lines = _extract_csv_block(out)
+    comm_ns = _parse_comm_ns(csv_lines)
+    trace_ms = comm_ns / 1e6
+    print(f"{os.path.basename(pth):40s}  comm_kernel_time={trace_ms:12.3f} ms", file=__import__('sys').stderr)
+    return trace_ms
 
 
 # Optional alias if the framework expects `metric_cal`

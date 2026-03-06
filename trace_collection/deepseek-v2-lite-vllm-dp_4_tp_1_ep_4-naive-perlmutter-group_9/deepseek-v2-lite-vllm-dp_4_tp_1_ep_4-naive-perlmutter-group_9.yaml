@@ -8,11 +8,11 @@ description: >
 
 
 hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite/tree/main
-trace_url: # trace url, e.g., https://drive.google.com/file/d/1EK_YROAho2sBvYVn8idF6DbnaG3SZ0he/view
+trace_url: /data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-naive-noCUgraph-perlmutter-group_9/
 
 workload:
   model:
-    phase: inference
+    phase: serving
     moe: true  
     granularity: layer  
     model_family: deepseek_v2
@@ -37,13 +37,14 @@ workload:
 Model-executor:
   framework: 
     name: vllm
-    compiler_tool_selection: 
+    compiler_tool_selection: cudagraph
   model_plan_parallelization:
     dp_replicate: 4
     dp_shard: 1
     tp: 1
     pp: 1
     cp: 1
+    ep: 4
   communication_library:
     name: NCCL
     version: 2.27.3
@@ -56,6 +57,6 @@ Model-executor:
 
 metric_source:
   traces:
-    -  nsys
+    - nsys
   metrics_specific_trace:
     - communication_ratio, total_communication_time, total_kernel_time, break_down_steps

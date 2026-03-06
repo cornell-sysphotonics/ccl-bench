@@ -9,7 +9,7 @@ trace_url:
 
 workload:
   model:
-    phase: inference
+    phase: serving
     moe: true
     granularity: model_fwd
     model_family: deepseek-v2-lite

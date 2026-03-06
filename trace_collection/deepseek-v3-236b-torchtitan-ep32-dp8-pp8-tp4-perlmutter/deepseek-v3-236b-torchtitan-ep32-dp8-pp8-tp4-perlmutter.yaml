@@ -1,0 +1,67 @@
+# workload_template.yaml
+version: 1
+
+description: DeepSeek-V3 236B model training on Perlmutter using TorchTitan framework. The trace contains one training iteration. The 236B configuration is a variant of DeepSeek-v3 architecture. https://github.com/pytorch/torchtitan/blob/main/torchtitan/models/deepseek_v3/__init__.py
+
+hf_url: https://huggingface.co/deepseek-ai/deepseek-moe-16b-base
+trace_url: /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep32-dp8-pp4-tp4-perlmutter
+
+workload:
+  model:
+    phase: training
+    moe: true
+    granularity: model_fwd_bwd_pass
+    model_family: deepseek_v3_236b
+    precision: bf16
+    epochs: 1
+    iteration: 1
+    model_arch:
+      # DeepSeek-MoE-16B base architecture
+      # Reference: https://huggingface.co/deepseek-ai/deepseek-moe-16b-base
+      num_params: 235741434880         # total parameter count
+      num_params_embedding: 524288000 # vocab_size(102400) * hidden_size(5120)
+      num_layers: 60                  # L: transformer decoder layers
+      num_heads: 128                   # Q: number of attention heads
+      head_dim: 128                   # H: per-head dimension (hidden_size / num_heads)
+  data:
+    batch_size: 64
+    seq_len: 1024
+    dataset: c4_test
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 256
+      count_per_node: 4
+    driver_version: cuda_12.8
+
+Model-executor:
+  framework:
+    name: torchtitan-0.1.0
+    compiler_tool_selection: pytorch-2.10.0, triton
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 8
+    tp: 4
+    pp: 8
+    cp: 1
+    ep: 32
+    pp_mb: 1
+  communication_library:
+    name: NCCL
+    version: 2.28.3
+    env:
+  protocol_selection:
+    - rocev2
+    - nvlink
+
+metric_source:
+  traces:
+    - json
+  metrics_specific_trace:
+    - 

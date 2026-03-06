@@ -100,7 +100,16 @@ body {
 }
 .stat { display: flex; align-items: baseline; gap: 5px; }
 .stat strong { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1; }
-.stats-chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.stats-chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chips-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+.chips-cat-label:first-child { margin-left: 0; }
 .chip {
   padding: 2px 9px;
   border-radius: 10px;
@@ -204,6 +213,20 @@ th.no-sort            { cursor: default; }
 th.th-metric          { background: #1a3050; text-align: center; }
 th.th-metric:hover    { background: #1f3a5f; }
 
+/* Metric column header info icon */
+.th-info-btn {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #7ab3d8;
+  opacity: 0.75;
+  vertical-align: middle;
+  line-height: 1;
+  transition: opacity .12s, color .12s;
+}
+.th-info-btn:hover { opacity: 1; color: #fff; }
+
 /* Body rows */
 td {
   padding: 8px 12px;
@@ -269,6 +292,7 @@ td:last-child          { border-right: none; }
 }
 .b-inference { background: #dbeafe; color: #1d4ed8; }
 .b-training  { background: #dcfce7; color: #15803d; }
+.b-serving   { background: #fef3c7; color: #b45309; }
 .b-tpu       { background: #fce7f3; color: #be185d; }
 .b-gpu       { background: #ede9fe; color: #6d28d9; }
 .b-moe       { background: #fef9c3; color: #854d0e; margin-left: 4px; }
@@ -406,6 +430,18 @@ td.td-metric { text-align: center; }
 .kv-k { font-size: 12px; color: var(--muted); }
 .kv-v { font-size: 12px; font-weight: 500; word-break: break-word; }
 .kv-v a { color: var(--accent); }
+
+.m-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--accent);
+  margin: 12px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #bfdbfe;
+}
+.m-cat-label:first-child { margin-top: 0; }
 
 .metric-row {
   display: flex;
