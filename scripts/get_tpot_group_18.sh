@@ -5,4 +5,4 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-python ./tools/main.py --trace "$1" --metric "comm_overhead"
+python ./tools/main.py --trace "$1" --metric "tpot_group_18"

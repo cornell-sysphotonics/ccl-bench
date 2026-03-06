@@ -1,10 +1,9 @@
 import os
 import sys
-
 # Allow running both as a package and a script
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from tools.trace_analyzer import TraceAnalyzer
+from trace_analyzer import TraceAnalyzer
 
 
 def metric_cal(directory: str) -> float:

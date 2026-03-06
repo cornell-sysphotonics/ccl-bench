@@ -17,19 +17,14 @@ def metric_cal(directory: str) -> float:
         float: Overlap percentage (0-100).
     """
 
-    csv_candidates = [
-        os.path.join(directory, name)
-        for name in os.listdir(directory)
-        if name.startswith("cuda_gpu_trace") and name.endswith(".csv")
-    ]
     json_candidates = [
         os.path.join(directory, name)
         for name in os.listdir(directory)
         if name.startswith("kineto_trace_") and name.endswith(".json")
     ]
-    trace_files = sorted(csv_candidates or json_candidates)
+    trace_files = sorted(json_candidates)
     if not trace_files:
-        raise FileNotFoundError(f"No cuda_gpu_trace*.csv or kineto_trace_*.json found under {directory}")
+        raise FileNotFoundError(f"No kineto_trace_*.json found under {directory}")
 
     overlaps: List[float] = []
 

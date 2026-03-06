@@ -46,10 +46,11 @@ if __name__ == "__main__":
         from comm_overhead.comm_overhead import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "ttft_group_18":
-        from ttft.ttft import metric_cal
+        from ttft_group_18.ttft import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "tpot_group_18":
-        from tpot.tpot import metric_cal
+        from tpot_group_18.tpot import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "mfu":
         from mfu.mfu import metric_cal
         metric_cal_func = metric_cal
