@@ -1,0 +1,50 @@
+version: 1
+description: Online serving of Mixtral-8x7B-v0.1 on 4 A100 GPUs using Baseline (Triton
+  MoE) kernel with MAX_SEQS=64 and BATCH_TOKENS=16384.
+hf_url: https://huggingface.co/mistralai/Mixtral-8x7B-v0.1/tree/main
+trace_url: ''
+workload:
+  model:
+    phase: inference
+    moe: true
+    granularity: model_fwd
+    model_family: mixtral
+    precision: bf16
+  data:
+    max-model-len: 4096
+    max-num-seqs: 64
+    max-num-batched-tokens: 16384
+    dataset: ShareGPT_V3_unfiltered_cleaned_split
+  hardware:
+    network_topo:
+      topology: ''
+      bandwidth_gbps:
+      - TBD
+      - TBD
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 4
+      count_per_node: 4
+    driver_version: cuda_12.9
+Model-executor:
+  framework:
+    name: vllm
+    compiler_tool_selection: ''
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+  communication_library:
+    name: NCCL
+    env:
+      NCCL_IB_QPS_PER_CONNECTION: ''
+  protocol_selection:
+  - rocev2
+  - p2p
+metric_source:
+  traces:
+  - torch_et
+  metrics_specific_trace: ''

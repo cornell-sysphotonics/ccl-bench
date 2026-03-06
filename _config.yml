@@ -1,0 +1,51 @@
+# Jekyll config for GitHub Pages
+# Keeps the site build "static" by not trying to process non-site repo content.
+
+theme: jekyll-theme-primer
+
+# If your site is in the repo root, keep source as "."
+source: .
+destination: ./_site
+
+# Exclude non-website content (especially virtualenvs / scripts) from the build scan.
+exclude:
+  - scripts/
+  - "**/imbalance_env/"
+  - "**/.venv/"
+  - "**/venv/"
+  - "**/env/"
+  - "**/__pycache__/"
+  - ".git/"
+  - ".github/"
+  - "node_modules/"
+  - "vendor/"
+  - "Gemfile"
+  - "Gemfile.lock"
+  - "README.md"
+  - "LICENSE"
+  - "*.ipynb"
+  - agent
+  - pipeline
+  - tools
+  - trace_collection
+  - trace_collection_backlog
+  - trace_gen
+  - workloads
+
+# Optional: reduce Jekyll processing noise / avoid touching repo files unnecessarily
+markdown: kramdown
+plugins:
+  - jekyll-relative-links
+  - jekyll-readme-index
+
+relative_links:
+  enabled: true
+  collections: false
+
+readme_index:
+  enabled: true
+
+# Optional: if you don't use posts, this avoids Jekyll post defaults
+collections:
+  posts:
+    output: false

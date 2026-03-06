@@ -1,8 +1,6 @@
 matplotlib
 numpy
 pandas
-pyyaml
-torch
-vllm==0.6.2
-transformers
-accelerate
+duckdb
+PyYAML
+claude_agent_sdk

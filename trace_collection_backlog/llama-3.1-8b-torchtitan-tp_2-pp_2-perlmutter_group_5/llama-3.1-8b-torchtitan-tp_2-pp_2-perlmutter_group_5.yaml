@@ -1,0 +1,55 @@
+# workload_template.yaml
+version: 1
+
+description: >
+  Llama 3.1 8B training on Perlmutter with 4 GPUs using TP+PP (tensor_parallel_degree=2 and pipeline_parallel_degree=2).
+  TorchTitan framework with torch distributed runtime, NCCL communications over Slingshot-11.
+  Selective activation checkpointing enabled. Profiling traces collected using PyTorch Profiler.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: https://cornell.app.box.com/ // TODO: maybe put trace name
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1
+    precision: bf16
+  data:
+    batch_size: 4
+    seq_len: 512
+    dataset: c4
+  hardware:
+    network_topo:
+      topology: slingshot-11
+      bandwidth_gbps:
+        - 600  # intra-node NVLink (scale-up)
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100_40gb
+      total_count: 4
+      count_per_node: 4
+    driver_version: cuda_12.6
+  
+Model-executor:
+  framework: 
+    name: torchtitan
+    version: 0.1.0.dev20251215+cu126
+    compiler_tool_selection: disabled
+  model_plan_parallelization: 
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 2
+    pp: 2
+    cp: 1
+  communication_library:
+    name: NCCL
+    env:
+      TORCH_NCCL_ASYNC_ERROR_HANDLING: "3"
+  protocol_selection:
+    - nvlink
+
+metric_source:
+  traces:
+    - kineto_trace

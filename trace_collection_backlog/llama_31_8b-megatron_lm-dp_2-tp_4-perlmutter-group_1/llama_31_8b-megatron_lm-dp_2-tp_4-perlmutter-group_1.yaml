@@ -1,0 +1,62 @@
+# llama_31_8b-megatron_lm-dp_2-tp_4-perlmutter-group_1.yaml
+version: 1
+
+description: >
+  Llama-3.1-8B training on 8 NVIDIA A100 GPUs across 2 nodes on Perlmutter. 
+  Configured with 4-way Tensor Parallelism (TP=4) and 2-way Data Parallelism (DP=2)
+  using Megatron-LM (mcore). Uses a global batch size of 32 and sequence length of 1024.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: https://drive.google.com/file/d/1-yCki51HdEKNw6A92dCmQHhpEr4X2KR4/view?usp=drive_link
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1-8b
+    precision: bf16
+    epochs: 1
+    iteration: 50
+  data:
+    batch_size: 1
+    seq_len: 1024
+    dataset: wikitext-103
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200 
+        - 2000
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 8
+      count_per_node: 4
+    driver_version: cuda_12.4
+
+Model-executor:
+  framework: 
+    name: megatron-lm
+    compiler_tool_selection: plain_pytorch
+  model_plan_parallelization:
+    dp_replicate: 2 
+    dp_shard: 1     
+    tp: 4         
+    pp: 1         
+    cp: 1          
+  communication_library:
+    name: NCCL
+    version: 2.21.0
+    env:
+      NCCL_DEBUG: INFO
+      CUDA_DEVICE_MAX_CONNECTIONS: 1
+  protocol_selection:
+    - rocev2
+    - p2p
+
+metric_source:
+  traces:
+    - kineto_trace
+  metrics_specific_trace:
+    - memory_trace
