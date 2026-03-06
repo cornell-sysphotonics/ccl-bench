@@ -1,0 +1,94 @@
+=== Llama 3.1 TP 2 ===
+Straggler Delay:  0.3276959511385086
+Straggler Slowdown:  1.4874222484505977
+
+=== Llama 3.1 TP 4 ===
+Straggler Delay:  0.38207561669015205
+Straggler Slowdown:  1.6183209904156939
+
+=== Llama 3.1 DP 2 ===
+Straggler Delay:  0.009648523226425634
+Straggler Slowdown:  1.0097425241974285
+
+=== Llama 3.1 DP 4 ===
+Straggler Delay:  0.037696261182794746
+Straggler Slowdown:  1.039172934347245
+
+=== Llama 3.1 PP 2 ===
+Straggler Delay:  0.14834086122732315
+Straggler Slowdown:  1.174178676038276
+
+=== Llama 3.1 PP 4 ===
+Straggler Delay:  0.17414839618648464
+Straggler Slowdown:  1.2108712938042667
+
+=== Qwen3 TP 2 ===
+Straggler Delay:  0.21905318081917752
+Straggler Slowdown:  1.2804969242962718
+
+=== Qwen3 TP 4 ===
+Straggler Delay:  0.34507857459698826
+Straggler Slowdown:  1.52690072612091
+
+=== Qwen3 DP 2 ===
+Straggler Delay:  0.024237584084422226
+Straggler Slowdown:  1.0248396368717272
+
+=== Qwen3 DP 4 ===
+Straggler Delay:  0.01409810061411274
+Straggler Slowdown:  1.01429969921236
+
+=== Qwen3 PP 2 ===
+Straggler Delay:  0.1089699014153178
+Straggler Slowdown:  1.122296543728889
+
+=== Qwen3 PP 4 ===
+Straggler Delay:  0.17274949373252596
+Straggler Slowdown:  1.2088236784670774
+
+=== Mistral TP 2 ===
+Straggler Delay:  0.18555147983621195
+Straggler Slowdown:  1.22782468780089
+
+=== Mistral TP 4 ===
+Straggler Delay:  0.24527917109509856
+Straggler Slowdown:  1.3249932447882724
+
+=== Mistral DP 2 ===
+Straggler Delay:  0.036920716701115956
+Straggler Slowdown:  1.0383361134865756
+
+=== Mistral DP 4 ===
+Straggler Delay:  0.06651738400740223
+Straggler Slowdown:  1.071257228434482
+
+=== Mistral PP 2 ===
+Straggler Delay:  0.03462967647464777
+Straggler Slowdown:  1.0358719090806383
+
+=== Mistral PP 4 ===
+vLLM failure (haven't diagnosed, not sure why this is happening)
+
+
+=========================
+=== MIXED PARALLELISM ===
+=========================
+
+=== Llama 3.1 DP2 + PP2 ===
+vLLM internal failure
+
+=== Llama 3.1 DP2 + TP2 ===
+Straggler Delay:  0.3365492604816237
+Straggler Slowdown:  1.5072709101597164
+
+=== Llama 3.1 TP2 + PP2 ===
+Straggler Delay:  0.333345385170453
+Straggler Slowdown:  1.5000271171237358
+
+=== Qwen3 DP2 + TP2 ===
+Straggler Delay:  0.34889190688498256
+Straggler Slowdown:  1.5358432963347473
+
+=== Qwen3 TP2 + PP2 ===
+Straggler Delay:  0.3864255849142828
+Straggler Slowdown:  1.6297941625553254

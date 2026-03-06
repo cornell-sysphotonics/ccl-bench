@@ -1,0 +1,138 @@
+{
+    "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_without_eplb-permutter-group_9",
+    "metrics": [
+      "dominant_kernel_concentration", "mean_sm_coverage",
+      "memory_bound_fraction", "average_memory_bandwidth",
+      "communication_ratio", "memory_transfer_overhead",
+      "aggregate_gpu_utilization", "load_imbalance_ratio",
+      "communication_overlap_ratio", "communication_fraction",
+      "moe_fraction", "compute_bound_fraction",
+      "total_kernel_time", "total_communication_time"
+    ]
+  },
+  {
+    "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep4-permutter-group_9",
+    "metrics": [
+      "dominant_kernel_concentration", "mean_sm_coverage",
+      "memory_bound_fraction", "average_memory_bandwidth",
+      "communication_ratio", "memory_transfer_overhead",
+      "aggregate_gpu_utilization", "load_imbalance_ratio",
+      "communication_overlap_ratio", "communication_fraction",
+      "moe_fraction", "compute_bound_fraction",
+      "total_kernel_time", "total_communication_time"
+    ]
+  },
+  {
+    "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep8-permutter-group_9",
+    "metrics": [
+      "dominant_kernel_concentration", "mean_sm_coverage",
+      "memory_bound_fraction", "average_memory_bandwidth",
+      "communication_ratio", "memory_transfer_overhead",
+      "aggregate_gpu_utilization", "load_imbalance_ratio",
+      "communication_overlap_ratio", "communication_fraction",
+      "moe_fraction", "compute_bound_fraction",
+      "total_kernel_time", "total_communication_time"
+    ]
+  },
+  {
+    "trace": "/data/ccl-bench_trace_collection/qwen3-30b-a3b-vllm_dp_1_tp_4_ep_4_eplb_redundant_ep16-permutter-group_9",
+    "metrics": [
+      "dominant_kernel_concentration", "mean_sm_coverage",
+      "memory_bound_fraction", "average_memory_bandwidth",
+      "communication_ratio", "memory_transfer_overhead",
+      "aggregate_gpu_utilization", "load_imbalance_ratio",
+      "communication_overlap_ratio", "communication_fraction",
+      "moe_fraction", "compute_bound_fraction",
+      "total_kernel_time", "total_communication_time"
+    ]
+  },
+
+{
+    "_comment": "ep=1, tp=4, pp=1. No alltoall (ep=1). No peertopeer (pp=1).",
+    "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_1-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6"
+    ]
+  },
+  {
+    "_comment": "ep=2, tp=4, pp=1. Has alltoall (ep>1). No peertopeer (pp=1).",
+    "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_2-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6",
+      "bandwidth_utilization_alltoall_group_6"
+    ]
+  },
+  {
+    "_comment": "ep=4, tp=4, pp=1. Has alltoall (ep>1). No peertopeer (pp=1).",
+    "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-sglang-ep_4-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6",
+      "bandwidth_utilization_alltoall_group_6"
+    ]
+  },
+
+{
+    "_comment": "tp=1, pp=4. No allgather (tp=1). No allreduce (tp=1). Has peertopeer (pp>1).",
+    "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_1-pp_4-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_peertopeer_group_6"
+    ]
+  },
+  {
+    "_comment": "tp=2, pp=2. Has allgather, allreduce, peertopeer.",
+    "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_2-pp_2-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6",
+      "bandwidth_utilization_peertopeer_group_6"
+    ]
+  },
+  {
+    "_comment": "tp=4, pp=1. Has allgather, allreduce. No peertopeer (pp=1).",
+    "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp_4-pp_1-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6"
+    ]
+  },
+
+{
+    "_comment": "tp=4, pp=1. Has allgather, allreduce. No peertopeer (pp=1).",
+    "trace": "/data/ccl-bench_trace_collection/qwen-32b-sglang-pp_1-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6"
+    ]
+  },
+  {
+    "_comment": "tp=4, pp=2. Has allgather, allreduce, peertopeer.",
+    "trace": "/data/ccl-bench_trace_collection/qwen-32b-sglang-pp_2-perlmutter-group_6",
+    "metrics": [
+      "ttft_group_6", "tpot_group_6", "throughput_group_6",
+      "kernel_compute_time_group_6",
+      "bandwidth_utilization_allgather_group_6",
+      "bandwidth_utilization_allreduce_group_6",
+      "bandwidth_utilization_peertopeer_group_6"
+    ]
+  }
+
+"metric_info": {
+}
+    

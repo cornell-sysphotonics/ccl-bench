@@ -13,6 +13,9 @@ The search space is huge. It is impossible to explore all the possible implement
 conda create --name ccl-bench python=3.10.12
 conda activate ccl-bench
 pip install -r requirements.txt
+
+# Install/update nsys on this machine to ≥ 2025.6.1
+
 ```
 
 ## Process FLow
@@ -40,6 +43,36 @@ Naming of the workload and workload card:
 Naming of the metrics and tools for the metrics:
 `<metric_name>-<group_number>`
 
+## Development
+- Configure Claude API key
+
+```
+export ANTHROPIC_API_KEY=$(cat agent/API_KEY)
+```
+
+## Trace
+Stored on our local server.
+`/data/ccl-bench_trace_collection`, `/data/ccl-bench_trace_collection_backlog`
+
+Workload cards should be stored under those folders. In addition, we maintain workload cards in the main repo.
+
+Move folder to /data:
+```
+for folder in ./<original_trace_location>/*; do  
+    if [ -d "$folder" ]; then  
+        cp -r "$folder" /data/ccl-bench_trace_collection/"$(basename "$folder")"/  
+    fi  
+done
+```
+
+Update workload cards:
+```
+for folder in ./trace_collection/*; do  
+    if [ -d "$folder" ]; then  
+        cp "$folder"/*.yaml /data/ccl-bench_trace_collection/"$(basename "$folder")"/  
+    fi  
+done
+```
 
 ## Layout
 ```
@@ -50,3 +83,4 @@ Naming of the metrics and tools for the metrics:
 ├── tools   # main.py, and various plug-ins for different metrics
 └── trace_collection # place to store temparary traces locally, which are downloaded from Google Drive.
 ```
+

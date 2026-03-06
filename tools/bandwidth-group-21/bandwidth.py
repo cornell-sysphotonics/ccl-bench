@@ -21,7 +21,12 @@ def compute_comm_bandwidth_table(comm_df: pd.DataFrame, n_chips: int) -> tuple[p
     bw_df = bw_df[(bw_df["message_bytes"] > 0) & (bw_df["T_s"] > 0)]
     bw_df["bandwidth_Bps"] = (n_chips - 1) * bw_df["message_bytes"] / bw_df["T_s"]
     bw_df["bandwidth_GBps"] = bw_df["bandwidth_Bps"] / 1e9
-    avg_bandwidth_GBps = bw_df["bandwidth_GBps"].mean() if len(bw_df) else np.nan
+    
+    # Calculate average bandwidth using total bytes / total time to avoid outliers from tiny T_s values
+    total_bytes = bw_df["message_bytes"].sum()
+    total_time = bw_df["T_s"].sum()
+    avg_bandwidth_GBps = (n_chips - 1) * total_bytes / total_time / 1e9 if total_time > 0 else np.nan
+    
     return bw_df, float(avg_bandwidth_GBps) if np.isfinite(avg_bandwidth_GBps) else np.nan
 
 

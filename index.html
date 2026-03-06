@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCL-Bench · Benchmark Results</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<!-- STYLES_START -->
+<style>
+/* ── Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:          #f1f5f9;
+  --surface:     #ffffff;
+  --border:      #e2e8f0;
+  --text:        #0f172a;
+  --muted:       #64748b;
+  --primary:     #1e293b;
+  --accent:      #2563eb;
+  --accent-dim:  #eff6ff;
+  --green:       #16a34a;
+  --green-bg:    #f0fdf4;
+  --amber:       #d97706;
+  --amber-bg:    #fffbeb;
+  --red:         #dc2626;
+  --red-bg:      #fef2f2;
+  --radius:      6px;
+  --shadow:      0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:   0 20px 60px rgba(0,0,0,.18);
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.site-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.site-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+.site-header .tagline {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.site-header .gen-ts {
+  font-size: 11px;
+  color: #475569;
+  text-align: right;
+  white-space: nowrap;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-logo {
+  height: 48px;
+  width: auto;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ── About strip ────────────────────────────────────────────────────────── */
+.about-strip {
+  background: var(--accent-dim);
+  border-bottom: 1px solid #bfdbfe;
+  padding: 12px 28px;
+  font-size: 13px;
+  color: #1e3a5f;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+.about-strip p + p { margin-top: 4px; }
+.about-strip a { color: var(--accent); text-decoration: none; }
+.about-strip a:hover { text-decoration: underline; }
+
+/* ── Stats strip ────────────────────────────────────────────────────────── */
+.stats-strip {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.stat { display: flex; align-items: baseline; gap: 5px; }
+.stat strong { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1; }
+.stats-chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chips-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+.chips-cat-label:first-child { margin-left: 0; }
+.chip {
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+.toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.search-wrap {
+  position: relative;
+  max-width: 360px;
+  flex: 1;
+}
+.search-wrap .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  line-height: 1;
+  font-size: 13px;
+}
+#search {
+  width: 100%;
+  padding: 7px 10px 7px 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+}
+#search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #dbeafe;
+}
+.filter-count { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* ── Table wrapper ──────────────────────────────────────────────────────── */
+.table-outer {
+  flex: 1;
+  overflow-x: auto;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+/* ── Table ──────────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead { position: sticky; top: 0; z-index: 6; }
+
+/* Header rows */
+.th-group-row th {
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-right: 1px solid #1e293b;
+  text-align: center;
+}
+.th-group-row .g-workload { text-align: left; }
+
+th {
+  background: #1e293b;
+  color: #cbd5e1;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  border-right: 1px solid #334155;
+  transition: background .1s;
+}
+th:last-child { border-right: none; }
+th:hover:not(.no-sort) { background: #263348; }
+th.sorted-asc::after  { content: " ↑"; opacity: .75; }
+th.sorted-desc::after { content: " ↓"; opacity: .75; }
+th.no-sort            { cursor: default; }
+th.th-metric          { background: #1a3050; text-align: center; }
+th.th-metric:hover    { background: #1f3a5f; }
+
+/* Metric column header info icon */
+.th-info-btn {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #7ab3d8;
+  opacity: 0.75;
+  vertical-align: middle;
+  line-height: 1;
+  transition: opacity .12s, color .12s;
+}
+.th-info-btn:hover { opacity: 1; color: #fff; }
+
+/* Body rows */
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f8fafc;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+tr:nth-child(even) td { background: #f8fafc; }
+tr:hover td            { background: var(--accent-dim) !important; }
+td:last-child          { border-right: none; }
+
+/* Workload cell */
+.wl-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 260px;
+}
+.wl-name {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wl-name a { color: inherit; text-decoration: none; }
+.wl-name a:hover { text-decoration: underline; }
+
+/* Info button */
+.info-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #bfdbfe;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.info-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.b-inference { background: #dbeafe; color: #1d4ed8; }
+.b-training  { background: #dcfce7; color: #15803d; }
+.b-serving   { background: #fef3c7; color: #b45309; }
+.b-tpu       { background: #fce7f3; color: #be185d; }
+.b-gpu       { background: #ede9fe; color: #6d28d9; }
+.b-moe       { background: #fef9c3; color: #854d0e; margin-left: 4px; }
+
+/* Metric pill */
+td.td-metric { text-align: center; }
+.metric-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12.5px;
+  min-width: 64px;
+  text-align: center;
+}
+.mp-high { background: var(--green-bg); color: var(--green); }
+.mp-mid  { background: var(--amber-bg); color: var(--amber); }
+.mp-low  { background: var(--red-bg);   color: var(--red);   }
+.mp-na   { color: var(--muted); font-weight: 400; font-size: 12px; }
+
+/* Empty / error state */
+.empty-state {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty-state .es-icon { font-size: 36px; margin-bottom: 14px; }
+.empty-state h2 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.empty-state p  { font-size: 13px; line-height: 1.6; max-width: 480px; margin: 0 auto 16px; }
+.empty-state pre {
+  display: inline-block;
+  text-align: left;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--text);
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: pop-in .18s ease;
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+.modal-hd {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.modal-hd h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: ui-monospace, monospace;
+  line-height: 1.4;
+  word-break: break-all;
+}
+.modal-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s;
+}
+.modal-close:hover { background: #f1f5f9; color: var(--text); }
+
+.modal-bd { padding: 18px 22px 22px; }
+
+.m-section { margin-bottom: 18px; }
+.m-section:last-child { margin-bottom: 0; }
+.m-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.m-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #374151;
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.kv-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 4px 14px;
+}
+.kv-k { font-size: 12px; color: var(--muted); }
+.kv-v { font-size: 12px; font-weight: 500; word-break: break-word; }
+.kv-v a { color: var(--accent); }
+
+.m-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--accent);
+  margin: 12px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #bfdbfe;
+}
+.m-cat-label:first-child { margin-top: 0; }
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.metric-row .mr-label { font-size: 13px; font-weight: 600; }
+.metric-row .mr-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 16px 24px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+</style>
+<!-- STYLES_END -->
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-brand">
+    <img src="assets/logo.png" alt="CCL-Bench logo" class="header-logo">
+    <div>
+      <h1>CCL-Bench &mdash; Benchmark Results</h1>
+      <div class="tagline">Collective Communication &amp; LLM Performance Metrics</div>
+    </div>
+  </div>
+  <div class="gen-ts" id="gen-ts"></div>
+</header>
+
+<!-- ── About strip ──────────────────────────────────────────────────────────── -->
+<div class="about-strip">
+  <p>
+    CCL-Bench is a collaborative benchmarking project studying how distributed ML workloads behave
+    across different hardware, frameworks, and communication libraries.
+    As models scale, a distributed implementation on hardware&nbsp;A with library&nbsp;X can behave
+    drastically differently from hardware&nbsp;B with library&nbsp;Y.
+    Each group collects traces and contributes analysis tools, which are then applied
+    cross-group &mdash; making the benchmark scalable without brute-force exploration.
+    Metrics include MFU, estimated memory bandwidth, step time, and more.
+  </p>
+  <p>
+    Part of the <a href="https://cornell.network/" target="_blank" rel="noopener">Cornell sysphotonics research group</a>
+    &nbsp;&middot;&nbsp;
+    Maintainers: Eric Ding, Kaiwen Guo, Jelena Gvero, Byungsoo Oh, Bhaskar Kataria, Atharv Sonwane, Rachee Singh
+    &nbsp;&middot;&nbsp;
+    Contact: <a href="mailto:ericding@cs.cornell.edu">Eric Ding</a>
+    &nbsp;&middot;&nbsp;
+    Contributing: <a href="https://github.com/cornell-sysphotonics/ccl-bench">GitHub</a>
+
+  </p>
+</div>
+
+<!-- ── Stats strip ─────────────────────────────────────────────────────────── -->
+<div class="stats-strip" id="stats-strip">
+  <div class="stat"><strong>&hellip;</strong> workloads</div>
+</div>
+
+<!-- ── Toolbar ─────────────────────────────────────────────────────────────── -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-icon">&#128269;</span>
+    <input id="search" type="search" placeholder="Filter workloads, models, hardware…" autocomplete="off">
+  </div>
+  <span class="filter-count" id="filter-count"></span>
+</div>
+
+<!-- ── Table ───────────────────────────────────────────────────────────────── -->
+<div class="table-outer" id="table-outer">
+  <table id="bench-table">
+    <thead id="bench-thead"></thead>
+    <tbody id="bench-tbody"></tbody>
+  </table>
+  <div id="empty-state" style="display:none"></div>
+</div>
+
+<!-- ── Modal ───────────────────────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="onBackdropClick(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-hd">
+      <h2 id="modal-title"></h2>
+      <button class="modal-close" onclick="closeModal()" title="Close">&#10005;</button>
+    </div>
+    <div class="modal-bd" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ── Footer ──────────────────────────────────────────────────────────────── -->
+<footer>
+  CCL-Bench &mdash; Collaborative LLM Systems Benchmark &nbsp;|&nbsp;
+  <a href="https://cornell.network/" target="_blank" rel="noopener">Cornell Systems &amp; Networking Lab</a>
+  &nbsp;|&nbsp;
+  Contact: <a href="mailto:ericding@cs.cornell.edu">Eric Ding</a>
+  &nbsp;|&nbsp;
+  Results generated by <code>python website/generate_data.py</code>
+  <br>
+  Maintainers: Eric Ding, Kaiwen Guo, Jelena Gvero, Byungsoo Oh, Bhaskar Kataria, Atharv Sonwane, Rachee Singh
+</footer>
+
+<script src="website/data.js"></script>
+
+<script>
+'use strict';
+
+// ── State ────────────────────────────────────────────────────────────────────
+const S = {
+  data:    null,
+  cols:    [],
+  rows:    [],      // all rows, augmented with __idx
+  visible: [],      // after filter + sort
+  sort:    { col: null, dir: 1 },
+  filter:  '',
+};
+
+// ── Metadata columns shown left of the metric columns ────────────────────────
+const META_COLS = [
+  // key '__info' is the info-button column
+  { key: '__info',         label: '',            group: 'Workload',     sortable: false },
+  { key: 'workload_name',  label: 'Workload',    group: 'Workload',     sortable: true  },
+  { key: 'model_family',   label: 'Model',       group: 'Model',        sortable: true  },
+  { key: 'phase',          label: 'Phase',       group: 'Model',        sortable: true  },
+  { key: 'precision',      label: 'Precision',   group: 'Model',        sortable: true  },
+  { key: 'hardware_type',  label: 'HW Type',     group: 'Hardware',     sortable: true  },
+  { key: 'hardware_model', label: 'HW Model',    group: 'Hardware',     sortable: true  },
+  { key: '__accel',        label: 'Accelerators',group: 'Hardware',     sortable: true, numeric: true },
+  { key: 'framework',      label: 'Framework',   group: 'Config',       sortable: true  },
+  { key: 'compiler',      label: 'Compiler',    group: 'Config',       sortable: true  },
+  { key: 'tp',             label: 'TP',          group: 'Config',       sortable: true, numeric: true },
+  { key: 'pp',             label: 'PP',          group: 'Config',       sortable: true, numeric: true },
+  { key: 'dp_replicate',   label: 'DP',          group: 'Config',       sortable: true, numeric: true },
+  { key: 'dp_shard',       label: 'DP Shard',    group: 'Config',       sortable: true, numeric: true },
+  { key: 'ep',             label: 'EP',          group: 'Config',       sortable: true, numeric: true },
+  { key: 'batch_size',     label: 'Batch',       group: 'Data',         sortable: true, numeric: true },
+  { key: 'seq_len',        label: 'Seq Len',     group: 'Data',         sortable: true, numeric: true },
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt(v) {
+  if (v === null || v === undefined || v === '') return '<span style="color:var(--muted)">—</span>';
+  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  return esc(v);
+}
+function fmtDate(iso) {
+  try {
+    return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  } catch { return iso; }
+}
+
+// ── Cell renderers ────────────────────────────────────────────────────────────
+function cellInfo(row) {
+  return `<button class="info-btn" onclick="showModal(${row.__idx})" title="View workload details">i</button>`;
+}
+
+function cellWorkload(row) {
+  const name = row.metadata.workload_name || '';
+  const url  = row.metadata.hf_url;
+  const link = url
+    ? `<a class="wl-link" href="${esc(url)}" target="_blank" rel="noopener">${esc(name)}</a>`
+    : esc(name);
+  return `<div class="wl-cell"><span class="wl-name">${link}</span></div>`;
+}
+
+function cellPhase(row) {
+  const p = row.metadata.phase || '';
+  if (!p) return fmt('');
+  const cls = p === 'inference' ? 'b-inference' : p === 'training' ? 'b-training' : p === 'serving' ? 'b-serving' : '';
+  return `<span class="badge ${cls}">${esc(p)}</span>`;
+}
+
+function cellHWType(row) {
+  const t = row.metadata.hardware_type || '';
+  if (!t) return fmt('');
+  const cls = t.toLowerCase() === 'tpu' ? 'b-tpu' : 'b-gpu';
+  return `<span class="badge ${cls}">${esc(t)}</span>`;
+}
+
+function cellModel(row) {
+  const m   = row.metadata.model_family || '';
+  const moe = row.metadata.moe ? '<span class="badge b-moe">MoE</span>' : '';
+  return `<span>${esc(m)}${moe}</span>`;
+}
+
+function cellAccel(row) {
+  const total = row.metadata.total_count;
+  const perNode = row.metadata.count_per_node;
+  if (!total && total !== 0) return fmt('');
+  const nodes = (perNode && perNode > 0) ? Math.round(total / perNode) : null;
+  const nodeStr = nodes != null ? `<span style="color:var(--muted);font-size:.8em"> (${nodes} nodes)</span>` : '';
+  return `<span>${esc(total)}${nodeStr}</span>`;
+}
+
+function metricPill(val, info) {
+  if (val === null || val === undefined) {
+    return '<span class="metric-pill mp-na">N/A</span>';
+  }
+  if (typeof val !== 'number') {
+    return `<span class="metric-pill mp-na">${esc(String(val))}</span>`;
+  }
+  const thr    = (info && info.thresholds) || { high: 50, mid: 25 };
+  const higher = info && info.higher_is_better === false ? false : true;
+  const unit   = (info && info.unit) || '';
+
+  let cls;
+  if (higher) {
+    cls = val >= thr.high ? 'mp-high' : val >= thr.mid ? 'mp-mid' : 'mp-low';
+  } else {
+    cls = val <= thr.mid ? 'mp-high' : val <= thr.high ? 'mp-mid' : 'mp-low';
+  }
+  const display = val.toFixed(2) + (unit ? '\u202f' + unit : '');
+  return `<span class="metric-pill ${cls}">${esc(display)}</span>`;
+}
+
+// ── Build full column list ────────────────────────────────────────────────────
+function buildCols(allMetrics, metricInfo, metricCategories) {
+  const cats = metricCategories || [];
+  const catOrder  = {};
+  const catLabels = {};
+  cats.forEach((c, i) => { catOrder[c.id] = i; catLabels[c.id] = c.label; });
+
+  // Sort metrics by category order, then alphabetically within each category
+  // Only show metrics that have an entry in metricInfo (acts as the display allow-list)
+  const sorted = [...allMetrics].filter(m => metricInfo[m]).sort((a, b) => {
+    const ca = (metricInfo[a] && metricInfo[a].category) || '';
+    const cb = (metricInfo[b] && metricInfo[b].category) || '';
+    const oa = catOrder[ca] ?? 999;
+    const ob = catOrder[cb] ?? 999;
+    if (oa !== ob) return oa - ob;
+    return a.localeCompare(b);
+  });
+
+  const mCols = sorted.map(m => {
+    const info  = metricInfo[m] || {};
+    const catId = info.category || '';
+    return {
+      key:        '__m__' + m,
+      label:      info.label || m,
+      group:      catLabels[catId] || 'Metrics',
+      sortable:   true,
+      numeric:    true,
+      isMetric:   true,
+      metricName: m,
+      metricInfo: info,
+    };
+  });
+  return [...META_COLS, ...mCols];
+}
+
+// ── Filter & sort ─────────────────────────────────────────────────────────────
+function applyFilterSort() {
+  const q = S.filter.toLowerCase();
+  let rows = S.rows;
+
+  if (q) {
+    rows = rows.filter(r =>
+      Object.values(r.metadata).some(v => String(v ?? '').toLowerCase().includes(q)) ||
+      Object.values(r.metrics).some(v  => String(v ?? '').toLowerCase().includes(q))
+    );
+  }
+
+  if (S.sort.col) {
+    const { col, dir } = S.sort;
+    rows = [...rows].sort((a, b) => {
+      let va, vb;
+      if (col.isMetric) {
+        va = a.metrics[col.metricName] ?? null;
+        vb = b.metrics[col.metricName] ?? null;
+      } else if (col.key === '__accel') {
+        va = a.metadata.total_count ?? null;
+        vb = b.metadata.total_count ?? null;
+      } else if (col.key === 'dp_replicate') {
+        va = a.metadata.dp_replicate ?? null;
+        vb = b.metadata.dp_replicate ?? null;
+      } else {
+        va = a.metadata[col.key] ?? null;
+        vb = b.metadata[col.key] ?? null;
+      }
+      if (va === null && vb === null) return 0;
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      if (typeof va === 'number' && typeof vb === 'number') return dir * (va - vb);
+      return dir * String(va).localeCompare(String(vb), undefined, { numeric: true });
+    });
+  }
+
+  S.visible = rows;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderAll() {
+  applyFilterSort();
+  renderHead();
+  renderBody();
+  updateCount();
+}
+
+function renderHead() {
+  // Build group-span map
+  const groups = [];
+  let last = null;
+  S.cols.forEach(col => {
+    const g = col.group || '';
+    if (g === last) { groups[groups.length - 1].span++; }
+    else            { groups.push({ label: g, span: 1 }); last = g; }
+  });
+
+  const groupCells = groups.map(g =>
+    `<th class="${g.label === 'Workload' ? 'g-workload' : ''}" colspan="${g.span}">${g.label ? esc(g.label) : ''}</th>`
+  ).join('');
+
+  const sc = S.sort.col;
+  const colCells = S.cols.map(col => {
+    if (!col.sortable) return `<th class="no-sort" style="width:32px"></th>`;
+    const active  = sc && sc.key === col.key;
+    const sortCls = active ? (S.sort.dir === 1 ? 'sorted-asc' : 'sorted-desc') : '';
+    const mCls    = col.isMetric ? 'th-metric' : '';
+    if (col.isMetric && col.metricInfo) {
+      const dir     = col.metricInfo.higher_is_better ? ' \u2191' : ' \u2193';
+      const infoBtn = `<span class="th-info-btn" onclick="event.stopPropagation();showMetricInfo('${col.metricName}')" title="View metric details">\u24d8</span>`;
+      return `<th class="${sortCls} ${mCls}" onclick="onSort('${col.key}')">${esc(col.label)}${dir}${infoBtn}</th>`;
+    }
+    return `<th class="${sortCls} ${mCls}" onclick="onSort('${col.key}')">${esc(col.label)}</th>`;
+  }).join('');
+
+  document.getElementById('bench-thead').innerHTML =
+    `<tr class="th-group-row">${groupCells}</tr><tr>${colCells}</tr>`;
+}
+
+function renderBody() {
+  const tbody = document.getElementById('bench-tbody');
+  const empty = document.getElementById('empty-state');
+
+  if (!S.visible.length) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    empty.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">&#128269;</div>
+        <h2>No matching workloads</h2>
+        <p>Try a different search term, or clear the filter.</p>
+      </div>`;
+    return;
+  }
+  empty.style.display = 'none';
+
+  const PHASE_ORDER = ['training', 'inference', 'serving'];
+  const PHASE_BADGE = { training: 'b-training', inference: 'b-inference', serving: 'b-serving' };
+  const numCols = S.cols.length;
+
+  // Group visible rows by phase
+  const groups = {};
+  const ungrouped = [];
+  S.visible.forEach(row => {
+    const p = (row.metadata.phase || '').toLowerCase();
+    if (PHASE_ORDER.includes(p)) {
+      (groups[p] = groups[p] || []).push(row);
+    } else {
+      ungrouped.push(row);
+    }
+  });
+
+  const renderRow = row => {
+    const tds = S.cols.map(col => {
+      if (col.key === '__info')         return `<td style="width:32px;padding:4px 8px">${cellInfo(row)}</td>`;
+      if (col.key === 'workload_name')  return `<td>${cellWorkload(row)}</td>`;
+      if (col.key === 'phase')          return `<td>${cellPhase(row)}</td>`;
+      if (col.key === 'hardware_type')  return `<td>${cellHWType(row)}</td>`;
+      if (col.key === 'model_family')   return `<td>${cellModel(row)}</td>`;
+      if (col.key === '__accel')        return `<td>${cellAccel(row)}</td>`;
+      if (col.isMetric) {
+        const v = row.metrics[col.metricName];
+        return `<td class="td-metric">${metricPill(v, col.metricInfo)}</td>`;
+      }
+      return `<td>${fmt(row.metadata[col.key])}</td>`;
+    }).join('');
+    return `<tr>${tds}</tr>`;
+  };
+
+  const renderSectionHeader = (phase, count) => {
+    const cls = PHASE_BADGE[phase] || '';
+    const label = phase.charAt(0).toUpperCase() + phase.slice(1);
+    return `<tr class="phase-section-row">
+      <td colspan="${numCols}">
+        <span class="phase-section-label">
+          <span class="badge ${cls}">${esc(label)}</span>
+          <span class="phase-section-count">${count} workload${count !== 1 ? 's' : ''}</span>
+        </span>
+      </td>
+    </tr>`;
+  };
+
+  const parts = [];
+  for (const phase of PHASE_ORDER) {
+    const rows = groups[phase];
+    if (!rows || !rows.length) continue;
+    parts.push(renderSectionHeader(phase, rows.length));
+    rows.forEach(row => parts.push(renderRow(row)));
+  }
+  if (ungrouped.length) {
+    parts.push(renderSectionHeader('other', ungrouped.length));
+    ungrouped.forEach(row => parts.push(renderRow(row)));
+  }
+
+  tbody.innerHTML = parts.join('');
+}
+
+function updateCount() {
+  const total = S.rows.length;
+  const shown = S.visible.length;
+  document.getElementById('filter-count').textContent =
+    S.filter ? `Showing ${shown} of ${total} workloads` : '';
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────────
+function onSort(key) {
+  const col = S.cols.find(c => c.key === key);
+  if (!col || !col.sortable) return;
+  if (S.sort.col && S.sort.col.key === key) {
+    S.sort.dir *= -1;
+  } else {
+    S.sort.col = col;
+    S.sort.dir = 1;
+  }
+  renderAll();
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', e => {
+  S.filter = e.target.value.trim();
+  renderAll();
+});
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function showModal(idx) {
+  const row = S.rows[idx];
+  if (!row) return;
+  const m  = row.metadata;
+  const mi = S.data.metric_info || {};
+
+  document.getElementById('modal-title').textContent = m.workload_name || '';
+
+  const parts = [];
+
+  // Description
+  if (m.description) {
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Description</div>
+        <div class="m-desc">${esc(m.description)}</div>
+      </div>`);
+  }
+
+  // Model & Data
+  const modelKvs = [
+    ['HuggingFace URL', m.hf_url ? `<a href="${esc(m.hf_url)}" target="_blank" rel="noopener">${esc(m.hf_url)}</a>` : null],
+    ['Trace URL',       m.trace_url ? `<a href="${esc(m.trace_url)}" target="_blank" rel="noopener">${esc(m.trace_url)}</a>` : null],
+    ['Model Family',    m.model_family],
+    ['Phase',           m.phase],
+    ['Precision',       m.precision],
+    ['MoE',             m.moe != null ? (m.moe ? 'Yes' : 'No') : null],
+    ['Granularity',     m.granularity],
+    ['Epochs',          m.epochs],
+    ['Iterations',      m.iteration],
+    ['Batch Size',      m.batch_size],
+    ['Seq Length',      m.seq_len],
+    ['Dataset',         m.dataset],
+  ].filter(([, v]) => v != null && v !== '');
+
+  if (modelKvs.length) {
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Model &amp; Data</div>
+        <div class="kv-grid">
+          ${modelKvs.map(([k, v]) =>
+            `<span class="kv-k">${esc(k)}</span><span class="kv-v">${v}</span>`
+          ).join('')}
+        </div>
+      </div>`);
+  }
+
+  // Hardware
+  const totalCount = m.total_count;
+  const perNode    = m.count_per_node;
+  const numNodes   = (totalCount && perNode && perNode > 0) ? Math.round(totalCount / perNode) : null;
+  const hwKvs = [
+    ['Hardware Type',       m.hardware_type],
+    ['Hardware Model',      m.hardware_model],
+    ['Total Accelerators',  totalCount],
+    ['Accelerators / Node', perNode],
+    ['Num Nodes',           numNodes],
+    ['Driver Version',      m.driver_version],
+    ['Network Topology',    m.network_topology],
+    ['Scale-out BW (Gbps)', m.bandwidth_scaleout],
+    ['Scale-up BW (Gbps)',  m.bandwidth_scaleup],
+  ].filter(([, v]) => v != null && v !== '');
+
+  if (hwKvs.length) {
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Hardware</div>
+        <div class="kv-grid">
+          ${hwKvs.map(([k, v]) =>
+            `<span class="kv-k">${esc(k)}</span><span class="kv-v">${fmt(v)}</span>`
+          ).join('')}
+        </div>
+      </div>`);
+  }
+
+  // Framework & Parallelism
+  const fwKvs = [
+    ['Framework',  m.framework],
+    ['Compiler',   m.compiler],
+    ['TP',         m.tp],
+    ['PP',         m.pp],
+    ['PP Microbatches', m.pp_mb],
+    ['DP Replicate', m.dp_replicate],
+    ['DP Shard',   m.dp_shard],
+    ['EP',         m.ep],
+    ['CP',         m.cp],
+  ].filter(([, v]) => v != null && v !== '');
+
+  if (fwKvs.length) {
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Framework &amp; Parallelism</div>
+        <div class="kv-grid">
+          ${fwKvs.map(([k, v]) =>
+            `<span class="kv-k">${esc(k)}</span><span class="kv-v">${fmt(v)}</span>`
+          ).join('')}
+        </div>
+      </div>`);
+  }
+
+  // Communication
+  const commParts = [];
+  const commKvs = [
+    ['Comm Library',         m.comm_library],
+    ['Comm Library Version', m.comm_library_ver],
+  ].filter(([, v]) => v != null && v !== '');
+  if (commKvs.length) {
+    commParts.push(`<div class="kv-grid">${commKvs.map(([k, v]) =>
+      `<span class="kv-k">${esc(k)}</span><span class="kv-v">${fmt(v)}</span>`
+    ).join('')}</div>`);
+  }
+  if (m.protocol_selection && m.protocol_selection.length) {
+    commParts.push(`<div class="kv-grid">
+      <span class="kv-k">Protocols</span>
+      <span class="kv-v">${m.protocol_selection.map(p => `<span class="badge">${esc(p)}</span>`).join(' ')}</span>
+    </div>`);
+  }
+  if (m.comm_env && Object.keys(m.comm_env).length) {
+    const envRows = Object.entries(m.comm_env).map(([k, v]) =>
+      `<span class="kv-k" style="padding-left:1em">${esc(k)}</span><span class="kv-v">${fmt(v)}</span>`
+    ).join('');
+    commParts.push(`<div class="kv-grid">
+      <span class="kv-k">Env Vars</span><span class="kv-v"></span>
+      ${envRows}
+    </div>`);
+  }
+  if (commParts.length) {
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Communication</div>
+        ${commParts.join('')}
+      </div>`);
+  }
+
+  // Metric source
+  const msParts = [];
+  if (m.trace_types && m.trace_types.length) {
+    msParts.push(`<div class="kv-grid">
+      <span class="kv-k">Trace Types</span>
+      <span class="kv-v">${m.trace_types.map(t => `<span class="badge">${esc(t)}</span>`).join(' ')}</span>
+    </div>`);
+  }
+  if (m.metric_traces && m.metric_traces.length) {
+    msParts.push(`<div class="kv-grid">
+      <span class="kv-k">Metric Traces</span>
+      <span class="kv-v">${m.metric_traces.map(t => `<span class="badge">${esc(t)}</span>`).join(' ')}</span>
+    </div>`);
+  }
+  if (msParts.length) {
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Metric Source</div>
+        ${msParts.join('')}
+      </div>`);
+  }
+
+  // Metrics — grouped by category
+  const metricEntries = Object.entries(row.metrics);
+  if (metricEntries.length) {
+    const cats = S.data.metric_categories || [];
+    const catOrder  = {};
+    const catLabels = {};
+    cats.forEach((c, i) => { catOrder[c.id] = i; catLabels[c.id] = c.label; });
+
+    const byCat = {};
+    const noCat = [];
+    metricEntries.forEach(([name, val]) => {
+      const cat = (mi[name] && mi[name].category) || '';
+      if (cat) { (byCat[cat] = byCat[cat] || []).push([name, val]); }
+      else      { noCat.push([name, val]); }
+    });
+
+    const renderMetricRow = ([name, val]) => {
+      const info  = mi[name] || {};
+      const label = info.label || name;
+      const desc  = info.description || '';
+      return `
+        <div class="metric-row">
+          <div>
+            <div class="mr-label">${esc(label)}</div>
+            ${desc ? `<div class="mr-desc">${esc(desc)}</div>` : ''}
+          </div>
+          ${metricPill(val, info)}
+        </div>`;
+    };
+
+    const sections = [];
+    for (const catDef of cats) {
+      const entries = byCat[catDef.id];
+      if (!entries || !entries.length) continue;
+      sections.push(
+        `<div class="m-cat-label">${esc(catDef.label)}</div>` +
+        entries.map(renderMetricRow).join('')
+      );
+    }
+    if (noCat.length) { sections.push(noCat.map(renderMetricRow).join('')); }
+
+    parts.push(`
+      <div class="m-section">
+        <div class="m-title">Metric Results</div>
+        ${sections.join('')}
+      </div>`);
+  }
+
+  document.getElementById('modal-body').innerHTML = parts.join('');
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+}
+
+function showMetricInfo(name) {
+  const mi   = (S.data && S.data.metric_info) || {};
+  const cats = (S.data && S.data.metric_categories) || [];
+  const catLabels = {};
+  cats.forEach(c => { catLabels[c.id] = c.label; });
+  const info = mi[name] || {};
+  document.getElementById('modal-title').textContent = info.label || name;
+  const dir = info.higher_is_better != null
+    ? (info.higher_is_better ? 'Higher is better \u2191' : 'Lower is better \u2193') : '';
+  const kvs = [
+    ['Description', info.description],
+    ['Unit',        info.unit],
+    ['Direction',   dir],
+    ['Category',    catLabels[info.category] || info.category],
+  ].filter(([, v]) => v);
+  document.getElementById('modal-body').innerHTML = `
+    <div class="m-section">
+      <div class="kv-grid">
+        ${kvs.map(([k, v]) =>
+          `<span class="kv-k">${esc(k)}</span><span class="kv-v">${esc(v)}</span>`
+        ).join('')}
+      </div>
+    </div>`;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function onBackdropClick(e) {
+  if (e.target === document.getElementById('modal-backdrop')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Initialise ────────────────────────────────────────────────────────────────
+function showNoData() {
+  document.getElementById('bench-table').style.display = 'none';
+  const empty = document.getElementById('empty-state');
+  empty.style.display = '';
+  empty.innerHTML = `
+    <div class="empty-state">
+      <div class="es-icon">&#9888;&#65039;</div>
+      <h2>No benchmark data loaded</h2>
+      <p>
+        Run the data generator from the repository root to compute results
+        and write <code>website/data.js</code>:
+      </p>
+      <pre># From the repo root:
+python website/generate_data.py
+
+# Then open this file in your browser:
+open website/index.html</pre>
+    </div>`;
+}
+
+function init() {
+  if (typeof BENCHMARK_DATA === 'undefined' || BENCHMARK_DATA === null) {
+    showNoData();
+    return;
+  }
+
+  S.data = BENCHMARK_DATA;
+
+  // Header timestamp
+  document.getElementById('gen-ts').textContent =
+    'Generated ' + fmtDate(S.data.generated_at);
+
+  // Stats strip
+  const nRows    = S.data.rows.length;
+  const nMetrics = S.data.all_metrics.length;
+  const mi       = S.data.metric_info || {};
+  const cats     = S.data.metric_categories || [];
+  const catLabels = {};
+  cats.forEach(c => { catLabels[c.id] = c.label; });
+
+  const byCatChips = {};
+  const uncatChips = [];
+  S.data.all_metrics.forEach(m => {
+    const cat = (mi[m] && mi[m].category) || '';
+    if (cat) { (byCatChips[cat] = byCatChips[cat] || []).push(m); }
+    else      { uncatChips.push(m); }
+  });
+
+  const chipGroups = [];
+  for (const catDef of cats) {
+    const metrics = byCatChips[catDef.id];
+    if (!metrics || !metrics.length) continue;
+    chipGroups.push(
+      `<span class="chips-cat-label">${esc(catDef.label)}</span>` +
+      metrics.map(m => `<span class="chip">${esc((mi[m] && mi[m].label) || m)}</span>`).join('')
+    );
+  }
+  if (uncatChips.length) {
+    chipGroups.push(uncatChips.map(m =>
+      `<span class="chip">${esc((mi[m] && mi[m].label) || m)}</span>`
+    ).join(''));
+  }
+
+  document.getElementById('stats-strip').innerHTML = `
+    <div class="stat"><strong>${nRows}</strong> workload${nRows !== 1 ? 's' : ''}</div>
+    <div class="stat"><strong>${nMetrics}</strong> metric${nMetrics !== 1 ? 's' : ''}</div>
+    <div class="stats-chips">${chipGroups.join(' ')}</div>`;
+
+  // Rows
+  S.rows = S.data.rows.map((r, i) => ({ ...r, __idx: i }));
+
+  // Columns
+  S.cols = buildCols(S.data.all_metrics, mi, S.data.metric_categories || []);
+
+  // Render
+  renderAll();
+}
+
+init();
+</script>
+
+</body>
+</html>

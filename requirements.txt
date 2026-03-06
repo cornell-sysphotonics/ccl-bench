@@ -1,3 +1,6 @@
 matplotlib
 numpy
 pandas
+duckdb
+PyYAML
+claude_agent_sdk

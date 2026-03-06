@@ -30,6 +30,8 @@ env
 
 nsys-res/*
 topology.xml
+trace_analysis
+
 # Editor temporaries (VIM)
 [._]*.s[a-v][a-z]
 [._]*.sw[a-p]
@@ -46,6 +48,15 @@ Sessionx.vim
 .DS_Store
 
 # trace
-*.json
+trace_collection/*/*.json
+trace_collection_backlog/*/*.json
+trace_collection_backlog/*/*/*.json
 *.nsys-rep
 *.sqlite
+*.zip
+tmp* 
+
+API_KEY
+
+# claude
+tools/pytorch_docs
