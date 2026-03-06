@@ -809,7 +809,23 @@ function renderBody() {
   }
   empty.style.display = 'none';
 
-  tbody.innerHTML = S.visible.map(row => {
+  const PHASE_ORDER = ['training', 'inference', 'serving'];
+  const PHASE_BADGE = { training: 'b-training', inference: 'b-inference', serving: 'b-serving' };
+  const numCols = S.cols.length;
+
+  // Group visible rows by phase
+  const groups = {};
+  const ungrouped = [];
+  S.visible.forEach(row => {
+    const p = (row.metadata.phase || '').toLowerCase();
+    if (PHASE_ORDER.includes(p)) {
+      (groups[p] = groups[p] || []).push(row);
+    } else {
+      ungrouped.push(row);
+    }
+  });
+
+  const renderRow = row => {
     const tds = S.cols.map(col => {
       if (col.key === '__info')         return `<td style="width:32px;padding:4px 8px">${cellInfo(row)}</td>`;
       if (col.key === 'workload_name')  return `<td>${cellWorkload(row)}</td>`;
@@ -824,7 +840,34 @@ function renderBody() {
       return `<td>${fmt(row.metadata[col.key])}</td>`;
     }).join('');
     return `<tr>${tds}</tr>`;
-  }).join('');
+  };
+
+  const renderSectionHeader = (phase, count) => {
+    const cls = PHASE_BADGE[phase] || '';
+    const label = phase.charAt(0).toUpperCase() + phase.slice(1);
+    return `<tr class="phase-section-row">
+      <td colspan="${numCols}">
+        <span class="phase-section-label">
+          <span class="badge ${cls}">${esc(label)}</span>
+          <span class="phase-section-count">${count} workload${count !== 1 ? 's' : ''}</span>
+        </span>
+      </td>
+    </tr>`;
+  };
+
+  const parts = [];
+  for (const phase of PHASE_ORDER) {
+    const rows = groups[phase];
+    if (!rows || !rows.length) continue;
+    parts.push(renderSectionHeader(phase, rows.length));
+    rows.forEach(row => parts.push(renderRow(row)));
+  }
+  if (ungrouped.length) {
+    parts.push(renderSectionHeader('other', ungrouped.length));
+    ungrouped.forEach(row => parts.push(renderRow(row)));
+  }
+
+  tbody.innerHTML = parts.join('');
 }
 
 function updateCount() {

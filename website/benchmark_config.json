@@ -79,7 +79,7 @@
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-236b-torchtitan-ep32-dp8-pp8-tp4-perlmutter",
       "metrics": "auto",
-      "required_update": true
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
