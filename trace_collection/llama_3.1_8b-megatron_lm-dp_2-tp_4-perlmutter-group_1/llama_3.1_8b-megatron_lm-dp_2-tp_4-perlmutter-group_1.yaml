@@ -17,9 +17,9 @@ workload:
     model_family: llama-3.1-8b
     precision: bf16
     epochs: 1
-    iteration: 50
+    iteration: 1
   data:
-    batch_size: 1
+    batch_size: 32
     seq_len: 1024
     dataset: wikitext-103
   hardware:
