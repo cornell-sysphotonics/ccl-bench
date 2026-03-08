@@ -115,6 +115,11 @@
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_4_tp_1_ep_4-pplx-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama_3.1_8b-megatron_lm-dp_4-tp_2-perlmutter-group_1",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [

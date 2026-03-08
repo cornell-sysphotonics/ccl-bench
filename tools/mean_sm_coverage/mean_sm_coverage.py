@@ -78,11 +78,9 @@ def _calc_json(directory: str) -> float:
     active.  We compute the duration-weighted mean across all kernels in all
     rank files.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
+    _all_json = [fn for fn in os.listdir(directory) if fn.endswith(".json")]
+    _kineto = [fn for fn in _all_json if fn.startswith("kineto_trace_")]
+    json_files = sorted(os.path.join(directory, fn) for fn in (_kineto or _all_json))
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1

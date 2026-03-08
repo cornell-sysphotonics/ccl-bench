@@ -99,11 +99,9 @@ def _calc_json(directory: str) -> float:
     For each rank: comm_kernel_time / total_kernel_time (summed, non-merged).
     Returns weighted aggregate (sum comm / sum total) across all ranks.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
+    _all_json = [fn for fn in os.listdir(directory) if fn.endswith(".json")]
+    _kineto = [fn for fn in _all_json if fn.startswith("kineto_trace_")]
+    json_files = sorted(os.path.join(directory, fn) for fn in (_kineto or _all_json))
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1
@@ -153,11 +151,9 @@ def _calc_tpu(directory: str) -> float:
     Communication ratio from TPU profiler Chrome-trace JSON.
     Aggregated comm op time / total XLA op time across all TPU devices.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
+    _all_json = [fn for fn in os.listdir(directory) if fn.endswith(".json")]
+    _kineto = [fn for fn in _all_json if fn.startswith("kineto_trace_")]
+    json_files = sorted(os.path.join(directory, fn) for fn in (_kineto or _all_json))
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1

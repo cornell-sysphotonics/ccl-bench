@@ -105,47 +105,54 @@ def _merge_intervals(intervals: list) -> float:
 
 def _calc_json(directory: str) -> float:
     """
-    Total communication time from a single PyTorch-profiler JSON file (rank0).
-    Merges overlapping comm kernel intervals across CUDA streams to avoid
-    double-counting parallel communication. Returns seconds.
+    Total communication time from PyTorch-profiler JSON files (kineto_trace_*.json).
+    Merges overlapping comm kernel intervals per rank, then averages across ranks.
+    Falls back to rank0_trace.json or first .json if no kineto files found.
+    Returns seconds.
     """
-    rank0 = os.path.join(directory, "rank0_trace.json")
-    if os.path.exists(rank0):
-        path = rank0
+    _all_json = sorted(fn for fn in os.listdir(directory) if fn.endswith(".json"))
+    _kineto = sorted(fn for fn in _all_json if fn.startswith("kineto_trace_"))
+    MAX_RANKS = 8
+    if _kineto:
+        paths = [os.path.join(directory, fn) for fn in _kineto[:MAX_RANKS]]
     else:
-        json_files = sorted(
-            os.path.join(directory, fn)
-            for fn in os.listdir(directory)
-            if fn.endswith(".json")
-        )
-        if not json_files:
+        rank0 = os.path.join(directory, "rank0_trace.json")
+        if os.path.exists(rank0):
+            paths = [rank0]
+        elif _all_json:
+            paths = [os.path.join(directory, _all_json[0])]
+        else:
             print(f"Error: No JSON files found in {directory}", file=sys.stderr)
             return -1
-        path = json_files[0]
 
-    comm_intervals = []
-    any_data = False
+    rank_times = []
+    for path in paths:
+        comm_intervals = []
+        any_data = False
 
-    for e in _load_json_events(path):
-        if (
-            isinstance(e, dict)
-            and e.get("ph") == "X"
-            and e.get("cat") == "kernel"
-        ):
-            ts = e.get("ts")
-            dur = e.get("dur")
-            if ts is None or dur is None:
-                continue
-            any_data = True
-            if _COMM_RE.search(e.get("name", "")):
-                ts = float(ts)
-                comm_intervals.append((ts, ts + float(dur)))
+        for e in _load_json_events(path):
+            if (
+                isinstance(e, dict)
+                and e.get("ph") == "X"
+                and e.get("cat") == "kernel"
+            ):
+                ts = e.get("ts")
+                dur = e.get("dur")
+                if ts is None or dur is None:
+                    continue
+                any_data = True
+                if _COMM_RE.search(e.get("name", "")):
+                    ts = float(ts)
+                    comm_intervals.append((ts, ts + float(dur)))
 
-    if not any_data:
-        print(f"Error: No kernel data found in {path}", file=sys.stderr)
+        if any_data:
+            rank_times.append(_merge_intervals(comm_intervals) / 1e6)  # µs → s
+
+    if not rank_times:
+        print(f"Error: No kernel data found in {directory}", file=sys.stderr)
         return -1
 
-    return _merge_intervals(comm_intervals) / 1e6   # µs → s
+    return sum(rank_times) / len(rank_times)
 
 
 def _calc_tpu(directory: str) -> float:
@@ -153,11 +160,9 @@ def _calc_tpu(directory: str) -> float:
     Total communication time from TPU profiler Chrome-trace JSON (ms).
     Sums XLA collective op durations across all TPU device streams.
     """
-    json_files = sorted(
-        os.path.join(directory, fn)
-        for fn in os.listdir(directory)
-        if fn.endswith(".json")
-    )
+    _all_json = [fn for fn in os.listdir(directory) if fn.endswith(".json")]
+    _kineto = [fn for fn in _all_json if fn.startswith("kineto_trace_")]
+    json_files = sorted(os.path.join(directory, fn) for fn in (_kineto or _all_json))
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1

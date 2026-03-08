@@ -118,11 +118,11 @@ def metric_cal(directory: str) -> float:
         float: Average step time in seconds.
     """
 
-    trace_file = None
-    for file in os.listdir(directory):
-        if file.endswith(".json"):
-            trace_file = os.path.join(directory, file)
-            break
+    _all_json = sorted(f for f in os.listdir(directory) if f.endswith(".json"))
+    _kineto = sorted(f for f in _all_json if f.startswith("kineto_trace_"))
+    _json_candidates = _kineto if _kineto else _all_json
+    MAX_RANKS = 8
+    trace_files = [os.path.join(directory, f) for f in _json_candidates[:MAX_RANKS]]
 
     yaml_file = None
 
@@ -135,20 +135,27 @@ def metric_cal(directory: str) -> float:
         with open(yaml_file, "r") as f:
             yaml_data = yaml.safe_load(f)
             xpu_type = yaml_data.get("workload", {}).get("hardware", {}).get("xpu_spec", {}).get("type", "")
-            # print(f"Detected XPU type: {xpu_type}")
 
             if xpu_type.lower() == "tpu":
-                # print("Processing TPU trace...")
-                with open(trace_file, "r") as f:
+                if not trace_files:
+                    raise FileNotFoundError(f"No JSON file found in directory: {directory}")
+                with open(trace_files[0], "r") as f:
                     data = json.load(f)
                     return tpu(data)
-            
-            elif xpu_type.lower() == "gpu":
-                with open(trace_file, "r") as f:
-                    data = json.load(f)
-                    return gpu(data)
 
-    if trace_file is None:
+            elif xpu_type.lower() == "gpu":
+                if not trace_files:
+                    raise FileNotFoundError(f"No JSON file found in directory: {directory}")
+                rank_avgs = []
+                for tf in trace_files:
+                    with open(tf, "r") as f:
+                        data = json.load(f)
+                    result = gpu(data)
+                    if result is not None:
+                        rank_avgs.append(result)
+                return sum(rank_avgs) / len(rank_avgs) if rank_avgs else None
+
+    if not trace_files:
         raise FileNotFoundError(f"No JSON file found in directory: {directory}")
 
 
