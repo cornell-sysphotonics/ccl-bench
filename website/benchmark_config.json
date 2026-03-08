@@ -135,6 +135,16 @@
       "trace": "/data/ccl-bench_trace_collection/llama_3.1_8b-megatron_lm-dp_2-tp_4-perlmutter-group_1",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_r1_distill_qwen_7b-megatron_lm-dp_2-tp_4-pp_2-perlmutter-group_1",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_r1_distill_qwen_7b-megatron_lm-dp_4-tp_4-perlmutter-group_1",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [
@@ -191,7 +201,7 @@
         "high": 10,
         "mid": 5
       },
-      "required_update": true
+      "required_update": false
     },
     "mfu": {
       "label": "MFU (%)",

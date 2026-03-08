@@ -19,7 +19,7 @@ workload:
     epochs: 1
     iteration: 40
   data:
-    batch_size: 2
+    batch_size: 64
     seq_len: 4096
     dataset: wikitext
   hardware:
@@ -57,6 +57,6 @@ Model-executor:
 
 metric_source:
   traces:
-    - kineto_trace
+    - json
   metrics_specific_trace:
-    - memory_trace
+    -
