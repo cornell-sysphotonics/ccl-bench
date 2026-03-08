@@ -2,8 +2,12 @@ import json
 from typing import List
 import os
 import statistics
+import sys
 import yaml
 import re
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
 
 def tpu(data):
     events = data.get("traceEvents", [])
@@ -107,6 +111,35 @@ def gpu(data):
     return avg_ms / 1000000  # Return seconds, matching TPU function convention
 
 
+def _load_json(path: str) -> dict:
+    """Load a PyTorch-profiler JSON file with partial-parse fallback for truncated files."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        pass
+
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            content = f.read()
+        idx = content.find('"traceEvents"')
+        if idx != -1:
+            bracket = content.find('[', idx)
+            if bracket != -1:
+                partial = content[bracket:]
+                for suffix in (']}', ']}}}'):
+                    try:
+                        events = json.loads(partial + suffix)
+                        if isinstance(events, list):
+                            return {"traceEvents": events}
+                    except json.JSONDecodeError:
+                        pass
+    except Exception:
+        pass
+
+    return {}
+
+
 def metric_cal(directory: str) -> float:
     """
     Calculate average step time (inference: decode of the batch, training: forward + backward)
@@ -117,15 +150,9 @@ def metric_cal(directory: str) -> float:
     Returns:
         float: Average step time in seconds.
     """
-
-    _all_json = sorted(f for f in os.listdir(directory) if f.endswith(".json"))
-    _kineto = sorted(f for f in _all_json if f.startswith("kineto_trace_"))
-    _json_candidates = _kineto if _kineto else _all_json
-    MAX_RANKS = 8
-    trace_files = [os.path.join(directory, f) for f in _json_candidates[:MAX_RANKS]]
+    trace_files = select_json_files(directory)
 
     yaml_file = None
-
     for file in os.listdir(directory):
         if file.endswith(".yaml"):
             yaml_file = os.path.join(directory, file)
@@ -139,27 +166,19 @@ def metric_cal(directory: str) -> float:
             if xpu_type.lower() == "tpu":
                 if not trace_files:
                     raise FileNotFoundError(f"No JSON file found in directory: {directory}")
-                with open(trace_files[0], "r") as f:
-                    data = json.load(f)
-                    return tpu(data)
+                return tpu(_load_json(trace_files[0]))
 
             elif xpu_type.lower() == "gpu":
                 if not trace_files:
                     raise FileNotFoundError(f"No JSON file found in directory: {directory}")
                 rank_avgs = []
                 for tf in trace_files:
-                    with open(tf, "r") as f:
-                        data = json.load(f)
-                    result = gpu(data)
+                    result = gpu(_load_json(tf))
                     if result is not None:
                         rank_avgs.append(result)
                 return sum(rank_avgs) / len(rank_avgs) if rank_avgs else None
 
     if not trace_files:
         raise FileNotFoundError(f"No JSON file found in directory: {directory}")
-
-
-    
-
 
     return -1

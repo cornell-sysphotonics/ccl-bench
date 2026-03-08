@@ -68,7 +68,10 @@ def traffic_window_cal(directory: str) -> Dict[str, float]:
                     is_in_sync_phase = any(start <= ts <= end for start, end in iter_boundaries)
                     p_type = "dp_window_sec" if is_in_sync_phase else "tp_window_sec"
                 
-                elif "allgather" in name or "reduce_scatter" in name or "redistribute" in name:
+                elif "broadcast" in name:
+                    p_type = "tp_window_sec"
+                
+                elif "allgather" in name or "reducescatter" in name or "redistribute" in name:
                     # FSDP style traffic
                     p_type = "dp_window_sec"
                 

@@ -72,6 +72,16 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep32-dp8-pp4-tp4-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v3-236b-torchtitan-ep32-dp8-pp8-tp4-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false
@@ -171,7 +181,7 @@
       "higher_is_better": true,
       "unit": "%",
       "category": "model_execution",
-      "trace_types": ["xla_trace"],
+      "trace_types": ["xla_trace", "json"],
       "thresholds": { "high": 50, "mid": 25 },
       "required_update": false
     },

@@ -17,6 +17,9 @@ import re
 import sys
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
+
 
 # ── Communication kernel patterns ────────────────────────────────────────────
 
@@ -96,9 +99,7 @@ def _calc_json(directory: str) -> float:
     For each rank file: comm_kernel_time / total_kernel_time.
     Returns mean across all ranks.
     """
-    _all_json = [fn for fn in os.listdir(directory) if fn.endswith(".json")]
-    _kineto = [fn for fn in _all_json if fn.startswith("kineto_trace_")]
-    json_files = sorted(os.path.join(directory, fn) for fn in (_kineto or _all_json))
+    json_files = select_json_files(directory)
     if not json_files:
         print(f"Error: No JSON files found in {directory}", file=sys.stderr)
         return -1

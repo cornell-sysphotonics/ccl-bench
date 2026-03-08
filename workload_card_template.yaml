@@ -17,6 +17,12 @@ workload:
     precision: bf16  # Precision type, e.g., "fp32", "bf16".
     epochs: 1  # Number of epochs (may not apply to inference), e.g., 1, 3, 5.
     iteration: 5  # Number of iterations/epoch, e.g., 10, 500, 1000.
+    model_arch:
+      num_params: 16380544000         # total parameter count
+      num_params_embedding: 204800000 # vocab_size(100000) * hidden_size(2048)
+      num_layers: 28                  # L: transformer decoder layers
+      num_heads: 16                   # Q: number of attention heads
+      head_dim: 128                   # H: per-head dimension (hidden_size / num_heads)
   data:
     batch_size: 4  # Batch size, e.g., 4, 8, 16.
     seq_len: 8192  # Sequence length, e.g., 512, 1024, 8192.
@@ -44,6 +50,7 @@ Model-executor:
     tp: 4 # Tensor parallelism factor, e.g., 2, 4.
     pp: 2 # Pipeline parallelism factor, e.g., 1, 2.
     cp: 1 # Context parallelism factor, e.g., 1, 2.
+    ep: 1 # Expert parallelism factor (for MoE models), e.g., 1, 2.
     pp_mb: 1 # Pipeline model parallel micro-batch size, e.g., 1, 2.
   communication_library:
     name:  # Communication library name, e.g., "NCCL", "Gloo".

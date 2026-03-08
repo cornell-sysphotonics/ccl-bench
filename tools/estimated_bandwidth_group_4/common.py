@@ -131,7 +131,7 @@ def find_trace_files(root: str) -> List[Tuple[str, str]]:
     hits = []
     # If root is a file, return it if it matches
     if os.path.isfile(root):
-        if root.endswith(".trace.json") or root.endswith(".trace.json.gz"):
+        if root.endswith(".trace.json") or root.endswith(".json.gz"):
              return [(os.path.dirname(root), root)]
         return []
 

@@ -25,6 +25,7 @@ import json
 import re
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -224,20 +225,22 @@ def main() -> None:
         print(f"Loaded cache with {len(cache)} trace(s) from {json_path}")
 
     all_metrics: set = set()
-    rows = []
+
+    # ── Phase 1: resolve metadata and split work into compute vs cache ─────────
+    trace_plans = []   # list of dicts describing each trace's work
+    work_items  = []   # (trace_dir, metric) pairs that need fresh computation
 
     for i, entry in enumerate(pairs):
         trace_dir        = entry["trace"]
         metrics_spec     = entry.get("metrics", "auto")
-        trace_needs_full = entry.get("required_update", True)  # new entries default to needing update
+        trace_needs_full = entry.get("required_update", True)
         name             = Path(trace_dir).name
 
-        print(f"[{i+1}/{len(pairs)}] {name}")
+        print(f"[{i+1}/{len(pairs)}] Resolving {name}")
 
         yaml_data = find_yaml(trace_dir)
         metadata  = extract_metadata(yaml_data, trace_dir)
 
-        # ── Resolve metric list ────────────────────────────────────────────
         if metrics_spec == "auto":
             trace_types = set(metadata.get("trace_types", []))
             if not trace_types:
@@ -254,29 +257,67 @@ def main() -> None:
             metrics = metrics_spec
 
         cached_metrics = cache.get(trace_dir, {})
-        metric_results: dict = {}
+        to_compute = []
+        to_cache   = []
 
         for metric in metrics:
             all_metrics.add(metric)
-
             needs_compute = (
-                trace_needs_full              # whole trace flagged for update
-                or metric in stale_metrics    # metric implementation changed
-                or metric not in cached_metrics  # not yet in cache
+                trace_needs_full
+                or metric in stale_metrics
+                or metric not in cached_metrics
             )
-
             if needs_compute:
-                print(f"  → {metric} ...", end=" ", flush=True)
-                val = run_metric(trace_dir, metric)
-                metric_results[metric] = val
-                print(val)
+                to_compute.append(metric)
+                work_items.append((trace_dir, metric))
             else:
-                metric_results[metric] = cached_metrics[metric]
-                print(f"  ✓ {metric} (cached: {cached_metrics[metric]})")
+                to_cache.append(metric)
+
+        trace_plans.append({
+            "trace_dir":      trace_dir,
+            "metadata":       metadata,
+            "cached_metrics": cached_metrics,
+            "to_compute":     to_compute,
+            "to_cache":       to_cache,
+        })
+
+    # ── Phase 2: parallel metric computation ──────────────────────────────────
+    computed: dict[tuple[str, str], object] = {}  # (trace_dir, metric) → value
+
+    if work_items:
+        max_workers = min(32, len(work_items))
+        print(f"\nComputing {len(work_items)} (trace, metric) pair(s) "
+              f"with up to {max_workers} parallel workers …\n")
+
+        futures = {}
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for trace_dir, metric in work_items:
+                fut = executor.submit(run_metric, trace_dir, metric)
+                futures[fut] = (trace_dir, metric)
+
+            for fut in as_completed(futures):
+                trace_dir, metric = futures[fut]
+                val = fut.result()
+                computed[(trace_dir, metric)] = val
+                name = Path(trace_dir).name
+                print(f"  ✓ {name}  {metric} → {val}")
+
+    # ── Phase 3: assemble rows ────────────────────────────────────────────────
+    rows = []
+    for plan in trace_plans:
+        trace_dir      = plan["trace_dir"]
+        cached_metrics = plan["cached_metrics"]
+        metric_results: dict = {}
+
+        for metric in plan["to_cache"]:
+            metric_results[metric] = cached_metrics[metric]
+
+        for metric in plan["to_compute"]:
+            metric_results[metric] = computed.get((trace_dir, metric))
 
         rows.append({
             "trace":    trace_dir,
-            "metadata": metadata,
+            "metadata": plan["metadata"],
             "metrics":  metric_results,
         })
 
