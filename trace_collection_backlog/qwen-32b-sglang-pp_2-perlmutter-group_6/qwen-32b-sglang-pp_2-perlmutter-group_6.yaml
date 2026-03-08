@@ -34,7 +34,7 @@ workload:
 Model-executor:
   framework:
     name: sglang
-    compiler_tool_selection:
+    compiler_tool_selection: pytorch
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 1

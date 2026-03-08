@@ -2,7 +2,7 @@
 version: 1
 
 description: >
-  Online serving of Llama-3.1-8B on 4 A100 GPUs with TP=1, PP=4.
+  Online serving of Llama-3.1-8B on 4 A100 GPUs with TP=2, PP=2.
 
 hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
 trace_url:
@@ -34,12 +34,12 @@ workload:
 Model-executor:
   framework:
     name: sglang
-    compiler_tool_selection:
+    compiler_tool_selection: pytorch
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 1
-    tp: 1
-    pp: 4
+    tp: 2
+    pp: 2
     cp: 1
   communication_library:
     name: NCCL

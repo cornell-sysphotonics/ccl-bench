@@ -2,17 +2,17 @@
 version: 1
 
 description: >
-  Online serving of Llama-3.1-8B on 4 A100 GPUs with TP=2, PP=2.
+  Online serving of Qwen3-32b on 4 A100 GPUs with TP=4, PP=1.
 
-hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+hf_url: https://huggingface.co/Qwen/Qwen3-32B
 trace_url:
 
 workload:
   model:
     phase: inference
-    moe: false
+    moe: true
     granularity: model_fwd
-    model_family: llama-3.1-8B
+    model_family: qwen-32b
     precision: bf16
   data:
     batch_size: 4
@@ -34,12 +34,12 @@ workload:
 Model-executor:
   framework:
     name: sglang
-    compiler_tool_selection:
+    compiler_tool_selection: pytorch
   model_plan_parallelization:
     dp_replicate: 1
     dp_shard: 1
-    tp: 2
-    pp: 2
+    tp: 4
+    pp: 1
     cp: 1
   communication_library:
     name: NCCL
