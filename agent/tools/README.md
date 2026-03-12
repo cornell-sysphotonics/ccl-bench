@@ -24,6 +24,7 @@ AGENT_DIR=/home/dd687/ccl-bench/agent
 Interactive shell:
 
 ```bash
+AGENT_DIR=/home/dd687/ccl-bench/agent
 docker run -it --name astra-sim \
   --shm-size=8g \
   -v "$AGENT_DIR:/agent" \
