@@ -36,8 +36,9 @@ time for a given workload and hardware environment by running simulations with \
 the `run_simulation` tool.
 
 Guidelines:
-- Valid configurations satisfy: tp * dp * pp = total GPUs available (enforced \
-  by the framework — invalid configs will be rejected before running).
+- Valid configurations satisfy: tp * dp * pp ≤ total GPUs available (enforced \
+  by the framework — configs exceeding the GPU count will be rejected before running). \
+  You do not need to use all available GPUs.
 - Use the `run_simulation` tool to evaluate candidate configurations.
 - If a config returns an out-of-memory error, that configuration does not fit \
   on the hardware — try higher TP to shard weights/activations across more GPUs.
@@ -144,10 +145,10 @@ def run_simulation(tp: int, dp: int, pp: int, cfg: dict) -> dict:
         return {
             "error": "invalid config",
             "message": (
-                f"tp*dp*pp={tp*dp*pp} exceed total_gpus={total} "
+                f"tp*dp*pp={tp*dp*pp} exceeds total_gpus={total} "
                 f"({cfg['environment']['nodes']} nodes × "
                 f"{cfg['environment']['gpus_per_node']} GPUs/node). "
-                "Choose values whose product is exactly {total}."
+                f"Choose values whose product is ≤ {total}."
             ),
         }
 
@@ -215,19 +216,15 @@ def baseline_policy(cfg: dict) -> dict:
 
 def _build_user_message(cfg: dict) -> str:
     """Construct the LLM user message from the structured YAML config."""
-    env = cfg["environment"]
-    wl  = cfg["workload"]
     total = _total_gpus(cfg)
+    cfg_yaml = yaml.dump(cfg, default_flow_style=False, sort_keys=False)
     return (
-        f"Environment: {total} GPUs total "
-        f"({env['nodes']} nodes × {env['gpus_per_node']} GPUs/node), "
-        f"{env['gpu_model']} GPU with {env['gpu_memory_gb']} GB memory, "
-        f"{env['intra_node_bandwidth_gbps']} Gbps intra-node, "
-        f"{env['inter_node_bandwidth_gbps']} Gbps inter-node\n\n"
-        f"Workload: {wl['model']}, batch size {wl['batch_size']}, "
-        f"seq_len {wl['seq_len']}\n\n"
-        f"Optimization goal: {cfg['optimization_goal']}\n\n"
-        f"Find the best (tp, dp, pp) where tp * dp * pp = {total}."
+        f"Here is the full experiment configuration:\n\n"
+        f"```yaml\n{cfg_yaml}```\n\n"
+        f"Total available GPUs: {total} "
+        f"({cfg['environment']['nodes']} nodes × {cfg['environment']['gpus_per_node']} GPUs/node).\n\n"
+        f"Find the (tp, dp, pp) configuration that minimizes {cfg['optimization_goal']}. "
+        f"Configurations with tp * dp * pp > {total} will be rejected."
     )
 
 
@@ -247,7 +244,7 @@ def learned_policy(cfg: dict, max_iterations: int = 10) -> dict:
             "name": "run_simulation",
             "description": (
                 "Run ASTRA-sim in a Docker container with the specified parallelism "
-                f"configuration (must satisfy tp * dp * pp = {total}) and return "
+                f"configuration (must satisfy tp * dp * pp ≤ {total}) and return "
                 "performance metrics. network.yml is automatically updated to match "
                 "the GPU count. Returns an error if the config is invalid or OOM."
             ),
