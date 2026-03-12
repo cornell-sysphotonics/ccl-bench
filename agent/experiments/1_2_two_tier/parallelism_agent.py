@@ -8,7 +8,7 @@ Implements two policies:
                       the configuration minimizing wall time
 
 Usage:
-    python parallelism_agent.py [--prompt PATH] [--policy baseline|learned]
+    python parallelism_agent_1.py [--prompt PATH] [--policy baseline|learned]
 """
 
 import argparse
@@ -20,9 +20,12 @@ from pathlib import Path
 
 import anthropic
 
+# TODO edit the network.yml config process
+
+
 # ── Paths ──────────────────────────────────────────────────────────────────────
 AGENT_DIR    = Path(__file__).parent.parent
-EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples/llama"
+EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples/llama_2"
 NETWORK_YML  = EXAMPLE_DIR / "network.yml"
 API_KEY_FILE = AGENT_DIR / "API_KEY"
 DEFAULT_PROMPT = Path(__file__).parent / "exp_agent_prompt.txt"
