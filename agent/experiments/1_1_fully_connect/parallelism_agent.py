@@ -21,7 +21,7 @@ from pathlib import Path
 import anthropic
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-AGENT_DIR    = Path(__file__).parent.parent
+AGENT_DIR    = Path(__file__).parent.parent.parent
 EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples/llama"
 NETWORK_YML  = EXAMPLE_DIR / "network.yml"
 API_KEY_FILE = AGENT_DIR / "API_KEY"

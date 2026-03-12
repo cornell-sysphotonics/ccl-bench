@@ -20,12 +20,11 @@ from pathlib import Path
 
 import anthropic
 
-# TODO edit the network.yml config process
-
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-AGENT_DIR    = Path(__file__).parent.parent
-EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples/llama_2"
+AGENT_DIR    = Path(__file__).parent.parent.parent
+WORKLOAD_NAME = "llama_2"
+EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples" / WORKLOAD_NAME
 NETWORK_YML  = EXAMPLE_DIR / "network.yml"
 API_KEY_FILE = AGENT_DIR / "API_KEY"
 DEFAULT_PROMPT = Path(__file__).parent / "exp_agent_prompt.txt"
@@ -51,11 +50,36 @@ Guidelines:
 
 # ── Simulation tool ─────────────────────────────────────────────────────────────
 
-def _update_network_yml(n_gpus: int) -> None:
-    """Set npus_count in network.yml to n_gpus."""
+def _update_network_yml(tp: int, dp: int, pp: int) -> None:
+    """Update network.yml topology and npus_count to match the parallelism config.
+
+    Maps parallelism dimensions to a two-tier network hierarchy:
+      - Dimension 0 (Ring,  intra-node, fast):  tp
+      - Dimension 1 (Switch, inter-node, slow):  dp * pp
+
+    If tp == 1 the intra-node dimension is dropped and a flat FullyConnected
+    topology is used instead.
+    """
     text = NETWORK_YML.read_text()
-    updated = re.sub(r"npus_count:\s*\[\s*\d+\s*\]", f"npus_count: [ {n_gpus} ]", text)
-    NETWORK_YML.write_text(updated)
+
+    n_gpus = tp * dp * pp
+    if n_gpus <= 4:
+        topology_str  = "[ FullyConnected ]"
+        npus_str      = f"[ {n_gpus} ]"
+        bandwidth_str = "[ 300 ]"
+        latency_str   = "[ 500.0 ]"
+    else:
+        n_nodes       = n_gpus // 4
+        topology_str  = "[ Ring, Switch ]"
+        npus_str      = f"[ 4, {n_nodes} ]"
+        bandwidth_str = "[ 300, 25 ]"
+        latency_str   = "[ 500.0, 1000.0 ]"
+
+    text = re.sub(r"topology:\s*\[.*?\]",   f"topology: {topology_str}",   text)
+    text = re.sub(r"npus_count:\s*\[.*?\]", f"npus_count: {npus_str}",     text)
+    text = re.sub(r"bandwidth:\s*\[.*?\]",  f"bandwidth: {bandwidth_str}", text)
+    text = re.sub(r"latency:\s*\[.*?\]",    f"latency: {latency_str}",     text)
+    NETWORK_YML.write_text(text)
 
 
 def _parse_metrics(text: str) -> dict:
@@ -90,16 +114,15 @@ def run_simulation(tp: int, dp: int, pp: int) -> dict:
     Returns a dict with wall_time (cycles), gpu_time, comm_time, num_ranks,
     or an 'error' key if the run failed.
     """
-    n_gpus = tp * dp * pp
-    _update_network_yml(n_gpus)
+    _update_network_yml(tp, dp, pp)
 
     cmd = [
         "docker", "run", "--rm",
         "--shm-size=8g",
         "-v", f"{AGENT_DIR}:/agent",
-        "-w", "/agent/tools/astra-sim-hybrid-parallelism/examples/llama",
+        "-w", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}",
         "astra-sim:latest",
-        "bash", "/agent/tools/astra-sim-hybrid-parallelism/examples/llama/run.sh",
+        "bash", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}/run.sh",
         "-t", str(tp), "-d", str(dp), "-p", str(pp),
     ]
 
