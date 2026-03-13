@@ -6,6 +6,7 @@ import os
 import importlib.util
 import numpy as np
 import pandas as pd
+import yaml
 
 # Import utils-group-21
 tools_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,6 +16,28 @@ utils_group_21 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(utils_group_21)
 prepare_dataframe = utils_group_21.prepare_dataframe
 
+def get_n_chips_from_card(trace_json_path):
+    base = trace_json_path
+    for ext in (".trace.json", ".json.gz", ".json"):
+        if base.endswith(ext):
+            base = base[: -len(ext)]
+            break
+
+    yaml_path = base + ".yaml"
+
+    if not os.path.exists(yaml_path):
+        folder = os.path.dirname(trace_json_path)
+        yaml_files = [f for f in os.listdir(folder) if f.endswith('.yaml')]
+        if not yaml_files:
+            return None
+        yaml_path = os.path.join(folder, yaml_files[0])
+
+    with open(yaml_path, "r") as f:
+        card = yaml.safe_load(f)
+    try:
+        return card["workload"]["hardware"]["xpu_spec"]["total_count"]
+    except Exception as e:
+        return None
 
 def compute_comm_bandwidth_table(comm_df: pd.DataFrame, n_chips: int) -> tuple[pd.DataFrame, float]:
     bw_df = comm_df.dropna(subset=["message_bytes", "T_s"]).copy()
@@ -30,7 +53,11 @@ def compute_comm_bandwidth_table(comm_df: pd.DataFrame, n_chips: int) -> tuple[p
     return bw_df, float(avg_bandwidth_GBps) if np.isfinite(avg_bandwidth_GBps) else np.nan
 
 
-def compute_num_comm_kernels(df: pd.DataFrame) -> int:
+def compute_num_comm_kernels(trace_json_path: str) -> int:
+    n_chips_card = get_n_chips_from_card(trace_json_path)
+    if n_chips_card is None:
+        raise ValueError("n_chips not found in workload card YAML")
+    df = prepare_dataframe(trace_json_path)
     comm_df = df[df["kind"] == "comm"].copy()
     return int(len(comm_df))
 
@@ -49,26 +76,27 @@ def compute_avg_bandwidth(trace_json_path: str, n_chips: int) -> float :
     return avg_bandwidth_GBps
 
 
-def compute_metric(trace_json_path: str, n_chips: int, metric_type: str = "avg_bandwidth") -> float | int:
-    df = prepare_dataframe(trace_json_path)
-    
+def compute_metric(trace_json_path: str, metric_type: str = "avg_bandwidth") -> float | int:
+    n_chips_card = get_n_chips_from_card(trace_json_path)
+    if n_chips_card is None:
+        raise ValueError("n_chips not found in workload card YAML")
     if metric_type == "avg_bandwidth":
-        return compute_avg_bandwidth(trace_json_path, n_chips)
+        return compute_avg_bandwidth(trace_json_path, n_chips_card)
     elif metric_type == "num_comm_kernels":
-        return compute_num_comm_kernels(df)
+        return compute_num_comm_kernels(trace_json_path)
     elif metric_type == "num_comm_kernels_w_size_and_time":
-        return compute_num_comm_kernels_w_size_and_time(df, n_chips)
+        df = prepare_dataframe(trace_json_path)
+        return compute_num_comm_kernels_w_size_and_time(df, n_chips_card)
     else:
         raise ValueError(f"Unknown metric_type: {metric_type}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python bandwidth.py <trace_json_path> <n_chips> [avg_bandwidth|num_comm_kernels|num_comm_kernels_w_size_and_time]", file=sys.stderr)
+    if len(sys.argv) < 2:
+        print("Usage: python bandwidth.py <trace_json_path> [avg_bandwidth|num_comm_kernels|num_comm_kernels_w_size_and_time]", file=sys.stderr)
         sys.exit(1)
     trace_path = sys.argv[1]
-    n_chips = int(sys.argv[2])
-    metric_type = sys.argv[3] if len(sys.argv) > 3 else "avg_bandwidth"
-    result = compute_metric(trace_path, n_chips, metric_type)
+    metric_type = sys.argv[2] if len(sys.argv) > 2 else "avg_bandwidth"
+    result = compute_metric(trace_path, None, metric_type)
     print(result)
 

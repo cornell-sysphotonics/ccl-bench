@@ -93,7 +93,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process trace directory and metric name.")
     parser.add_argument("--trace", type=str, required=True, help="Path to the trace directory (or CSV results directory)")
     parser.add_argument("--metric", type=str, required=True, help="Name of the metric to calculate")
-    parser.add_argument("--n_chips", type=int, default=None, help="Number of chips (required for bandwidth and hockney metrics)")
     parser.add_argument("--model_params", type=float, default=None, help="Model parameters for throughput estimation (optional)")
 
     args = parser.parse_args()
@@ -139,38 +138,28 @@ if __name__ == "__main__":
         utilization_module = load_metric_module(os.path.join(tools_dir, "utilization-group-21", "utilization.py"), "utilization")
         metric = utilization_module.compute_metric(trace_json_path, metric_type="comm_fraction")
     
-    # Bandwidth metrics (require n_chips)
+    # Bandwidth metrics
     elif metric_name == "num_comm_kernels":
-        if args.n_chips is None:
-            raise ValueError(f"Metric '{metric_name}' requires --n_chips parameter")
         bandwidth_module = load_metric_module(os.path.join(tools_dir, "bandwidth-group-21", "bandwidth.py"), "bandwidth")
-        metric = bandwidth_module.compute_metric(trace_json_path, args.n_chips, metric_type="num_comm_kernels")
+        metric = bandwidth_module.compute_metric(trace_json_path, metric_type="num_comm_kernels")
     
     
     elif metric_name == "avg_comm_bandwidth_GBps":
-        if args.n_chips is None:
-            raise ValueError(f"Metric '{metric_name}' requires --n_chips parameter")
         bandwidth_module = load_metric_module(os.path.join(tools_dir, "bandwidth-group-21", "bandwidth.py"), "bandwidth")
-        metric = bandwidth_module.compute_metric(trace_json_path, args.n_chips, metric_type="avg_bandwidth")
+        metric = bandwidth_module.compute_metric(trace_json_path, metric_type="avg_bandwidth")
     
-    # Hockney metrics (require n_chips)
+    # Hockney metrics
     elif metric_name == "hockney_alpha_s":
-        if args.n_chips is None:
-            raise ValueError(f"Metric '{metric_name}' requires --n_chips parameter")
         hockney_module = load_metric_module(os.path.join(tools_dir, "hockney-group-21", "hockney.py"), "hockney")
-        metric = hockney_module.compute_metric(trace_json_path, args.n_chips, metric_type="alpha")
-    
+        metric = hockney_module.compute_metric(trace_json_path, metric_type="alpha")
+
     elif metric_name == "hockney_beta_s_per_byte":
-        if args.n_chips is None:
-            raise ValueError(f"Metric '{metric_name}' requires --n_chips parameter")
         hockney_module = load_metric_module(os.path.join(tools_dir, "hockney-group-21", "hockney.py"), "hockney")
-        metric = hockney_module.compute_metric(trace_json_path, args.n_chips, metric_type="beta")
-    
+        metric = hockney_module.compute_metric(trace_json_path, metric_type="beta")
+
     elif metric_name == "hockney_inverse_beta_Bps":
-        if args.n_chips is None:
-            raise ValueError(f"Metric '{metric_name}' requires --n_chips parameter")
         hockney_module = load_metric_module(os.path.join(tools_dir, "hockney-group-21", "hockney.py"), "hockney")
-        metric = hockney_module.compute_metric(trace_json_path, args.n_chips, metric_type="inverse_beta")
+        metric = hockney_module.compute_metric(trace_json_path, metric_type="inverse_beta")
     
     
     # FLOPs metrics

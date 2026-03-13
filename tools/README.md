@@ -41,8 +41,6 @@ Metric collection: Byungsoo, Jinkun
     Not all the metrics can be derived from one trace, and not all traces can be used to calculate one metric. So a matching checker should be implemented inside every tool to enforce certain matching constraints. An easy example would be checking that the number of GPUs is greater than 1 in the trace by reading the workload card located inside the trace folder when you are calculating network bandwidth utilization, as you need to have multiple GPUs for communication.
 5. Calculate metrics
 
-   The only thing that needs to be changed if you increase the number of TPU chips is the parameter, --n_chips
-   in the function call.
 
 ## Metrics 
 ### Public
@@ -94,7 +92,7 @@ Metric collection: Byungsoo, Jinkun
 
 ## Metrics
 
-**Note:** Metrics marked with _N_CHIPS_ require the `--n_chips` parameter. Metrics marked with _M_PARAMS_ can optionally use `--model_params` for more accurate throughput estimation.
+Metrics marked with _M_PARAMS_ can optionally use `--model_params` for more accurate throughput estimation.
 
 1. `wall_time_s`: total elapsed wall-clock time covered by the trace
 
@@ -108,17 +106,17 @@ Metric collection: Byungsoo, Jinkun
 
 6. `communication_fraction`: fraction of total wall-clock time spent in communication
 
-7. `num_comm_kernels` _N_CHIP_: number of communication kernels executed in the trace (requires `--n_chips`)
+7. `num_comm_kernels`: number of communication kernels executed in the trace
 
-8. `avg_comm_bandwidth_GBps` _N_CHIP_: average achieved communication bandwidth across valid kernels (GB/s) (requires `--n_chips`)
+8. `avg_comm_bandwidth_GBps`: average achieved communication bandwidth across valid kernels (GB/s)
 
 9. `allreduce_comm_time_s`: total time spent in AllReduce communication operations
 
-10. `hockney_alpha_s` _N_CHIP_: latency term (α) from fitting the AllReduce Hockney communication model (requires `--n_chips`)
+10. `hockney_alpha_s`: latency term (α) from fitting the AllReduce Hockney communication model
 
-11. `hockney_beta_s_per_byte` _N_CHIP_: bandwidth cost term (β) from the AllReduce Hockney model (requires `--n_chips`)
+11. `hockney_beta_s_per_byte`: bandwidth cost term (β) from the AllReduce Hockney model
 
-12. `hockney_inverse_beta_Bps` _N_CHIP_: inverse of β, representing effective communication bandwidth (bytes/sec) (requires `--n_chips`)
+12. `hockney_inverse_beta_Bps`: inverse of β, representing effective communication bandwidth (bytes/sec)
 
 13. `achieved_flops_from_trace_json`: achieved model FLOPs per second estimated from trace events
 
