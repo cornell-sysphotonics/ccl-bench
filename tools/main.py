@@ -111,86 +111,122 @@ if __name__ == "__main__":
     if metric_name == "wall_time_s":
         wall_time_module = load_metric_module(os.path.join(tools_dir, "wall_time-group-21", "wall_time.py"), "wall_time")
         metric = wall_time_module.compute_metric(trace_json_path)
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "total_compute_time_s":
         compute_time_module = load_metric_module(os.path.join(tools_dir, "compute_time-group-21", "compute_time.py"), "compute_time")
         metric = compute_time_module.compute_metric(trace_json_path)
+        print(metric)
+        sys.exit(0)
     
     # Communication time metrics
     elif metric_name == "total_comm_time_s":
         comm_time_module = load_metric_module(os.path.join(tools_dir, "comm_time-group-21", "comm_time.py"), "comm_time")
         metric = comm_time_module.compute_metric(trace_json_path, metric_type="total")
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "avg_comm_kernel_time_s":
         comm_time_module = load_metric_module(os.path.join(tools_dir, "comm_time-group-21", "comm_time.py"), "comm_time")
         metric = comm_time_module.compute_metric(trace_json_path, metric_type="avg_kernel")
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "allreduce_comm_time_s":
         comm_time_module = load_metric_module(os.path.join(tools_dir, "comm_time-group-21", "comm_time.py"), "comm_time")
         metric = comm_time_module.compute_metric(trace_json_path, metric_type="allreduce")
+        print(metric)
+        sys.exit(0)
     
     # Utilization metrics
     elif metric_name == "compute_utilization_proxy":
         utilization_module = load_metric_module(os.path.join(tools_dir, "utilization-group-21", "utilization.py"), "utilization")
         metric = utilization_module.compute_metric(trace_json_path, metric_type="compute_util")
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "communication_fraction":
         utilization_module = load_metric_module(os.path.join(tools_dir, "utilization-group-21", "utilization.py"), "utilization")
         metric = utilization_module.compute_metric(trace_json_path, metric_type="comm_fraction")
+        print(metric)
+        sys.exit(0)
     
     # Bandwidth metrics
     elif metric_name == "num_comm_kernels":
         bandwidth_module = load_metric_module(os.path.join(tools_dir, "bandwidth-group-21", "bandwidth.py"), "bandwidth")
         metric = bandwidth_module.compute_metric(trace_json_path, metric_type="num_comm_kernels")
+        print(metric)
+        sys.exit(0)
     
     
     elif metric_name == "avg_comm_bandwidth_GBps":
         bandwidth_module = load_metric_module(os.path.join(tools_dir, "bandwidth-group-21", "bandwidth.py"), "bandwidth")
         metric = bandwidth_module.compute_metric(trace_json_path, metric_type="avg_bandwidth")
+        print(metric)
+        sys.exit(0)
     
     # Hockney metrics
     elif metric_name == "hockney_alpha_s":
         hockney_module = load_metric_module(os.path.join(tools_dir, "hockney-group-21", "hockney.py"), "hockney")
         metric = hockney_module.compute_metric(trace_json_path, metric_type="alpha")
+        print(metric)
+        sys.exit(0)
 
     elif metric_name == "hockney_beta_s_per_byte":
         hockney_module = load_metric_module(os.path.join(tools_dir, "hockney-group-21", "hockney.py"), "hockney")
         metric = hockney_module.compute_metric(trace_json_path, metric_type="beta")
+        print(metric)
+        sys.exit(0)
 
     elif metric_name == "hockney_inverse_beta_Bps":
         hockney_module = load_metric_module(os.path.join(tools_dir, "hockney-group-21", "hockney.py"), "hockney")
         metric = hockney_module.compute_metric(trace_json_path, metric_type="inverse_beta")
+        print(metric)
+        sys.exit(0)
     
     
     # FLOPs metrics
     elif metric_name == "achieved_flops_from_trace_json":
         flops_module = load_metric_module(os.path.join(tools_dir, "flops-group-21", "flops.py"), "flops")
         metric = flops_module.compute_metric(trace_json_path, metric_type="achieved_flops")
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "total_model_flops_from_args":
         flops_module = load_metric_module(os.path.join(tools_dir, "flops-group-21", "flops.py"), "flops")
         metric = flops_module.compute_metric(trace_json_path, metric_type="total_model_flops")
+        print(metric)
+        sys.exit(0)
     
     # Throughput metrics
     elif metric_name == "throughput":
         throughput_module = load_metric_module(os.path.join(tools_dir, "throughput-group-21", "throughput.py"), "throughput")
         model_params = args.model_params if args.model_params is not None else 7e9
         metric = throughput_module.compute_metric(trace_json_path, model_params=model_params)
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "estimated_throughput_tokens_per_s":
         throughput_module = load_metric_module(os.path.join(tools_dir, "throughput-group-21", "throughput.py"), "throughput")
         model_params = args.model_params if args.model_params is not None else 7e9
         metric = throughput_module.compute_metric(trace_json_path, metric_type="estimated_throughput_tokens_per_s", model_params=model_params)
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "flops_per_token_used":
         throughput_module = load_metric_module(os.path.join(tools_dir, "throughput-group-21", "throughput.py"), "throughput")
         model_params = args.model_params if args.model_params is not None else 7e9
         metric = throughput_module.compute_metric(trace_json_path, metric_type="flops_per_token_used", model_params=model_params)
+        print(metric)
+        sys.exit(0)
     
     elif metric_name == "estimated_total_tokens":
         throughput_module = load_metric_module(os.path.join(tools_dir, "throughput-group-21", "throughput.py"), "throughput")
         model_params = args.model_params if args.model_params is not None else 7e9
         metric = throughput_module.compute_metric(trace_json_path, metric_type="estimated_total_tokens", model_params=model_params)
+        print(metric)
+        sys.exit(0)
     
     
     elif metric_name == "coll_call_num":
@@ -306,4 +342,5 @@ if __name__ == "__main__":
         metric_cal_func = metric_cal
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
+    metric = metric_cal_func(trace_directory)
     print(metric)

@@ -156,62 +156,31 @@ def _calc_json(directory: str) -> float:
 
 
 def _calc_tpu(directory: str) -> float:
-    """
-    Total communication time from TPU profiler Chrome-trace JSON (ms).
-    Sums XLA collective op durations across all TPU device streams.
-    """
-    _all_json = [fn for fn in os.listdir(directory) if fn.endswith(".json")]
-    _kineto = [fn for fn in _all_json if fn.startswith("kineto_trace_")]
-    json_files = sorted(os.path.join(directory, fn) for fn in (_kineto or _all_json))
-    if not json_files:
-        print(f"Error: No JSON files found in {directory}", file=sys.stderr)
+    import glob
+    import importlib.util
+
+    trace_candidates = glob.glob(os.path.join(directory, "*.trace.json"))
+
+    if not trace_candidates:
+        trace_candidates = glob.glob(os.path.join(directory, "**/*.json"), recursive=True)
+
+    if not trace_candidates:
+        print(f"No TPU trace JSON found in {directory}", file=sys.stderr)
         return -1
+
+    trace_json = trace_candidates[0]
+
+    tools_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    comm_path = os.path.join(tools_dir, "comm_time-group-21", "comm_time.py")
+
+    spec = importlib.util.spec_from_file_location("comm_time_group_21", comm_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
     try:
-        with open(json_files[0], encoding="utf-8", errors="replace") as f:
-            data = json.load(f)
+        return module.compute_metric(trace_json, "total")
     except Exception as e:
-        print(f"Error reading {json_files[0]}: {e}", file=sys.stderr)
         return -1
-
-    events = data.get("traceEvents", []) if isinstance(data, dict) else []
-
-    first_tpu_pid = None
-    for e in events:
-        if (
-            isinstance(e, dict)
-            and e.get("ph") == "M"
-            and e.get("name") == "process_name"
-            and "/device:TPU:" in e.get("args", {}).get("name", "")
-        ):
-            first_tpu_pid = e["pid"]
-            break
-
-    comm_intervals = []
-    any_data = False
-
-    for e in events:
-        if not isinstance(e, dict) or e.get("ph") != "X":
-            continue
-        if first_tpu_pid is not None and e.get("pid") != first_tpu_pid:
-            continue
-        args = e.get("args", {}) or {}
-        dev_ps = args.get("device_duration_ps")
-        ts = float(e.get("ts") or 0)
-        dur = float(dev_ps) / 1000.0 if dev_ps is not None else float(e.get("dur") or 0)
-        if dur <= 0:
-            continue
-        any_data = True
-        name = (e.get("name") or "").lower()
-        hlo_cat = (args.get("hlo_category") or "").lower()
-        if name in _TPU_COMM_OPS or hlo_cat in _TPU_COMM_OPS:
-            comm_intervals.append((ts, ts + dur))
-
-    if not any_data:
-        print(f"Error: No TPU device events found in {directory}", file=sys.stderr)
-        return -1
-
-    return _merge_intervals(comm_intervals) / 1e9   # ns → s
 
 
 def metric_cal(directory: str) -> float:
