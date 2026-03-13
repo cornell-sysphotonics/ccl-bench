@@ -1,0 +1,3 @@
+[submodule "agent/tools/astra-sim-hybrid-parallelism"]
+	path = agent/tools/astra-sim-hybrid-parallelism
+	url = git@github.com:EricDinging/astra-sim-hybrid-parallelism.git

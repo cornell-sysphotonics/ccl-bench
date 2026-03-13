@@ -1,183 +1,167 @@
+"""
+Metric: avg_step_time
+Description: Average wall-clock time per training/inference step.
+Unit: seconds
+Returns: Float >= 0, or -1 if data unavailable
+
+Supported trace types (dispatched via workload YAML metric_source.traces):
+  xla_trace — reads TPU profiler Chrome-trace JSON ($core.py:331 step events)
+  json      — reads PyTorch-profiler kineto JSON (ProfilerStep#N events)
+"""
+
 import json
-from typing import List
 import os
-import statistics
-import yaml
 import re
+import statistics
+import sys
+import yaml
 
-def tpu(data):
-    events = data.get("traceEvents", [])
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
 
-    # ── 1. Identify step events ────────────────────────────────────────────────
-    # The main engine step is traced as '$core.py:331 step' (phase 'X' = complete event)
+
+# ── YAML helpers ───────────────────────────────────────────────────────────────
+
+def _load_yaml(directory: str) -> dict:
+    for fn in os.listdir(directory):
+        if fn.endswith(".yaml"):
+            with open(os.path.join(directory, fn)) as f:
+                return yaml.safe_load(f) or {}
+    return {}
+
+
+def _get_trace_types(yaml_data: dict) -> list:
+    return yaml_data.get("metric_source", {}).get("traces", [])
+
+
+# ── JSON loader with partial-parse fallback ────────────────────────────────────
+
+def _load_json_events(path: str) -> list:
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            idx = content.find('"traceEvents"')
+            if idx == -1:
+                return []
+            bracket = content.find('[', idx)
+            if bracket == -1:
+                return []
+            partial = content[bracket:]
+            data = None
+            for suffix in (']}', ']}}}'):
+                try:
+                    data = json.loads(partial + suffix)
+                    break
+                except json.JSONDecodeError:
+                    pass
+            if data is None:
+                return []
+            if isinstance(data, list):
+                return data
+        except Exception:
+            return []
+    if isinstance(data, dict):
+        return data.get("traceEvents", [])
+    return []
+
+
+# ── XLA / TPU backend ─────────────────────────────────────────────────────────
+
+def _calc_xla(directory: str) -> float:
+    """
+    Step time from TPU profiler Chrome-trace JSON.
+    Uses '$core.py:331 step' user-annotation events (duration in nanoseconds).
+    Returns seconds.
+    """
+    json_files = select_json_files(directory)
+    if not json_files:
+        print(f"[avg_step_time/xla] No JSON files in {directory}", file=sys.stderr)
+        return -1.0
+
     STEP_EVENT_NAME = "$core.py:331 step"
+    try:
+        with open(json_files[0], encoding="utf-8", errors="replace") as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"[avg_step_time/xla] Error reading {json_files[0]}: {e}", file=sys.stderr)
+        return -1.0
+
+    events = data.get("traceEvents", []) if isinstance(data, dict) else []
     step_events = [
         e for e in events
         if e.get("ph") == "X" and e.get("name", "") == STEP_EVENT_NAME
     ]
 
-    num_steps = len(step_events)
-    # print(f"{'='*55}")
-    # print(f"  Trace file : {trace_file}")
-    # print(f"  Step event : {STEP_EVENT_NAME}")
-    # print(f"  Total steps: {num_steps}")
-    # print(f"{'='*55}")
+    if not step_events:
+        print(f"[avg_step_time/xla] No '{STEP_EVENT_NAME}' events found", file=sys.stderr)
+        return -1.0
 
-    if num_steps == 0:
-        print("No step events found.")
-        return
-
-    # ── 2. Per-step latencies (duration in µs → ms) ────────────────────────────
-    latencies_us = [e["dur"] for e in step_events]
-    latencies_ms = [d / 1_000 for d in latencies_us]
-
-    # print(f"\n{'Step':>6}  {'Start (µs)':>14}  {'Duration (µs)':>15}  {'Duration (ms)':>14}")
-    # print("-" * 57)
-    # for i, (e, lat_ms) in enumerate(zip(step_events, latencies_ms), start=1):
-    #     # Classify step type heuristically: first step is typically prefill
-    #     label = "prefill" if i == 1 else "decode"
-    #     print(f"{i:>4} ({label:<7})  {e['ts']:>14.2f}  {e['dur']:>15.2f}  {lat_ms:>14.2f}")
-
-    # ── 3. Summary statistics ──────────────────────────────────────────────────
-    avg_ms   = statistics.mean(latencies_ms[1:-1])
-    total_ms = sum(latencies_ms)
-
-    # print(f"\n{'─'*55}")
-    # print(f"  Average step latency : {avg_ms:.3f} ms")
-    # print(f"  Total latency        : {total_ms:.3f} ms")
-
-    # if num_steps > 1:
-    #     prefill_ms = latencies_ms[0]
-    #     decode_ms  = latencies_ms[1:]
-    #     avg_decode = statistics.mean(decode_ms)
-    #     print(f"\n  Prefill latency      : {prefill_ms:.3f} ms")
-    #     print(f"  Avg decode latency   : {avg_decode:.3f} ms  ({len(decode_ms)} step(s))")
-
-    # print(f"{'─'*55}")
-
-    # ── 4. Additional context: TPU kernel breakdown ────────────────────────────
-    # The main model kernel during prefill
-    # model_kernels = [
-    #     e for e in events
-    #     if e.get("ph") == "X"
-    #     and e.get("name", "").startswith("jit_run_model")
-    # ]
-    # if model_kernels:
-    #     print(f"\n  TPU jit_run_model kernels found: {len(model_kernels)}")
-    #     for k in model_kernels:
-    #         print(f"    run_id={k['args'].get('run_id','?')}  "
-    #               f"device_dur={int(k['args'].get('device_duration_ps',0))/1e9:.3f} ms  "
-    #               f"host_dur={k['dur']/1000:.3f} ms")
-
-    return avg_ms / 1000  # Convert ms to seconds
+    durs_ns = [e["dur"] for e in step_events if "dur" in e]
+    inner = durs_ns[1:-1] if len(durs_ns) > 2 else durs_ns
+    return statistics.mean(inner) / 1e9  # ns → s
 
 
-def gpu(data):
-    events = data.get("traceEvents", [])
+# ── JSON / GPU backend ────────────────────────────────────────────────────────
 
-    # ── 1. Identify step events ────────────────────────────────────────────────
-    # PyTorch profiler annotates each train step as 'ProfilerStep#N' (phase 'X' = complete event)
-    # We use the CPU-side user_annotation (not gpu_user_annotation) to match wall-clock time.
-    STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
-    step_events = sorted(
-        [
-            e for e in events
-            if e.get("ph") == "X"
-            and e.get("cat") == "user_annotation"
-            and STEP_PATTERN.match(e.get("name", ""))
-        ],
-        key=lambda e: int(STEP_PATTERN.match(e["name"]).group(1)),
-    )
-
-    num_steps = len(step_events)
-
-    if num_steps == 0:
-        print("No ProfilerStep#N events found.")
-        return None
-
-    # ── 2. Per-step latencies (duration already in ms per displayTimeUnit) ────
-    # PyTorch traces use ms as the display unit; dur is in ms directly.
-    latencies_ms = [e["dur"] for e in step_events]
-
-    # ── 3. Summary statistics ──────────────────────────────────────────────────
-    # Exclude first and last steps (warmup / incomplete capture), matching TPU convention.
-    inner = latencies_ms[1:-1] if num_steps > 2 else latencies_ms
-    avg_ms = statistics.mean(inner)
-
-    return avg_ms / 1000000  # Return seconds, matching TPU function convention
+_STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
 
 
-def _load_json(path: str) -> dict:
-    """Load a PyTorch-profiler JSON file with partial-parse fallback for truncated files."""
-    try:
-        with open(path, encoding="utf-8", errors="replace") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        pass
+def _calc_json(directory: str) -> float:
+    """
+    Step time from PyTorch-profiler kineto JSON (ProfilerStep#N events).
+    Averages across all sampled rank files.
+    Returns seconds.
+    """
+    rank_files = select_json_files(directory)
+    if not rank_files:
+        print(f"[avg_step_time/json] No JSON files in {directory}", file=sys.stderr)
+        return -1.0
 
-    try:
-        with open(path, encoding="utf-8", errors="replace") as f:
-            content = f.read()
-        idx = content.find('"traceEvents"')
-        if idx != -1:
-            bracket = content.find('[', idx)
-            if bracket != -1:
-                partial = content[bracket:]
-                for suffix in (']}', ']}}}'):
-                    try:
-                        events = json.loads(partial + suffix)
-                        if isinstance(events, list):
-                            return {"traceEvents": events}
-                    except json.JSONDecodeError:
-                        pass
-    except Exception:
-        pass
+    per_rank_avg = []
+    for path in rank_files:
+        events = _load_json_events(path)
+        step_events = sorted(
+            [e for e in events
+             if isinstance(e, dict)
+             and e.get("ph") == "X"
+             and e.get("cat") == "user_annotation"
+             and _STEP_PATTERN.match(e.get("name", ""))],
+            key=lambda e: int(_STEP_PATTERN.match(e["name"]).group(1)),
+        )
+        if not step_events:
+            continue
+        durs_us = [e["dur"] for e in step_events if "dur" in e]
+        inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
+        if inner:
+            per_rank_avg.append(statistics.mean(inner))
 
-    return {}
+    if not per_rank_avg:
+        print(f"[avg_step_time/json] No ProfilerStep events found in {directory}", file=sys.stderr)
+        return -1.0
 
+    return statistics.mean(per_rank_avg) / 1e6  # µs → s
+
+
+# ── Unified entry point ────────────────────────────────────────────────────────
 
 def metric_cal(directory: str) -> float:
     """
-    Calculate average step time (inference: decode of the batch, training: forward + backward)
-
-    Args:
-        directory (str): Path to the directory containing PyTorch ET trace JSON files.
-
-    Returns:
-        float: Average step time in seconds.
+    Average step time in seconds.
+    Dispatches to XLA or JSON backend based on workload YAML trace type.
+    Returns seconds, or -1 if unavailable.
     """
+    yaml_data   = _load_yaml(directory)
+    trace_types = _get_trace_types(yaml_data)
 
-    trace_file = None
-    for file in os.listdir(directory):
-        if file.endswith(".json"):
-            trace_file = os.path.join(directory, file)
-            break
+    if "xla_trace" in trace_types:
+        return _calc_xla(directory)
 
-    yaml_file = None
+    if "json" in trace_types:
+        return _calc_json(directory)
 
-    for file in os.listdir(directory):
-        if file.endswith(".yaml"):
-            yaml_file = os.path.join(directory, file)
-            break
-
-    if yaml_file is not None:
-        with open(yaml_file, "r") as f:
-            yaml_data = yaml.safe_load(f)
-            xpu_type = yaml_data.get("workload", {}).get("hardware", {}).get("xpu_spec", {}).get("type", "")
-            # print(f"Detected XPU type: {xpu_type}")
-
-            if xpu_type.lower() == "tpu":
-                # print("Processing TPU trace...")
-                return tpu(_load_json(trace_file))
-
-            elif xpu_type.lower() == "gpu":
-                return gpu(_load_json(trace_file))
-
-    if trace_file is None:
-        raise FileNotFoundError(f"No JSON file found in directory: {directory}")
-
-
-    
-
-
-    return -1
+    print(f"[avg_step_time] No supported trace type in {trace_types}", file=sys.stderr)
+    return -1.0

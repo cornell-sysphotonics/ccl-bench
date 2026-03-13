@@ -33,6 +33,12 @@ def select_json_files(directory: str, max_files: int = _MAX_JSON_FILES) -> list:
         for fn in os.listdir(directory)
         if fn.endswith(".json")
     )
+    # Prefer kineto_trace_*.json (PyTorch profiler kineto traces) over other
+    # JSON files (e.g. torch_et_*.json execution traces) when both coexist.
+    kineto_files = [f for f in all_files if os.path.basename(f).startswith("kineto_trace_")]
+    if kineto_files:
+        all_files = kineto_files
+
     if len(all_files) > max_files:
         rng = random.Random(_SAMPLE_SEED)
         sampled = sorted(rng.sample(all_files, max_files))

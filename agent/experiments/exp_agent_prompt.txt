@@ -1,0 +1,26 @@
+Environment: 
+    4 nodes, 4 GPUs per node, 2400Gbps within node, 200Gbps across node, A100 GPU with 40GB memory
+
+Workload: 
+    1. llama-8b, batch size 32, seq_len: 1024
+
+Policy (workload, environment): 
+    1. [baseline] return tp = 4, dp = 2
+
+Optimization goal: step time
+
+Eval prompt:
+    AGENT_DIR=/home/dd687/ccl-bench/agent
+
+    # Flags: -t <tensor_parallel> -d <data_parallel> -p <pipeline_parallel>
+    docker run --rm \
+        --shm-size=8g \
+        -v "$AGENT_DIR:/agent" \
+        -w /agent/tools/astra-sim-hybrid-parallelism/examples/llama \
+        astra-sim:latest \
+        bash /agent/tools/astra-sim-hybrid-parallelism/examples/llama/run.sh \
+        -t 4 -d 2 -p 1
+
+Available output metrics:
+The wall time (in nanoseconds), comm time, GPU time, total compute-communication overlap, compute bound percentage, average compute utilization, memory utilization, and operation intensity.
+    
