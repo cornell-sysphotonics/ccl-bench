@@ -135,6 +135,11 @@
       "trace": "/data/ccl-bench_trace_collection/llama_3.1_8b-megatron_lm-dp_2-tp_4-perlmutter-group_1",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-4-tpu-group_21",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [

@@ -71,10 +71,16 @@ def _load_json_events(path: str) -> list:
 
 # ── XLA / TPU backend ─────────────────────────────────────────────────────────
 
-def _calc_xla(directory: str) -> float:
+def _calc_xla(directory: str, yaml_data: dict) -> float:
     """
-    Step time from TPU profiler Chrome-trace JSON.
-    Uses '$core.py:331 step' user-annotation events (duration in nanoseconds).
+    Step time from an XLA Chrome-trace JSON.
+
+    Primary path: '$core.py:331 step' events (vLLM inference traces, e.g. group-4).
+    Durations are in nanoseconds.
+
+    Fallback: total trace wall time / iteration count from the YAML.
+    XLA client-side traces for training (e.g. FSDP) only record async dispatch
+    events — the real step time must be derived from the total profiled window.
     Returns seconds.
     """
     json_files = select_json_files(directory)
@@ -96,13 +102,28 @@ def _calc_xla(directory: str) -> float:
         if e.get("ph") == "X" and e.get("name", "") == STEP_EVENT_NAME
     ]
 
-    if not step_events:
-        print(f"[avg_step_time/xla] No '{STEP_EVENT_NAME}' events found", file=sys.stderr)
+    if step_events:
+        durs_ns = [e["dur"] for e in step_events if "dur" in e]
+        inner = durs_ns[1:-1] if len(durs_ns) > 2 else durs_ns
+        return statistics.mean(inner) / 1e9  # ns → s
+
+    # Fallback: wall_time / iteration_count
+    # XLA client traces for training record async dispatches only; real step time
+    # = total profiled wall time / number of iterations.
+    num_iter = yaml_data.get("workload", {}).get("model", {}).get("iteration")
+    if not num_iter:
+        print(f"[avg_step_time/xla] No step events and no iteration count in YAML", file=sys.stderr)
         return -1.0
 
-    durs_ns = [e["dur"] for e in step_events if "dur" in e]
-    inner = durs_ns[1:-1] if len(durs_ns) > 2 else durs_ns
-    return statistics.mean(inner) / 1e9  # ns → s
+    from mfu_group_4.common import find_trace_files, extract_metrics_from_trace
+    traces = find_trace_files(directory)
+    if not traces:
+        return -1.0
+    metrics = extract_metrics_from_trace(traces[0][1])  # timestamps treated as µs
+    wall_s = metrics.get("wall_s", 0.0)
+    if not wall_s:
+        return -1.0
+    return round(wall_s / num_iter, 6)
 
 
 # ── JSON / GPU backend ────────────────────────────────────────────────────────
@@ -158,7 +179,7 @@ def metric_cal(directory: str) -> float:
     trace_types = _get_trace_types(yaml_data)
 
     if "xla_trace" in trace_types:
-        return _calc_xla(directory)
+        return _calc_xla(directory, yaml_data)
 
     if "json" in trace_types:
         return _calc_json(directory)
