@@ -29,6 +29,7 @@ workload:
       type: TPU  # Processing unit type, e.g., "GPU", "TPU".
       model: tpu_v6e  # Processing unit model, e.g., "nvidia_a100", "tpu_v4".
       total_count: 4  # Total number of processing units, e.g., 8, 16.
+      count_per_node: 8  # Number of processing units per node, e.g., 4, 8.
       topology: mesh-2x2x1
       
     driver_version: xla  # Driver version, e.g., "cuda_12.4", "rocm_5.6".

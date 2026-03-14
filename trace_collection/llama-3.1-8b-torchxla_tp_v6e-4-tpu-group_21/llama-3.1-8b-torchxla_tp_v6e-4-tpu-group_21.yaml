@@ -1,0 +1,57 @@
+version: 1
+
+description: > # TP workload for llama-3.1-8b on 2x2x1 topology of TPU v6e.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: https://drive.google.com/file/d/1UOqtkZ8UyvQfa8IIG6advV9jO3gGG6du/view?usp=drive_link
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1-8b
+    precision: bf16
+    epochs: 1
+    iteration: 15
+  data:
+    batch_size: 1
+    seq_len: 512
+    dataset: wikitext
+  hardware:
+    network_topo:
+      topology: 2d torus
+      bandwidth_gbps:
+        - 200
+        - 6400
+    xpu_spec:
+      type: TPU
+      model: tpu_v6e
+      total_count: 4
+      count_per_node: 8  # Number of processing units per node, e.g., 4, 8.
+      topology: mesh-2x2x1
+    driver_version: xla
+
+Model-executor:
+  framework:
+    name: torchxla
+    compiler_tool_selection: xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+  communication_library:
+    name: ici
+    version:
+  protocol_selection:
+    - rdma
+    - ici
+
+metric_source:
+  traces:
+    - xla_trace
+  metrics_specific_trace:
+    - execution_trace
+    - communication_trace

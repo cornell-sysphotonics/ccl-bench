@@ -140,6 +140,31 @@
       "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-4-tpu-group_21",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_hybrid-fsdp-tp_v6e-4-tpu-group_21",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_hybrid-fsdp-tp_v6e-8-tpu-group_21",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_tp_v6e-4-tpu-group_21",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_tp_v6e-8-tpu-group_21",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [
@@ -165,23 +190,6 @@
     }
   ],
   "metric_info": {
-    "total_trace_time": {
-      "label": "Trace Time (s)",
-      "description": "Wall-clock duration of the profiled trace window (first to last recorded event)",
-      "higher_is_better": false,
-      "unit": "s",
-      "category": "model_execution",
-      "trace_types": [
-        "json",
-        "tpu_profiler",
-        "nsys"
-      ],
-      "thresholds": {
-        "high": 30,
-        "mid": 5
-      },
-      "required_update": false
-    },
     "avg_step_time": {
       "label": "Step Time (s)",
       "description": "Average step time (inference: decode, training: forward + backward). Serving traces is not reported",
@@ -256,22 +264,6 @@
       "thresholds": {
         "high": 1000,
         "mid": 200
-      },
-      "required_update": false
-    },
-    "aggregate_gpu_utilization": {
-      "label": "GPU Util (%)",
-      "description": "Overall GPU utilization \u2014 merged active kernel time as percentage of trace duration",
-      "higher_is_better": true,
-      "unit": "%",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys",
-        "json"
-      ],
-      "thresholds": {
-        "high": 80,
-        "mid": 50
       },
       "required_update": false
     },
