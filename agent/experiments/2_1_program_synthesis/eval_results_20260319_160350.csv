@@ -1,0 +1,31 @@
+iteration,policy_version,workload,tp,dp,pp,micro_batch,wall_time,gpu_time,comm_time,error,total_wall_time,best_total_wall_time
+0,0,llama-8b-bs32,4,8,1,4,215877426,37391814.0,196114000.0,,269844744.5,269844744.5
+0,0,llama-8b-bs64,4,8,1,8,388571880,73415966.0,349212496.0,,269844744.5,269844744.5
+0,0,llama-8b-seq2048,4,8,1,4,388571880,73415966.0,349212496.0,,269844744.5,269844744.5
+0,0,llama-8b-bs16-seq512,4,8,1,2,86357792,10373996.0,81291088.0,,269844744.5,269844744.5
+0,0,llama-8b-bs128,4,8,1,16,,,,out of memory,269844744.5,269844744.5
+1,1,llama-8b-bs32,8,4,1,8,423425730,36875590.0,403662304.0,,543171320.5,269844744.5
+1,1,llama-8b-bs64,8,4,1,16,804225336,72899742.0,760892128.0,,543171320.5,269844744.5
+1,1,llama-8b-seq2048,8,4,1,8,804225336,72899742.0,760892128.0,,543171320.5,269844744.5
+1,1,llama-8b-bs16-seq512,8,4,1,4,140808880,9857772.0,135742176.0,,543171320.5,269844744.5
+1,1,llama-8b-bs128,8,2,2,1,,,,"simulation timed out after 100s (tp=8, dp=2, pp=2, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",543171320.5,269844744.5
+2,2,llama-8b-bs32,4,1,8,1,,,,"simulation timed out after 100s (tp=4, dp=1, pp=8, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",92867400.0,269844744.5
+2,2,llama-8b-bs64,2,1,16,1,,,,"simulation timed out after 100s (tp=2, dp=1, pp=16, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",92867400.0,269844744.5
+2,2,llama-8b-seq2048,4,1,8,1,,,,"simulation timed out after 100s (tp=4, dp=1, pp=8, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",92867400.0,269844744.5
+2,2,llama-8b-bs16-seq512,4,1,8,1,92867400,9297194.0,80979147.125,,92867400.0,269844744.5
+2,2,llama-8b-bs128,1,2,16,1,,,,"simulation timed out after 100s (tp=1, dp=2, pp=16, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",92867400.0,269844744.5
+3,3,llama-8b-bs32,4,1,8,2,261965685,36193954.0,242362033.125,,212013403.33333334,269844744.5
+3,3,llama-8b-bs64,4,1,8,2,,,,"simulation timed out after 100s (tp=4, dp=1, pp=8, micro_batch=2). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",212013403.33333334,269844744.5
+3,3,llama-8b-seq2048,4,2,4,2,296993407,72388816.0,269955272.5,,212013403.33333334,269844744.5
+3,3,llama-8b-bs16-seq512,4,1,8,2,77081118,9176590.0,68786893.5,,212013403.33333334,269844744.5
+3,3,llama-8b-bs128,2,2,8,2,,,,"simulation timed out after 100s (tp=2, dp=2, pp=8, micro_batch=2). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",212013403.33333334,269844744.5
+4,4,llama-8b-bs32,4,2,4,1,,,,"simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",104256037.0,269844744.5
+4,4,llama-8b-bs64,4,2,4,2,,,,"simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=2). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",104256037.0,269844744.5
+4,4,llama-8b-seq2048,4,2,4,1,,,,"simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",104256037.0,269844744.5
+4,4,llama-8b-bs16-seq512,4,2,4,1,104256037,9468252.0,78385433.25,,104256037.0,269844744.5
+4,4,llama-8b-bs128,4,2,4,4,,,,"simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=4). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp.",104256037.0,269844744.5
+5,5,llama-8b-bs32,4,4,2,4,317725200,36707582.0,279310362.5,,297163755.75,269844744.5
+5,5,llama-8b-bs64,4,8,1,8,388571880,73415966.0,349212496.0,,297163755.75,269844744.5
+5,5,llama-8b-seq2048,4,8,1,4,388571880,73415966.0,349212496.0,,297163755.75,269844744.5
+5,5,llama-8b-bs16-seq512,2,8,2,1,93786063,10205988.0,75511492.0,,297163755.75,269844744.5
+5,5,llama-8b-bs128,4,8,1,16,,,,out of memory,297163755.75,269844744.5

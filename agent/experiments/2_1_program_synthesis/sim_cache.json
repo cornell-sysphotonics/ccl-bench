@@ -609,5 +609,74 @@
   },
   "[\"llama-8b\",128,1024,4096,32,32,32,4,4,2,1]": {
     "error": "simulation timed out after 100s (tp=4, dp=4, pp=2, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,8,2,2,1]": {
+    "error": "simulation timed out after 100s (tp=8, dp=2, pp=2, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,1,8,1]": {
+    "error": "simulation timed out after 100s (tp=4, dp=1, pp=8, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,2,1,16,1]": {
+    "error": "simulation timed out after 100s (tp=2, dp=1, pp=16, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,1,8,1]": {
+    "error": "simulation timed out after 100s (tp=4, dp=1, pp=8, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,1,2,16,1]": {
+    "error": "simulation timed out after 100s (tp=1, dp=2, pp=16, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,1,8,2]": {
+    "wall_time": 261965685,
+    "gpu_time": 36193954.0,
+    "comm_time": 242362033.125,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,1,8,2]": {
+    "error": "simulation timed out after 100s (tp=4, dp=1, pp=8, micro_batch=2). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,2,4,2]": {
+    "wall_time": 296993407,
+    "gpu_time": 72388816.0,
+    "comm_time": 269955272.5,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,1,8,2]": {
+    "wall_time": 77081118,
+    "gpu_time": 9176590.0,
+    "comm_time": 68786893.5,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,2,2,8,2]": {
+    "error": "simulation timed out after 100s (tp=2, dp=2, pp=8, micro_batch=2). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,2,4,1]": {
+    "error": "simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,2,4,2]": {
+    "error": "simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=2). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,2,4,1]": {
+    "error": "simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,2,4,1]": {
+    "wall_time": 104256037,
+    "gpu_time": 9468252.0,
+    "comm_time": 78385433.25,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,2,4,4]": {
+    "error": "simulation timed out after 100s (tp=4, dp=2, pp=4, micro_batch=4). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,2,4]": {
+    "wall_time": 317725200,
+    "gpu_time": 36707582.0,
+    "comm_time": 279310362.5,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,2,8,2,1]": {
+    "wall_time": 93786063,
+    "gpu_time": 10205988.0,
+    "comm_time": 75511492.0,
+    "num_ranks": 32
   }
 }
