@@ -33,19 +33,22 @@ DEFAULT_PROMPT = Path(__file__).parent / "exp_agent_prompt.txt"
 SYSTEM_PROMPT = """\
 You are a parallelism configuration optimizer for distributed AI training.
 
-Your job is to find the (tp, dp, pp) parallelism policy that minimizes wall \
-time for a given workload and hardware environment by running simulations with \
-the `run_simulation` tool.
+Your job is to find the (tp, dp, pp, micro_batch) parallelism policy that \
+minimizes wall time for a given workload and hardware environment by running \
+simulations with the `run_simulation` tool.
 
 Guidelines:
 - Valid configurations satisfy: tp * dp * pp = total GPUs available. Start by \
   reasoning about how many GPUs the environment has.
+- micro_batch controls how many samples each pipeline stage processes at once. \
+  It must be <= batch_size / pp. If omitted, it defaults to batch_size / pp. \
+  Smaller micro_batch increases pipeline granularity and reduces bubble overhead.
 - Use the `run_simulation` tool to evaluate candidate configurations.
 - Make informed choices about which configs to try based on simulation results — \
   you do not need to try every possible combination exhaustively.
 - After sufficient exploration, output your recommendation as JSON on the last \
   line in the format:
-      BEST_POLICY: {"tp": <int>, "dp": <int>, "pp": <int>, "wall_time": <int>}
+      BEST_POLICY: {"tp": <int>, "dp": <int>, "pp": <int>, "micro_batch": <int>, "wall_time": <int>}
 """
 
 # ── Simulation tool ─────────────────────────────────────────────────────────────
@@ -105,11 +108,14 @@ def _parse_metrics(text: str) -> dict:
     }
 
 
-def run_simulation(tp: int, dp: int, pp: int) -> dict:
+def run_simulation(tp: int, dp: int, pp: int, micro_batch: int | None = None) -> dict:
     """
     Run ASTRA-sim inside Docker with the given parallelism settings.
     Updates network.yml so npus_count matches tp*dp*pp, then launches the
     container and parses the resulting output.txt.
+
+    Args:
+        micro_batch: If None, defaults to batch/pp inside run.sh.
 
     Returns a dict with wall_time (cycles), gpu_time, comm_time, num_ranks,
     or an 'error' key if the run failed.
@@ -125,6 +131,8 @@ def run_simulation(tp: int, dp: int, pp: int) -> dict:
         "bash", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}/run.sh",
         "-t", str(tp), "-d", str(dp), "-p", str(pp),
     ]
+    if micro_batch is not None:
+        cmd += ["-b", str(micro_batch)]
 
     try:
         proc = subprocess.run(
@@ -178,6 +186,7 @@ def learned_policy(prompt_text: str, max_iterations: int = 10) -> dict:
                     "tp": {"type": "integer", "description": "Tensor parallelism degree (≥1)"},
                     "dp": {"type": "integer", "description": "Data parallelism degree (≥1)"},
                     "pp": {"type": "integer", "description": "Pipeline parallelism degree (≥1)"},
+                    "micro_batch": {"type": "integer", "description": "Micro-batch size per pipeline stage. Must be <= batch_size/pp. Defaults to batch_size/pp if omitted."},
                 },
                 "required": ["tp", "dp", "pp"],
             },
@@ -229,13 +238,17 @@ def learned_policy(prompt_text: str, max_iterations: int = 10) -> dict:
 
         iteration += 1
         tp, dp, pp = tool_use.input["tp"], tool_use.input["dp"], tool_use.input["pp"]
-        print(f"\n[sim {iteration}/{max_iterations}] tp={tp}, dp={dp}, pp={pp}  ({tp*dp*pp} GPUs)")
-        result = run_simulation(tp, dp, pp)
+        micro_batch = tool_use.input.get("micro_batch")
+        mb_str = f", micro_batch={micro_batch}" if micro_batch is not None else ""
+        print(f"\n[sim {iteration}/{max_iterations}] tp={tp}, dp={dp}, pp={pp}{mb_str}  ({tp*dp*pp} GPUs)")
+        result = run_simulation(tp, dp, pp, micro_batch=micro_batch)
         print(f"  → {result}")
 
         if "wall_time" in result:
             if best is None or result["wall_time"] < best.get("wall_time", float("inf")):
                 best = {"tp": tp, "dp": dp, "pp": pp, "wall_time": result["wall_time"]}
+                if micro_batch is not None:
+                    best["micro_batch"] = micro_batch
 
         messages.append({
             "role": "user",
