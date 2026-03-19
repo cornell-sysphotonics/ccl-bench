@@ -1,0 +1,613 @@
+{
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,32,1,1]": {
+    "wall_time": 91743000,
+    "gpu_time": 10373996.0,
+    "comm_time": 86676296.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,32,1,2]": {
+    "wall_time": 134917468,
+    "gpu_time": 19379912.0,
+    "comm_time": 124951880.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,32,1,1]": {
+    "wall_time": 134917468,
+    "gpu_time": 19379912.0,
+    "comm_time": 124951880.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,32,1,0]": {
+    "wall_time": 134917468,
+    "gpu_time": 19379912.0,
+    "comm_time": 124951880.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,32,1,4]": {
+    "wall_time": 221262634,
+    "gpu_time": 37391814.0,
+    "comm_time": 201499208.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,2,64,1,1]": {
+    "wall_time": 95675764,
+    "gpu_time": 20412360.0,
+    "comm_time": 84772640.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,16,1,1]": {
+    "wall_time": 67314092,
+    "gpu_time": 5931532.0,
+    "comm_time": 64633784.0,
+    "num_ranks": 64
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,1,128,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "EMORY: [GPU pp=0,cp=0,tp=0,dp=114] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=115] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=116] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=117] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=118] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=119] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=120] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=121] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=122] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=123] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=124] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=125] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=126] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=127] requires 65.010 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,32,1,1]": {
+    "wall_time": 157794702,
+    "gpu_time": 19379528.0,
+    "comm_time": 152758600.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,8,16,1,1]": {
+    "wall_time": 74497004,
+    "gpu_time": 3217792.0,
+    "comm_time": 72990088.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,32,1,1]": {
+    "wall_time": 289969390,
+    "gpu_time": 37390592.0,
+    "comm_time": 284923208.0,
+    "num_ranks": 128
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,1,32,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=18] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=19] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=20] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=21] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=22] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=23] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=24] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=25] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=26] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=27] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=28] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=29] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=30] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=31] requires 65.010 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,1,64,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=50] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=51] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=52] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=53] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=54] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=55] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=56] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=57] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=58] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=59] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=60] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=61] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=62] requires 65.010 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=63] requires 65.010 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,1,32,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=18] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=19] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=20] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=21] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=22] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=23] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=24] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=25] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=26] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=27] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=28] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=29] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=30] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=31] requires 69.113 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,1,16,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": " GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=4] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=5] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=6] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=7] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=8] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=9] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=10] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=11] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=12] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=13] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=14] requires 62.958 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=15] requires 62.958 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,1,8]": {
+    "wall_time": 385275304,
+    "gpu_time": 73415966.0,
+    "comm_time": 345915920.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,4,1,16]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 40.569 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,4,1,8]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 40.569 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,4,1,4]": {
+    "wall_time": 126235684,
+    "gpu_time": 19379912.0,
+    "comm_time": 116270096.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,1,32]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 62.982 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 62.982 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,1,28]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": ""
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,1,16]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 64.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 64.482 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,1,5]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": ""
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,4,1,5]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": ""
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,4,1,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 45.069 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,1,5]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": ""
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,8,2,1,2]": {
+    "wall_time": 272890490,
+    "gpu_time": 72896496.0,
+    "comm_time": 267703400.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,8,2,1,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=1] requires 52.694 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,8,2,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=1] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 52.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=1] requires 52.694 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,8,2,1,4]": {
+    "wall_time": 77504639,
+    "gpu_time": 18863304.0,
+    "comm_time": 72530024.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,8,2,1,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=1] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=1] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=1] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 95.107 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=1] requires 95.107 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,1,1]": {
+    "wall_time": 494690870,
+    "gpu_time": 73412720.0,
+    "comm_time": 489642000.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,4,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 63.069 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,2,4,2,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 44.979 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=2] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=3] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=0] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=1] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=2] requires 45.285 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=3] requires 45.285 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,4,1,1]": {
+    "wall_time": 180539842,
+    "gpu_time": 19620736.0,
+    "comm_time": 177863696.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 109.482 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 109.482 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,1,23]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": ""
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,4,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=2] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=3] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 51.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 51.069 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,8,2,1,4]": {
+    "wall_time": 242726840,
+    "gpu_time": 72898032.0,
+    "comm_time": 232298600.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,8,2,1,4]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=1] requires 46.694 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,8,2,1,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=1] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 46.694 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=1] requires 46.694 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,4,1,2]": {
+    "wall_time": 141837398,
+    "gpu_time": 19379528.0,
+    "comm_time": 136801296.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,16,1,1,4]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "OUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=8,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=9,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=10,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=11,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=12,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=13,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=14,dp=0] requires 111.920 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=15,dp=0] requires 111.920 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,1,4]": {
+    "wall_time": 386233053,
+    "gpu_time": 73415164.0,
+    "comm_time": 366447120.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,1,8,2,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=4] requires 41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=5] requires 41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=6] requires 41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=7] requires 41.591 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=2] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=3] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=4] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=5] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=6] requires 41.744 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=7] requires 41.744 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,1,8,2,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=4] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=5] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=6] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=7] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=2] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=3] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=4] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=5] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=6] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=7] requires 56.035 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,1,8,2,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=4] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=5] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=6] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=7] requires 55.729 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=2] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=3] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=4] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=5] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=6] requires 56.035 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=7] requires 56.035 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,2,8,1,2]": {
+    "wall_time": 83698876,
+    "gpu_time": 20412360.0,
+    "comm_time": 72795752.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,1,8,2,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=2] requires 84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=3] requires 84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=4] requires 84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=5] requires 84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=6] requires 84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=7] requires 84.004 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=2] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=3] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=4] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=5] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=6] requires 84.617 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=7] requires 84.617 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,2,2,1]": {
+    "wall_time": 314924049,
+    "gpu_time": 72728488.0,
+    "comm_time": 268484333.5,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,2,2,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 54.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=0] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=1] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=2,dp=0] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=2,dp=1] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=3,dp=0] requires 54.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=3,dp=1] requires 54.910 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,2,2,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 42.604 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=0] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=1] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=2,dp=0] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=2,dp=1] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=3,dp=0] requires 42.910 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=3,dp=1] requires 42.910 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,2,2,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=0] requires 100.879 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=1,dp=1] requires 100.879 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 100.879 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=1] requires 100.879 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 100.879 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 100.879 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=0] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=0,dp=1] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=0] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=1,dp=1] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=2,dp=0] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=2,dp=1] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=3,dp=0] requires 101.492 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=1,cp=0,tp=3,dp=1] requires 101.492 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,16,1,1,8]": {
+    "wall_time": 216024823,
+    "gpu_time": 72639920.0,
+    "comm_time": 201713080.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,16,1,1,8]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": " GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=8,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=9,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=10,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=11,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=12,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=13,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=14,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=15,dp=0] requires 56.507 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,16,1,1,4]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": " GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=4,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=5,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=6,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=7,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=8,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=9,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=10,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=11,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=12,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=13,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=14,dp=0] requires 56.507 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=15,dp=0] requires 56.507 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,16,1,1,16]": {
+    "wall_time": 67731640,
+    "gpu_time": 18605576.0,
+    "comm_time": 53476792.0,
+    "num_ranks": 16
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,8,1,4]": {
+    "wall_time": 215877426,
+    "gpu_time": 37391814.0,
+    "comm_time": 196114000.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,8,1,8]": {
+    "wall_time": 388571880,
+    "gpu_time": 73415966.0,
+    "comm_time": 349212496.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,8,1,4]": {
+    "wall_time": 388571880,
+    "gpu_time": 73415966.0,
+    "comm_time": 349212496.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,8,1,2]": {
+    "wall_time": 86357792,
+    "gpu_time": 10373996.0,
+    "comm_time": 81291088.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,8,1,16]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=4] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=5] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=6] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=7] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=4] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=5] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=6] requires 40.569 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=7] requires 40.569 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,8,1,4]": {
+    "wall_time": 392120349,
+    "gpu_time": 73415164.0,
+    "comm_time": 372334416.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,8,1,4]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=4] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=5] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=6] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=7] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=4] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=5] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=6] requires 45.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=7] requires 45.069 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,8,1,1]": {
+    "wall_time": 270529782,
+    "gpu_time": 37390592.0,
+    "comm_time": 265483600.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,8,1,1]": {
+    "wall_time": 516122486,
+    "gpu_time": 73412720.0,
+    "comm_time": 511073616.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,8,1,1]": {
+    "wall_time": 428558776,
+    "gpu_time": 73414256.0,
+    "comm_time": 418585936.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,8,1,1]": {
+    "wall_time": 107084114,
+    "gpu_time": 10494600.0,
+    "comm_time": 104413008.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,8,1,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=2] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=3] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=4] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=5] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=6] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=2,dp=7] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=0] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=1] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=2] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=3] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=4] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=5] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=6] requires 63.069 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=3,dp=7] requires 63.069 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,1,32,1,2]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=18] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=19] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=20] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=21] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=22] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=23] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=24] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=25] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=26] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=27] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=28] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=29] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=30] requires 69.113 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=0,dp=31] requires 69.113 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,1,4,8,4]": {
+    "wall_time": 316850232,
+    "gpu_time": 144653294.0,
+    "comm_time": 255633854.25,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,2,32]": {
+    "wall_time": 316850232,
+    "gpu_time": 144653294.0,
+    "comm_time": 255633854.25,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,4,2,16]": {
+    "wall_time": 316850232,
+    "gpu_time": 144653294.0,
+    "comm_time": 255633854.25,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,4,2,8]": {
+    "wall_time": 316850232,
+    "gpu_time": 144653294.0,
+    "comm_time": 255633854.25,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,2,4,64]": {
+    "wall_time": 316850232,
+    "gpu_time": 144653294.0,
+    "comm_time": 255633854.25,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,8,4,1,16]": {
+    "wall_time": 804225336,
+    "gpu_time": 72899742.0,
+    "comm_time": 760892128.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,8,4,1,8]": {
+    "wall_time": 804225336,
+    "gpu_time": 72899742.0,
+    "comm_time": 760892128.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,16,2,1,64]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": " 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=9,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=9,dp=1] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=10,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=10,dp=1] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=11,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=11,dp=1] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=12,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=12,dp=1] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=13,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=13,dp=1] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=14,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=14,dp=1] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=15,dp=0] requires 53.882 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=15,dp=1] requires 53.882 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,16,2,1,32]": {
+    "wall_time": 473571368,
+    "gpu_time": 72641630.0,
+    "comm_time": 425840080.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,16,2,1,16]": {
+    "wall_time": 473571368,
+    "gpu_time": 72641630.0,
+    "comm_time": 425840080.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,1,8,4,2]": {
+    "wall_time": 473571368,
+    "gpu_time": 72641630.0,
+    "comm_time": 425840080.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,8,4,1,8]": {
+    "wall_time": 423425730,
+    "gpu_time": 36875590.0,
+    "comm_time": 403662304.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,4,2,4]": {
+    "wall_time": 423425730,
+    "gpu_time": 36875590.0,
+    "comm_time": 403662304.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,32,1,1,64]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=18,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=19,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=20,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=21,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=22,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=23,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=24,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=25,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=26,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=27,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=28,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=29,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=30,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=31,dp=0] requires 44.894 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,32,1,1,32]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=18,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=19,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=20,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=21,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=22,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=23,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=24,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=25,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=26,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=27,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=28,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=29,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=30,dp=0] requires 44.894 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=31,dp=0] requires 44.894 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,32,1,1,128]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": "0 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=18,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=19,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=20,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=21,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=22,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=23,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=24,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=25,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=26,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=27,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=28,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=29,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=30,dp=0] requires 84.101 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=0,cp=0,tp=31,dp=0] requires 84.101 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,1,8,64]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": "ERROR: micro_batch=64 > batch/(dp*pp)=8\nmicro_batch must be <= batch_size / (dp * pp)\n"
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,1,8,32]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": "ERROR: micro_batch=32 > batch/(dp*pp)=4\nmicro_batch must be <= batch_size / (dp * pp)\n"
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,8,4,1,4]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,1,8,128]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,2,1,16,64]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,2,1,16,32]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,2,1,16,128]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,2,8]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,2,4,8]": {
+    "wall_time": 140808880,
+    "gpu_time": 9857772.0,
+    "comm_time": 135742176.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,32,1,1,32]": {
+    "wall_time": 204331580,
+    "gpu_time": 39461958.0,
+    "comm_time": 173311672.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,32,1,1,16]": {
+    "wall_time": 55492256,
+    "gpu_time": 10214060.0,
+    "comm_time": 47852728.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,16,2,1,16]": {
+    "wall_time": 245699218,
+    "gpu_time": 36617478.0,
+    "comm_time": 222850000.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,2,4,32]": {
+    "wall_time": 245699218,
+    "gpu_time": 36617478.0,
+    "comm_time": 222850000.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,8,2,2,1]": {
+    "wall_time": 316128747,
+    "gpu_time": 36930664.0,
+    "comm_time": 280128537.5,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",64,1024,4096,32,32,32,4,4,2,1]": {
+    "wall_time": 897845566,
+    "gpu_time": 72728488.0,
+    "comm_time": 794460611.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,2048,4096,32,32,32,4,4,2,1]": {
+    "wall_time": 738169471,
+    "gpu_time": 72730024.0,
+    "comm_time": 659907313.5,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,16,2,1,8]": {
+    "wall_time": 75683744,
+    "gpu_time": 9599660.0,
+    "comm_time": 70617040.0,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,2,4,1]": {
+    "error": "out of memory",
+    "message": "Per-GPU memory exceeded hardware limit. Try higher TP to shard across more GPUs.",
+    "oom_output": "out of memory",
+    "stderr": "49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=2,cp=0,tp=1,dp=0] requires 49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=2,cp=0,tp=1,dp=1] requires 49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=2,cp=0,tp=2,dp=0] requires 49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=2,cp=0,tp=2,dp=1] requires 49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=2,cp=0,tp=3,dp=0] requires 49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=2,cp=0,tp=3,dp=1] requires 49.250 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=0,dp=0] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=0,dp=1] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=1,dp=0] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=1,dp=1] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=2,dp=0] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=2,dp=1] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=3,dp=0] requires 52.305 GiB > 40 GiB\nOUT OF MEMORY: [GPU pp=3,cp=0,tp=3,dp=1] requires 52.305 GiB > 40 GiB\n"
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,2,3]": {
+    "error": "no metrics in output",
+    "tail": "[2026-03-19 19:52:08.384] [system::topology::RingTopology] [info] ring of node 0, id: 0 dimension: local total nodes in ring: 4 index in ring: 0 offset: 1 total nodes in ring: 4\n[2026-03-19 19:52:08.384] [system::topology::RingTopology] [info] ring of node 0, id: 0 dimension: local total nodes in ring: 4 index in ring: 0 offset: 1 total nodes in ring: 4\n[2026-03-19 19:52:08.384] [system::topology::RingTopology] [info] ring of node 0, id: 0 dimension: local total nodes in ring: 4 index in ring: 0 offset: 1 total nodes in ring: 4\n[2026-03-19 19:52:08.384] [system::topology::RingTopology] [info] ring of node 0, id: 0 dimension: local total nodes in ring: 4 index in ring: 0 offset: 1 total nodes in ring: 4\n",
+    "stderr": ""
+  },
+  "[\"llama-8b\",16,512,4096,32,32,32,4,1,8,1]": {
+    "wall_time": 92867400,
+    "gpu_time": 9297194.0,
+    "comm_time": 80979147.125,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,2,11]": {
+    "wall_time": 92867400,
+    "gpu_time": 9297194.0,
+    "comm_time": 80979147.125,
+    "num_ranks": 32
+  },
+  "[\"llama-8b\",32,1024,4096,32,32,32,4,4,2,1]": {
+    "error": "no metrics in output",
+    "tail": "n ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 7, dimension: local total nodes in ring: 4 index in ring: 1 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 8, dimension: local total nodes in ring: 4 index in ring: 2 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 9, dimension: local total nodes in ring: 4 index in ring: 2 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 10, dimension: local total nodes in ring: 4 index in ring: 2 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 11, dimension: local total nodes in ring: 4 index in ring: 2 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 12, dimension: local total nodes in ring: 4 index in ring: 3 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 13, dimension: local total nodes in ring: 4 index in ring: 3 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 14, dimension: local total nodes in ring: 4 index in ring: 3 total nodes in ring 4\n[2026-03-19 19:58:24.327] [system::topology::RingTopology] [info] custom ring, id: 15, dimension: local total nodes in ring: 4 index in ring: 3 total nodes in ring 4\n",
+    "stderr": "AstraSim_Analytical_Congestion_Unaware: /app/astra-sim/astra-sim/workload/HardwareResource.cc:79: void AstraSim::HardwareResource::release(std::shared_ptr<Chakra::FeederV3::ETFeederNode>): Assertion `num_in_flight_gpu_comm_ops == 0' failed.\n/agent/tools/astra-sim-hybrid-parallelism/examples/llama_3_memory/run.sh: line 133:   268 Aborted                 (core dumped) \"${ASTRA_SIM:?}\" --workload-configuration=\"${WORKLOAD}\" --system-configuration=\"${SYSTEM:?}\" --remote-memory-configuration=\"${REMOTE_MEMORY:?}\" --network-configuration=\"${NETWORK:?}\" --comm-group-configuration=\"${COMM_GROUP:?}\" > output.txt\n"
+  },
+  "[\"llama-8b\",128,1024,4096,32,32,32,4,4,2,1]": {
+    "error": "simulation timed out after 100s (tp=4, dp=4, pp=2, micro_batch=1). Small micro_batch with large pp causes excessive pipeline steps. Try larger micro_batch or smaller pp."
+  }
+}

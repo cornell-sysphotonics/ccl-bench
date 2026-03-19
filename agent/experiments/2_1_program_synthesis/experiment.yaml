@@ -1,0 +1,90 @@
+environment:
+  nodes: 8
+  gpus_per_node: 4
+  gpu_model: A100
+  gpu_memory_gb: 40
+  intra_node_bandwidth_gbps: 2400
+  inter_node_bandwidth_gbps: 200
+
+# Suite of test workloads the policy must handle well.
+# The agent evaluates the policy on ALL of these, then refines.
+test_workloads:
+  - name: llama-8b-bs32
+    model: llama-8b
+    batch_size: 32
+    seq_len: 1024
+    dmodel: 4096
+    dff: 4096
+    dvocal: 32000
+    num_heads: 32
+    num_kv_heads: 32
+    num_stacks: 32
+    weight_sharded: 0
+    mixed_precision: 0
+    precision: fp32
+    chakra_schema_version: "v0.0.4"
+
+  - name: llama-8b-bs64
+    model: llama-8b
+    batch_size: 64
+    seq_len: 1024
+    dmodel: 4096
+    dff: 4096
+    dvocal: 32000
+    num_heads: 32
+    num_kv_heads: 32
+    num_stacks: 32
+    weight_sharded: 0
+    mixed_precision: 0
+    precision: fp32
+    chakra_schema_version: "v0.0.4"
+
+  - name: llama-8b-seq2048
+    model: llama-8b
+    batch_size: 32
+    seq_len: 2048
+    dmodel: 4096
+    dff: 4096
+    dvocal: 32000
+    num_heads: 32
+    num_kv_heads: 32
+    num_stacks: 32
+    weight_sharded: 0
+    mixed_precision: 0
+    precision: fp32
+    chakra_schema_version: "v0.0.4"
+
+  - name: llama-8b-bs16-seq512
+    model: llama-8b
+    batch_size: 16
+    seq_len: 512
+    dmodel: 4096
+    dff: 4096
+    dvocal: 32000
+    num_heads: 32
+    num_kv_heads: 32
+    num_stacks: 32
+    weight_sharded: 0
+    mixed_precision: 0
+    precision: fp32
+    chakra_schema_version: "v0.0.4"
+
+  - name: llama-8b-bs128
+    model: llama-8b
+    batch_size: 128
+    seq_len: 1024
+    dmodel: 4096
+    dff: 4096
+    dvocal: 32000
+    num_heads: 32
+    num_kv_heads: 32
+    num_stacks: 32
+    weight_sharded: 0
+    mixed_precision: 0
+    precision: fp32
+    chakra_schema_version: "v0.0.4"
+
+simulation:
+  workload_name: llama_3_memory
+
+optimization_goal: step_time
