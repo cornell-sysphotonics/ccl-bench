@@ -1,0 +1,41 @@
+version: 1
+model_card: trace_collection/mixtral-8x7b/mixtral-8x7b.yaml
+description: Mixtral-8x7B MoE training on NVIDIA A100 GPUs using torchtitan with FSDP + EP.
+workload:
+  phase: training
+  granularity: model_fwd_bwd_pass
+  data:
+    batch_size: 16
+    seq_len: 4096
+    dataset: c4
+hardware:
+  network_topo:
+    topology: fat-tree
+    bandwidth_gbps:
+    - 200
+    - 2400
+  xpu_spec:
+    type: GPU
+    model: nvidia_a100_80gb
+    total_count: 16
+    count_per_node: 4
+  driver_version: cuda_12.4
+Model-executor:
+  framework:
+    name: torchtitan
+    compiler_tool_selection: torch.compile, triton
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 2
+    tp: 1
+    pp: 1
+    cp: 1
+    ep: 8
+  communication_library:
+    name: NCCL
+  protocol_selection:
+  - rocev2
+  - nvlink
+metric_source:
+  traces:
+  - json

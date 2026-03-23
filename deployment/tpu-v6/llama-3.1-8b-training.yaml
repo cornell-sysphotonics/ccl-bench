@@ -1,0 +1,41 @@
+version: 1
+model_card: trace_collection/llama-3.1-8b/llama-3.1-8b.yaml
+description: Llama-3.1-8B training on TPU v6e using torchxla with FSDP.
+workload:
+  phase: training
+  granularity: model_fwd_bwd_pass
+  data:
+    batch_size: 16
+    seq_len: 4096
+    dataset: c4
+hardware:
+  network_topo:
+    topology: 2d-torus
+    bandwidth_gbps:
+    - 200
+    - 6400
+  xpu_spec:
+    type: TPU
+    model: tpu_v6e
+    total_count: 8
+    count_per_node: 8
+    topology: mesh-2x2x2
+  driver_version: tpu-vm-v6e-preview
+Model-executor:
+  framework:
+    name: torchxla
+    compiler_tool_selection: xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 8
+    tp: 1
+    pp: 1
+    cp: 1
+  communication_library:
+    name: ici
+  protocol_selection:
+  - rdma
+  - ici
+metric_source:
+  traces:
+  - json_tpu

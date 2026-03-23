@@ -1,0 +1,42 @@
+version: 1
+model_card: trace_collection/deepseek-v3/deepseek-v3.yaml
+description: DeepSeek-V3 671B MoE inference on TPU v6e using vLLM with XLA backend, TP + EP.
+workload:
+  phase: inference
+  granularity: model_fwd
+  data:
+    batch_size: 32
+    seq_len: 4096
+    dataset: sharegpt
+hardware:
+  network_topo:
+    topology: 2d-torus
+    bandwidth_gbps:
+    - 200
+    - 6400
+  xpu_spec:
+    type: TPU
+    model: tpu_v6e
+    total_count: 32
+    count_per_node: 8
+    topology: mesh-4x4x2
+  driver_version: tpu-vm-v6e-preview
+Model-executor:
+  framework:
+    name: vllm
+    compiler_tool_selection: xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+    ep: 8
+  communication_library:
+    name: xla
+  protocol_selection:
+  - xla_collectives
+  - ici
+metric_source:
+  traces:
+  - json_tpu

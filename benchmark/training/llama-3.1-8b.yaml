@@ -1,0 +1,27 @@
+version: 1
+description: Llama-3.1-8B training workload.
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: ''
+contributor: ''
+contact: ''
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1
+    precision: bf16
+    epochs: 1
+    iteration: 20
+    model_arch:
+      num_params: 8030261248
+      num_layers: 32
+      num_heads: 32
+      num_kv_heads: 8
+      head_dim: 128
+      hidden_size: 4096
+      intermediate_size: 14336
+      vocab_size: 128256
+  data:
+    seq_len: 4096
+    dataset: c4
