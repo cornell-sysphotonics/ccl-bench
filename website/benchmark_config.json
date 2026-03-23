@@ -220,7 +220,7 @@
         "high": 50,
         "mid": 25
       },
-      "required_update": true
+      "required_update": false
     },
     "ttft_group_6": {
       "label": "TTFT (ms)",
@@ -298,7 +298,7 @@
         "high": 70,
         "mid": 40
       },
-      "required_update": false
+      "required_update": true
     },
     "memory_bound_fraction": {
       "label": "Mem Bound (%)",
