@@ -1,20 +1,27 @@
 """
 Metric: total_communication_time
-Description: Total time in communication kernels (NCCL, XLA collectives) in ms.
-Unit: ms
+Description: Average communication time per step (NCCL, XLA collectives).
+Unit: seconds
 Returns: Float >= 0, or -1 if data unavailable
 
 Supported trace types (dispatched via workload YAML):
   nsys        — delegates to total_communication_time_group_9 (nsys stats kernsum)
-  json        — reads a single PyTorch-profiler JSON file (rank0_trace.json)
+  json        — reads PyTorch-profiler JSON files (ProfilerStep boundaries)
   tpu_profiler — reads TPU profiler Chrome-trace JSON (XLA collective ops)
 """
 
 import json
 import os
 import re
+import statistics
 import sys
 import yaml
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from json_sampling import select_json_files
+
+
+_STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
 
 
 _COMM_RE = re.compile(
@@ -48,9 +55,24 @@ def _get_trace_types(directory: str) -> list:
 
 
 def _calc_nsys(directory: str) -> float:
-    from total_communication_time_group_9.total_communication_time_group_9 import compute_total_comm_time
-    ms = compute_total_comm_time(directory)
-    return ms / 1000.0 if ms is not None and ms >= 0 else ms   # ms → s
+    from nsys_utils import collect_nsys_traces, run_nsys_kernsum_csv, extract_csv_block, parse_kernsum_csv
+
+    _NSYS_COMM_RE = [
+        re.compile(r"^nccl", re.IGNORECASE),
+        re.compile(r"sendrecv", re.IGNORECASE),
+        re.compile(r"cross[_\-]?device", re.IGNORECASE),
+        re.compile(r"allgather|reducescatter|allreduce|broadcast", re.IGNORECASE),
+    ]
+
+    def _is_nsys_comm(name):
+        return any(r.search(name) for r in _NSYS_COMM_RE)
+
+    traces = collect_nsys_traces(directory)
+    pth = traces[0]
+    out = run_nsys_kernsum_csv(pth)
+    rows = parse_kernsum_csv(extract_csv_block(out))
+    comm_ns = sum(r["total_ns"] for r in rows if _is_nsys_comm(r["name"]))
+    return comm_ns / 1e9  # ns → s
 
 
 def _load_json_events(path: str):
@@ -105,32 +127,34 @@ def _merge_intervals(intervals: list) -> float:
 
 def _calc_json(directory: str) -> float:
     """
-    Total communication time from PyTorch-profiler JSON files (kineto_trace_*.json).
-    Merges overlapping comm kernel intervals per rank, then averages across ranks.
-    Falls back to rank0_trace.json or first .json if no kineto files found.
-    Returns seconds.
+    Average communication time per step from PyTorch-profiler JSON files.
+    Detects step boundaries via ProfilerStep#N events, computes comm time
+    per step (merging overlapping intervals), then averages across inner
+    steps and ranks.  Returns seconds.
     """
-    _all_json = sorted(fn for fn in os.listdir(directory) if fn.endswith(".json"))
-    _kineto = sorted(fn for fn in _all_json if fn.startswith("kineto_trace_"))
-    MAX_RANKS = 8
-    if _kineto:
-        paths = [os.path.join(directory, fn) for fn in _kineto[:MAX_RANKS]]
-    else:
-        rank0 = os.path.join(directory, "rank0_trace.json")
-        if os.path.exists(rank0):
-            paths = [rank0]
-        elif _all_json:
-            paths = [os.path.join(directory, _all_json[0])]
-        else:
-            print(f"Error: No JSON files found in {directory}", file=sys.stderr)
-            return -1
+    json_files = select_json_files(directory)
+    if not json_files:
+        print(f"Error: No JSON files found in {directory}", file=sys.stderr)
+        return -1
 
-    rank_times = []
-    for path in paths:
+    per_rank_avg = []
+    for path in json_files:
+        events = _load_json_events(path)
+
+        # Collect step boundaries
+        step_events = sorted(
+            [e for e in events
+             if isinstance(e, dict)
+             and e.get("ph") == "X"
+             and e.get("cat") == "user_annotation"
+             and _STEP_PATTERN.match(e.get("name", ""))],
+            key=lambda e: int(_STEP_PATTERN.match(e["name"]).group(1)),
+        )
+
+        # Collect comm kernel intervals
         comm_intervals = []
         any_data = False
-
-        for e in _load_json_events(path):
+        for e in events:
             if (
                 isinstance(e, dict)
                 and e.get("ph") == "X"
@@ -142,17 +166,43 @@ def _calc_json(directory: str) -> float:
                     continue
                 any_data = True
                 if _COMM_RE.search(e.get("name", "")):
-                    ts = float(ts)
-                    comm_intervals.append((ts, ts + float(dur)))
+                    ts_f = float(ts)
+                    comm_intervals.append((ts_f, ts_f + float(dur)))
 
-        if any_data:
-            rank_times.append(_merge_intervals(comm_intervals) / 1e6)  # µs → s
+        if not any_data:
+            continue
 
-    if not rank_times:
+        total_comm = _merge_intervals(comm_intervals) / 1e6  # µs → s
+
+        if step_events:
+            # Trim first and last steps (warmup/cooldown), like avg_step_time
+            inner = step_events[1:-1] if len(step_events) > 2 else step_events
+            n_steps = len(inner)
+
+            # Compute comm time only within inner step boundaries
+            if len(step_events) > 2:
+                inner_start = float(inner[0]["ts"])
+                last = inner[-1]
+                inner_end = float(last["ts"]) + float(last.get("dur", 0))
+                inner_comm = []
+                for start, end in comm_intervals:
+                    # Clip to inner step window
+                    cs = max(start, inner_start)
+                    ce = min(end, inner_end)
+                    if cs < ce:
+                        inner_comm.append((cs, ce))
+                total_comm = _merge_intervals(inner_comm) / 1e6
+
+            per_rank_avg.append(total_comm / n_steps)
+        else:
+            # No step events; return total comm time (single iteration assumed)
+            per_rank_avg.append(total_comm)
+
+    if not per_rank_avg:
         print(f"Error: No kernel data found in {directory}", file=sys.stderr)
         return -1
 
-    return sum(rank_times) / len(rank_times)
+    return statistics.mean(per_rank_avg)
 
 
 def _calc_tpu(directory: str) -> float:
@@ -178,9 +228,19 @@ def _calc_tpu(directory: str) -> float:
     spec.loader.exec_module(module)
 
     try:
-        return module.compute_metric(trace_json, "total")
-    except Exception as e:
+        total_s = module.compute_metric(trace_json, "total")
+    except Exception:
         return -1
+
+    if total_s is None or total_s < 0:
+        return -1
+
+    # Divide by iteration count from YAML to get per-step average
+    yaml_data = _load_yaml(directory)
+    n_iter = yaml_data.get("workload", {}).get("model", {}).get("iteration", 1)
+    if n_iter and n_iter > 0:
+        return total_s / n_iter
+    return total_s
 
 
 def metric_cal(directory: str) -> float:

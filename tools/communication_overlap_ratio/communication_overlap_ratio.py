@@ -52,8 +52,83 @@ def _get_trace_types(directory: str) -> list:
 # ── NSYS backend ─────────────────────────────────────────────────────────────
 
 def _calc_nsys(directory: str) -> float:
-    from communication_overlap_ratio_group_9.communication_overlap_ratio_group_9 import calculate_metric
-    return calculate_metric(directory)
+    import sqlite3
+    import pandas as pd
+    from nsys_utils import find_sqlite_file
+
+    sqlite_path = find_sqlite_file(directory)
+    if sqlite_path is None:
+        print(f"Error: No .sqlite file found in {directory}", file=sys.stderr)
+        return -1
+    try:
+        conn = sqlite3.connect(sqlite_path)
+        strings = pd.read_sql_query("SELECT id, value FROM StringIds", conn)
+        string_map = dict(zip(strings['id'], strings['value']))
+        kernels = pd.read_sql_query("""
+            SELECT start, end, demangledName, shortName, deviceId, streamId
+            FROM CUPTI_ACTIVITY_KIND_KERNEL
+        """, conn)
+        conn.close()
+        if len(kernels) == 0:
+            return -1
+        kernels['kernel_name'] = (
+            kernels['shortName'].map(string_map)
+            .fillna(kernels['demangledName'].map(string_map))
+            .fillna('Unknown')
+        )
+        comm_patterns = (
+            'nccl|allreduce|allgather|reducescatter|broadcast|'
+            'send|recv|p2p|cross_device|communicate|all_reduce|all_gather'
+        )
+        is_comm = kernels['kernel_name'].str.lower().str.contains(
+            comm_patterns, na=False, regex=True)
+        comm_kernels = kernels[is_comm]
+        compute_kernels = kernels[~is_comm]
+        if len(comm_kernels) == 0:
+            return -1
+
+        def _merge_ivs(starts, ends):
+            intervals = sorted(zip(starts, ends))
+            merged = [list(intervals[0])]
+            for s, e in intervals[1:]:
+                if s <= merged[-1][1]:
+                    merged[-1][1] = max(merged[-1][1], e)
+                else:
+                    merged.append([s, e])
+            return merged
+
+        def _intersect(a, b):
+            total = 0
+            i = j = 0
+            while i < len(a) and j < len(b):
+                start = max(a[i][0], b[j][0])
+                end = min(a[i][1], b[j][1])
+                if start < end:
+                    total += end - start
+                if a[i][1] < b[j][1]:
+                    i += 1
+                else:
+                    j += 1
+            return total
+
+        total_comm_time = 0
+        total_overlap_time = 0
+        for device_id in comm_kernels['deviceId'].unique():
+            dev_comm = comm_kernels[comm_kernels['deviceId'] == device_id]
+            dev_compute = compute_kernels[compute_kernels['deviceId'] == device_id]
+            comm_merged = _merge_ivs(dev_comm['start'].values, dev_comm['end'].values)
+            comm_time = sum(e - s for s, e in comm_merged)
+            total_comm_time += comm_time
+            if len(dev_compute) == 0:
+                continue
+            compute_merged = _merge_ivs(dev_compute['start'].values, dev_compute['end'].values)
+            total_overlap_time += _intersect(comm_merged, compute_merged)
+        if total_comm_time == 0:
+            return -1
+        return float(total_overlap_time / total_comm_time)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return -1
 
 
 # ── JSON backend ──────────────────────────────────────────────────────────────

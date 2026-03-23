@@ -35,8 +35,36 @@ def _get_trace_types(directory: str) -> list:
 
 
 def _calc_nsys(directory: str) -> float:
-    from mean_sm_coverage_group_9.mean_sm_coverage_group_9 import calculate_metric
-    return calculate_metric(directory)
+    import sqlite3
+    import pandas as pd
+    from nsys_utils import find_sqlite_file
+
+    sqlite_path = find_sqlite_file(directory)
+    if sqlite_path is None:
+        print(f"Error: No .sqlite file found in {directory}", file=sys.stderr)
+        return -1
+    try:
+        conn = sqlite3.connect(sqlite_path)
+        device_info = pd.read_sql_query(
+            "SELECT gpuId, numMultiprocessors FROM TARGET_INFO_CUDA_DEVICE", conn)
+        if len(device_info) == 0 or pd.isna(device_info['numMultiprocessors'].iloc[0]):
+            conn.close()
+            return -1
+        num_sms = device_info['numMultiprocessors'].iloc[0]
+        if not num_sms:
+            conn.close()
+            return -1
+        kernels = pd.read_sql_query(
+            "SELECT gridX, gridY, gridZ FROM CUPTI_ACTIVITY_KIND_KERNEL", conn)
+        conn.close()
+        if len(kernels) == 0:
+            return -1
+        blocks = kernels['gridX'] * kernels['gridY'] * kernels['gridZ']
+        coverage = (blocks / num_sms).clip(upper=1.0) * 100
+        return float(coverage.mean())
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return -1
 
 
 def _load_json_events(path: str):

@@ -52,8 +52,44 @@ def _get_trace_types(directory: str) -> list:
 # ── NSYS backend ─────────────────────────────────────────────────────────────
 
 def _calc_nsys(directory: str) -> float:
-    from communication_fraction_group_9.communication_fraction_group_9 import calculate_metric
-    return calculate_metric(directory)
+    import sqlite3
+    import pandas as pd
+    from nsys_utils import find_sqlite_file
+
+    sqlite_path = find_sqlite_file(directory)
+    if sqlite_path is None:
+        print(f"Error: No .sqlite file found in {directory}", file=sys.stderr)
+        return -1
+    try:
+        conn = sqlite3.connect(sqlite_path)
+        strings = pd.read_sql_query("SELECT id, value FROM StringIds", conn)
+        string_map = dict(zip(strings['id'], strings['value']))
+        kernels = pd.read_sql_query("""
+            SELECT (end - start) as duration, demangledName, shortName
+            FROM CUPTI_ACTIVITY_KIND_KERNEL
+        """, conn)
+        conn.close()
+        if len(kernels) == 0:
+            return -1
+        kernels['kernel_name'] = (
+            kernels['shortName'].map(string_map)
+            .fillna(kernels['demangledName'].map(string_map))
+            .fillna('Unknown')
+        )
+        comm_patterns = (
+            'nccl|allreduce|allgather|reducescatter|broadcast|'
+            'send|recv|p2p|cross_device|communicate|all_reduce|all_gather'
+        )
+        is_comm = kernels['kernel_name'].str.lower().str.contains(
+            comm_patterns, na=False, regex=True)
+        total_time = kernels['duration'].sum()
+        comm_time = kernels[is_comm]['duration'].sum()
+        if total_time == 0:
+            return -1
+        return float((comm_time / total_time) * 100)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return -1
 
 
 # ── JSON backend ──────────────────────────────────────────────────────────────
@@ -93,11 +129,14 @@ def _load_json_events(path: str):
     return []
 
 
+_STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
+
+
 def _calc_json(directory: str) -> float:
     """
     Communication fraction from PyTorch-profiler JSON files.
-    For each rank file: comm_kernel_time / total_kernel_time.
-    Returns mean across all ranks.
+    For each rank file: computes per-step comm_kernel_time / total_kernel_time,
+    trims first/last steps, then averages across inner steps and ranks.
     """
     json_files = select_json_files(directory)
     if not json_files:
@@ -107,8 +146,19 @@ def _calc_json(directory: str) -> float:
     per_rank = []
     for path in json_files:
         events = _load_json_events(path)
-        total_dur = 0.0
-        comm_dur = 0.0
+
+        # Collect step boundaries
+        step_events = sorted(
+            [e for e in events
+             if isinstance(e, dict)
+             and e.get("ph") == "X"
+             and e.get("cat") == "user_annotation"
+             and _STEP_PATTERN.match(e.get("name", ""))],
+            key=lambda e: int(_STEP_PATTERN.match(e["name"]).group(1)),
+        )
+
+        # Collect kernel events
+        kernels = []
         for e in events:
             if (
                 isinstance(e, dict)
@@ -116,20 +166,49 @@ def _calc_json(directory: str) -> float:
                 and e.get("cat") == "kernel"
             ):
                 dur = e.get("dur")
-                if dur is None:
+                ts = e.get("ts")
+                if dur is None or ts is None:
                     continue
-                dur = float(dur)
-                total_dur += dur
-                if _is_comm(e.get("name", "")):
-                    comm_dur += dur
-        if total_dur > 0:
-            per_rank.append((comm_dur / total_dur) * 100.0)
+                kernels.append((float(ts), float(dur), _is_comm(e.get("name", ""))))
+
+        if not kernels:
+            continue
+
+        if step_events:
+            # Trim first and last steps
+            inner = step_events[1:-1] if len(step_events) > 2 else step_events
+
+            step_fractions = []
+            for se in inner:
+                s_start = float(se["ts"])
+                s_end = s_start + float(se.get("dur", 0))
+                total_dur = 0.0
+                comm_dur = 0.0
+                for ts, dur, is_c in kernels:
+                    # Kernel overlaps with step window
+                    if ts + dur > s_start and ts < s_end:
+                        total_dur += dur
+                        if is_c:
+                            comm_dur += dur
+                if total_dur > 0:
+                    step_fractions.append((comm_dur / total_dur) * 100.0)
+
+            if step_fractions:
+                import statistics
+                per_rank.append(statistics.mean(step_fractions))
+        else:
+            # No step events; compute over all kernels
+            total_dur = sum(d for _, d, _ in kernels)
+            comm_dur = sum(d for _, d, c in kernels if c)
+            if total_dur > 0:
+                per_rank.append((comm_dur / total_dur) * 100.0)
 
     if not per_rank:
         print(f"Error: No usable kernel data in {directory}", file=sys.stderr)
         return -1
 
-    return float(sum(per_rank) / len(per_rank))
+    import statistics
+    return float(statistics.mean(per_rank))
 
 
 # ── TPU profiler backend ──────────────────────────────────────────────────────

@@ -1415,7 +1415,13 @@ function metricPill(val, info) {
   } else {
     cls = val <= thr.mid ? 'mp-high' : val <= thr.high ? 'mp-mid' : 'mp-low';
   }
-  const display = val.toFixed(2) + (unit ? '\u202f' + unit : '');
+  let formatted;
+  if (val !== 0 && Math.abs(val) < 0.01) {
+    formatted = val.toExponential(3);
+  } else {
+    formatted = val.toFixed(2);
+  }
+  const display = formatted + (unit ? '\u202f' + unit : '');
   return `<span class="metric-pill ${cls}">${esc(display)}</span>`;
 }
 

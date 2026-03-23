@@ -156,7 +156,7 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
                 return None
             if val == -1.0:         # sentinel used by group_9 tools for "data unavailable"
                 return None
-            return round(val, 4)
+            return float(f"{val:.6g}")
         except ValueError:
             return raw              # return raw string for non-numeric metrics
 

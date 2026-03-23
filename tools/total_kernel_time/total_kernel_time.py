@@ -31,9 +31,15 @@ def _get_trace_types(directory: str) -> list:
 
 
 def _calc_nsys(directory: str) -> float:
-    from total_kernel_time_group_9.total_kernel_time_group_9 import compute_total_kernel_time
-    ms = compute_total_kernel_time(directory)
-    return ms / 1000.0 if ms is not None and ms >= 0 else ms   # ms → s
+    from nsys_utils import collect_nsys_traces, run_nsys_kernsum_csv, extract_csv_block, parse_kernsum_csv
+
+    traces = collect_nsys_traces(directory)
+    total_ns = 0
+    for pth in traces:
+        out = run_nsys_kernsum_csv(pth)
+        rows = parse_kernsum_csv(extract_csv_block(out))
+        total_ns += sum(r["total_ns"] for r in rows)
+    return total_ns / 1e9  # ns → s
 
 
 def _load_json_events(path: str):

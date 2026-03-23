@@ -32,8 +32,46 @@ def _get_trace_types(directory: str) -> list:
 
 
 def _calc_nsys(directory: str) -> float:
-    from load_imbalance_ratio_group_9.load_imbalance_ratio_group_9 import calculate_metric
-    return calculate_metric(directory)
+    import sqlite3
+    import pandas as pd
+    import numpy as np
+    from nsys_utils import find_sqlite_file
+
+    sqlite_path = find_sqlite_file(directory)
+    if sqlite_path is None:
+        print(f"Error: No .sqlite file found in {directory}", file=sys.stderr)
+        return -1
+    try:
+        conn = sqlite3.connect(sqlite_path)
+        kernels = pd.read_sql_query(
+            "SELECT deviceId, start, end FROM CUPTI_ACTIVITY_KIND_KERNEL", conn)
+        conn.close()
+        if len(kernels) == 0:
+            return -1
+        unique_gpus = kernels['deviceId'].unique()
+        if len(unique_gpus) <= 1:
+            return -1
+        gpu_times = []
+        for gpu_id in unique_gpus:
+            gk = kernels[kernels['deviceId'] == gpu_id]
+            intervals = sorted(zip(gk['start'].values, gk['end'].values))
+            merged_time = 0
+            cur_start, cur_end = intervals[0]
+            for s, e in intervals[1:]:
+                if s <= cur_end:
+                    cur_end = max(cur_end, e)
+                else:
+                    merged_time += cur_end - cur_start
+                    cur_start, cur_end = s, e
+            merged_time += cur_end - cur_start
+            gpu_times.append(merged_time)
+        gpu_times = np.array(gpu_times)
+        if gpu_times.min() == 0:
+            return -1
+        return float(gpu_times.max() / gpu_times.min())
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return -1
 
 
 def _load_json_events(path: str):

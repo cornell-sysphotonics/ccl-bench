@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-14T22:01:41.622103+00:00",
+  "generated_at": "2026-03-23T03:41:02.784844+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -408,10 +408,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0002,
+        "avg_step_time": 0.000221814,
         "mfu": 68.7375,
-        "communication_fraction": 0.0,
-        "total_communication_time": 0.0
+        "communication_fraction": 0.4072,
+        "total_communication_time": 1.4996
       }
     },
     {
@@ -468,10 +468,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0002,
+        "avg_step_time": 0.00017781,
         "mfu": 41.6562,
-        "communication_fraction": 16.5455,
-        "total_communication_time": 0.0016
+        "communication_fraction": 0.3835,
+        "total_communication_time": 0.0726
       }
     },
     {
@@ -528,10 +528,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0001,
+        "avg_step_time": 8.5051e-05,
         "mfu": 33.4094,
-        "communication_fraction": 19.3455,
-        "total_communication_time": 0.0013
+        "communication_fraction": 0.3638,
+        "total_communication_time": 0.1125
       }
     },
     {
@@ -588,10 +588,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0001,
+        "avg_step_time": 9.76773e-05,
         "mfu": 20.515,
-        "communication_fraction": 26.9272,
-        "total_communication_time": 0.0013
+        "communication_fraction": 0.4436,
+        "total_communication_time": 0.2392
       }
     },
     {
@@ -648,10 +648,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0002,
+        "avg_step_time": 0.000194447,
         "mfu": 64.0365,
-        "communication_fraction": 0.0,
-        "total_communication_time": 0.0
+        "communication_fraction": 0.2771,
+        "total_communication_time": 0.427
       }
     },
     {
@@ -708,10 +708,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0001,
+        "avg_step_time": 0.000145632,
         "mfu": 34.7506,
-        "communication_fraction": 15.0425,
-        "total_communication_time": 0.0013
+        "communication_fraction": 0.3508,
+        "total_communication_time": 0.0523
       }
     },
     {
@@ -768,10 +768,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0001,
+        "avg_step_time": 9.73176e-05,
         "mfu": 29.1951,
-        "communication_fraction": 18.4459,
-        "total_communication_time": 0.0008
+        "communication_fraction": 0.3285,
+        "total_communication_time": 0.0759
       }
     },
     {
@@ -828,10 +828,10 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.0001,
+        "avg_step_time": 7.54496e-05,
         "mfu": 17.1789,
-        "communication_fraction": 25.5013,
-        "total_communication_time": 0.0008
+        "communication_fraction": 0.4016,
+        "total_communication_time": 0.1717
       }
     },
     {
@@ -885,14 +885,14 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 4.4255,
+        "avg_step_time": 4.42554,
         "mfu": 7.25,
         "mean_sm_coverage": 14.2438,
         "dominant_kernel_concentration": 39.8263,
         "moe_fraction": 0.0096,
         "total_kernel_time": 29478.6422,
-        "communication_fraction": 90.1896,
-        "total_communication_time": null
+        "communication_fraction": 0.8581,
+        "total_communication_time": 3.7984
       }
     },
     {
@@ -952,8 +952,8 @@
         "dominant_kernel_concentration": 46.6868,
         "moe_fraction": 0.0057,
         "total_kernel_time": 123499.7756,
-        "communication_fraction": 95.0665,
-        "total_communication_time": 12.2136
+        "communication_fraction": 1.1042,
+        "total_communication_time": 12.0873
       }
     },
     {
@@ -1013,8 +1013,8 @@
         "dominant_kernel_concentration": 45.2445,
         "moe_fraction": 0.0033,
         "total_kernel_time": 135746.8587,
-        "communication_fraction": 95.5984,
-        "total_communication_time": 12.7151
+        "communication_fraction": 1.3491,
+        "total_communication_time": 12.9735
       }
     },
     {
@@ -1068,14 +1068,14 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 3.6319,
+        "avg_step_time": 3.63191,
         "mfu": 8.8342,
         "mean_sm_coverage": 14.4299,
         "dominant_kernel_concentration": 38.1559,
         "moe_fraction": 0.0168,
         "total_kernel_time": 32712.4481,
-        "communication_fraction": 89.6675,
-        "total_communication_time": 3.1853
+        "communication_fraction": 0.9595,
+        "total_communication_time": 2.8911
       }
     },
     {
@@ -1129,14 +1129,14 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 3.7939,
+        "avg_step_time": 3.79391,
         "mfu": 8.5179,
         "mean_sm_coverage": 12.5278,
         "dominant_kernel_concentration": 56.4729,
         "moe_fraction": 0.0198,
         "total_kernel_time": 63.8874,
-        "communication_fraction": 90.6411,
-        "total_communication_time": 3.275
+        "communication_fraction": 0.9628,
+        "total_communication_time": 3.3257
       }
     },
     {
@@ -1190,14 +1190,14 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 9.6638,
+        "avg_step_time": 9.66378,
         "mfu": 3.3441,
         "mean_sm_coverage": 9.3679,
         "dominant_kernel_concentration": 40.0632,
         "moe_fraction": 0.0069,
         "total_kernel_time": 176.9813,
-        "communication_fraction": 93.8724,
-        "total_communication_time": 9.1832
+        "communication_fraction": 0.9933,
+        "total_communication_time": 9.2848
       }
     },
     {
@@ -1255,8 +1255,8 @@
         "dominant_kernel_concentration": 73.9092,
         "moe_fraction": 0.0064,
         "total_kernel_time": 199.6035,
-        "communication_fraction": 98.3598,
-        "total_communication_time": 11.5044
+        "communication_fraction": 1.0582,
+        "total_communication_time": 11.498
       }
     },
     {
@@ -1314,8 +1314,8 @@
         "dominant_kernel_concentration": 55.6554,
         "moe_fraction": 0.0054,
         "total_kernel_time": 402.9941,
-        "communication_fraction": 96.7923,
-        "total_communication_time": 20.0937
+        "communication_fraction": 1.1603,
+        "total_communication_time": 20.0744
       }
     },
     {
@@ -1379,8 +1379,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 3.8319,
-        "communication_fraction": 75.6585,
-        "total_communication_time": 84.6033,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1448,8 +1448,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 9.7623,
-        "communication_fraction": 87.6409,
-        "total_communication_time": 230.2246,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1517,8 +1517,8 @@
         "kernel_compute_time_group_6": null,
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 17.9366,
-        "communication_fraction": 84.6295,
-        "total_communication_time": 178.2819,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1586,8 +1586,8 @@
         "kernel_compute_time_group_6": null,
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 8.8291,
-        "communication_fraction": 88.9071,
-        "total_communication_time": 259.943,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1655,8 +1655,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 15.4846,
-        "communication_fraction": 84.0106,
-        "total_communication_time": 162.2678,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1724,8 +1724,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 20.3366,
-        "communication_fraction": 66.7988,
-        "total_communication_time": 19.0716,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1793,8 +1793,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 5.4169,
-        "communication_fraction": 87.4407,
-        "total_communication_time": 227.7985,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1862,8 +1862,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 18.2433,
-        "communication_fraction": 68.7353,
-        "total_communication_time": 11.1467,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1931,8 +1931,8 @@
         "kernel_compute_time_group_6": "n/a",
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 13.2594,
-        "communication_fraction": 11.9033,
-        "total_communication_time": 6.6318,
+        "communication_fraction": null,
+        "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
@@ -1992,13 +1992,13 @@
       },
       "metrics": {
         "avg_step_time": 10.1309,
-        "mfu": null,
+        "mfu": 6.0445,
         "mean_sm_coverage": 19.1184,
         "dominant_kernel_concentration": 50.2328,
         "moe_fraction": 0.0,
         "total_kernel_time": 77.1522,
-        "communication_fraction": 83.9077,
-        "total_communication_time": 8.0926
+        "communication_fraction": 0.793495,
+        "total_communication_time": 8.09265
       }
     },
     {
@@ -2054,13 +2054,13 @@
       },
       "metrics": {
         "avg_step_time": 10.033,
-        "mfu": null,
+        "mfu": 6.1035,
         "mean_sm_coverage": 26.5361,
         "dominant_kernel_concentration": 36.9198,
         "moe_fraction": 0.0,
         "total_kernel_time": 70.7267,
-        "communication_fraction": 78.3779,
-        "total_communication_time": 6.9421
+        "communication_fraction": 0.804577,
+        "total_communication_time": 6.94209
       }
     },
     {
@@ -2113,7 +2113,7 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.8784,
+        "avg_step_time": 0.87836,
         "mfu": 50.8405
       }
     },
@@ -2167,7 +2167,7 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.3873,
+        "avg_step_time": 0.387289,
         "mfu": 62.8425
       }
     },
@@ -2221,7 +2221,7 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.7191,
+        "avg_step_time": 0.719065,
         "mfu": 45.1777
       }
     },
@@ -2275,7 +2275,7 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.3269,
+        "avg_step_time": 0.326908,
         "mfu": 44.5641
       }
     },
@@ -2329,7 +2329,7 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.7811,
+        "avg_step_time": 0.781121,
         "mfu": 55.7192
       }
     },
@@ -2383,7 +2383,7 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 0.5321,
+        "avg_step_time": 0.532106,
         "mfu": 54.9958
       }
     }

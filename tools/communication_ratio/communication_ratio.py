@@ -55,8 +55,31 @@ def _get_trace_types(directory: str) -> list:
 # ── NSYS backend ─────────────────────────────────────────────────────────────
 
 def _calc_nsys(directory: str) -> float:
-    from communication_ratio_group_9.communication_ratio_group_9 import compute_comm_ratio
-    return compute_comm_ratio(directory)
+    from nsys_utils import collect_nsys_traces, run_nsys_kernsum_csv, extract_csv_block, parse_kernsum_csv
+
+    _NSYS_COMM_RE = [
+        re.compile(r"^nccl", re.IGNORECASE),
+        re.compile(r"sendrecv", re.IGNORECASE),
+        re.compile(r"cross[_\-]?device", re.IGNORECASE),
+        re.compile(r"allgather|reducescatter|allreduce|broadcast", re.IGNORECASE),
+    ]
+
+    def _is_nsys_comm(name):
+        return any(r.search(name) for r in _NSYS_COMM_RE)
+
+    paths = collect_nsys_traces(directory)
+    total_ns_sum = 0
+    comm_ns_sum = 0
+    for pth in paths:
+        out = run_nsys_kernsum_csv(pth)
+        rows = parse_kernsum_csv(extract_csv_block(out))
+        for r in rows:
+            total_ns_sum += r["total_ns"]
+            if _is_nsys_comm(r["name"]):
+                comm_ns_sum += r["total_ns"]
+    if total_ns_sum == 0:
+        return -1
+    return float((comm_ns_sum / total_ns_sum) * 100)
 
 
 # ── JSON backend ──────────────────────────────────────────────────────────────

@@ -37,8 +37,38 @@ def _get_trace_types(directory: str) -> list:
 # ── NSYS backend ─────────────────────────────────────────────────────────────
 
 def _calc_nsys(directory: str) -> float:
-    from aggregate_gpu_utilization_group_9.aggregate_gpu_utilization_group_9 import calculate_metric
-    return calculate_metric(directory)
+    import sqlite3
+    import pandas as pd
+    from nsys_utils import find_sqlite_file
+
+    sqlite_path = find_sqlite_file(directory)
+    if sqlite_path is None:
+        print(f"Error: No .sqlite file found in {directory}", file=sys.stderr)
+        return -1
+    try:
+        conn = sqlite3.connect(sqlite_path)
+        kernels = pd.read_sql_query(
+            "SELECT start, end FROM CUPTI_ACTIVITY_KIND_KERNEL", conn)
+        conn.close()
+        if len(kernels) == 0:
+            return -1
+        intervals = sorted(zip(kernels['start'].values, kernels['end'].values))
+        merged_time = 0
+        cur_start, cur_end = intervals[0]
+        for s, e in intervals[1:]:
+            if s <= cur_end:
+                cur_end = max(cur_end, e)
+            else:
+                merged_time += cur_end - cur_start
+                cur_start, cur_end = s, e
+        merged_time += cur_end - cur_start
+        trace_duration = kernels['end'].max() - kernels['start'].min()
+        if trace_duration == 0:
+            return -1
+        return float((merged_time / trace_duration) * 100)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return -1
 
 
 # ── JSON backend ──────────────────────────────────────────────────────────────

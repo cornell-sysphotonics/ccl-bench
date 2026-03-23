@@ -100,8 +100,10 @@ if __name__ == "__main__":
     trace_directory = args.trace
     metric_name = args.metric
     tools_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Find trace file 
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+
+    # Find trace file
     try:
         trace_json_path = find_trace_file(trace_directory)
     except Exception as e:
