@@ -60,8 +60,7 @@ Model-executor:
 
 metric_source:
   traces:
-    - tpu_profiler  # TPU Profiler traces (.xplane.pb, .trace.json.gz)
-    - xla_trace  # XLA execution traces
+    - json_tpu
   metrics_specific_trace:
     - communication_trace  # Communication operation traces
     - kernel_trace  # Kernel execution traces

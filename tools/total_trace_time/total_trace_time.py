@@ -7,7 +7,7 @@ Returns: Float >= 0, or -1 if data unavailable
 
 Supported trace types (dispatched via workload YAML):
   json        — reads PyTorch-profiler JSON files (rank0_trace.json, …)
-  tpu_profiler — reads TPU profiler Chrome-trace JSON
+  json_tpu — reads TPU profiler Chrome-trace JSON
   nsys        — reads NSYS SQLite file
 """
 
@@ -189,7 +189,7 @@ def metric_cal(directory: str) -> float:
         return _calc_nsys(directory)
     elif "json" in trace_types:
         return _calc_json(directory)
-    elif "tpu_profiler" in trace_types:
+    elif "json_tpu" in trace_types:
         return _calc_tpu(directory)
     else:
         print(

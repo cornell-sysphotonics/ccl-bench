@@ -5,7 +5,7 @@ Unit: seconds
 Returns: Float >= 0, or -1 if data unavailable
 
 Supported trace types (dispatched via workload YAML metric_source.traces):
-  xla_trace — reads TPU profiler Chrome-trace JSON ($core.py:331 step events)
+  json_tpu — reads TPU profiler Chrome-trace JSON ($core.py:331 step events)
   json      — reads PyTorch-profiler kineto JSON (ProfilerStep#N events)
 """
 
@@ -178,7 +178,7 @@ def metric_cal(directory: str) -> float:
     yaml_data   = _load_yaml(directory)
     trace_types = _get_trace_types(yaml_data)
 
-    if "xla_trace" in trace_types:
+    if "json_tpu" in trace_types:
         return _calc_xla(directory, yaml_data)
 
     if "json" in trace_types:

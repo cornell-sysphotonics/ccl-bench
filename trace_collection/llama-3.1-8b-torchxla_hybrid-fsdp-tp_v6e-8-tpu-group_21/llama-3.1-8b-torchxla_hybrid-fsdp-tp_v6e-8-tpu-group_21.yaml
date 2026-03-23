@@ -51,7 +51,7 @@ Model-executor:
 
 metric_source:
   traces:
-    - xla_trace
+    - json_tpu
   metrics_specific_trace:
     - execution_trace
     - communication_trace

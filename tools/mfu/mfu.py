@@ -214,7 +214,7 @@ def metric_cal(directory: str) -> float:
     yaml_data   = _load_yaml(directory)
     trace_types = _get_trace_types(yaml_data)
 
-    if "xla_trace" in trace_types:
+    if "json_tpu" in trace_types:
         return _calc_xla(directory, yaml_data)
 
     if "json" in trace_types:

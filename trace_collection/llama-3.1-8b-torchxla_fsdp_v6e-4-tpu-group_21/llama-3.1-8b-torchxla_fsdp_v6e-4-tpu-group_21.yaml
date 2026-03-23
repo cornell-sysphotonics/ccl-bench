@@ -53,7 +53,7 @@ Model-executor:
 
 metric_source:
   traces:
-    - xla_trace # trace type, e.g., "nsys", "torch_et", "kineto_trace".
+    - json_tpu
   metrics_specific_trace:
     - execution_trace # metric specific trace type, e.g., "memory_trace", "accuracy_trace".
     - communication_trace

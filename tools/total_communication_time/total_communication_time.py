@@ -7,7 +7,7 @@ Returns: Float >= 0, or -1 if data unavailable
 Supported trace types (dispatched via workload YAML):
   nsys        — delegates to total_communication_time_group_9 (nsys stats kernsum)
   json        — reads PyTorch-profiler JSON files (ProfilerStep boundaries)
-  tpu_profiler — reads TPU profiler Chrome-trace JSON (XLA collective ops)
+  json_tpu — reads TPU profiler Chrome-trace JSON (XLA collective ops)
 """
 
 import json
@@ -249,7 +249,7 @@ def metric_cal(directory: str) -> float:
         return _calc_nsys(directory)
     elif "json" in trace_types:
         return _calc_json(directory)
-    elif "tpu_profiler" in trace_types:
+    elif "json_tpu" in trace_types:
         return _calc_tpu(directory)
     else:
         print(
