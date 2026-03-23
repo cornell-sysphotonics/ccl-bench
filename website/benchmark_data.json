@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T03:46:04.320420+00:00",
+  "generated_at": "2026-03-23T03:58:22.376910+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -71,7 +71,7 @@
         "high": 50,
         "mid": 25
       },
-      "required_update": false
+      "required_update": true
     },
     "ttft_group_6": {
       "label": "TTFT (ms)",
@@ -393,9 +393,9 @@
       },
       "metrics": {
         "avg_step_time": 0.000221814,
-        "mfu": 68.7375,
         "communication_fraction": 0.4072,
-        "total_communication_time": 1.4996
+        "total_communication_time": 1.4996,
+        "mfu": 8.5922
       }
     },
     {
@@ -453,9 +453,9 @@
       },
       "metrics": {
         "avg_step_time": 0.00017781,
-        "mfu": 41.6562,
         "communication_fraction": 0.3835,
-        "total_communication_time": 0.0726
+        "total_communication_time": 0.0726,
+        "mfu": 10.4141
       }
     },
     {
@@ -513,9 +513,9 @@
       },
       "metrics": {
         "avg_step_time": 8.5051e-05,
-        "mfu": 33.4094,
         "communication_fraction": 0.3638,
-        "total_communication_time": 0.1125
+        "total_communication_time": 0.1125,
+        "mfu": 16.7047
       }
     },
     {
@@ -573,9 +573,9 @@
       },
       "metrics": {
         "avg_step_time": 9.76773e-05,
-        "mfu": 20.515,
         "communication_fraction": 0.4436,
-        "total_communication_time": 0.2392
+        "total_communication_time": 0.2392,
+        "mfu": 20.515
       }
     },
     {
@@ -633,9 +633,9 @@
       },
       "metrics": {
         "avg_step_time": 0.000194447,
-        "mfu": 64.0365,
         "communication_fraction": 0.2771,
-        "total_communication_time": 0.427
+        "total_communication_time": 0.427,
+        "mfu": 8.0046
       }
     },
     {
@@ -693,9 +693,9 @@
       },
       "metrics": {
         "avg_step_time": 0.000145632,
-        "mfu": 34.7506,
         "communication_fraction": 0.3508,
-        "total_communication_time": 0.0523
+        "total_communication_time": 0.0523,
+        "mfu": 8.6877
       }
     },
     {
@@ -753,9 +753,9 @@
       },
       "metrics": {
         "avg_step_time": 9.73176e-05,
-        "mfu": 29.1951,
         "communication_fraction": 0.3285,
-        "total_communication_time": 0.0759
+        "total_communication_time": 0.0759,
+        "mfu": 14.5975
       }
     },
     {
@@ -813,9 +813,9 @@
       },
       "metrics": {
         "avg_step_time": 7.54496e-05,
-        "mfu": 17.1789,
         "communication_fraction": 0.4016,
-        "total_communication_time": 0.1717
+        "total_communication_time": 0.1717,
+        "mfu": 17.1789
       }
     },
     {
@@ -870,13 +870,13 @@
       },
       "metrics": {
         "avg_step_time": 4.42554,
-        "mfu": 7.25,
         "mean_sm_coverage": 14.2438,
         "dominant_kernel_concentration": 39.8263,
         "moe_fraction": 0.0096,
         "total_kernel_time": 29478.6422,
         "communication_fraction": 0.8581,
-        "total_communication_time": 3.7984
+        "total_communication_time": 3.7984,
+        "mfu": 7.25
       }
     },
     {
@@ -931,13 +931,13 @@
       },
       "metrics": {
         "avg_step_time": 12.4859,
-        "mfu": 2.5697,
         "mean_sm_coverage": 8.7742,
         "dominant_kernel_concentration": 46.6868,
         "moe_fraction": 0.0057,
         "total_kernel_time": 123499.7756,
         "communication_fraction": 1.1042,
-        "total_communication_time": 12.0873
+        "total_communication_time": 12.0873,
+        "mfu": 2.5697
       }
     },
     {
@@ -992,13 +992,13 @@
       },
       "metrics": {
         "avg_step_time": 13.4448,
-        "mfu": 2.3864,
         "mean_sm_coverage": 7.9576,
         "dominant_kernel_concentration": 45.2445,
         "moe_fraction": 0.0033,
         "total_kernel_time": 135746.8587,
         "communication_fraction": 1.3491,
-        "total_communication_time": 12.9735
+        "total_communication_time": 12.9735,
+        "mfu": 2.3864
       }
     },
     {
@@ -1053,13 +1053,13 @@
       },
       "metrics": {
         "avg_step_time": 3.63191,
-        "mfu": 8.8342,
         "mean_sm_coverage": 14.4299,
         "dominant_kernel_concentration": 38.1559,
         "moe_fraction": 0.0168,
         "total_kernel_time": 32712.4481,
         "communication_fraction": 0.9595,
-        "total_communication_time": 2.8911
+        "total_communication_time": 2.8911,
+        "mfu": 8.8342
       }
     },
     {
@@ -1114,13 +1114,13 @@
       },
       "metrics": {
         "avg_step_time": 3.79391,
-        "mfu": 8.5179,
         "mean_sm_coverage": 12.5278,
         "dominant_kernel_concentration": 56.4729,
         "moe_fraction": 0.0198,
         "total_kernel_time": 63.8874,
         "communication_fraction": 0.9628,
-        "total_communication_time": 3.3257
+        "total_communication_time": 3.3257,
+        "mfu": 8.5179
       }
     },
     {
@@ -1175,13 +1175,13 @@
       },
       "metrics": {
         "avg_step_time": 9.66378,
-        "mfu": 3.3441,
         "mean_sm_coverage": 9.3679,
         "dominant_kernel_concentration": 40.0632,
         "moe_fraction": 0.0069,
         "total_kernel_time": 176.9813,
         "communication_fraction": 0.9933,
-        "total_communication_time": 9.2848
+        "total_communication_time": 9.2848,
+        "mfu": 3.3441
       }
     },
     {
@@ -1234,13 +1234,13 @@
       },
       "metrics": {
         "avg_step_time": 11.7428,
-        "mfu": 2.752,
         "mean_sm_coverage": 6.3979,
         "dominant_kernel_concentration": 73.9092,
         "moe_fraction": 0.0064,
         "total_kernel_time": 199.6035,
         "communication_fraction": 1.0582,
-        "total_communication_time": 11.498
+        "total_communication_time": 11.498,
+        "mfu": 2.752
       }
     },
     {
@@ -1293,13 +1293,13 @@
       },
       "metrics": {
         "avg_step_time": 20.6762,
-        "mfu": 5.6485,
         "mean_sm_coverage": 6.947,
         "dominant_kernel_concentration": 55.6554,
         "moe_fraction": 0.0054,
         "total_kernel_time": 402.9941,
         "communication_fraction": 1.1603,
-        "total_communication_time": 20.0744
+        "total_communication_time": 20.0744,
+        "mfu": 5.6485
       }
     },
     {
@@ -1967,13 +1967,13 @@
       },
       "metrics": {
         "avg_step_time": 10.1309,
-        "mfu": 6.0445,
         "mean_sm_coverage": 19.1184,
         "dominant_kernel_concentration": 50.2328,
         "moe_fraction": 0.0,
         "total_kernel_time": 77.1522,
         "communication_fraction": 0.793495,
-        "total_communication_time": 8.09265
+        "total_communication_time": 8.09265,
+        "mfu": 6.0445
       }
     },
     {
@@ -2029,13 +2029,13 @@
       },
       "metrics": {
         "avg_step_time": 10.033,
-        "mfu": 6.1035,
         "mean_sm_coverage": 26.5361,
         "dominant_kernel_concentration": 36.9198,
         "moe_fraction": 0.0,
         "total_kernel_time": 70.7267,
         "communication_fraction": 0.804577,
-        "total_communication_time": 6.94209
+        "total_communication_time": 6.94209,
+        "mfu": 6.1035
       }
     },
     {

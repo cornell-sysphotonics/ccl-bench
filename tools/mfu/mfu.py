@@ -72,39 +72,35 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
 
     The XLA profiler records model_flops summed across all chips in the cluster,
     so the denominator must be peak_per_chip * total_chip_count (not just tp).
-
-    Falls back to mfu_group_4 directory-name parsing when YAML lacks hw info.
     """
     hw_cfg    = yaml_data.get("workload", {}).get("hardware", {}).get("xpu_spec", {})
     hw_model  = (hw_cfg.get("model") or "").lower()
     total_count = hw_cfg.get("total_count")
 
     peak_per_chip = _HARDWARE_PEAK_TFLOPS.get(hw_model)
+    if peak_per_chip is None:
+        print(f"[mfu/xla] Unknown hardware_model '{hw_model}'; add to _HARDWARE_PEAK_TFLOPS.", file=sys.stderr)
+        return -1.0
+    if not total_count:
+        print(f"[mfu/xla] Missing xpu_spec.total_count in YAML for {directory}", file=sys.stderr)
+        return -1.0
 
-    # If we have both pieces from the YAML, compute directly from the trace.
-    if peak_per_chip is not None and total_count:
-        import sys as _sys
-        _sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        from mfu_group_4.common import find_trace_files, extract_metrics_from_trace
+    from trace_utils import find_trace_files, extract_metrics_from_trace
 
-        traces = find_trace_files(directory)
-        if not traces:
-            print(f"[mfu/xla] No trace files found in {directory}", file=sys.stderr)
-            return -1.0
+    traces = find_trace_files(directory)
+    if not traces:
+        print(f"[mfu/xla] No trace files found in {directory}", file=sys.stderr)
+        return -1.0
 
-        _, trace_path = traces[0]
-        metrics = extract_metrics_from_trace(trace_path)
-        active_tflops = metrics.get("active_tflops")
-        if active_tflops is None or active_tflops != active_tflops:  # NaN check
-            print(f"[mfu/xla] active_tflops unavailable for {directory}", file=sys.stderr)
-            return -1.0
+    _, trace_path = traces[0]
+    metrics = extract_metrics_from_trace(trace_path)
+    active_tflops = metrics.get("active_tflops")
+    if active_tflops is None or active_tflops != active_tflops:  # NaN check
+        print(f"[mfu/xla] active_tflops unavailable for {directory}", file=sys.stderr)
+        return -1.0
 
-        peak_total = peak_per_chip * total_count
-        return round((active_tflops / peak_total) * 100.0, 4)
-
-    # Fallback: delegate to mfu_group_4 (uses directory-name TP parsing).
-    from mfu_group_4.mfu import mfu as mfu_group4
-    return mfu_group4(directory)
+    peak_total = peak_per_chip * total_count
+    return round((active_tflops / peak_total) * 100.0, 4)
 
 
 # ── GPU / JSON backend ────────────────────────────────────────────────────────

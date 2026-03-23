@@ -220,7 +220,7 @@
         "high": 50,
         "mid": 25
       },
-      "required_update": false
+      "required_update": true
     },
     "ttft_group_6": {
       "label": "TTFT (ms)",

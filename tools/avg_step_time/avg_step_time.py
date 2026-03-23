@@ -115,7 +115,7 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
         print(f"[avg_step_time/xla] No step events and no iteration count in YAML", file=sys.stderr)
         return -1.0
 
-    from mfu_group_4.common import find_trace_files, extract_metrics_from_trace
+    from trace_utils import find_trace_files, extract_metrics_from_trace
     traces = find_trace_files(directory)
     if not traces:
         return -1.0
