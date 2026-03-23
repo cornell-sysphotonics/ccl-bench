@@ -276,9 +276,6 @@ if __name__ == "__main__":
     elif metric_name == "average_memory_bandwidth":
         from average_memory_bandwidth_group_9.average_memory_bandwidth_group_9 import calculate_metric
         metric_cal_func = calculate_metric
-    elif metric_name == "compute_bound_fraction":
-        from compute_bound_fraction_group_9.compute_bound_fraction_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
     elif metric_name == "memory_bound_fraction":
         from memory_bound_fraction_group_9.memory_bound_fraction_group_9 import calculate_metric
         metric_cal_func = calculate_metric

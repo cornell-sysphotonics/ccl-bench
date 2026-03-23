@@ -299,21 +299,6 @@
       },
       "required_update": false
     },
-    "compute_bound_fraction": {
-      "label": "Compute Bound (%)",
-      "description": "Percentage of time in compute-bound kernels (SM coverage > 70%, duration > 10us)",
-      "higher_is_better": true,
-      "unit": "%",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys"
-      ],
-      "thresholds": {
-        "high": 60,
-        "mid": 30
-      },
-      "required_update": false
-    },
     "memory_bound_fraction": {
       "label": "Mem Bound (%)",
       "description": "Fraction of kernels classified as memory-bound (SM coverage < 50%)",

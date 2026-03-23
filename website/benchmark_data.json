@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T03:41:02.784844+00:00",
+  "generated_at": "2026-03-23T03:46:04.320420+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -8,7 +8,6 @@
     "bandwidth_utilization_alltoall_group_6",
     "bandwidth_utilization_peertopeer_group_6",
     "communication_fraction",
-    "compute_bound_fraction",
     "dominant_kernel_concentration",
     "kernel_compute_time_group_6",
     "mean_sm_coverage",
@@ -148,21 +147,6 @@
       "thresholds": {
         "high": 70,
         "mid": 40
-      },
-      "required_update": false
-    },
-    "compute_bound_fraction": {
-      "label": "Compute Bound (%)",
-      "description": "Percentage of time in compute-bound kernels (SM coverage > 70%, duration > 10us)",
-      "higher_is_better": true,
-      "unit": "%",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys"
-      ],
-      "thresholds": {
-        "high": 60,
-        "mid": 30
       },
       "required_update": false
     },
@@ -1372,7 +1356,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": 4.4733,
         "memory_bound_fraction": null,
         "moe_fraction": 4.9012,
         "total_kernel_time": 223645.316,
@@ -1441,7 +1424,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": 5.2094,
         "memory_bound_fraction": null,
         "moe_fraction": 3.2006,
         "total_kernel_time": 525381.7773,
@@ -1510,7 +1492,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": 6.3438,
         "memory_bound_fraction": null,
         "moe_fraction": 4.3843,
         "total_kernel_time": 421323.2136,
@@ -1579,7 +1560,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": 4.4822,
         "memory_bound_fraction": null,
         "moe_fraction": 3.1346,
         "total_kernel_time": 584752.1294,
@@ -1648,7 +1628,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": 6.9219,
         "memory_bound_fraction": null,
         "moe_fraction": 4.256,
         "total_kernel_time": 386303.1358,
@@ -1717,7 +1696,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": null,
         "memory_bound_fraction": null,
         "moe_fraction": 6.3175,
         "total_kernel_time": 57101.5979,
@@ -1786,7 +1764,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": 5.2878,
         "memory_bound_fraction": null,
         "moe_fraction": 3.2496,
         "total_kernel_time": 521035.2969,
@@ -1855,7 +1832,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": null,
         "memory_bound_fraction": null,
         "moe_fraction": 11.308,
         "total_kernel_time": 32433.5773,
@@ -1924,7 +1900,6 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": null,
-        "compute_bound_fraction": null,
         "memory_bound_fraction": null,
         "moe_fraction": 45.8103,
         "total_kernel_time": 111427.6593,
