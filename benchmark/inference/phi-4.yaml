@@ -1,0 +1,27 @@
+version: 1
+description: Phi-4 14B inference workload.
+hf_url: https://huggingface.co/microsoft/phi-4
+trace_url: ''
+contributor: ''
+contact: ''
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: model_fwd
+    model_family: phi-4
+    precision: bf16
+    epochs: 1
+    iteration: 100
+    model_arch:
+      num_params: 14659507200
+      num_layers: 40
+      num_heads: 40
+      num_kv_heads: 10
+      head_dim: 128
+      hidden_size: 5120
+      intermediate_size: 17920
+      vocab_size: 100352
+  data:
+    seq_len: 4096
+    dataset: sharegpt

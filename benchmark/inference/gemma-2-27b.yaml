@@ -1,0 +1,27 @@
+version: 1
+description: Gemma-2-27B inference workload.
+hf_url: https://huggingface.co/google/gemma-2-27b
+trace_url: ''
+contributor: ''
+contact: ''
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: model_fwd
+    model_family: gemma-2
+    precision: bf16
+    epochs: 1
+    iteration: 100
+    model_arch:
+      num_params: 27227128832
+      num_layers: 46
+      num_heads: 32
+      num_kv_heads: 16
+      head_dim: 128
+      hidden_size: 4608
+      intermediate_size: 36864
+      vocab_size: 256128
+  data:
+    seq_len: 4096
+    dataset: sharegpt
