@@ -89,6 +89,7 @@ if __name__ == "__main__":
     trace_directory = None
     metric_name = None
     metric_cal_func = None
+    trace_json_path = None
 
     parser = argparse.ArgumentParser(description="Process trace directory and metric name.")
     parser.add_argument("--trace", type=str, required=True, help="Path to the trace directory (or CSV results directory)")
@@ -103,12 +104,33 @@ if __name__ == "__main__":
     if tools_dir not in sys.path:
         sys.path.insert(0, tools_dir)
 
-    # Find trace file
-    try:
-        trace_json_path = find_trace_file(trace_directory)
-    except Exception as e:
-        print(f"Error finding trace file in {trace_directory}: {e}", file=sys.stderr)
-        raise
+    file_backed_metrics = {
+        "wall_time_s",
+        "total_compute_time_s",
+        "total_comm_time_s",
+        "avg_comm_kernel_time_s",
+        "allreduce_comm_time_s",
+        "compute_utilization_proxy",
+        "communication_fraction",
+        "num_comm_kernels",
+        "avg_comm_bandwidth_GBps",
+        "hockney_alpha_s",
+        "hockney_beta_s_per_byte",
+        "hockney_inverse_beta_Bps",
+        "achieved_flops_from_trace_json",
+        "total_model_flops_from_args",
+        "throughput",
+        "estimated_throughput_tokens_per_s",
+        "flops_per_token_used",
+        "estimated_total_tokens",
+    }
+
+    if metric_name in file_backed_metrics:
+        try:
+            trace_json_path = find_trace_file(trace_directory)
+        except Exception as e:
+            print(f"Error finding trace file in {trace_directory}: {e}", file=sys.stderr)
+            raise
     
     if metric_name == "wall_time_s":
         wall_time_module = load_metric_module(os.path.join(tools_dir, "wall_time-group-21", "wall_time.py"), "wall_time")
@@ -271,14 +293,14 @@ if __name__ == "__main__":
         from mean_sm_coverage.mean_sm_coverage import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "memory_transfer_overhead":
-        from memory_transfer_overhead_group_9.memory_transfer_overhead_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from memory_transfer_overhead_group_9.memory_transfer_overhead_group_9 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "average_memory_bandwidth":
-        from average_memory_bandwidth_group_9.average_memory_bandwidth_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from average_memory_bandwidth_group_9.average_memory_bandwidth_group_9 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "memory_bound_fraction":
-        from memory_bound_fraction_group_9.memory_bound_fraction_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from memory_bound_fraction_group_9.memory_bound_fraction_group_9 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "load_imbalance_ratio":
         from load_imbalance_ratio.load_imbalance_ratio import metric_cal
         metric_cal_func = metric_cal
