@@ -82,6 +82,36 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection_backlog/llama-3.1-8b-torchtitan-tp_4-perlmutter_group_5",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen-3-8b-torchtitan-dp_4-perlmutter-group_5",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_64_8192]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_64_16384]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_16384]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_8192]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false
