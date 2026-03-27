@@ -82,6 +82,11 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_8192]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false

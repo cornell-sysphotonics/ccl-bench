@@ -5,7 +5,7 @@ hf_url: https://huggingface.co/mistralai/Mixtral-8x7B-v0.1/tree/main
 trace_url: ''
 workload:
   model:
-    phase: inference
+    phase: serving
     moe: true
     granularity: model_fwd
     model_family: mixtral
@@ -14,6 +14,8 @@ workload:
     max-model-len: 4096
     max-num-seqs: 32
     max-num-batched-tokens: 8192
+    batch_size: 32
+    seq_len: 4096
     dataset: ShareGPT_V3_unfiltered_cleaned_split
   hardware:
     network_topo:
@@ -51,5 +53,5 @@ Model-executor:
     top_k: 2
 metric_source:
   traces:
-  - torch_et
+  - nsys
   metrics_specific_trace: ''
