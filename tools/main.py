@@ -103,12 +103,11 @@ if __name__ == "__main__":
     if tools_dir not in sys.path:
         sys.path.insert(0, tools_dir)
 
-    # Find trace file
+    # Find trace file (trace_json_path is only needed for group 21's metrics)
     try:
         trace_json_path = find_trace_file(trace_directory)
     except Exception as e:
-        print(f"Error finding trace file in {trace_directory}: {e}", file=sys.stderr)
-        raise
+        pass
     
     if metric_name == "wall_time_s":
         wall_time_module = load_metric_module(os.path.join(tools_dir, "wall_time-group-21", "wall_time.py"), "wall_time")
