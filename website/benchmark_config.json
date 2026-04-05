@@ -463,28 +463,28 @@
       "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
         "high": 200,
         "mid": 50
       },
-      "required_update": false
+      "required_update": true
     },
     "bandwidth_utilization_allreduce_group_6": {
-      "label": "AllReduce BW",
-      "description": "Median bandwidth utilization for AllReduce operations",
+      "label": "AllReduce BW (GB/s)",
+      "description": "Median effective bandwidth for AllReduce operations",
       "higher_is_better": true,
-      "unit": "ratio",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 0.5,
+        "high": 200,
         "mid": 0.1
       },
-      "required_update": false
+      "required_update": true
     },
     "bandwidth_utilization_alltoall_group_6": {
       "label": "AllToAll BW (%)",
