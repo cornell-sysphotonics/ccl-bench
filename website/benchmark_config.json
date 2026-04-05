@@ -84,7 +84,7 @@
     {
       "trace": "/data/ccl-bench_trace_collection_backlog/llama-3.1-8b-torchtitan-tp_4-perlmutter_group_5",
       "metrics": "auto",
-      "required_update": true
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/qwen-3-8b-torchtitan-dp_4-perlmutter-group_5",
@@ -328,7 +328,7 @@
         "high": 70,
         "mid": 40
       },
-      "required_update": true
+      "required_update": false
     },
     "memory_bound_fraction": {
       "label": "Mem Bound (%)",
@@ -469,7 +469,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_allreduce_group_6": {
       "label": "AllReduce BW (GB/s)",
@@ -484,7 +484,7 @@
         "high": 200,
         "mid": 0.1
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
       "label": "AllToAll BW (%)",
