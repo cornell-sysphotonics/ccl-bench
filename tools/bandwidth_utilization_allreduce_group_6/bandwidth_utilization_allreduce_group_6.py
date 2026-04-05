@@ -1,169 +1,141 @@
-import yaml
+import json
 from pathlib import Path
-import sqlite3
 import pandas as pd
 
 
-def _get_dtod_memcpy_for_device(conn, device_id: int) -> pd.DataFrame:
-    dtod_copykind_value: int = 8
-    query = f"""
-    SELECT 
-        start, 
-        end, 
-        bytes,
-        deviceId,
-        correlationId, 
-        globalPid, 
-        srcDeviceId, 
-        dstDeviceId, 
-        copyKind,
-        streamId
-    FROM 
-        CUPTI_ACTIVITY_KIND_MEMCPY
-    WHERE 
-        -- Filter 1: The device must be involved (either source or destination)
-        deviceId = {device_id}
-        AND copyKind={dtod_copykind_value}
+DTYPE_BYTES = {
+    "Float": 4, "Float32": 4,
+    "Double": 8, "Float64": 8,
+    "Half": 2, "Float16": 2,
+    "BFloat16": 2, "BF16": 2,
+    "Int": 4, "Int32": 4,
+    "Int64": 8, "Long": 8,
+    "Int16": 2, "Short": 2,
+    "Int8": 1, "Byte": 1,
+}
+
+
+
+def _load_events(trace_path: str) -> list:
+    with open(trace_path, "r", encoding="utf-8", errors="replace") as f:
+        data = json.load(f)
+    if isinstance(data, dict) and "traceEvents" in data:
+        return data["traceEvents"]
+    if isinstance(data, list):
+        return data
+    return []
+
+
+def _is_allreduce_kernel(event: dict) -> bool:
+    """Check if an event is an nccl:all_reduce kernel event."""
+    if event.get("ph") != "X" or event.get("cat") != "kernel":
+        return False
+    name = event.get("name", "")
+    args = event.get("args", {})
+    collective_name = args.get("Collective name", "")
+    if name.startswith("ncclDevKernel_AllReduce") or name.startswith("ncclKernel_AllReduce"):
+        return True
+    if collective_name in ("all_reduce", "allreduce"):
+        return True
+    return False
+
+
+def _extract_allreduce_events(trace_path: str) -> pd.DataFrame:
+    """Extract all reduce kernel events from a trace JSON file."""
+    events = _load_events(trace_path)
+    rows = []
+    for e in events:
+        if not _is_allreduce_kernel(e):
+            continue
+        args = e.get("args", {})
+        in_nelems = args.get("In msg nelems")
+        dtype = args.get("dtype")
+        group_size = args.get("Group size")
+        dur = e.get("dur")  # microseconds
+
+        if in_nelems is None or dtype is None or group_size is None or dur is None:
+            continue
+        if not isinstance(in_nelems, (int, float)) or in_nelems <= 0:
+            continue
+        if dur <= 0:
+            continue
+
+        elem_bytes = DTYPE_BYTES.get(dtype)
+        if elem_bytes is None:
+            continue
+
+        rows.append({
+            "name": e.get("name", ""),
+            "ts": e.get("ts", 0),
+            "dur_us": dur,
+            "in_nelems": int(in_nelems),
+            "dtype": dtype,
+            "elem_bytes": elem_bytes,
+            "bytes": int(in_nelems) * elem_bytes,
+            "group_size": group_size,
+            "pg_desc": args.get("Process Group Description", ""),
+        })
+
+    return pd.DataFrame(rows)
+
+
+def _get_bandwidth_utilization(df: pd.DataFrame, bandwidth: float = 600.0) -> pd.DataFrame:
+    """Calculate bandwidth utilization for all_reduce events.
+
+    For all_reduce, the algorithm factor is 2*(N-1)/N where N is the group size.
+    Effective bandwidth = data_size * algo_factor / duration.
+    Utilization = effective_bandwidth / peak_bandwidth.
     """
-    memcpy_df = pd.read_sql_query(query, conn)
-    return memcpy_df
+    df = df.copy()
+    n = df["group_size"]
+    df["duration_s"] = df["dur_us"] / 1e6
+    # all_reduce algo factor: 2*(N-1)/N
+    df["algo_factor"] = 2 * (n - 1) / n
+    df["data_size_GB"] = df["bytes"] / (2**30)
+    df["effective bandwidth(GB/s)"] = df["data_size_GB"] * df["algo_factor"] / df["duration_s"]
+    df["bandwidth utilization"] = df["effective bandwidth(GB/s)"] / bandwidth
+    return df
 
-def _get_reduce_kernels_for_device(conn, device_id: int, kernel_name_prefix: str = '%cross_device_reduce__stage%') -> pd.DataFrame:
-    query = f"""
-    SELECT 
-        T1.start, 
-        T1.end, 
-        T1.deviceId, 
-        T1.streamId, 
-        T1.correlationId,
-        T2.value AS KernelName
-    FROM 
-        CUPTI_ACTIVITY_KIND_KERNEL T1
-    INNER JOIN 
-        StringIds T2 ON T1.shortName = T2.id
-    WHERE 
-        -- Filter 1: Match the specific GPU device
-        T1.deviceId = {device_id}
-        -- Filter 2: Match the kernel name prefix using LIKE
-        AND T2.value LIKE '{kernel_name_prefix}'
-    ORDER BY
-        T1.start
-    """
-    kernel_df = pd.read_sql_query(query, conn)
-    return kernel_df
 
-def _find_reduce_pattern(
-        memcpy_df: pd.DataFrame, 
-        kernel_df: pd.DataFrame, 
-        max_delay_ns = 20000
-) -> pd.DataFrame:
-
-    memcpy_prepared = memcpy_df[['end', 'start', 'bytes', 'correlationId','deviceId']].copy()
-    memcpy_prepared = memcpy_prepared.rename(columns={
-        'end': 'memcpy_end',
-        'start': 'memcpy_start',
-        'correlationId': 'memcpy_correlationId'
-    })
-    memcpy_prepared = memcpy_prepared.sort_values('memcpy_end')
-
-    # Prepare kernel dataframe
-    kernel_prepared = kernel_df[['start', 'end', 'KernelName', 'correlationId']].copy()
-    kernel_prepared = kernel_prepared.rename(columns={
-        'start': 'kernel_start',
-        'end': 'kernel_end',
-        'correlationId': 'kernel_correlationId'
-    })
-    kernel_prepared = kernel_prepared.sort_values('kernel_start')
-
-    # Use merge_asof to find the first kernel that starts after each memcpy ends
-    # direction='forward' means find the next kernel after memcpy
-    # tolerance=20000 means within 20,000 ns
-    results_df = pd.merge_asof(
-        memcpy_prepared,
-        kernel_prepared,
-        left_on='memcpy_end',
-        right_on='kernel_start',
-        direction='forward',
-        tolerance=max_delay_ns
-    )
-
-    return results_df.dropna()
-
-def _get_bandwidth_utilization(combined_df, NGPUS=4, bandwidth=600): 
-    combined_df['kernel duration(s)'] = (combined_df['kernel_end'] - combined_df['kernel_start'])/(10**9)
-    # reduce is 2*(N-1)/N
-    # we cannot join from different slices, but we will assume that each slice has the same number
-    # we calculate for each gpu indiviudally and presumably, final outputs should have 4x of each transfer 
-    combined_df['effective bandwidth(GB/s)'] = (combined_df['bytes'] * NGPUS) / (2**30) * (2 * (NGPUS-1)/(NGPUS)) / combined_df['kernel duration(s)']
-    combined_df['bandwidth utilization'] = combined_df['effective bandwidth(GB/s)']/bandwidth
-    return combined_df
-
-def _get_bandwidth_utilization_df(db_path, NGPUS=4):
-    conn = sqlite3.connect(db_path)
-    df_list=[]
-    for i in range(NGPUS):
-        memcpy_df = _get_dtod_memcpy_for_device(conn, i)
-        reduce_kernels = _get_reduce_kernels_for_device(conn, i)
-        df = _find_reduce_pattern(memcpy_df, reduce_kernels)
-        df_list.append(df.copy())
-    combined_df = pd.concat(df_list, axis=0, ignore_index=True)
-    bandwidth_utilization = _get_bandwidth_utilization(combined_df, NGPUS=NGPUS)
-    return bandwidth_utilization
+def _get_bandwidth_utilization_from_trace(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
+    df = _extract_allreduce_events(trace_path)
+    if df.empty:
+        return df
+    return _get_bandwidth_utilization(df, bandwidth=bandwidth)
 
 
 def metric_cal(directory: str) -> float:
     """
-    Calculate the bandwidth utilization for allreduce from the exported sqlite file from nsys.
+    Calculate the median allreduce bandwidth (GB/s) from *trace.json files.
 
-    n/a for llama tp=1
-
-    For qwen-32b with pp=2, the metric is calculated by combining data from node 0 and node 1.
+    Finds all nccl:all_reduce kernel events across all rank trace files in the
+    directory and returns the median effective bandwidth in GB/s.
 
     Args:
-        directory (str): The directory path containing the exported sqlite file from nsys.
+        directory (str): The directory path containing the trace JSON files.
 
     Returns:
-        float: The median bandwidth utilization for allreduce, or float("nan") if the metric is not applicable.
+        float: The median allreduce bandwidth in GB/s, or float("nan") if no
+               allreduce events are found.
     """
-    dir_name = Path(directory).name
-    db_path = str(Path(directory) / "nsys_0.sqlite")
-    workload_card_path = Path(directory) / (dir_name + ".yaml")
-    output_csv_path = Path(directory) / "bandwidth_utilization_allreduce_0.csv"
-
-    # Parse workload card to get metadata
-    with open(workload_card_path, 'r') as f:
-        workload_card = yaml.safe_load(f)
-        model_family = workload_card["workload"]["model"]["model_family"]
-        tp = workload_card["Model-executor"]["model_plan_parallelization"]["tp"]
-        pp = workload_card["Model-executor"]["model_plan_parallelization"]["pp"]
-
-
-    if model_family not in ["deepseek-v2-lite", "llama-3.1-8B", "qwen-32b"]:
+    # Try rank trace files until one parses successfully
+    d = Path(directory)
+    trace_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
+    if not trace_files:
+        print(f"No trace JSON found in {directory}")
         return float("nan")
 
-    if model_family == "llama-3.1-8B" and tp == 1:
-        return float("nan")
-
-    try: 
-        bandwidth_utilization = _get_bandwidth_utilization_df(db_path)
-        bandwidth_utilization.to_csv(output_csv_path)
-        # print(f'saved to {output_csv_path}')
-        # print(bandwidth_utilization.describe())
-    except Exception as e: 
-        print('error in querying', e)
-        return float("nan")
-
-    col = bandwidth_utilization["bandwidth utilization"]
-
-    if model_family == "qwen-32b" and pp == 2:
-        db_path_1 = str(Path(directory) / "nsys_1.sqlite")
+    for trace_path in trace_files:
         try:
-            bandwidth_utilization_1 = _get_bandwidth_utilization_df(db_path_1)
-            output_csv_path_1 = Path(directory) / "bandwidth_utilization_allreduce_1.csv"
-            bandwidth_utilization_1.to_csv(output_csv_path_1)
-            col = pd.concat([col, bandwidth_utilization_1["bandwidth utilization"]], axis=0, ignore_index=True)
+            df = _get_bandwidth_utilization_from_trace(str(trace_path))
         except Exception as e:
-            print('error in querying', e)
-            return float("nan")
+            print(f"error parsing {trace_path}, trying next rank: {e}")
+            continue
 
-    return float(col.median())
+        if df.empty:
+            continue
+
+        return float(df["effective bandwidth(GB/s)"].median())
+
+    print(f"No nccl:all_reduce kernel events found in {directory}")
+    return float("nan")
