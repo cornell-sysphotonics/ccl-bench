@@ -344,7 +344,7 @@
         "high": 60,
         "mid": 30
       },
-      "required_update": true
+      "required_update": false
     },
     "moe_fraction": {
       "label": "MoE Fraction (%)",
@@ -406,7 +406,7 @@
         "high": 1000,
         "mid": 500
       },
-      "required_update": true
+      "required_update": false
     },
     "memory_transfer_overhead": {
       "label": "Mem Transfer OH (%)",
@@ -422,7 +422,7 @@
         "high": 20,
         "mid": 5
       },
-      "required_update": true
+      "required_update": false
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",
