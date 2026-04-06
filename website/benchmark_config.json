@@ -82,6 +82,36 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection_backlog/llama-3.1-8b-torchtitan-tp_4-perlmutter_group_5",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen-3-8b-torchtitan-dp_4-perlmutter-group_5",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_64_8192]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_64_16384]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_16384]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_32_8192]-group12",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false
@@ -298,7 +328,7 @@
         "high": 70,
         "mid": 40
       },
-      "required_update": true
+      "required_update": false
     },
     "memory_bound_fraction": {
       "label": "Mem Bound (%)",
@@ -435,7 +465,7 @@
       "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
         "high": 200,
@@ -444,16 +474,16 @@
       "required_update": false
     },
     "bandwidth_utilization_allreduce_group_6": {
-      "label": "AllReduce BW",
-      "description": "Median bandwidth utilization for AllReduce operations",
+      "label": "AllReduce BW (GB/s)",
+      "description": "Median effective bandwidth for AllReduce operations",
       "higher_is_better": true,
-      "unit": "ratio",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 0.5,
+        "high": 200,
         "mid": 0.1
       },
       "required_update": false

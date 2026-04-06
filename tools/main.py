@@ -104,33 +104,11 @@ if __name__ == "__main__":
     if tools_dir not in sys.path:
         sys.path.insert(0, tools_dir)
 
-    file_backed_metrics = {
-        "wall_time_s",
-        "total_compute_time_s",
-        "total_comm_time_s",
-        "avg_comm_kernel_time_s",
-        "allreduce_comm_time_s",
-        "compute_utilization_proxy",
-        "communication_fraction",
-        "num_comm_kernels",
-        "avg_comm_bandwidth_GBps",
-        "hockney_alpha_s",
-        "hockney_beta_s_per_byte",
-        "hockney_inverse_beta_Bps",
-        "achieved_flops_from_trace_json",
-        "total_model_flops_from_args",
-        "throughput",
-        "estimated_throughput_tokens_per_s",
-        "flops_per_token_used",
-        "estimated_total_tokens",
-    }
-
-    if metric_name in file_backed_metrics:
-        try:
-            trace_json_path = find_trace_file(trace_directory)
-        except Exception as e:
-            print(f"Error finding trace file in {trace_directory}: {e}", file=sys.stderr)
-            raise
+    # Find trace file (trace_json_path is only needed for group 21's metrics)
+    try:
+        trace_json_path = find_trace_file(trace_directory)
+    except Exception as e:
+        pass
     
     if metric_name == "wall_time_s":
         wall_time_module = load_metric_module(os.path.join(tools_dir, "wall_time-group-21", "wall_time.py"), "wall_time")

@@ -7,14 +7,14 @@ description: >
   Selective activation checkpointing enabled. Profiling traces collected using PyTorch Profiler.
 
 hf_url: https://huggingface.co/Qwen/Qwen3-8B 
-trace_url: https://cornell.app.box.com/ // TODO: maybe put trace name
+trace_url: https://cornell.app.box.com/
 
 workload:
   model:
     phase: training
     moe: false
     granularity: model_fwd_bwd_pass
-    model_family: qwen3
+    model_family: qwen-3-8b
     precision: bf16
   data:
     batch_size: 2
