@@ -98,10 +98,33 @@ def calculate_metric(path):
         return -1
 
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from trace_metric_utils import load_yaml, get_trace_types, summarize_kineto_kernel_breakdown
+
+
+def _calc_json(directory: str) -> float:
+    summary = summarize_kineto_kernel_breakdown(directory)
+    if summary is None:
+        return -1.0
+    total_kernel_dur, breakdown = summary
+    mem_transfer_dur = breakdown.get("memory_transfer", 0.0)
+    if total_kernel_dur <= 0:
+        return -1.0
+    return round((mem_transfer_dur / total_kernel_dur) * 100.0, 4)
+
+
+def metric_cal(directory: str) -> float:
+    trace_types = get_trace_types(load_yaml(directory))
+    if "nsys" in trace_types:
+        return calculate_metric(directory)
+    if "json" in trace_types:
+        return _calc_json(directory)
+    print(f"[memory_transfer_overhead] Unsupported trace types {trace_types}", file=sys.stderr)
+    return -1.0
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python memory_transfer_overhead_group_9.py <trace_directory_or_sqlite_file>")
         sys.exit(1)
-    
-    result = calculate_metric(sys.argv[1])
-    print(result)
+    print(metric_cal(sys.argv[1]))

@@ -93,10 +93,20 @@ def calculate_metric(path):
         return -1
 
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from trace_metric_utils import load_yaml, get_trace_types
+
+
+def metric_cal(directory: str) -> float:
+    trace_types = get_trace_types(load_yaml(directory))
+    if "nsys" in trace_types:
+        return calculate_metric(directory)
+    print(f"[average_memory_bandwidth] Unsupported trace types {trace_types}", file=sys.stderr)
+    return -1.0
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python average_memory_bandwidth_group_9.py <trace_directory_or_sqlite_file>")
         sys.exit(1)
-    
-    result = calculate_metric(sys.argv[1])
-    print(result)
+    print(metric_cal(sys.argv[1]))

@@ -332,18 +332,19 @@
     },
     "memory_bound_fraction": {
       "label": "Mem Bound (%)",
-      "description": "Fraction of kernels classified as memory-bound (SM coverage < 50%)",
+      "description": "Fraction of kernel time classified as memory-bound. Uses SM coverage for NSYS traces and kernel-category heuristics for Kineto JSON traces",
       "higher_is_better": false,
       "unit": "%",
       "category": "gpu_efficiency",
       "trace_types": [
-        "nsys"
+        "nsys",
+        "json"
       ],
       "thresholds": {
         "high": 60,
         "mid": 30
       },
-      "required_update": false
+      "required_update": true
     },
     "moe_fraction": {
       "label": "MoE Fraction (%)",
@@ -405,22 +406,23 @@
         "high": 1000,
         "mid": 500
       },
-      "required_update": false
+      "required_update": true
     },
     "memory_transfer_overhead": {
       "label": "Mem Transfer OH (%)",
-      "description": "Percentage of trace time spent on memory transfers (memcpy)",
+      "description": "Percentage of trace time spent on memory transfers (memcpy for NSYS, copy-like kernels for Kineto JSON)",
       "higher_is_better": false,
       "unit": "%",
       "category": "memory",
       "trace_types": [
-        "nsys"
+        "nsys",
+        "json"
       ],
       "thresholds": {
         "high": 20,
         "mid": 5
       },
-      "required_update": false
+      "required_update": true
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",

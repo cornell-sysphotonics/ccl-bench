@@ -89,6 +89,7 @@ if __name__ == "__main__":
     trace_directory = None
     metric_name = None
     metric_cal_func = None
+    trace_json_path = None
 
     parser = argparse.ArgumentParser(description="Process trace directory and metric name.")
     parser.add_argument("--trace", type=str, required=True, help="Path to the trace directory (or CSV results directory)")
@@ -270,14 +271,14 @@ if __name__ == "__main__":
         from mean_sm_coverage.mean_sm_coverage import metric_cal
         metric_cal_func = metric_cal
     elif metric_name == "memory_transfer_overhead":
-        from memory_transfer_overhead_group_9.memory_transfer_overhead_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from memory_transfer_overhead_group_9.memory_transfer_overhead_group_9 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "average_memory_bandwidth":
-        from average_memory_bandwidth_group_9.average_memory_bandwidth_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from average_memory_bandwidth_group_9.average_memory_bandwidth_group_9 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "memory_bound_fraction":
-        from memory_bound_fraction_group_9.memory_bound_fraction_group_9 import calculate_metric
-        metric_cal_func = calculate_metric
+        from memory_bound_fraction_group_9.memory_bound_fraction_group_9 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "load_imbalance_ratio":
         from load_imbalance_ratio.load_imbalance_ratio import metric_cal
         metric_cal_func = metric_cal
