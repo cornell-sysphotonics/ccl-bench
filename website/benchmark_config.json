@@ -82,16 +82,6 @@
       "required_update": false
     },
     {
-      "trace": "/data/ccl-bench_trace_collection_backlog/llama-3.1-8b-torchtitan-tp_4-perlmutter_group_5",
-      "metrics": "auto",
-      "required_update": false
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/qwen-3-8b-torchtitan-dp_4-perlmutter-group_5",
-      "metrics": "auto",
-      "required_update": false
-    },
-    {
       "trace": "/data/ccl-bench_trace_collection/Mixtral8x7B-vllmEP4-Perlmutter[defaultall2all_64_8192]-group12",
       "metrics": "auto",
       "required_update": false
@@ -359,37 +349,6 @@
       "thresholds": {
         "high": 50,
         "mid": 20
-      },
-      "required_update": false
-    },
-    "total_kernel_time": {
-      "label": "Kernel Time (s)",
-      "description": "Total GPU kernel execution time summed across all kernels",
-      "higher_is_better": false,
-      "unit": "s",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys",
-        "json"
-      ],
-      "thresholds": {
-        "high": 10,
-        "mid": 1
-      },
-      "required_update": false
-    },
-    "kernel_compute_time_group_6": {
-      "label": "Kernel Time (s)",
-      "description": "Total GPU kernel compute time",
-      "higher_is_better": false,
-      "unit": "s",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys"
-      ],
-      "thresholds": {
-        "high": 60,
-        "mid": 10
       },
       "required_update": false
     },

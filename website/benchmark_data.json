@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-06T02:24:40.614421+00:00",
+  "generated_at": "2026-04-06T03:16:04.969073+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -9,14 +9,12 @@
     "bandwidth_utilization_peertopeer_group_6",
     "communication_fraction",
     "dominant_kernel_concentration",
-    "kernel_compute_time_group_6",
     "mean_sm_coverage",
     "memory_bound_fraction",
     "memory_transfer_overhead",
     "mfu",
     "moe_fraction",
-    "total_communication_time",
-    "total_kernel_time"
+    "total_communication_time"
   ],
   "metric_categories": [
     {
@@ -165,7 +163,7 @@
         "high": 60,
         "mid": 30
       },
-      "required_update": true
+      "required_update": false
     },
     "moe_fraction": {
       "label": "MoE Fraction (%)",
@@ -183,37 +181,6 @@
       },
       "required_update": false
     },
-    "total_kernel_time": {
-      "label": "Kernel Time (s)",
-      "description": "Total GPU kernel execution time summed across all kernels",
-      "higher_is_better": false,
-      "unit": "s",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys",
-        "json"
-      ],
-      "thresholds": {
-        "high": 10,
-        "mid": 1
-      },
-      "required_update": false
-    },
-    "kernel_compute_time_group_6": {
-      "label": "Kernel Time (s)",
-      "description": "Total GPU kernel compute time",
-      "higher_is_better": false,
-      "unit": "s",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys"
-      ],
-      "thresholds": {
-        "high": 60,
-        "mid": 10
-      },
-      "required_update": false
-    },
     "average_memory_bandwidth": {
       "label": "Avg Mem BW (GB/s)",
       "description": "Average memory copy bandwidth across all memcpy operations",
@@ -227,7 +194,7 @@
         "high": 1000,
         "mid": 500
       },
-      "required_update": true
+      "required_update": false
     },
     "memory_transfer_overhead": {
       "label": "Mem Transfer OH (%)",
@@ -243,7 +210,7 @@
         "high": 20,
         "mid": 5
       },
-      "required_update": true
+      "required_update": false
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",
@@ -876,14 +843,13 @@
         "mfu": 7.25,
         "mean_sm_coverage": 14.2438,
         "dominant_kernel_concentration": 39.8263,
+        "memory_bound_fraction": 4.9266,
         "moe_fraction": 0.0096,
-        "total_kernel_time": 29478.6422,
+        "memory_transfer_overhead": 0.7279,
         "communication_fraction": 0.8581,
         "total_communication_time": 3.7984,
         "bandwidth_utilization_allgather_group_6": 0.691226,
-        "bandwidth_utilization_allreduce_group_6": 0.000582978,
-        "memory_bound_fraction": 4.9266,
-        "memory_transfer_overhead": 0.7279
+        "bandwidth_utilization_allreduce_group_6": 0.000582978
       }
     },
     {
@@ -941,14 +907,13 @@
         "mfu": 2.5697,
         "mean_sm_coverage": 8.7742,
         "dominant_kernel_concentration": 46.6868,
+        "memory_bound_fraction": 2.9587,
         "moe_fraction": 0.0057,
-        "total_kernel_time": 123499.7756,
+        "memory_transfer_overhead": 0.1206,
         "communication_fraction": 1.1042,
         "total_communication_time": 12.0873,
         "bandwidth_utilization_allgather_group_6": 0.640605,
-        "bandwidth_utilization_allreduce_group_6": 50.4074,
-        "memory_bound_fraction": 2.9587,
-        "memory_transfer_overhead": 0.1206
+        "bandwidth_utilization_allreduce_group_6": 50.4074
       }
     },
     {
@@ -1006,14 +971,13 @@
         "mfu": 2.3864,
         "mean_sm_coverage": 7.9576,
         "dominant_kernel_concentration": 45.2445,
+        "memory_bound_fraction": 2.6302,
         "moe_fraction": 0.0033,
-        "total_kernel_time": 135746.8587,
+        "memory_transfer_overhead": 0.101,
         "communication_fraction": 1.3491,
         "total_communication_time": 12.9735,
         "bandwidth_utilization_allgather_group_6": 0.679365,
-        "bandwidth_utilization_allreduce_group_6": 26.5272,
-        "memory_bound_fraction": 2.6302,
-        "memory_transfer_overhead": 0.101
+        "bandwidth_utilization_allreduce_group_6": 26.5272
       }
     },
     {
@@ -1071,14 +1035,13 @@
         "mfu": 8.8342,
         "mean_sm_coverage": 14.4299,
         "dominant_kernel_concentration": 38.1559,
+        "memory_bound_fraction": 5.2924,
         "moe_fraction": 0.0168,
-        "total_kernel_time": 32712.4481,
+        "memory_transfer_overhead": 0.8088,
         "communication_fraction": 0.9595,
         "total_communication_time": 2.8911,
         "bandwidth_utilization_allgather_group_6": 1.37671,
-        "bandwidth_utilization_allreduce_group_6": 62.995,
-        "memory_bound_fraction": 5.2924,
-        "memory_transfer_overhead": 0.8088
+        "bandwidth_utilization_allreduce_group_6": 62.995
       }
     },
     {
@@ -1136,14 +1099,13 @@
         "mfu": 8.5179,
         "mean_sm_coverage": 12.5278,
         "dominant_kernel_concentration": 56.4729,
+        "memory_bound_fraction": 5.059,
         "moe_fraction": 0.0198,
-        "total_kernel_time": 63.8874,
+        "memory_transfer_overhead": 0.8965,
         "communication_fraction": 0.9628,
         "total_communication_time": 3.3257,
         "bandwidth_utilization_allgather_group_6": 11.6139,
-        "bandwidth_utilization_allreduce_group_6": 81.2942,
-        "memory_bound_fraction": 5.059,
-        "memory_transfer_overhead": 0.8965
+        "bandwidth_utilization_allreduce_group_6": 81.2942
       }
     },
     {
@@ -1201,14 +1163,13 @@
         "mfu": 3.3441,
         "mean_sm_coverage": 9.3679,
         "dominant_kernel_concentration": 40.0632,
+        "memory_bound_fraction": 3.9092,
         "moe_fraction": 0.0069,
-        "total_kernel_time": 176.9813,
+        "memory_transfer_overhead": 0.2736,
         "communication_fraction": 0.9933,
         "total_communication_time": 9.2848,
         "bandwidth_utilization_allgather_group_6": 9.36601,
-        "bandwidth_utilization_allreduce_group_6": 73.5363,
-        "memory_bound_fraction": 3.9092,
-        "memory_transfer_overhead": 0.2736
+        "bandwidth_utilization_allreduce_group_6": 73.5363
       }
     },
     {
@@ -1264,14 +1225,13 @@
         "mfu": 2.752,
         "mean_sm_coverage": 6.3979,
         "dominant_kernel_concentration": 73.9092,
+        "memory_bound_fraction": 0.7132,
         "moe_fraction": 0.0064,
-        "total_kernel_time": 199.6035,
+        "memory_transfer_overhead": 0.1638,
         "communication_fraction": 1.0582,
         "total_communication_time": 11.498,
         "bandwidth_utilization_allgather_group_6": 15.3382,
-        "bandwidth_utilization_allreduce_group_6": 84.8103,
-        "memory_bound_fraction": 0.7132,
-        "memory_transfer_overhead": 0.1638
+        "bandwidth_utilization_allreduce_group_6": 84.8103
       }
     },
     {
@@ -1327,138 +1287,13 @@
         "mfu": 5.6485,
         "mean_sm_coverage": 6.947,
         "dominant_kernel_concentration": 55.6554,
+        "memory_bound_fraction": 1.7602,
         "moe_fraction": 0.0054,
-        "total_kernel_time": 402.9941,
+        "memory_transfer_overhead": 0.2778,
         "communication_fraction": 1.1603,
         "total_communication_time": 20.0744,
         "bandwidth_utilization_allgather_group_6": 9.28075,
-        "bandwidth_utilization_allreduce_group_6": 101.387,
-        "memory_bound_fraction": 1.7602,
-        "memory_transfer_overhead": 0.2778
-      }
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection_backlog/llama-3.1-8b-torchtitan-tp_4-perlmutter_group_5",
-      "metadata": {
-        "workload_name": "llama-3.1-8b-torchtitan-tp_4-perlmutter_group_5",
-        "description": "Llama 3.1 8B training on Perlmutter with 4 GPUs using TP+PP (tensor_parallel_degree=2 and pipeline_parallel_degree=2). TorchTitan framework with torch distributed runtime, NCCL communications over Slingshot-11. Selective activation checkpointing enabled. Profiling traces collected using PyTorch Profiler.",
-        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
-        "trace_url": "https://cornell.app.box.com/",
-        "model_family": "llama-3.1",
-        "phase": "training",
-        "precision": "bf16",
-        "moe": false,
-        "granularity": "model_fwd_bwd_pass",
-        "epochs": "",
-        "iteration": "",
-        "batch_size": 4,
-        "seq_len": 1024,
-        "dataset": "c4",
-        "hardware_type": "GPU",
-        "hardware_model": "nvidia_a100_40gb",
-        "total_count": 4,
-        "count_per_node": 4,
-        "network_topology": "slingshot-11",
-        "bandwidth_scaleout": 600,
-        "bandwidth_scaleup": "",
-        "driver_version": "cuda_12.6",
-        "framework": "torchtitan",
-        "compiler": "disabled",
-        "tp": 4,
-        "pp": 1,
-        "pp_mb": "",
-        "dp_replicate": 1,
-        "dp_shard": 1,
-        "ep": "",
-        "cp": 1,
-        "comm_library": "NCCL",
-        "comm_library_ver": "",
-        "comm_env": {
-          "TORCH_NCCL_ASYNC_ERROR_HANDLING": "3"
-        },
-        "protocol_selection": [
-          "nvlink"
-        ],
-        "trace_types": [
-          "json"
-        ],
-        "metric_traces": []
-      },
-      "metrics": {
-        "avg_step_time": null,
-        "mfu": null,
-        "mean_sm_coverage": null,
-        "dominant_kernel_concentration": null,
-        "moe_fraction": null,
-        "total_kernel_time": null,
-        "communication_fraction": null,
-        "total_communication_time": null,
-        "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null,
-        "memory_bound_fraction": null,
-        "memory_transfer_overhead": null
-      }
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/qwen-3-8b-torchtitan-dp_4-perlmutter-group_5",
-      "metadata": {
-        "workload_name": "qwen-3-8b-torchtitan-dp_4-perlmutter-group_5",
-        "description": "Qwen 3 8B training on Perlmutter with 4 GPUs using FSDP (data_parallel_shard_degree=4). TorchTitan framework with torch distributed runtime, NCCL communications over Slingshot-11. Selective activation checkpointing enabled. Profiling traces collected using PyTorch Profiler.",
-        "hf_url": "https://huggingface.co/Qwen/Qwen3-8B",
-        "trace_url": "https://cornell.app.box.com/",
-        "model_family": "qwen-3-8b",
-        "phase": "training",
-        "precision": "bf16",
-        "moe": false,
-        "granularity": "model_fwd_bwd_pass",
-        "epochs": "",
-        "iteration": "",
-        "batch_size": 2,
-        "seq_len": 1024,
-        "dataset": "c4",
-        "hardware_type": "GPU",
-        "hardware_model": "nvidia_a100_40gb",
-        "total_count": 4,
-        "count_per_node": 4,
-        "network_topology": "slingshot-11",
-        "bandwidth_scaleout": 600,
-        "bandwidth_scaleup": "",
-        "driver_version": "cuda_12.6",
-        "framework": "torchtitan",
-        "compiler": "disabled",
-        "tp": 1,
-        "pp": 1,
-        "pp_mb": "",
-        "dp_replicate": 1,
-        "dp_shard": 4,
-        "ep": "",
-        "cp": 1,
-        "comm_library": "NCCL",
-        "comm_library_ver": "",
-        "comm_env": {
-          "TORCH_NCCL_ASYNC_ERROR_HANDLING": "3"
-        },
-        "protocol_selection": [
-          "nvlink"
-        ],
-        "trace_types": [
-          "json"
-        ],
-        "metric_traces": []
-      },
-      "metrics": {
-        "avg_step_time": null,
-        "mfu": null,
-        "mean_sm_coverage": null,
-        "dominant_kernel_concentration": null,
-        "moe_fraction": null,
-        "total_kernel_time": null,
-        "communication_fraction": null,
-        "total_communication_time": null,
-        "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null,
-        "memory_bound_fraction": null,
-        "memory_transfer_overhead": null
+        "bandwidth_utilization_allreduce_group_6": 101.387
       }
     },
     {
@@ -1512,16 +1347,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.0878,
+        "memory_bound_fraction": null,
         "moe_fraction": 36.7006,
-        "total_kernel_time": 608.179,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 5.63893,
+        "memory_transfer_overhead": 60.9162,
         "communication_fraction": null,
         "total_communication_time": 169.143,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": null,
-        "average_memory_bandwidth": 5.63893,
-        "memory_transfer_overhead": 60.9162
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1575,16 +1408,14 @@
       "metrics": {
         "mean_sm_coverage": 24.7469,
         "dominant_kernel_concentration": 45.2741,
+        "memory_bound_fraction": 48.7193,
         "moe_fraction": 46.0064,
-        "total_kernel_time": 518.944,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 2.44165,
+        "memory_transfer_overhead": 44.628,
         "communication_fraction": null,
         "total_communication_time": 116.164,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 48.7193,
-        "average_memory_bandwidth": 2.44165,
-        "memory_transfer_overhead": 44.628
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1638,16 +1469,14 @@
       "metrics": {
         "mean_sm_coverage": 25.044,
         "dominant_kernel_concentration": 45.6745,
+        "memory_bound_fraction": 48.2144,
         "moe_fraction": 46.4038,
-        "total_kernel_time": 501.245,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 2.26877,
+        "memory_transfer_overhead": 86.5891,
         "communication_fraction": null,
         "total_communication_time": 110.983,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 48.2144,
-        "average_memory_bandwidth": 2.26877,
-        "memory_transfer_overhead": 86.5891
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1701,16 +1530,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 37.9569,
+        "memory_bound_fraction": null,
         "moe_fraction": 38.5986,
-        "total_kernel_time": 582.46,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 6.18835,
+        "memory_transfer_overhead": 63.3848,
         "communication_fraction": null,
         "total_communication_time": 155.182,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": null,
-        "average_memory_bandwidth": 6.18835,
-        "memory_transfer_overhead": 63.3848
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1767,16 +1594,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 74.4744,
+        "memory_bound_fraction": 88.8579,
         "moe_fraction": 4.9012,
-        "total_kernel_time": 223645.316,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 2.62174,
+        "memory_transfer_overhead": 3.83194,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 88.8579,
-        "average_memory_bandwidth": 2.62174,
-        "memory_transfer_overhead": 3.83194
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1833,16 +1658,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 58.4772,
+        "memory_bound_fraction": 93.5781,
         "moe_fraction": 3.2006,
-        "total_kernel_time": 525381.7773,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 1.45555,
+        "memory_transfer_overhead": 9.76231,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 93.5781,
-        "average_memory_bandwidth": 1.45555,
-        "memory_transfer_overhead": 9.76231
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1899,16 +1722,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 51.5044,
+        "memory_bound_fraction": 91.2263,
         "moe_fraction": 4.3843,
-        "total_kernel_time": 421323.2136,
-        "kernel_compute_time_group_6": null,
+        "average_memory_bandwidth": 2.25684,
+        "memory_transfer_overhead": 17.9366,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 91.2263,
-        "average_memory_bandwidth": 2.25684,
-        "memory_transfer_overhead": 17.9366
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -1965,16 +1786,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 52.3646,
+        "memory_bound_fraction": 93.7421,
         "moe_fraction": 3.1346,
-        "total_kernel_time": 584752.1294,
-        "kernel_compute_time_group_6": null,
+        "average_memory_bandwidth": 1.9367,
+        "memory_transfer_overhead": 8.82911,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 93.7421,
-        "average_memory_bandwidth": 1.9367,
-        "memory_transfer_overhead": 8.82911
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -2031,16 +1850,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 52.2145,
+        "memory_bound_fraction": 91.526,
         "moe_fraction": 4.256,
-        "total_kernel_time": 386303.1358,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 1.26101,
+        "memory_transfer_overhead": 15.4846,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 91.526,
-        "average_memory_bandwidth": 1.26101,
-        "memory_transfer_overhead": 15.4846
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -2097,16 +1914,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 28.3186,
+        "memory_bound_fraction": null,
         "moe_fraction": 6.3175,
-        "total_kernel_time": 57101.5979,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 1.41686,
+        "memory_transfer_overhead": 20.3366,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": null,
-        "average_memory_bandwidth": 1.41686,
-        "memory_transfer_overhead": 20.3366
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -2163,16 +1978,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 58.7998,
+        "memory_bound_fraction": 93.4786,
         "moe_fraction": 3.2496,
-        "total_kernel_time": 521035.2969,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 1.45216,
+        "memory_transfer_overhead": 5.41692,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": 93.4786,
-        "average_memory_bandwidth": 1.45216,
-        "memory_transfer_overhead": 5.41692
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -2229,16 +2042,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 40.6355,
+        "memory_bound_fraction": null,
         "moe_fraction": 11.308,
-        "total_kernel_time": 32433.5773,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 36.8948,
+        "memory_transfer_overhead": 18.2433,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": null,
-        "average_memory_bandwidth": 36.8948,
-        "memory_transfer_overhead": 18.2433
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -2295,16 +2106,14 @@
       "metrics": {
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 27.7362,
+        "memory_bound_fraction": null,
         "moe_fraction": 45.8103,
-        "total_kernel_time": 111427.6593,
-        "kernel_compute_time_group_6": "n/a",
+        "average_memory_bandwidth": 67.7592,
+        "memory_transfer_overhead": 13.2594,
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
-        "memory_bound_fraction": null,
-        "average_memory_bandwidth": 67.7592,
-        "memory_transfer_overhead": 13.2594
+        "bandwidth_utilization_peertopeer_group_6": null
       }
     },
     {
@@ -2363,14 +2172,13 @@
         "mfu": 6.0445,
         "mean_sm_coverage": 19.1184,
         "dominant_kernel_concentration": 50.2328,
+        "memory_bound_fraction": 2.8615,
         "moe_fraction": 0.0,
-        "total_kernel_time": 77.1522,
+        "memory_transfer_overhead": 0.269,
         "communication_fraction": 0.793495,
         "total_communication_time": 8.09265,
         "bandwidth_utilization_allgather_group_6": 0.297824,
-        "bandwidth_utilization_allreduce_group_6": 41.712,
-        "memory_bound_fraction": 2.8615,
-        "memory_transfer_overhead": 0.269
+        "bandwidth_utilization_allreduce_group_6": 41.712
       }
     },
     {
@@ -2429,14 +2237,13 @@
         "mfu": 6.1035,
         "mean_sm_coverage": 26.5361,
         "dominant_kernel_concentration": 36.9198,
+        "memory_bound_fraction": 3.208,
         "moe_fraction": 0.0,
-        "total_kernel_time": 70.7267,
+        "memory_transfer_overhead": 0.3426,
         "communication_fraction": 0.804577,
         "total_communication_time": 6.94209,
         "bandwidth_utilization_allgather_group_6": 0.292327,
-        "bandwidth_utilization_allreduce_group_6": 15.9835,
-        "memory_bound_fraction": 3.208,
-        "memory_transfer_overhead": 0.3426
+        "bandwidth_utilization_allreduce_group_6": 15.9835
       }
     },
     {
