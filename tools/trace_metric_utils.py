@@ -52,8 +52,7 @@ _ELEMWISE_RE = re.compile(
     re.IGNORECASE,
 )
 _REDUCTION_RE = re.compile(r"reduce(?!scatter)|sum_kernel|mean_kernel", re.IGNORECASE)
-_MEMCPY_RE = re.compile(r"memcpy|memset|copy_kernel|Memcpy|Memset", re.IGNORECASE)
-
+_MEMCPY_RE = re.compile(r"memcpy|memset|copy_kernel|Memcpy|Memset|copy\.|copy-start|copy-done|\bdma\b", re.IGNORECASE)
 
 def _categorize_kernel(name: str) -> str:
     """Assign a kernel name to one of the breakdown categories."""
@@ -133,7 +132,7 @@ def summarize_kineto_kernel_breakdown(directory: str):
             if (
                 isinstance(e, dict)
                 and e.get("ph") == "X"
-                and e.get("cat") == "kernel"
+                and (e.get("cat") in ("kernel", "Op", "gpu_op", "device_op") or e.get("cat") is None)
             ):
                 dur = e.get("dur")
                 if dur is None:

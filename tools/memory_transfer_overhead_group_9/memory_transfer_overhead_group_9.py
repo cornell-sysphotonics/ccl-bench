@@ -117,7 +117,7 @@ def metric_cal(directory: str) -> float:
     trace_types = get_trace_types(load_yaml(directory))
     if "nsys" in trace_types:
         return calculate_metric(directory)
-    if "json" in trace_types:
+    if "json" in trace_types or "json_tpu" in trace_types:
         return _calc_json(directory)
     print(f"[memory_transfer_overhead] Unsupported trace types {trace_types}", file=sys.stderr)
     return -1.0

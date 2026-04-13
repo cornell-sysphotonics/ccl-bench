@@ -53,21 +53,21 @@ def calculate_metric(path):
     try:
         conn = sqlite3.connect(sqlite_path)
         
-        # Load device info for SM count
-        device_info = pd.read_sql_query("""
-            SELECT numMultiprocessors
-            FROM TARGET_INFO_CUDA_DEVICE
-        """, conn)
-        
-        if len(device_info) == 0 or pd.isna(device_info['numMultiprocessors'].iloc[0]):
-            conn.close()
-            return -1
-        
-        num_sms = device_info['numMultiprocessors'].iloc[0]
-        
-        if num_sms is None or num_sms == 0:
-            conn.close()
-            return -1
+        # Load device info for SM count (fallback to A100's 108 SMs if table missing/empty)
+        try:
+            device_info = pd.read_sql_query("""
+                SELECT numMultiprocessors
+                FROM TARGET_INFO_CUDA_DEVICE
+            """, conn)
+            
+            if len(device_info) == 0 or pd.isna(device_info['numMultiprocessors'].iloc[0]):
+                num_sms = 108
+            else:
+                num_sms = device_info['numMultiprocessors'].iloc[0]
+                if pd.isna(num_sms) or num_sms == 0:
+                    num_sms = 108
+        except Exception:
+            num_sms = 108
         
         # Load kernel data
         kernels = pd.read_sql_query("""
@@ -124,7 +124,7 @@ def metric_cal(directory: str) -> float:
     trace_types = get_trace_types(load_yaml(directory))
     if "nsys" in trace_types:
         return calculate_metric(directory)
-    if "json" in trace_types:
+    if "json" in trace_types or "json_tpu" in trace_types:
         return _calc_json(directory)
     print(f"[memory_bound_fraction] Unsupported trace types {trace_types}", file=sys.stderr)
     return -1.0
