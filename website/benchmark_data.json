@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-15T20:28:42.174999+00:00",
+  "generated_at": "2026-04-17T16:19:01.801073+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -184,7 +184,7 @@
     },
     "average_memory_bandwidth": {
       "label": "Avg Mem BW (GB/s)",
-      "description": "Average memory copy bandwidth across all memcpy operations",
+      "description": "Average memory copy bandwidth. GPU: total bytes / total memcpy duration from CUPTI or Kineto. TPU: total bytes / elapsed time between XLA copy-start and copy-done events (conservative lower bound, includes scheduling overhead)",
       "higher_is_better": true,
       "unit": "GB/s",
       "category": "memory",
@@ -1572,6 +1572,252 @@
         "memory_transfer_overhead": 63.3848,
         "communication_fraction": null,
         "total_communication_time": 155.182,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[nccl]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp2-perlmutter[nccl]",
+        "description": "Online serving of Qwen3-4B on 2 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=2, NCCL collectives. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 2,
+        "count_per_node": 2,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 30.5268,
+        "memory_bound_fraction": 42.1243,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 25.8791,
+        "memory_transfer_overhead": 6.69033,
+        "communication_fraction": null,
+        "total_communication_time": 11.9261,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
+        "description": "Online serving of Qwen3-4B on 2 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=2. AllGather collectives are intercepted by MSCCL++ via LD_PRELOAD; AllReduce remains on NCCL. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 2,
+        "count_per_node": 2,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL+MSCCL++",
+        "comm_library_ver": "",
+        "comm_env": {
+          "LD_PRELOAD": "$HOME/mscclpp/build/lib/libmscclpp_nccl.so",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 29.1277,
+        "memory_bound_fraction": 41.698,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 38.946,
+        "memory_transfer_overhead": 6.925,
+        "communication_fraction": null,
+        "total_communication_time": 10.9251,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[nccl]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp4-perlmutter[nccl]",
+        "description": "Online serving of Qwen3-4B on 4 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=4, NCCL collectives. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 59.1288,
+        "memory_bound_fraction": 75.4301,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 63.9481,
+        "memory_transfer_overhead": 8.27491,
+        "communication_fraction": null,
+        "total_communication_time": 63.9359,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
+        "description": "Online serving of Qwen3-4B on 4 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=4. AllGather collectives are intercepted by MSCCL++ via LD_PRELOAD; AllReduce remains on NCCL. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL+MSCCL++",
+        "comm_library_ver": "",
+        "comm_env": {
+          "LD_PRELOAD": "$HOME/mscclpp/build/lib/libmscclpp_nccl.so",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 54.4916,
+        "memory_bound_fraction": 71.6617,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 63.9635,
+        "memory_transfer_overhead": 8.54976,
+        "communication_fraction": null,
+        "total_communication_time": 51.5766,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
