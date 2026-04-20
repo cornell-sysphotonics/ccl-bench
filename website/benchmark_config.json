@@ -102,6 +102,26 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[nccl]",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[nccl]",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false
@@ -328,7 +348,8 @@
       "category": "gpu_efficiency",
       "trace_types": [
         "nsys",
-        "json"
+        "json",
+        "json_tpu"
       ],
       "thresholds": {
         "high": 60,
@@ -354,12 +375,14 @@
     },
     "average_memory_bandwidth": {
       "label": "Avg Mem BW (GB/s)",
-      "description": "Average memory copy bandwidth across all memcpy operations",
+      "description": "Average memory copy bandwidth. GPU: total bytes / total memcpy duration from CUPTI or Kineto. TPU: total bytes / elapsed time between XLA copy-start and copy-done events (conservative lower bound, includes scheduling overhead)",
       "higher_is_better": true,
       "unit": "GB/s",
       "category": "memory",
       "trace_types": [
-        "nsys"
+        "nsys",
+        "json",
+        "json_tpu"
       ],
       "thresholds": {
         "high": 1000,
@@ -375,7 +398,8 @@
       "category": "memory",
       "trace_types": [
         "nsys",
-        "json"
+        "json",
+        "json_tpu"
       ],
       "thresholds": {
         "high": 20,
