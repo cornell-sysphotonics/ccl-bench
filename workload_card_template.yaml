@@ -24,7 +24,7 @@ workload:
       num_heads: 16                   # Q: number of attention heads
       head_dim: 128                   # H: per-head dimension (hidden_size / num_heads)
   data:
-    batch_size: 4  # Batch size, e.g., 4, 8, 16.
+    batch_size: 4  # Global batch size, e.g., 4, 8, 16.
     seq_len: 8192  # Sequence length, e.g., 512, 1024, 8192.
     dataset: c4  # Dataset name, e.g., "c4", "wikitext".
   hardware:
