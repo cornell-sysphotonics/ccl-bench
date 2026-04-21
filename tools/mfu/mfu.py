@@ -1,9 +1,11 @@
 import json
+import glob
 import os
 import re
 import statistics
 import sys
 import yaml
+from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from json_sampling import select_json_files
@@ -108,6 +110,21 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
 _STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
 
 
+def _load_vllm_latency_s(directory: str) -> Optional[float]:
+    """Return vLLM bench latency avg_latency in seconds when available."""
+    latency_files = sorted(glob.glob(os.path.join(directory, "**", "*.latency.json"), recursive=True))
+    for path in latency_files:
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            avg_latency = data.get("avg_latency")
+            if avg_latency is not None:
+                return float(avg_latency)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            continue
+    return None
+
+
 def _calc_json(directory: str, yaml_data: dict) -> float:
     """
     Compute MFU from PyTorch-profiler JSON traces (torchtitan format).
@@ -119,6 +136,7 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
 
     Where:
       N     = total parameter count         (from YAML model_arch.num_params)
+              or active per-token count     (from YAML model_arch.num_params_active)
       N_emb = embedding parameter count     (from YAML model_arch.num_params_embedding)
       L     = number of transformer layers  (from YAML model_arch.num_layers)
       H     = per-head dimension (head_dim) (from YAML model_arch.head_dim)
@@ -138,6 +156,9 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
 
     # ── Architecture params from YAML ─────────────────────────────────────────
     N     = arch.get("num_params")
+    # MoE workloads may provide the active per-token parameter count so MFU
+    # does not charge inactive routed experts on every token.
+    N_active = arch.get("num_params_active")
     N_emb = arch.get("num_params_embedding", 0) or 0
     L     = arch.get("num_layers")
     H     = arch.get("head_dim")
@@ -158,41 +179,48 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
         print(f"[mfu/json] Unknown hardware_model '{hw_model}'; add to _HARDWARE_PEAK_TFLOPS.", file=sys.stderr)
         return -1.0
 
-    # ── Step time from ProfilerStep#N events across rank trace files ──────────
-    rank_files = [
-        f for f in select_json_files(directory)
-        if os.path.basename(f).startswith(("rank", "kineto"))
-    ]
-    if not rank_files:
-        print(f"[mfu/json] No rank trace files found in {directory}", file=sys.stderr)
-        return -1.0
+    # ── Step time source ─────────────────────────────────────────────────────
+    # vLLM latency benchmarks do not emit ProfilerStep#N annotations into
+    # Kineto. Prefer the benchmark's explicit batch latency JSON when present.
+    step_time_s = _load_vllm_latency_s(directory)
 
-    per_rank_avg = []
-    for path in rank_files:
-        events = _load_json_events(path)
-        step_events = sorted(
-            [e for e in events
-             if isinstance(e, dict)
-             and e.get("ph") == "X"
-             and e.get("cat") == "user_annotation"
-             and _STEP_PATTERN.match(e.get("name", ""))],
-            key=lambda e: int(_STEP_PATTERN.match(e["name"]).group(1)),
-        )
-        if not step_events:
-            continue
-        durs_us = [e["dur"] for e in step_events if "dur" in e]
-        inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
-        if inner:
-            per_rank_avg.append(statistics.mean(inner))
+    if step_time_s is None:
+        # Fallback: Step time from ProfilerStep#N events across rank trace files.
+        rank_files = [
+            f for f in select_json_files(directory)
+            if os.path.basename(f).startswith(("rank", "kineto"))
+        ]
+        if not rank_files:
+            print(f"[mfu/json] No rank trace files found in {directory}", file=sys.stderr)
+            return -1.0
 
-    if not per_rank_avg:
-        print(f"[mfu/json] No ProfilerStep events found in {directory}", file=sys.stderr)
-        return -1.0
+        per_rank_avg = []
+        for path in rank_files:
+            events = _load_json_events(path)
+            step_events = sorted(
+                [e for e in events
+                 if isinstance(e, dict)
+                 and e.get("ph") == "X"
+                 and e.get("cat") == "user_annotation"
+                 and _STEP_PATTERN.match(e.get("name", ""))],
+                key=lambda e: int(_STEP_PATTERN.match(e["name"]).group(1)),
+            )
+            if not step_events:
+                continue
+            durs_us = [e["dur"] for e in step_events if "dur" in e]
+            inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
+            if inner:
+                per_rank_avg.append(statistics.mean(inner))
 
-    step_time_s = statistics.mean(per_rank_avg) / 1e6  # µs → s
+        if not per_rank_avg:
+            print(f"[mfu/json] No ProfilerStep events found in {directory}", file=sys.stderr)
+            return -1.0
+
+        step_time_s = statistics.mean(per_rank_avg) / 1e6  # µs → s
 
     # ── MFU ──────────────────────────────────────────────────────────────────
-    flop_per_token  = 6 * (N - N_emb) + 12 * L * H * Q * seq_len
+    effective_params = N_active or N
+    flop_per_token  = 6 * (effective_params - N_emb) + 12 * L * H * Q * seq_len
     tokens_per_sec  = (batch_size * seq_len) / step_time_s
     observed_flops  = flop_per_token * tokens_per_sec
     peak_flops_total = peak_tflops * 1e12 * world_size

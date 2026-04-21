@@ -148,12 +148,6 @@ if __name__ == "__main__":
         print(metric)
         sys.exit(0)
     
-    elif metric_name == "communication_fraction":
-        utilization_module = load_metric_module(os.path.join(tools_dir, "utilization-group-21", "utilization.py"), "utilization")
-        metric = utilization_module.compute_metric(trace_json_path, metric_type="comm_fraction")
-        print(metric)
-        sys.exit(0)
-    
     # Bandwidth metrics
     elif metric_name == "num_comm_kernels":
         bandwidth_module = load_metric_module(os.path.join(tools_dir, "bandwidth-group-21", "bandwidth.py"), "bandwidth")

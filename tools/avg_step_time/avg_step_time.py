@@ -6,7 +6,8 @@ Returns: Float >= 0, or -1 if data unavailable
 
 Supported trace types (dispatched via workload YAML metric_source.traces):
   json_tpu — reads TPU profiler Chrome-trace JSON ($core.py:331 step events)
-  json      — reads PyTorch-profiler kineto JSON (ProfilerStep#N events)
+  json      — reads PyTorch-profiler kineto JSON
+              (ProfilerStep#N events, or vLLM execute_context_* ranges)
 """
 
 import json
@@ -129,11 +130,18 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
 # ── JSON / GPU backend ────────────────────────────────────────────────────────
 
 _STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
+_VLLM_EXECUTE_CONTEXT_PREFIX = "execute_context_"
 
 
 def _calc_json(directory: str) -> float:
     """
-    Step time from PyTorch-profiler kineto JSON (ProfilerStep#N events).
+    Step time from PyTorch-profiler kineto JSON.
+
+    Training traces normally contain ProfilerStep#N user annotations.
+    vLLM inference traces do not; they contain execute_context_* user ranges,
+    where each range is one engine execution/decode iteration.  Use those as
+    the inference step marker rather than the benchmark's full batch latency.
+
     Averages across all sampled rank files.
     Returns seconds.
     """
@@ -142,7 +150,8 @@ def _calc_json(directory: str) -> float:
         print(f"[avg_step_time/json] No JSON files in {directory}", file=sys.stderr)
         return -1.0
 
-    per_rank_avg = []
+    profiler_step_rank_avgs = []
+    vllm_execute_rank_avgs = []
     for path in rank_files:
         events = _load_json_events(path)
         step_events = sorted(
@@ -153,18 +162,36 @@ def _calc_json(directory: str) -> float:
              and _STEP_PATTERN.match(e.get("name", ""))],
             key=lambda e: int(_STEP_PATTERN.match(e["name"]).group(1)),
         )
-        if not step_events:
-            continue
-        durs_us = [e["dur"] for e in step_events if "dur" in e]
+        if step_events:
+            durs_us = [e["dur"] for e in step_events if "dur" in e]
+            inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
+            if inner:
+                profiler_step_rank_avgs.append(statistics.mean(inner))
+
+        execute_events = sorted(
+            [e for e in events
+             if isinstance(e, dict)
+             and e.get("ph") == "X"
+             and e.get("cat") == "user_annotation"
+             and e.get("name", "").startswith(_VLLM_EXECUTE_CONTEXT_PREFIX)],
+            key=lambda e: e.get("ts", 0),
+        )
+        durs_us = [e["dur"] for e in execute_events if "dur" in e]
         inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
         if inner:
-            per_rank_avg.append(statistics.mean(inner))
+            vllm_execute_rank_avgs.append(statistics.mean(inner))
 
-    if not per_rank_avg:
-        print(f"[avg_step_time/json] No ProfilerStep events found in {directory}", file=sys.stderr)
-        return -1.0
+    if profiler_step_rank_avgs:
+        return statistics.mean(profiler_step_rank_avgs) / 1e6  # µs → s
 
-    return statistics.mean(per_rank_avg) / 1e6  # µs → s
+    if vllm_execute_rank_avgs:
+        return statistics.mean(vllm_execute_rank_avgs) / 1e6  # µs → s
+
+    print(
+        f"[avg_step_time/json] No ProfilerStep or vLLM execute_context events found in {directory}",
+        file=sys.stderr,
+    )
+    return -1.0
 
 
 # ── Unified entry point ────────────────────────────────────────────────────────
