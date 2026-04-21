@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCL-Bench · Leaderboard</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<style>
+:root {
+  --bg:         #f1f5f9;
+  --surface:    #ffffff;
+  --border:     #e2e8f0;
+  --text:       #0f172a;
+  --muted:      #64748b;
+  --primary:    #1e293b;
+  --accent:     #2563eb;
+  --accent-dim: #eff6ff;
+  --green:      #16a34a;
+  --green-bg:   #f0fdf4;
+  --amber:      #d97706;
+  --amber-bg:   #fffbeb;
+  --red:        #dc2626;
+  --red-bg:     #fef2f2;
+  --radius:     6px;
+  --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.site-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.site-header h1 { font-size: 18px; font-weight: 700; letter-spacing: -.2px; }
+.site-header .tagline { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.site-header .gen-ts { font-size: 11px; color: #475569; text-align: right; white-space: nowrap; }
+.header-brand { display: flex; align-items: center; gap: 14px; }
+.header-logo { height: 48px; width: auto; border-radius: 4px; flex-shrink: 0; }
+
+/* ── Nav bar ── */
+.lb-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .12s, border-color .12s;
+}
+.back-btn:hover { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+.lb-nav-title { font-size: 13px; color: var(--muted); }
+.lb-nav-counts { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* ── Scrollable content area ── */
+.lb-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+/* ── Workload section ── */
+.wl-section { margin-bottom: 40px; }
+.wl-section-hd {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+.wl-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+.wl-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+.wl-detail { font-size: 12px; color: var(--muted); }
+.wl-count { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.b-inference { background: #dbeafe; color: #1d4ed8; }
+.b-training  { background: #dcfce7; color: #15803d; }
+.b-tpu       { background: #fce7f3; color: #be185d; }
+.b-gpu       { background: #ede9fe; color: #6d28d9; }
+
+/* ── Leaderboard table ── */
+.lb-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.lb-table th {
+  background: #1e293b;
+  color: #cbd5e1;
+  padding: 7px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-right: 1px solid #334155;
+}
+.lb-table th:last-child { border-right: none; }
+.lb-table th.th-metric { background: #1a3050; text-align: center; }
+.lb-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f8fafc;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.lb-table td:last-child { border-right: none; }
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-table tr:nth-child(even) td { background: #f8fafc; }
+.lb-table tr:hover td { background: var(--accent-dim) !important; }
+.lb-table .td-metric { text-align: center; }
+.wl-name-cell {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--accent);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Metric pill ── */
+.metric-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 11.5px;
+  min-width: 56px;
+  text-align: center;
+}
+.mp-high { background: var(--green-bg); color: var(--green); }
+.mp-mid  { background: var(--amber-bg); color: var(--amber); }
+.mp-low  { background: var(--red-bg);   color: var(--red);   }
+.mp-na   { color: var(--muted); font-weight: 400; }
+
+/* ── Info button ── */
+.info-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #bfdbfe;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.info-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Modal ── */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  animation: pop-in .18s ease;
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-hd {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.modal-hd h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: ui-monospace, monospace;
+  line-height: 1.4;
+  word-break: break-all;
+}
+.modal-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s;
+}
+.modal-close:hover { background: #f1f5f9; color: var(--text); }
+.modal-bd { padding: 18px 22px 22px; }
+.m-section { margin-bottom: 18px; }
+.m-section:last-child { margin-bottom: 0; }
+.m-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.m-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #374151;
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.kv-grid { display: grid; grid-template-columns: 140px 1fr; gap: 4px 14px; }
+.kv-k { font-size: 12px; color: var(--muted); }
+.kv-v { font-size: 12px; font-weight: 500; word-break: break-word; }
+.kv-v a { color: var(--accent); }
+.metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.metric-row .mr-label { font-size: 13px; font-weight: 600; }
+.metric-row .mr-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.m-cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--accent);
+  margin: 12px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #bfdbfe;
+}
+.m-cat-label:first-child { margin-top: 0; }
+
+/* ── Empty state ── */
+.empty-wl {
+  padding: 18px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
+/* ── Sortable headers ── */
+.lb-table th.sortable { cursor: pointer; transition: background .1s; }
+.lb-table th.sortable:hover { background: #263348; }
+.lb-table th.sorted-asc::after  { content: " ↑"; opacity: .75; }
+.lb-table th.sorted-desc::after { content: " ↓"; opacity: .75; }
+
+/* ── Row checkbox ── */
+.row-check { width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent); }
+.row-check:disabled { cursor: not-allowed; opacity: .35; }
+tr.row-selected td { background: #eff6ff !important; }
+
+/* ── Compare bar ── */
+.compare-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--primary);
+  color: #fff;
+  padding: 10px 28px;
+  z-index: 40;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 -4px 18px rgba(0,0,0,.22);
+  animation: slide-up .18s ease;
+}
+.compare-bar.visible { display: flex; }
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.compare-bar-label { font-size: 12px; color: #94a3b8; white-space: nowrap; }
+.compare-bar-names {
+  font-size: 12px; font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: #e2e8f0; margin-top: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 700px;
+}
+.compare-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.cmp-action-btn {
+  padding: 6px 16px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent;
+  transition: background .12s;
+}
+.cmp-action-btn.primary  { background: var(--accent); color: #fff; border-color: var(--accent); }
+.cmp-action-btn.primary:hover { background: #1d4ed8; }
+.cmp-action-btn.secondary { background: transparent; color: #94a3b8; border-color: #334155; }
+.cmp-action-btn.secondary:hover { background: #1e293b; color: #e2e8f0; }
+
+/* ── Compare modal table ── */
+.modal-wide { max-width: 920px !important; }
+.cmp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cmp-table th, .cmp-table td { padding: 6px 10px; border: 1px solid var(--border); text-align: left; }
+.cmp-table th { background: var(--bg); font-weight: 600; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+.cmp-table .cmp-label-hd { width: 160px; }
+.cmp-table .cmp-val-hd { font-family: ui-monospace,monospace; color: var(--accent) !important; font-size: 11px; text-transform: none; letter-spacing: 0; }
+.cmp-table .cmp-label { color: var(--muted); width: 160px; font-size: 12px; }
+.cmp-table .cmp-val   { font-size: 12px; font-weight: 500; }
+.cmp-table .cmp-metric { text-align: center; }
+.cmp-table tr.cmp-diff td { background: #fffbeb; }
+.cmp-table tr.cmp-diff .cmp-label { color: var(--amber); font-weight: 700; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 12px 24px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-brand">
+    <img src="assets/logo.png" alt="CCL-Bench logo" class="header-logo">
+    <div>
+      <h1>CCL-Bench &mdash; Standard Workload Leaderboard</h1>
+      <div class="tagline">Experiments grouped by the 9 standard workload entries</div>
+    </div>
+  </div>
+  <div class="gen-ts" id="gen-ts"></div>
+</header>
+
+<div class="lb-nav">
+  <a href="index.html" class="back-btn">&#8592; All Experiments</a>
+  <span class="lb-nav-title">Showing experiments matched to standard workloads · batch size is not a matching criterion for inference</span>
+  <span class="lb-nav-counts" id="lb-counts"></span>
+</div>
+
+<div class="lb-content" id="lb-content"></div>
+
+<div class="compare-bar" id="compare-bar">
+  <div style="min-width:0">
+    <div class="compare-bar-label" id="compare-bar-label">Select 1 more to compare</div>
+    <div class="compare-bar-names" id="compare-bar-names"></div>
+  </div>
+  <div class="compare-bar-actions">
+    <button class="cmp-action-btn primary" id="compare-go-btn" onclick="showCompare()" style="display:none">Compare &#8596;</button>
+    <button class="cmp-action-btn secondary" onclick="clearSelection()">Clear</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop" onclick="onBackdropClick(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-hd">
+      <h2 id="modal-title"></h2>
+      <button class="modal-close" onclick="closeModal()" title="Close">&#10005;</button>
+    </div>
+    <div class="modal-bd" id="modal-body"></div>
+  </div>
+</div>
+
+<footer>
+  CCL-Bench &mdash; Collaborative LLM Systems Benchmark &nbsp;|&nbsp;
+  <a href="https://cornell.network/" target="_blank" rel="noopener">Cornell Systems &amp; Networking Lab</a>
+</footer>
+
+<script src="website/data.js"></script>
+<script>
+'use strict';
+
+// ── Standard workload definitions ─────────────────────────────────────────────
+const STANDARD_WORKLOADS = [
+  { id: 1, model: 'qwen-3-4b',        phase: 'inference', batch_size: 128, seq_len: 1024, label: 'Qwen3-4B · Inference · batch 128 · seq 1024'        },
+  { id: 2, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 128, seq_len: 1024, label: 'Llama-3.1-8B · Inference · batch 128 · seq 1024'    },
+  { id: 3, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 128, seq_len: 2048, label: 'Llama-3.1-8B · Inference · batch 128 · seq 2048'    },
+  { id: 4, model: 'llama-3.1-8b',     phase: 'training',  batch_size: 4,   seq_len: 512,  label: 'Llama-3.1-8B · Training · batch 4 · seq 512'        },
+  { id: 5, model: 'llama-3.1-8b',     phase: 'training',  batch_size: 32,  seq_len: 1024, label: 'Llama-3.1-8B · Training · batch 32 · seq 1024'      },
+  { id: 6, model: 'qwen-3-8b',        phase: 'training',  batch_size: 2,   seq_len: 1024, label: 'Qwen3-8B · Training · batch 2 · seq 1024'           },
+  { id: 7, model: 'deepseek_v3_16b',  phase: 'training',  batch_size: 8,   seq_len: 1024, label: 'DeepSeek-V3-16B · Training · batch 8 · seq 1024'    },
+  { id: 8, model: 'deepseek_v3_16b',  phase: 'training',  batch_size: 4,   seq_len: 5096, label: 'DeepSeek-V3-16B · Training · batch 4 · seq 5096'    },
+  { id: 9, model: 'deepseek_v3_236b', phase: 'training',  batch_size: 64,  seq_len: 1024, label: 'DeepSeek-V3-236B · Training · batch 64 · seq 1024'  },
+];
+
+// ── Global state ──────────────────────────────────────────────────────────────
+const G = {
+  allRows:  [],          // all rows with __idx
+  mi:       {},          // metric_info
+  cats:     [],          // metric_categories
+  sections: {},          // wlId -> { wl, rows, cols, hasEP, hasShard }
+  sort:     {},          // wlId -> { col, dir }
+  selected: new Set(),   // __idx values selected for compare (max 5)
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt(v) {
+  if (v === null || v === undefined || v === '') return '<span style="color:var(--muted)">—</span>';
+  return esc(String(v));
+}
+function metricPill(val, info) {
+  if (val === null || val === undefined) return '<span class="metric-pill mp-na">N/A</span>';
+  if (typeof val !== 'number') return `<span class="metric-pill mp-na">${esc(String(val))}</span>`;
+  const thr    = (info && info.thresholds) || { high: 50, mid: 25 };
+  const higher = !(info && info.higher_is_better === false);
+  const unit   = (info && info.unit) || '';
+  let cls;
+  if (higher) { cls = val >= thr.high ? 'mp-high' : val >= thr.mid ? 'mp-mid' : 'mp-low'; }
+  else        { cls = val <= thr.mid  ? 'mp-high' : val <= thr.high ? 'mp-mid' : 'mp-low'; }
+  const num = (Math.abs(val) < 0.01 && val !== 0) ? val.toExponential(2) : val.toFixed(2);
+  return `<span class="metric-pill ${cls}">${esc(num + (unit ? '\u202f' + unit : ''))}</span>`;
+}
+
+// ── Match logic ───────────────────────────────────────────────────────────────
+function matchesWorkload(row, wl) {
+  const m = row.metadata;
+  if ((m.model_family || '').toLowerCase() !== wl.model.toLowerCase()) return false;
+  if ((m.phase || '').toLowerCase() !== wl.phase.toLowerCase()) return false;
+  if (Number(m.seq_len) !== Number(wl.seq_len)) return false;
+  if (wl.batch_size !== undefined && Number(m.batch_size) !== Number(wl.batch_size)) return false;
+  return true;
+}
+
+// ── Sort helpers ──────────────────────────────────────────────────────────────
+function getSortVal(row, col) {
+  if (col.startsWith('m_'))      return row.metadata[col.slice(2)];
+  if (col.startsWith('metric_')) return row.metrics[col.slice(7)];
+  return null;
+}
+function applySortRows(rows, wlId) {
+  const st = G.sort[wlId];
+  if (!st || !st.col) return [...rows].sort((a,b) =>
+    (a.metadata.workload_name||'').localeCompare(b.metadata.workload_name||''));
+  return [...rows].sort((a, b) => {
+    const va = getSortVal(a, st.col), vb = getSortVal(b, st.col);
+    if (va === null && vb === null) return 0;
+    if (va === null) return 1;
+    if (vb === null) return -1;
+    if (typeof va === 'number' && typeof vb === 'number') return st.dir * (va - vb);
+    return st.dir * String(va).localeCompare(String(vb), undefined, { numeric: true });
+  });
+}
+function sortSection(wlId, col) {
+  const cur = G.sort[wlId] || { col: null, dir: 1 };
+  G.sort[wlId] = cur.col === col ? { col, dir: cur.dir * -1 } : { col, dir: 1 };
+  rerenderSectionTable(wlId);
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+function buildCols(rows) {
+  const mi = G.mi;
+  const hasEP    = rows.some(r => r.metadata.ep != null);
+  const hasShard = rows.some(r => r.metadata.dp_shard != null && r.metadata.dp_shard > 1);
+  const metricKeys = Object.keys(mi).filter(mk => rows.some(r => r.metrics[mk] != null));
+
+  const cols = [
+    { key: '__select',       label: '',          align: 'center', noSort: true  },
+    { key: '__info',         label: '',          align: 'center', noSort: true  },
+    { key: 'm_workload_name',label: 'Experiment',align: 'left'   },
+    { key: 'm_hardware_type',label: 'HW',        align: 'left'   },
+    { key: 'm_hardware_model',label:'HW Model',  align: 'left'   },
+    { key: 'm_total_count',  label: 'Accel.',    align: 'right',  numeric: true },
+    { key: 'm_framework',    label: 'Framework', align: 'left'   },
+    { key: 'm_tp',           label: 'TP',        align: 'center', numeric: true, title: 'Tensor parallelism' },
+    { key: 'm_dp_replicate', label: 'DP',        align: 'center', numeric: true, title: 'Data parallel replicas (full model copy each)' },
+  ];
+  if (hasShard) cols.push({ key: 'm_dp_shard', label: 'Shard', align: 'center', numeric: true, title: 'FSDP/ZeRO sharding within each DP replica' });
+  if (hasEP)    cols.push({ key: 'm_ep',       label: 'EP',    align: 'center', numeric: true, title: 'Expert parallelism' });
+  metricKeys.forEach(mk => cols.push({
+    key: `metric_${mk}`, label: (mi[mk]&&mi[mk].label)||mk,
+    align: 'center', numeric: true, isMetric: true, metricKey: mk, metricInfo: mi[mk],
+  }));
+  return cols;
+}
+
+function renderThead(wlId, cols) {
+  const st = G.sort[wlId] || {};
+  return cols.map(col => {
+    if (col.key === '__select') return `<th style="width:32px;text-align:center" title="Select to compare">&#9745;</th>`;
+    if (col.key === '__info')   return `<th style="width:32px"></th>`;
+    const sortCls = col.noSort ? '' : ('sortable' + (st.col === col.key ? (st.dir === 1 ? ' sorted-asc' : ' sorted-desc') : ''));
+    const mCls    = col.isMetric ? 'th-metric' : '';
+    const onclick = col.noSort ? '' : `onclick="sortSection(${wlId}, '${col.key}')"`;
+    const ttip    = col.title ? ` title="${esc(col.title)}"` : '';
+    const align   = col.align !== 'left' ? ` style="text-align:${col.align}"` : '';
+    return `<th class="${sortCls} ${mCls}"${onclick}${ttip}${align}>${esc(col.label)}</th>`;
+  }).join('');
+}
+
+function renderTbody(wlId, cols) {
+  const rows = applySortRows(G.sections[wlId].rows, wlId);
+  return rows.map(r => {
+    const m      = r.metadata;
+    const isSel  = G.selected.has(r.__idx);
+    const canSel = isSel || G.selected.size < 5;
+    const hwCls  = (m.hardware_type||'').toLowerCase() === 'tpu' ? 'b-tpu' : 'b-gpu';
+
+    const cells = cols.map(col => {
+      if (col.key === '__select') {
+        const chk = isSel  ? ' checked' : '';
+        const dis = canSel ? '' : ' disabled';
+        return `<td style="width:32px;padding:4px 8px;text-align:center"><input type="checkbox" class="row-check"${chk}${dis} onchange="toggleSelect(${r.__idx})" title="Select to compare"></td>`;
+      }
+      if (col.key === '__info') {
+        return `<td style="width:32px;padding:4px 8px"><button class="info-btn" onclick="showDetailModal(${r.__idx})" title="View workload details">i</button></td>`;
+      }
+      if (col.key === 'm_workload_name') return `<td class="wl-name-cell">${esc(m.workload_name||'')}</td>`;
+      if (col.key === 'm_hardware_type') return `<td><span class="badge ${hwCls}">${esc(m.hardware_type||'')}</span></td>`;
+      if (col.isMetric) return `<td class="td-metric">${metricPill(r.metrics[col.metricKey], col.metricInfo)}</td>`;
+      const field = col.key.slice(2);
+      const val   = m[field];
+      const style = col.align !== 'left' ? ` style="text-align:${col.align}"` : '';
+      return `<td${style}>${fmt(val)}</td>`;
+    }).join('');
+
+    return `<tr${isSel ? ' class="row-selected"' : ''}>${cells}</tr>`;
+  }).join('');
+}
+
+function rerenderSectionTable(wlId) {
+  const sec  = G.sections[wlId];
+  if (!sec) return;
+  const thead = document.getElementById(`lb-thead-${wlId}`);
+  const tbody = document.getElementById(`lb-tbody-${wlId}`);
+  if (thead) thead.innerHTML = `<tr>${renderThead(wlId, sec.cols)}</tr>`;
+  if (tbody) tbody.innerHTML = renderTbody(wlId, sec.cols);
+}
+
+function rerenderAllBodies() {
+  Object.keys(G.sections).forEach(wlId => {
+    const tbody = document.getElementById(`lb-tbody-${Number(wlId)}`);
+    if (tbody) tbody.innerHTML = renderTbody(Number(wlId), G.sections[wlId].cols);
+  });
+}
+
+// ── Render one section (initial) ──────────────────────────────────────────────
+function renderSection(wl, rows) {
+  const phaseBadge = wl.phase === 'inference'
+    ? `<span class="badge b-inference">Inference</span>`
+    : `<span class="badge b-training">Training</span>`;
+  const detail = wl.phase === 'inference'
+    ? `seq_len = ${wl.seq_len}  ·  batch size variable`
+    : `batch = ${wl.batch_size}  ·  seq_len = ${wl.seq_len}`;
+
+  const hd = `<div class="wl-section-hd">
+    <span class="wl-num">#${wl.id}</span>
+    <span class="wl-title">${esc(wl.label)}</span>
+    ${phaseBadge}
+    <span class="wl-detail">${esc(detail)}</span>
+    <span class="wl-count">${rows.length} experiment${rows.length !== 1 ? 's' : ''}</span>
+  </div>`;
+
+  if (!rows.length)
+    return `<div class="wl-section" id="wl-section-${wl.id}">${hd}<div class="empty-wl">No experiments collected yet for this workload.</div></div>`;
+
+  const cols = buildCols(rows);
+  G.sections[wl.id] = { wl, rows, cols };
+
+  return `<div class="wl-section" id="wl-section-${wl.id}">
+    ${hd}
+    <div class="lb-table-wrap">
+      <table class="lb-table">
+        <thead id="lb-thead-${wl.id}"><tr>${renderThead(wl.id, cols)}</tr></thead>
+        <tbody id="lb-tbody-${wl.id}">${renderTbody(wl.id, cols)}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  if (typeof BENCHMARK_DATA === 'undefined' || !BENCHMARK_DATA) {
+    document.getElementById('lb-content').innerHTML =
+      '<div style="padding:60px;text-align:center;color:var(--muted)">No benchmark data. Run <code>python website/generate_data.py</code> first.</div>';
+    return;
+  }
+  document.getElementById('gen-ts').textContent =
+    'Generated ' + new Date(BENCHMARK_DATA.generated_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+
+  G.allRows = BENCHMARK_DATA.rows.map((r, i) => ({ ...r, __idx: i }));
+  G.mi      = BENCHMARK_DATA.metric_info || {};
+  G.cats    = BENCHMARK_DATA.metric_categories || [];
+
+  let totalMatched = 0;
+  const html = STANDARD_WORKLOADS.map(wl => {
+    const matching = G.allRows.filter(r => matchesWorkload(r, wl));
+    totalMatched += matching.length;
+    return renderSection(wl, matching);
+  }).join('');
+
+  document.getElementById('lb-content').innerHTML = html;
+  document.getElementById('lb-counts').textContent =
+    `${totalMatched} of ${G.allRows.length} experiments matched`;
+}
+
+init();
+
+// ── Select & Compare ──────────────────────────────────────────────────────────
+function toggleSelect(idx) {
+  if (G.selected.has(idx)) { G.selected.delete(idx); }
+  else { if (G.selected.size >= 5) return; G.selected.add(idx); }
+  rerenderAllBodies();
+  updateCompareBar();
+}
+function clearSelection() {
+  G.selected.clear();
+  rerenderAllBodies();
+  updateCompareBar();
+}
+function updateCompareBar() {
+  const bar   = document.getElementById('compare-bar');
+  const count = G.selected.size;
+  if (!count) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+  const names = [...G.selected].map(i => (G.allRows[i]&&G.allRows[i].metadata.workload_name) || `#${i}`);
+  document.getElementById('compare-bar-names').textContent = names.join('  vs.  ');
+  document.getElementById('compare-bar-label').textContent =
+    count >= 2 ? `${count} selected — ready to compare:` : 'Select 1 more to compare:';
+  document.getElementById('compare-go-btn').style.display = count >= 2 ? '' : 'none';
+}
+
+function showCompare() {
+  const idxs = [...G.selected];
+  if (idxs.length < 2) return;
+  const rows = idxs.map(i => G.allRows[i]);
+  const mi   = G.mi;
+  const cats = G.cats;
+
+  document.getElementById('modal-box').classList.add('modal-wide');
+  const titleParts = rows.map(r =>
+    `<span style="color:var(--accent);font-family:ui-monospace,monospace;font-size:12px">${esc(r.metadata.workload_name||'?')}</span>`
+  );
+  document.getElementById('modal-title').innerHTML =
+    titleParts.join('<span style="color:var(--muted);font-weight:400;font-size:12px;margin:0 5px">vs</span>');
+
+  const hdCells = rows.map(r => `<th class="cmp-val-hd">${esc(r.metadata.workload_name||'?')}</th>`).join('');
+  const colspanAll = rows.length + 1;
+  const parts = [];
+
+  // Config
+  const metaFields = [
+    ['Model Family',  r => r.metadata.model_family],
+    ['Phase',         r => r.metadata.phase],
+    ['Batch Size',    r => r.metadata.batch_size],
+    ['Seq Length',    r => r.metadata.seq_len],
+    ['HW Type',       r => r.metadata.hardware_type],
+    ['HW Model',      r => r.metadata.hardware_model],
+    ['Accelerators',  r => r.metadata.total_count],
+    ['Framework',     r => r.metadata.framework],
+    ['Compiler',      r => r.metadata.compiler],
+    ['TP',            r => r.metadata.tp],
+    ['PP',            r => r.metadata.pp],
+    ['DP',            r => r.metadata.dp_replicate],
+    ['Shard (FSDP)',  r => r.metadata.dp_shard],
+    ['EP',            r => r.metadata.ep],
+    ['Comm Library',  r => r.metadata.comm_library],
+  ].filter(([, fn]) => rows.some(r => fn(r) != null));
+
+  const cfgRows = metaFields.map(([label, fn]) => {
+    const vals  = rows.map(fn);
+    const first = String(vals[0] ?? '');
+    const diff  = vals.some(v => String(v ?? '') !== first);
+    return `<tr class="${diff ? 'cmp-diff' : ''}">
+      <td class="cmp-label">${esc(label)}</td>
+      ${vals.map(v => `<td class="cmp-val">${fmt(v)}</td>`).join('')}
+    </tr>`;
+  }).join('');
+
+  parts.push(`<div class="m-section"><div class="m-title">Configuration</div>
+    <table class="cmp-table">
+      <thead><tr><th class="cmp-label-hd"></th>${hdCells}</tr></thead>
+      <tbody>${cfgRows}</tbody>
+    </table></div>`);
+
+  // Metrics
+  const catOrder = {}; cats.forEach((c,i) => { catOrder[c.id] = i; });
+  const allKeys = [...new Set(rows.flatMap(r => Object.keys(r.metrics)))]
+    .filter(m => mi[m])
+    .sort((a,b) => ((catOrder[(mi[a]&&mi[a].category)||'']??999) - (catOrder[(mi[b]&&mi[b].category)||'']??999)) || a.localeCompare(b));
+
+  if (allKeys.length) {
+    const byCat = {}; const noCat = [];
+    allKeys.forEach(m => {
+      const cat = (mi[m]&&mi[m].category)||'';
+      if (cat) { (byCat[cat]=byCat[cat]||[]).push(m); } else { noCat.push(m); }
+    });
+    const mRows = (arr) => arr.map(m => {
+      const info = mi[m]||{};
+      return `<tr><td class="cmp-label">${esc(info.label||m)}</td>
+        ${rows.map(r => `<td class="cmp-val cmp-metric">${metricPill(r.metrics[m], info)}</td>`).join('')}
+      </tr>`;
+    }).join('');
+    const sections = [];
+    cats.forEach(c => {
+      const arr = byCat[c.id];
+      if (arr&&arr.length) sections.push(
+        `<tr><td colspan="${colspanAll}" style="background:var(--bg);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);padding:5px 10px">${esc(c.label)}</td></tr>` + mRows(arr)
+      );
+    });
+    if (noCat.length) sections.push(mRows(noCat));
+    parts.push(`<div class="m-section"><div class="m-title">Metrics</div>
+      <table class="cmp-table">
+        <thead><tr><th class="cmp-label-hd">Metric</th>${hdCells}</tr></thead>
+        <tbody>${sections.join('')}</tbody>
+      </table></div>`);
+  }
+
+  document.getElementById('modal-body').innerHTML = parts.join('');
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+// ── Workload detail modal ─────────────────────────────────────────────────────
+function showDetailModal(idx) {
+  const row = G.allRows[idx];
+  if (!row) return;
+  const m    = row.metadata;
+  const mi   = G.mi;
+  const cats = G.cats;
+
+  document.getElementById('modal-box').classList.remove('modal-wide');
+  document.getElementById('modal-title').textContent = m.workload_name || '';
+  const parts = [];
+
+  if (m.description)
+    parts.push(`<div class="m-section"><div class="m-title">Description</div><div class="m-desc">${esc(m.description)}</div></div>`);
+
+  const kvSection = (title, kvs) => {
+    const filtered = kvs.filter(([, v]) => v != null && v !== '');
+    if (!filtered.length) return '';
+    return `<div class="m-section"><div class="m-title">${title}</div><div class="kv-grid">
+      ${filtered.map(([k,v]) => `<span class="kv-k">${esc(k)}</span><span class="kv-v">${v}</span>`).join('')}
+    </div></div>`;
+  };
+
+  parts.push(kvSection('Model & Data', [
+    ['HuggingFace URL', m.hf_url ? `<a href="${esc(m.hf_url)}" target="_blank">${esc(m.hf_url)}</a>` : null],
+    ['Model Family', m.model_family], ['Phase', m.phase], ['Precision', m.precision],
+    ['MoE', m.moe != null ? (m.moe ? 'Yes' : 'No') : null],
+    ['Batch Size', m.batch_size], ['Seq Length', m.seq_len],
+  ]));
+
+  const numNodes = (m.total_count && m.count_per_node) ? Math.round(m.total_count / m.count_per_node) : null;
+  parts.push(kvSection('Hardware', [
+    ['HW Type', m.hardware_type], ['HW Model', m.hardware_model],
+    ['Total Accelerators', m.total_count], ['Accelerators / Node', m.count_per_node],
+    ['Num Nodes', numNodes],
+    ['Scale-out BW (Gbps)', m.bandwidth_scaleout], ['Scale-up BW (Gbps)', m.bandwidth_scaleup],
+  ]));
+
+  parts.push(kvSection('Framework & Parallelism', [
+    ['Framework', m.framework], ['Compiler', m.compiler],
+    ['TP', m.tp], ['PP', m.pp],
+    ['DP Replicate', m.dp_replicate], ['DP Shard (FSDP)', m.dp_shard],
+    ['EP', m.ep], ['CP', m.cp],
+  ]));
+
+  parts.push(kvSection('Communication', [
+    ['Comm Library', m.comm_library], ['Version', m.comm_library_ver],
+  ]));
+
+  const metricEntries = Object.entries(row.metrics || {});
+  if (metricEntries.length) {
+    const byCat = {}; const noCat = [];
+    metricEntries.forEach(([name, val]) => {
+      const cat = (mi[name]&&mi[name].category)||'';
+      if (cat) { (byCat[cat]=byCat[cat]||[]).push([name,val]); } else { noCat.push([name,val]); }
+    });
+    const mRow = ([name,val]) => {
+      const info = mi[name]||{};
+      return `<div class="metric-row">
+        <div><div class="mr-label">${esc(info.label||name)}</div>
+        ${info.description?`<div class="mr-desc">${esc(info.description)}</div>`:''}</div>
+        ${metricPill(val, info)}
+      </div>`;
+    };
+    const secs = [];
+    cats.forEach(c => { const a=byCat[c.id]; if(a&&a.length) secs.push(`<div class="m-cat-label">${esc(c.label)}</div>`+a.map(mRow).join('')); });
+    if (noCat.length) secs.push(noCat.map(mRow).join(''));
+    parts.push(`<div class="m-section"><div class="m-title">Metric Results</div>${secs.join('')}</div>`);
+  }
+
+  document.getElementById('modal-body').innerHTML = parts.filter(Boolean).join('');
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+  document.getElementById('modal-box').classList.remove('modal-wide');
+}
+function onBackdropClick(e) {
+  if (e.target === document.getElementById('modal-backdrop')) closeModal();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

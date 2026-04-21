@@ -104,22 +104,22 @@
     {
       "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[nccl]",
       "metrics": "auto",
-      "required_update": true
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
       "metrics": "auto",
-      "required_update": true
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[nccl]",
       "metrics": "auto",
-      "required_update": true
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
       "metrics": "auto",
-      "required_update": true
+      "required_update": false
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
@@ -207,6 +207,7 @@
       "required_update": false
     },
     {
+<<<<<<< kevin/perlmutter-vllm-inference-clean
       "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp4-batch8-perlmutter",
       "metrics": "auto",
       "required_update": true
@@ -333,6 +334,9 @@
     },
     {
       "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-vllm-tp4-ep4-batch32-in3968-out128-puremscclpp-perlmutter",
+=======
+      "trace": "/data/ccl-bench_trace_collection/nanochat-8b-pytorch-dp-2-dgx_spark",
+>>>>>>> main
       "metrics": "auto",
       "required_update": true
     }

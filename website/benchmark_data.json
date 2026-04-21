@@ -1,5 +1,9 @@
 {
+<<<<<<< kevin/perlmutter-vllm-inference-clean
   "generated_at": "2026-04-21T19:28:43.098896+00:00",
+=======
+  "generated_at": "2026-04-20T02:57:10.201368+00:00",
+>>>>>>> main
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -4641,6 +4645,70 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/nanochat-8b-pytorch-dp-2-dgx_spark",
+      "metadata": {
+        "workload_name": "nanochat-8b-pytorch-dp-2-dgx_spark",
+        "description": "Nanochat d=20 Training on 2 x DGX Spark",
+        "hf_url": "https://github.com/karpathy/nanochat",
+        "trace_url": "None",
+        "model_family": "nanochat",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 64,
+        "seq_len": 2048,
+        "dataset": "ClimbMix 400B First 8 Shards",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_dgx_spark",
+        "total_count": 2,
+        "count_per_node": 1,
+        "network_topology": "point-to-point",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": "N/A",
+        "driver_version": "cuda_13.0",
+        "framework": "pytorch",
+        "compiler": "plain_pytorch",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 2,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "nccl",
+        "comm_library_ver": "2.27.5",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": null,
+        "mfu": null,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": null,
+        "memory_bound_fraction": null,
+        "moe_fraction": null,
+        "average_memory_bandwidth": null,
+        "memory_transfer_overhead": null,
+        "communication_fraction": null,
+        "total_communication_time": null,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null
       }
     }
   ]
