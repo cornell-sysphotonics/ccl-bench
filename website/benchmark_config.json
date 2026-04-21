@@ -470,23 +470,6 @@
       },
       "required_update": false
     },
-    "memory_bound_fraction": {
-      "label": "Mem Bound (%)",
-      "description": "Fraction of kernel time classified as memory-bound. Uses SM coverage for NSYS traces and kernel-category heuristics for Kineto JSON traces",
-      "higher_is_better": false,
-      "unit": "%",
-      "category": "gpu_efficiency",
-      "trace_types": [
-        "nsys",
-        "json",
-        "json_tpu"
-      ],
-      "thresholds": {
-        "high": 60,
-        "mid": 30
-      },
-      "required_update": false
-    },
     "moe_fraction": {
       "label": "MoE Fraction (%)",
       "description": "Percentage of GPU time in Mixture of Experts kernels (expert compute, routing, gating, pplx dispatch/combine)",
