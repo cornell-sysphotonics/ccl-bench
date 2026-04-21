@@ -37,8 +37,7 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -174,9 +173,7 @@ body {
 /* ── Table wrapper ──────────────────────────────────────────────────────── */
 .table-outer {
   flex: 1;
-  min-height: 0;        /* lets flex child shrink so body doesn't scroll */
   overflow-x: auto;
-  overflow-y: auto;     /* table scrolls internally; thead sticks at top */
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -865,163 +862,6 @@ footer {
   background: var(--surface);
   flex-shrink: 0;
 }
-
-/* ── Sticky columns ─────────────────────────────────────────────────────── */
-/* border-collapse:collapse + sticky needs border-collapse:separate workaround */
-#bench-table { border-collapse: separate; border-spacing: 0; }
-#bench-table td { border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f8fafc; }
-#bench-table td:last-child { border-right: none; }
-#bench-table th { border-right: 1px solid #334155; }
-#bench-table th:last-child { border-right: none; }
-
-td.sticky-col, th.sticky-col {
-  position: sticky;
-  z-index: 2;
-}
-th.sticky-col { z-index: 7; }
-.th-group-row th.sticky-col { background: #0f172a; }
-th.sticky-col { background: #1e293b; }
-
-.sticky-col-1 { left: 0; }
-.sticky-col-2 { left: 32px; }
-.sticky-col-3 { left: 64px; }
-td.sticky-col-3, th.sticky-col-3 {
-  box-shadow: 2px 0 6px -2px rgba(0,0,0,.15);
-}
-
-td.sticky-col   { background: #fff; }
-tr:nth-child(even) td.sticky-col { background: #f8fafc; }
-tr:hover td.sticky-col { background: var(--accent-dim) !important; }
-tr.row-selected td.sticky-col { background: #dbeafe !important; }
-tr.row-selected td { background: #eff6ff !important; }
-
-/* ── Scroll navigation arrows ───────────────────────────────────────────── */
-.scroll-nav { display: flex; gap: 4px; }
-.scroll-btn {
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .12s, border-color .12s;
-  flex-shrink: 0;
-}
-.scroll-btn:hover { background: var(--bg); border-color: var(--accent); color: var(--accent); }
-
-/* ── Row checkbox ───────────────────────────────────────────────────────── */
-.row-check {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
-.row-check:disabled { cursor: not-allowed; opacity: .35; }
-
-/* ── Compare bar (fixed bottom) ─────────────────────────────────────────── */
-.compare-bar {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--primary);
-  color: #fff;
-  padding: 10px 28px;
-  z-index: 30;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  box-shadow: 0 -4px 18px rgba(0,0,0,.22);
-  animation: slide-up .18s ease;
-}
-.compare-bar.visible { display: flex; }
-@keyframes slide-up {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-.compare-bar-label {
-  font-size: 12px;
-  color: #94a3b8;
-  white-space: nowrap;
-}
-.compare-bar-names {
-  font-size: 13px;
-  font-weight: 600;
-  font-family: ui-monospace, monospace;
-  color: #e2e8f0;
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 600px;
-}
-.compare-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.compare-action-btn {
-  padding: 6px 16px;
-  border-radius: var(--radius);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: background .12s;
-}
-.compare-action-btn.primary {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-.compare-action-btn.primary:hover { background: #1d4ed8; }
-.compare-action-btn.secondary {
-  background: transparent;
-  color: #94a3b8;
-  border-color: #334155;
-}
-.compare-action-btn.secondary:hover { background: #1e293b; color: #e2e8f0; }
-
-/* ── Compare modal table ────────────────────────────────────────────────── */
-.modal-wide { max-width: 900px !important; }
-.modal-title-compare { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
-.cmp-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.cmp-table th, .cmp-table td {
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.cmp-table th {
-  background: var(--bg);
-  font-weight: 600;
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .3px;
-}
-.cmp-table .cmp-label-hd { width: 160px; }
-.cmp-table .cmp-val-hd {
-  font-family: ui-monospace, monospace;
-  color: var(--accent) !important;
-  font-size: 11px;
-  text-transform: none;
-  letter-spacing: 0;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cmp-table .cmp-label { color: var(--muted); width: 160px; }
-.cmp-table .cmp-val   { font-size: 12px; font-weight: 500; }
-.cmp-table .cmp-metric { text-align: center; }
-.cmp-table tr.cmp-diff td { background: #fffbeb; }
-.cmp-table tr.cmp-diff .cmp-label { color: var(--amber); font-weight: 700; }
 </style>
 <!-- STYLES_END -->
 </head>

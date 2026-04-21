@@ -466,15 +466,20 @@ footer {
 
 // ── Standard workload definitions ─────────────────────────────────────────────
 const STANDARD_WORKLOADS = [
-  { id: 1, model: 'qwen-3-4b',        phase: 'inference', batch_size: 128, seq_len: 1024, label: 'Qwen3-4B · Inference · batch 128 · seq 1024'        },
-  { id: 2, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 128, seq_len: 1024, label: 'Llama-3.1-8B · Inference · batch 128 · seq 1024'    },
-  { id: 3, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 128, seq_len: 2048, label: 'Llama-3.1-8B · Inference · batch 128 · seq 2048'    },
-  { id: 4, model: 'llama-3.1-8b',     phase: 'training',  batch_size: 4,   seq_len: 512,  label: 'Llama-3.1-8B · Training · batch 4 · seq 512'        },
-  { id: 5, model: 'llama-3.1-8b',     phase: 'training',  batch_size: 32,  seq_len: 1024, label: 'Llama-3.1-8B · Training · batch 32 · seq 1024'      },
-  { id: 6, model: 'qwen-3-8b',        phase: 'training',  batch_size: 2,   seq_len: 1024, label: 'Qwen3-8B · Training · batch 2 · seq 1024'           },
-  { id: 7, model: 'deepseek_v3_16b',  phase: 'training',  batch_size: 8,   seq_len: 1024, label: 'DeepSeek-V3-16B · Training · batch 8 · seq 1024'    },
-  { id: 8, model: 'deepseek_v3_16b',  phase: 'training',  batch_size: 4,   seq_len: 5096, label: 'DeepSeek-V3-16B · Training · batch 4 · seq 5096'    },
-  { id: 9, model: 'deepseek_v3_236b', phase: 'training',  batch_size: 64,  seq_len: 1024, label: 'DeepSeek-V3-236B · Training · batch 64 · seq 1024'  },
+  // ── Inference ─────────────────────────────────────────────────────────────
+  { id:  1, model: 'qwen3-4b',         phase: 'inference', batch_size: 64,  seq_len: 4096, label: 'Qwen3-4B · Inference · batch 64 · seq 4096'          },
+  { id:  2, model: 'qwen3-4b',         phase: 'inference', batch_size: 128, seq_len: 1024, label: 'Qwen3-4B · Inference · batch 128 · seq 1024'         },
+  { id:  3, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 64,  seq_len: 4096, label: 'Llama-3.1-8B · Inference · batch 64 · seq 4096'      },
+  { id:  4, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 128, seq_len: 1024, label: 'Llama-3.1-8B · Inference · batch 128 · seq 1024'     },
+  { id:  5, model: 'llama-3.1-8b',     phase: 'inference', batch_size: 128, seq_len: 2048, label: 'Llama-3.1-8B · Inference · batch 128 · seq 2048'     },
+  { id:  6, model: 'deepseek-moe-16b', phase: 'inference', batch_size: 128, seq_len: 1024, label: 'DeepSeek-MoE-16B · Inference · batch 128 · seq 1024' },
+  // ── Training ──────────────────────────────────────────────────────────────
+  { id:  7, model: 'llama-3.1-8b',     phase: 'training',  batch_size: 4,   seq_len: 512,  label: 'Llama-3.1-8B · Training · batch 4 · seq 512'         },
+  { id:  8, model: 'llama-3.1-8b',     phase: 'training',  batch_size: 32,  seq_len: 1024, label: 'Llama-3.1-8B · Training · batch 32 · seq 1024'       },
+  { id:  9, model: 'qwen-3-8b',        phase: 'training',  batch_size: 2,   seq_len: 1024, label: 'Qwen3-8B · Training · batch 2 · seq 1024'            },
+  { id: 10, model: 'deepseek_v3_16b',  phase: 'training',  batch_size: 8,   seq_len: 1024, label: 'DeepSeek-V3-16B · Training · batch 8 · seq 1024'     },
+  { id: 11, model: 'deepseek_v3_16b',  phase: 'training',  batch_size: 4,   seq_len: 5096, label: 'DeepSeek-V3-16B · Training · batch 4 · seq 5096'     },
+  { id: 12, model: 'deepseek_v3_236b', phase: 'training',  batch_size: 64,  seq_len: 1024, label: 'DeepSeek-V3-236B · Training · batch 64 · seq 1024'   },
 ];
 
 // ── Global state ──────────────────────────────────────────────────────────────
@@ -509,9 +514,10 @@ function metricPill(val, info) {
 }
 
 // ── Match logic ───────────────────────────────────────────────────────────────
+function normModel(s) { return s.toLowerCase().replace(/[-_]/g, ''); }
 function matchesWorkload(row, wl) {
   const m = row.metadata;
-  if ((m.model_family || '').toLowerCase() !== wl.model.toLowerCase()) return false;
+  if (normModel(m.model_family || '') !== normModel(wl.model)) return false;
   if ((m.phase || '').toLowerCase() !== wl.phase.toLowerCase()) return false;
   if (Number(m.seq_len) !== Number(wl.seq_len)) return false;
   if (wl.batch_size !== undefined && Number(m.batch_size) !== Number(wl.batch_size)) return false;
