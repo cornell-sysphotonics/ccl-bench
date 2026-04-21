@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCL-Bench · Leaderboard</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<style>
+:root {
+  --bg:         #f1f5f9;
+  --surface:    #ffffff;
+  --border:     #e2e8f0;
+  --text:       #0f172a;
+  --muted:      #64748b;
+  --primary:    #1e293b;
+  --accent:     #2563eb;
+  --accent-dim: #eff6ff;
+  --green:      #16a34a;
+  --green-bg:   #f0fdf4;
+  --amber:      #d97706;
+  --amber-bg:   #fffbeb;
+  --red:        #dc2626;
+  --red-bg:     #fef2f2;
+  --radius:     6px;
+  --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.site-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.site-header h1 { font-size: 18px; font-weight: 700; letter-spacing: -.2px; }
+.site-header .tagline { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.site-header .gen-ts { font-size: 11px; color: #475569; text-align: right; white-space: nowrap; }
+.header-brand { display: flex; align-items: center; gap: 14px; }
+.header-logo { height: 48px; width: auto; border-radius: 4px; flex-shrink: 0; }
+
+/* ── Nav bar ── */
+.lb-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .12s, border-color .12s;
+}
+.back-btn:hover { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+.lb-nav-title { font-size: 13px; color: var(--muted); }
+.lb-nav-counts { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* ── Scrollable content area ── */
+.lb-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+/* ── Workload section ── */
+.wl-section { margin-bottom: 40px; }
+.wl-section-hd {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+.wl-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+.wl-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+.wl-detail { font-size: 12px; color: var(--muted); }
+.wl-count { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.b-inference { background: #dbeafe; color: #1d4ed8; }
+.b-training  { background: #dcfce7; color: #15803d; }
+.b-tpu       { background: #fce7f3; color: #be185d; }
+.b-gpu       { background: #ede9fe; color: #6d28d9; }
+
+/* ── Leaderboard table ── */
+.lb-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.lb-table th {
+  background: #1e293b;
+  color: #cbd5e1;
+  padding: 7px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-right: 1px solid #334155;
+}
+.lb-table th:last-child { border-right: none; }
+.lb-table th.th-metric { background: #1a3050; text-align: center; }
+.lb-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f8fafc;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.lb-table td:last-child { border-right: none; }
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-table tr:nth-child(even) td { background: #f8fafc; }
+.lb-table tr:hover td { background: var(--accent-dim) !important; }
+.lb-table .td-metric { text-align: center; }
+.wl-name-cell {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--accent);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Metric pill ── */
+.metric-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 11.5px;
+  min-width: 56px;
+  text-align: center;
+}
+.mp-high { background: var(--green-bg); color: var(--green); }
+.mp-mid  { background: var(--amber-bg); color: var(--amber); }
+.mp-low  { background: var(--red-bg);   color: var(--red);   }
+.mp-na   { color: var(--muted); font-weight: 400; }
+
+/* ── Empty state ── */
+.empty-wl {
+  padding: 18px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 12px 24px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-brand">
+    <img src="assets/logo.png" alt="CCL-Bench logo" class="header-logo">
+    <div>
+      <h1>CCL-Bench &mdash; Standard Workload Leaderboard</h1>
+      <div class="tagline">Experiments grouped by the 9 standard workload entries</div>
+    </div>
+  </div>
+  <div class="gen-ts" id="gen-ts"></div>
+</header>
+
+<div class="lb-nav">
+  <a href="index.html" class="back-btn">&#8592; All Experiments</a>
+  <span class="lb-nav-title">Showing experiments matched to standard workloads · batch size is not a matching criterion for inference</span>
+  <span class="lb-nav-counts" id="lb-counts"></span>
+</div>
+
+<div class="lb-content" id="lb-content"></div>
+
+<footer>
+  CCL-Bench &mdash; Collaborative LLM Systems Benchmark &nbsp;|&nbsp;
+  <a href="https://cornell.network/" target="_blank" rel="noopener">Cornell Systems &amp; Networking Lab</a>
+</footer>
+
+<script src="website/data.js"></script>
+<script>
+'use strict';
+
+// ── Standard workload definitions ─────────────────────────────────────────────
+const STANDARD_WORKLOADS = [
+  { id: 1, model: 'qwen-3-4b',        phase: 'inference', seq_len: 1024,                label: 'Qwen3-4B · Inference · seq 1024'              },
+  { id: 2, model: 'llama-3.1-8b',     phase: 'inference', seq_len: 1024,                label: 'Llama-3.1-8B · Inference · seq 1024'           },
+  { id: 3, model: 'llama-3.1-8b',     phase: 'inference', seq_len: 2048,                label: 'Llama-3.1-8B · Inference · seq 2048'           },
+  { id: 4, model: 'llama-3.1-8b',     phase: 'training',  seq_len: 512,  batch_size: 4, label: 'Llama-3.1-8B · Training · batch 4 · seq 512'  },
+  { id: 5, model: 'llama-3.1-8b',     phase: 'training',  seq_len: 1024, batch_size: 32,label: 'Llama-3.1-8B · Training · batch 32 · seq 1024'},
+  { id: 6, model: 'qwen-3-8b',        phase: 'training',  seq_len: 1024, batch_size: 2, label: 'Qwen3-8B · Training · batch 2 · seq 1024'     },
+  { id: 7, model: 'deepseek_v3_16b',  phase: 'training',  seq_len: 1024, batch_size: 8, label: 'DeepSeek-V3-16B · Training · batch 8 · seq 1024'},
+  { id: 8, model: 'deepseek_v3_16b',  phase: 'training',  seq_len: 5096, batch_size: 4, label: 'DeepSeek-V3-16B · Training · batch 4 · seq 5096'},
+  { id: 9, model: 'deepseek_v3_236b', phase: 'training',  seq_len: 1024, batch_size: 64,label: 'DeepSeek-V3-236B · Training · batch 64 · seq 1024'},
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt(v) {
+  if (v === null || v === undefined || v === '') return '<span style="color:var(--muted)">—</span>';
+  return esc(String(v));
+}
+
+function metricPill(val, info) {
+  if (val === null || val === undefined)
+    return '<span class="metric-pill mp-na">N/A</span>';
+  if (typeof val !== 'number')
+    return `<span class="metric-pill mp-na">${esc(String(val))}</span>`;
+  const thr    = (info && info.thresholds) || { high: 50, mid: 25 };
+  const higher = !(info && info.higher_is_better === false);
+  const unit   = (info && info.unit) || '';
+  let cls;
+  if (higher) { cls = val >= thr.high ? 'mp-high' : val >= thr.mid ? 'mp-mid' : 'mp-low'; }
+  else        { cls = val <= thr.mid  ? 'mp-high' : val <= thr.high ? 'mp-mid' : 'mp-low'; }
+  const num = (Math.abs(val) < 0.01 && val !== 0) ? val.toExponential(2) : val.toFixed(2);
+  return `<span class="metric-pill ${cls}">${esc(num + (unit ? '\u202f' + unit : ''))}</span>`;
+}
+
+// ── Match logic ───────────────────────────────────────────────────────────────
+function matchesWorkload(row, wl) {
+  const m = row.metadata;
+  if ((m.model_family || '').toLowerCase() !== wl.model.toLowerCase()) return false;
+  if ((m.phase || '').toLowerCase() !== wl.phase.toLowerCase()) return false;
+  if (Number(m.seq_len) !== Number(wl.seq_len)) return false;
+  // For training, also match batch size; inference batch is variable
+  if (wl.batch_size !== undefined && Number(m.batch_size) !== Number(wl.batch_size)) return false;
+  return true;
+}
+
+// ── Render one workload section ───────────────────────────────────────────────
+function renderSection(wl, rows, mi) {
+  const phaseBadge = wl.phase === 'inference'
+    ? `<span class="badge b-inference">Inference</span>`
+    : `<span class="badge b-training">Training</span>`;
+
+  const detail = wl.phase === 'inference'
+    ? `seq_len = ${wl.seq_len}  ·  batch size variable`
+    : `batch = ${wl.batch_size}  ·  seq_len = ${wl.seq_len}`;
+
+  const hd = `
+    <div class="wl-section-hd">
+      <span class="wl-num">#${wl.id}</span>
+      <span class="wl-title">${esc(wl.label)}</span>
+      ${phaseBadge}
+      <span class="wl-detail">${esc(detail)}</span>
+      <span class="wl-count">${rows.length} experiment${rows.length !== 1 ? 's' : ''}</span>
+    </div>`;
+
+  if (!rows.length) {
+    return `<div class="wl-section">${hd}<div class="empty-wl">No experiments collected yet for this workload.</div></div>`;
+  }
+
+  // Metrics with at least one non-null value in this group
+  const metricKeys = (Object.keys(mi).length ? Object.keys(mi) : [])
+    .filter(mk => rows.some(r => r.metrics[mk] != null));
+
+  // EP column only if any row has it
+  const hasEP = rows.some(r => r.metadata.ep != null);
+
+  // Table header
+  const metricThs = metricKeys.map(mk =>
+    `<th class="th-metric">${esc((mi[mk] && mi[mk].label) || mk)}</th>`
+  ).join('');
+
+  // Table rows — sorted by workload name
+  const sorted = [...rows].sort((a, b) =>
+    (a.metadata.workload_name || '').localeCompare(b.metadata.workload_name || '')
+  );
+
+  const bodyRows = sorted.map(r => {
+    const m   = r.metadata;
+    const hwCls = (m.hardware_type || '').toLowerCase() === 'tpu' ? 'b-tpu' : 'b-gpu';
+    const dp  = [m.dp_replicate, m.dp_shard].filter(v => v != null && v > 0).join('/') || '—';
+    const ep  = hasEP ? `<td>${fmt(m.ep)}</td>` : '';
+    const mCells = metricKeys.map(mk =>
+      `<td class="td-metric">${metricPill(r.metrics[mk], mi[mk])}</td>`
+    ).join('');
+
+    return `<tr>
+      <td class="wl-name-cell">${esc(m.workload_name || '')}</td>
+      <td><span class="badge ${hwCls}">${esc(m.hardware_type || '')}</span></td>
+      <td>${fmt(m.hardware_model)}</td>
+      <td style="text-align:right">${fmt(m.total_count)}</td>
+      <td>${fmt(m.framework)}</td>
+      <td style="text-align:center">${fmt(m.tp)}</td>
+      <td style="text-align:center">${esc(dp)}</td>
+      ${ep}
+      ${mCells}
+    </tr>`;
+  }).join('');
+
+  const epTh = hasEP ? '<th style="text-align:center">EP</th>' : '';
+
+  return `<div class="wl-section">
+    ${hd}
+    <div class="lb-table-wrap">
+      <table class="lb-table">
+        <thead><tr>
+          <th>Experiment</th>
+          <th>HW</th>
+          <th>HW Model</th>
+          <th style="text-align:right">Accel.</th>
+          <th>Framework</th>
+          <th style="text-align:center">TP</th>
+          <th style="text-align:center">DP</th>
+          ${epTh}
+          ${metricThs}
+        </tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  if (typeof BENCHMARK_DATA === 'undefined' || !BENCHMARK_DATA) {
+    document.getElementById('lb-content').innerHTML =
+      '<div style="padding:60px;text-align:center;color:var(--muted)">No benchmark data. Run <code>python website/generate_data.py</code> first.</div>';
+    return;
+  }
+
+  document.getElementById('gen-ts').textContent =
+    'Generated ' + new Date(BENCHMARK_DATA.generated_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+
+  const rows = BENCHMARK_DATA.rows;
+  const mi   = BENCHMARK_DATA.metric_info || {};
+
+  let totalMatched = 0;
+  const html = STANDARD_WORKLOADS.map(wl => {
+    const matching = rows.filter(r => matchesWorkload(r, wl));
+    totalMatched += matching.length;
+    return renderSection(wl, matching, mi);
+  }).join('');
+
+  document.getElementById('lb-content').innerHTML = html;
+  document.getElementById('lb-counts').textContent =
+    `${totalMatched} of ${rows.length} experiments matched`;
+}
+
+init();
+</script>
+</body>
+</html>
