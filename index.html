@@ -37,7 +37,8 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -173,7 +174,9 @@ body {
 /* ── Table wrapper ──────────────────────────────────────────────────────── */
 .table-outer {
   flex: 1;
+  min-height: 0;        /* lets flex child shrink so body doesn't scroll */
   overflow-x: auto;
+  overflow-y: auto;     /* table scrolls internally; thead sticks at top */
   background: var(--surface);
   box-shadow: var(--shadow);
 }
