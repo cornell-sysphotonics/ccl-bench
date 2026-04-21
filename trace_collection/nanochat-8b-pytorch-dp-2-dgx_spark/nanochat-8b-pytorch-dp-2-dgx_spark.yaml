@@ -1,0 +1,67 @@
+# workload_template.yaml
+version: 1
+
+description: "Nanochat d=20 Training on 2 x DGX Spark" # Description of the workload.
+
+hf_url: "https://github.com/karpathy/nanochat" # huggingface model link, e.g., https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: "None" # trace url or file path, e.g., https://drive.google.com/file/d/1EK_YROAho2sBvYVn8idF6DbnaG3SZ0he/view
+contributor: "Emaad Manzoor" # your name please
+contact: "emaadmanzoor@cornell.edu" # your email please
+
+workload:
+  model:
+    phase: training  # Training or inference phase, e.g., training, inference, serving
+    moe: false  # Mixture of Experts (MoE) enabled or not, e.g., true, false.
+    granularity: model_fwd_bwd_pass  # Granularity level, e.g., "model_fwd_bwd_pass", "model_fwd" "layer", "kernel".
+    model_family: "nanochat"  # Model family name, e.g., "llama-3.1-8b".
+    precision: bf16  # Precision type, e.g., "fp32", "bf16".
+    epochs: 1  # Number of epochs (may not apply to inference), e.g., 1, 3, 5.
+    iteration: 1  # Number of iterations/epoch, e.g., 10, 500, 1000.
+    model_arch:
+      num_params: 896533746         # total parameter count
+      num_params_embedding: 41943040 # vocab_size(100000) * hidden_size(2048)
+      num_layers: 20                  # L: transformer decoder layers
+      num_heads: 10                   # Q: number of attention heads
+      head_dim: 128                   # H: per-head dimension (hidden_size / num_heads)
+  data:
+    batch_size: 64  # 32 per node Batch size, e.g., 4, 8, 16.
+    seq_len: 2048  # Sequence length, e.g., 512, 1024, 8192.
+    dataset: "ClimbMix 400B First 8 Shards"  # Dataset name, e.g., "c4", "wikitext".
+  hardware:
+    network_topo:
+      topology: "point-to-point" # Network topology, e.g., "slingshot", "fat-tree".
+      bandwidth_gbps:
+        - 200  # Scale-out bandwidth in Gbps, e.g., 100, 200.
+        - "N/A"  # Scale-up bandwidth in Gbps, e.g., 1000, 2000.
+    xpu_spec:
+      type: GPU  # Processing unit type, e.g., "GPU", "TPU".
+      model: nvidia_dgx_spark  # Processing unit model, e.g., "nvidia_a100", "tpu_v4".
+      total_count: 2  # Total number of processing units, e.g., 8, 16.
+      count_per_node: 1  # Number of processing units per node, e.g., 4, 8.
+    driver_version: cuda_13.0  # Driver version, e.g., "cuda_12.4", "rocm_5.6".
+  
+Model-executor:
+  framework: 
+    name: pytorch  # Framework name, e.g., "torchtitan", "deepspeed".
+    compiler_tool_selection: plain_pytorch  # Compiler tool, e.g., "plain_pytorch", "triton".
+  model_plan_parallelization:
+    dp_replicate: 2 # Data parallel replication factor, e.g., 1, 2.
+    dp_shard: 1 # Data parallel sharding factor, e.g., 1, 2.
+    tp: 1 # Tensor parallelism factor, e.g., 2, 4.
+    pp: 1 # Pipeline parallelism factor, e.g., 1, 2.
+    cp: 1 # Context parallelism factor, e.g., 1, 2.
+    ep: 1 # Expert parallelism factor (for MoE models), e.g., 1, 2.
+    pp_mb: 1 # Pipeline model parallel micro-batch size, e.g., 1, 2.
+  communication_library:
+    name: nccl  # Communication library name, e.g., "NCCL", "Gloo".
+    version: 2.27.5 # Communication library version, e.g., "2.14.3", "1.10.0".
+    env:
+      NCCL_IB_QPS_PER_CONNECTION:  # NCCL environment variable, e.g., 8, 16.
+  protocol_selection:
+    - rocev2 # Communication protocol for scale-out, e.g., "tcp", "rocev2".
+
+metric_source:
+  traces:
+    - json  # trace type, e.g., "nsys", "json",
+  metrics_specific_trace:
+    -  # metric specific trace type, e.g., "memory_trace", "accuracy_trace".
