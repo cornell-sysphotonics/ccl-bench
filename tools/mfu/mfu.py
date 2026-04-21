@@ -129,14 +129,14 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
     """
     Compute MFU from PyTorch-profiler JSON traces (torchtitan format).
 
-    Formula (from "Efficient Large Scale Language Modeling with Mixtures of Experts"):
-      FLOP/token = 6(N - N_emb) + 12·L·H·Q·S
+    Formula for inference:
+      FLOP/token = 2(N_active - N_emb) + 4·L·H·Q·S
       Observed FLOPS = (FLOP/token) × (tokens/second)
       MFU = Observed FLOPS / (world_size × peak_TFLOPS)
 
     Where:
-      N     = total parameter count         (from YAML model_arch.num_params)
-              or active per-token count     (from YAML model_arch.num_params_active)
+      N_active = active per-token parameter count (model_arch.num_params_active)
+                 or total parameter count          (model_arch.num_params)
       N_emb = embedding parameter count     (from YAML model_arch.num_params_embedding)
       L     = number of transformer layers  (from YAML model_arch.num_layers)
       H     = per-head dimension (head_dim) (from YAML model_arch.head_dim)
@@ -220,7 +220,7 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
 
     # ── MFU ──────────────────────────────────────────────────────────────────
     effective_params = N_active or N
-    flop_per_token  = 6 * (effective_params - N_emb) + 12 * L * H * Q * seq_len
+    flop_per_token  = 2 * (effective_params - N_emb) + 4 * L * H * Q * seq_len
     tokens_per_sec  = (batch_size * seq_len) / step_time_s
     observed_flops  = flop_per_token * tokens_per_sec
     peak_flops_total = peak_tflops * 1e12 * world_size
