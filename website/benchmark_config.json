@@ -102,26 +102,6 @@
       "required_update": false
     },
     {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[nccl]",
-      "metrics": "auto",
-      "required_update": true
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
-      "metrics": "auto",
-      "required_update": true
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[nccl]",
-      "metrics": "auto",
-      "required_update": true
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
-      "metrics": "auto",
-      "required_update": true
-    },
-    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metrics": "auto",
       "required_update": false
@@ -479,51 +459,6 @@
       "thresholds": {
         "high": 50,
         "mid": 25
-      },
-      "required_update": false
-    },
-    "ttft_group_6": {
-      "label": "TTFT (ms)",
-      "description": "Median time to first token",
-      "higher_is_better": false,
-      "unit": "ms",
-      "category": "model_execution",
-      "trace_types": [
-        "sglang"
-      ],
-      "thresholds": {
-        "high": 500,
-        "mid": 100
-      },
-      "required_update": false
-    },
-    "tpot_group_6": {
-      "label": "TPOT (ms)",
-      "description": "Median time per output token",
-      "higher_is_better": false,
-      "unit": "ms",
-      "category": "model_execution",
-      "trace_types": [
-        "sglang"
-      ],
-      "thresholds": {
-        "high": 50,
-        "mid": 20
-      },
-      "required_update": false
-    },
-    "throughput_group_6": {
-      "label": "Throughput (tok/s)",
-      "description": "Output tokens generated per second",
-      "higher_is_better": true,
-      "unit": "tok/s",
-      "category": "model_execution",
-      "trace_types": [
-        "sglang"
-      ],
-      "thresholds": {
-        "high": 1000,
-        "mid": 200
       },
       "required_update": false
     },
