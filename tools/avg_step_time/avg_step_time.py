@@ -131,6 +131,7 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
 
 _STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
 _VLLM_EXECUTE_CONTEXT_PREFIX = "execute_context_"
+_SGLANG_RUN_BATCH_PATTERN = re.compile(r"(^|:) run_batch$")
 
 
 def _calc_json(directory: str) -> float:
@@ -152,6 +153,7 @@ def _calc_json(directory: str) -> float:
 
     profiler_step_rank_avgs = []
     vllm_execute_rank_avgs = []
+    sglang_run_batch_rank_avgs = []
     for path in rank_files:
         events = _load_json_events(path)
         step_events = sorted(
@@ -181,14 +183,30 @@ def _calc_json(directory: str) -> float:
         if inner:
             vllm_execute_rank_avgs.append(statistics.mean(inner))
 
+        sglang_run_batch_events = sorted(
+            [e for e in events
+             if isinstance(e, dict)
+             and e.get("ph") == "X"
+             and e.get("cat") == "python_function"
+             and _SGLANG_RUN_BATCH_PATTERN.search(e.get("name", ""))],
+            key=lambda e: e.get("ts", 0),
+        )
+        durs_us = [e["dur"] for e in sglang_run_batch_events if "dur" in e]
+        inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
+        if inner:
+            sglang_run_batch_rank_avgs.append(statistics.mean(inner))
+
     if profiler_step_rank_avgs:
         return statistics.mean(profiler_step_rank_avgs) / 1e6  # µs → s
 
     if vllm_execute_rank_avgs:
         return statistics.mean(vllm_execute_rank_avgs) / 1e6  # µs → s
 
+    if sglang_run_batch_rank_avgs:
+        return statistics.mean(sglang_run_batch_rank_avgs) / 1e6  # µs → s
+
     print(
-        f"[avg_step_time/json] No ProfilerStep or vLLM execute_context events found in {directory}",
+        f"[avg_step_time/json] No ProfilerStep, vLLM execute_context, or SGLang run_batch events found in {directory}",
         file=sys.stderr,
     )
     return -1.0

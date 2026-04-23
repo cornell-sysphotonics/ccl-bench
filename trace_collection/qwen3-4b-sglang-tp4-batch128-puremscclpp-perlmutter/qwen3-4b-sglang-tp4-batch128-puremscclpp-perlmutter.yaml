@@ -64,8 +64,10 @@ Model-executor:
 
 metric_source:
   traces:
+    - json
     - sglang
     - nsys
   metrics_specific_trace:
-    - sglang_bench_serving
+    - torch_profiler_json
+    - sglang_one_batch
     - nsys_sqlite

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T14:44:10.316002+00:00",
+  "generated_at": "2026-04-23T16:35:03.723449+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -101,7 +101,7 @@
         "high": 70,
         "mid": 40
       },
-      "required_update": false
+      "required_update": true
     },
     "moe_fraction": {
       "label": "MoE Fraction (%)",
@@ -117,7 +117,7 @@
         "high": 50,
         "mid": 20
       },
-      "required_update": false
+      "required_update": true
     },
     "average_memory_bandwidth": {
       "label": "Avg Mem BW (GB/s)",
@@ -134,7 +134,7 @@
         "high": 1000,
         "mid": 500
       },
-      "required_update": false
+      "required_update": true
     },
     "memory_transfer_overhead": {
       "label": "Mem Transfer OH (%)",
@@ -151,7 +151,7 @@
         "high": 20,
         "mid": 5
       },
-      "required_update": false
+      "required_update": true
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",
@@ -168,7 +168,7 @@
         "high": 50,
         "mid": 20
       },
-      "required_update": false
+      "required_update": true
     },
     "total_communication_time": {
       "label": "Comm Time (s)",
@@ -185,7 +185,7 @@
         "high": 5,
         "mid": 0.5
       },
-      "required_update": false
+      "required_update": true
     },
     "bandwidth_utilization_allgather_group_6": {
       "label": "AllGather BW (GB/s)",
@@ -799,14 +799,14 @@
         "avg_step_time": 4.42554,
         "mfu": 7.25,
         "mean_sm_coverage": 14.2438,
+        "bandwidth_utilization_allgather_group_6": 0.691226,
+        "bandwidth_utilization_allreduce_group_6": 0.000582978,
         "dominant_kernel_concentration": 39.8263,
         "moe_fraction": 0.0095733,
         "average_memory_bandwidth": 588.253,
         "memory_transfer_overhead": 0.7279,
         "communication_fraction": 90.1896,
-        "total_communication_time": 3.79839,
-        "bandwidth_utilization_allgather_group_6": 0.691226,
-        "bandwidth_utilization_allreduce_group_6": 0.000582978
+        "total_communication_time": 3.79839
       }
     },
     {
@@ -863,14 +863,14 @@
         "avg_step_time": 12.4859,
         "mfu": 2.5697,
         "mean_sm_coverage": 8.77416,
+        "bandwidth_utilization_allgather_group_6": 0.640605,
+        "bandwidth_utilization_allreduce_group_6": 50.4074,
         "dominant_kernel_concentration": 46.6868,
         "moe_fraction": 0.00568145,
         "average_memory_bandwidth": 391.964,
         "memory_transfer_overhead": 0.1206,
         "communication_fraction": 95.0665,
-        "total_communication_time": 12.0873,
-        "bandwidth_utilization_allgather_group_6": 0.640605,
-        "bandwidth_utilization_allreduce_group_6": 50.4074
+        "total_communication_time": 12.0873
       }
     },
     {
@@ -927,14 +927,14 @@
         "avg_step_time": 13.4448,
         "mfu": 2.3864,
         "mean_sm_coverage": 7.95756,
+        "bandwidth_utilization_allgather_group_6": 0.679365,
+        "bandwidth_utilization_allreduce_group_6": 26.5272,
         "dominant_kernel_concentration": 45.2445,
         "moe_fraction": 0.00328002,
         "average_memory_bandwidth": 411.306,
         "memory_transfer_overhead": 0.101,
         "communication_fraction": 95.5984,
-        "total_communication_time": 12.9735,
-        "bandwidth_utilization_allgather_group_6": 0.679365,
-        "bandwidth_utilization_allreduce_group_6": 26.5272
+        "total_communication_time": 12.9735
       }
     },
     {
@@ -991,14 +991,14 @@
         "avg_step_time": 3.63191,
         "mfu": 8.8342,
         "mean_sm_coverage": 14.4299,
+        "bandwidth_utilization_allgather_group_6": 1.37671,
+        "bandwidth_utilization_allreduce_group_6": 62.995,
         "dominant_kernel_concentration": 38.1559,
         "moe_fraction": 0.0168489,
         "average_memory_bandwidth": 571.844,
         "memory_transfer_overhead": 0.8088,
         "communication_fraction": 89.6675,
-        "total_communication_time": 2.89107,
-        "bandwidth_utilization_allgather_group_6": 1.37671,
-        "bandwidth_utilization_allreduce_group_6": 62.995
+        "total_communication_time": 2.89107
       }
     },
     {
@@ -1055,14 +1055,14 @@
         "avg_step_time": 3.79391,
         "mfu": 8.5179,
         "mean_sm_coverage": 12.5278,
+        "bandwidth_utilization_allgather_group_6": 11.6139,
+        "bandwidth_utilization_allreduce_group_6": 81.2942,
         "dominant_kernel_concentration": 56.4729,
         "moe_fraction": 0.0198112,
         "average_memory_bandwidth": 546.188,
         "memory_transfer_overhead": 0.8965,
         "communication_fraction": 90.6411,
-        "total_communication_time": 3.32568,
-        "bandwidth_utilization_allgather_group_6": 11.6139,
-        "bandwidth_utilization_allreduce_group_6": 81.2942
+        "total_communication_time": 3.32568
       }
     },
     {
@@ -1119,14 +1119,14 @@
         "avg_step_time": 9.66378,
         "mfu": 3.3441,
         "mean_sm_coverage": 9.36788,
+        "bandwidth_utilization_allgather_group_6": 9.36601,
+        "bandwidth_utilization_allreduce_group_6": 73.5363,
         "dominant_kernel_concentration": 40.0632,
         "moe_fraction": 0.00689339,
         "average_memory_bandwidth": 474.668,
         "memory_transfer_overhead": 0.2736,
         "communication_fraction": 93.8724,
-        "total_communication_time": 9.28479,
-        "bandwidth_utilization_allgather_group_6": 9.36601,
-        "bandwidth_utilization_allreduce_group_6": 73.5363
+        "total_communication_time": 9.28479
       }
     },
     {
@@ -1181,14 +1181,14 @@
         "avg_step_time": 11.7428,
         "mfu": 2.752,
         "mean_sm_coverage": 6.3979,
+        "bandwidth_utilization_allgather_group_6": 15.3382,
+        "bandwidth_utilization_allreduce_group_6": 84.8103,
         "dominant_kernel_concentration": 73.9092,
         "moe_fraction": 0.00637931,
         "average_memory_bandwidth": 632.641,
         "memory_transfer_overhead": 0.1638,
         "communication_fraction": 98.3598,
-        "total_communication_time": 11.498,
-        "bandwidth_utilization_allgather_group_6": 15.3382,
-        "bandwidth_utilization_allreduce_group_6": 84.8103
+        "total_communication_time": 11.498
       }
     },
     {
@@ -1243,14 +1243,14 @@
         "avg_step_time": 20.6762,
         "mfu": 5.6485,
         "mean_sm_coverage": 6.94704,
+        "bandwidth_utilization_allgather_group_6": 9.28075,
+        "bandwidth_utilization_allreduce_group_6": 101.387,
         "dominant_kernel_concentration": 55.6554,
         "moe_fraction": 0.00535552,
         "average_memory_bandwidth": 594.832,
         "memory_transfer_overhead": 0.2778,
         "communication_fraction": 96.7923,
-        "total_communication_time": 20.0744,
-        "bandwidth_utilization_allgather_group_6": 9.28075,
-        "bandwidth_utilization_allreduce_group_6": 101.387
+        "total_communication_time": 20.0744
       }
     },
     {
@@ -1303,14 +1303,14 @@
       },
       "metrics": {
         "mean_sm_coverage": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 36.0878,
         "moe_fraction": 36.7006,
         "average_memory_bandwidth": 1.25989,
         "memory_transfer_overhead": 60.9162,
         "communication_fraction": 55.6226,
-        "total_communication_time": 169.143,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 169.143
       }
     },
     {
@@ -1363,14 +1363,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 24.7469,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 45.2741,
         "moe_fraction": 46.0064,
         "average_memory_bandwidth": 2.09974,
         "memory_transfer_overhead": 44.628,
         "communication_fraction": 44.7695,
-        "total_communication_time": 116.164,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 116.164
       }
     },
     {
@@ -1423,14 +1423,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 25.044,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 45.6745,
         "moe_fraction": 46.4038,
         "average_memory_bandwidth": 0.791571,
         "memory_transfer_overhead": 86.5891,
         "communication_fraction": 44.283,
-        "total_communication_time": 110.983,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 110.983
       }
     },
     {
@@ -1483,14 +1483,14 @@
       },
       "metrics": {
         "mean_sm_coverage": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 37.9569,
         "moe_fraction": 38.5986,
         "average_memory_bandwidth": 1.21685,
         "memory_transfer_overhead": 63.3848,
         "communication_fraction": 53.2851,
-        "total_communication_time": 155.182,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 155.182
       }
     },
     {
@@ -1546,14 +1546,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 26.494,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 74.4744,
         "moe_fraction": 4.90115,
         "average_memory_bandwidth": 0.876,
         "memory_transfer_overhead": 3.83194,
         "communication_fraction": 75.6585,
-        "total_communication_time": 84.6033,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 84.6033
       }
     },
     {
@@ -1609,14 +1609,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 22.1141,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 58.4772,
         "moe_fraction": 3.20062,
         "average_memory_bandwidth": 2.29156,
         "memory_transfer_overhead": 9.76231,
         "communication_fraction": 87.6409,
-        "total_communication_time": 230.225,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 230.225
       }
     },
     {
@@ -1672,14 +1672,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 25.6047,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 51.5044,
         "moe_fraction": 4.38434,
         "average_memory_bandwidth": 0.869578,
         "memory_transfer_overhead": 17.9366,
         "communication_fraction": 84.6295,
-        "total_communication_time": 178.282,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 178.282
       }
     },
     {
@@ -1735,14 +1735,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 22.5867,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 52.3646,
         "moe_fraction": 3.13456,
         "average_memory_bandwidth": 2.3282,
         "memory_transfer_overhead": 8.82911,
         "communication_fraction": 88.9071,
-        "total_communication_time": 259.943,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 259.943
       }
     },
     {
@@ -1798,14 +1798,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 25.3563,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 52.2145,
         "moe_fraction": 4.25602,
         "average_memory_bandwidth": 2.3175,
         "memory_transfer_overhead": 15.4846,
         "communication_fraction": 84.0106,
-        "total_communication_time": 162.268,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 162.268
       }
     },
     {
@@ -1861,14 +1861,14 @@
       },
       "metrics": {
         "mean_sm_coverage": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 28.3186,
         "moe_fraction": 6.31748,
         "average_memory_bandwidth": 0.788954,
         "memory_transfer_overhead": 20.3366,
         "communication_fraction": 66.7988,
-        "total_communication_time": 19.0716,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 19.0716
       }
     },
     {
@@ -1924,14 +1924,14 @@
       },
       "metrics": {
         "mean_sm_coverage": 22.1153,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 58.7998,
         "moe_fraction": 3.24958,
         "average_memory_bandwidth": 2.21989,
         "memory_transfer_overhead": 5.41692,
         "communication_fraction": 87.4407,
-        "total_communication_time": 227.798,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 227.798
       }
     },
     {
@@ -1987,14 +1987,14 @@
       },
       "metrics": {
         "mean_sm_coverage": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 40.6355,
         "moe_fraction": 11.308,
         "average_memory_bandwidth": 2.70636,
         "memory_transfer_overhead": 18.2433,
         "communication_fraction": 68.7353,
-        "total_communication_time": 11.1467,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 11.1467
       }
     },
     {
@@ -2050,14 +2050,14 @@
       },
       "metrics": {
         "mean_sm_coverage": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "dominant_kernel_concentration": 27.7362,
         "moe_fraction": 45.8103,
         "average_memory_bandwidth": 3.56867,
         "memory_transfer_overhead": 13.2594,
         "communication_fraction": 11.9033,
-        "total_communication_time": 6.6318,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "total_communication_time": 6.6318
       }
     },
     {
@@ -2115,14 +2115,14 @@
         "avg_step_time": 10.1309,
         "mfu": 6.0445,
         "mean_sm_coverage": 19.1184,
+        "bandwidth_utilization_allgather_group_6": 0.297824,
+        "bandwidth_utilization_allreduce_group_6": 41.712,
         "dominant_kernel_concentration": 50.2328,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 662.909,
         "memory_transfer_overhead": 0.269,
         "communication_fraction": 83.9077,
-        "total_communication_time": 8.09265,
-        "bandwidth_utilization_allgather_group_6": 0.297824,
-        "bandwidth_utilization_allreduce_group_6": 41.712
+        "total_communication_time": 8.09265
       }
     },
     {
@@ -2180,14 +2180,14 @@
         "avg_step_time": 10.033,
         "mfu": 6.1035,
         "mean_sm_coverage": 26.5361,
+        "bandwidth_utilization_allgather_group_6": 0.292327,
+        "bandwidth_utilization_allreduce_group_6": 15.9835,
         "dominant_kernel_concentration": 36.9198,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": null,
         "memory_transfer_overhead": 0.3426,
         "communication_fraction": 78.3779,
-        "total_communication_time": 6.94209,
-        "bandwidth_utilization_allgather_group_6": 0.292327,
-        "bandwidth_utilization_allreduce_group_6": 15.9835
+        "total_communication_time": 6.94209
       }
     },
     {
@@ -2599,7 +2599,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0352361,
-        "mfu": 3.5012,
+        "mfu": 10.5035,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 64.3701,
         "moe_fraction": 0.0,
@@ -2668,7 +2668,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0365609,
-        "mfu": 28.4189,
+        "mfu": 85.2567,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 29.7465,
         "moe_fraction": 0.0,
@@ -2737,7 +2737,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0721431,
-        "mfu": 0.5679,
+        "mfu": 1.7038,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 78.8449,
         "moe_fraction": 7.31983,
@@ -2806,7 +2806,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0812221,
-        "mfu": 7.1997,
+        "mfu": 21.5991,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 44.1563,
         "moe_fraction": 19.2047,
@@ -2875,7 +2875,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0410551,
-        "mfu": 1.6762,
+        "mfu": 5.0286,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 55.516,
         "moe_fraction": 0.0,
@@ -2944,7 +2944,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0418665,
-        "mfu": 13.3457,
+        "mfu": 40.0372,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 30.2123,
         "moe_fraction": 0.0,
@@ -3013,7 +3013,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0385199,
-        "mfu": 1.6477,
+        "mfu": 4.9432,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 54.8378,
         "moe_fraction": 0.0,
@@ -3082,7 +3082,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0413309,
-        "mfu": 13.1736,
+        "mfu": 39.5209,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 31.5974,
         "moe_fraction": 0.0,
@@ -3151,7 +3151,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0427342,
-        "mfu": 1.637,
+        "mfu": 4.9109,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 76.5917,
         "moe_fraction": 0.0,
@@ -3220,7 +3220,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0435927,
-        "mfu": 17.062,
+        "mfu": 51.1859,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 38.5872,
         "moe_fraction": 0.0,
@@ -3289,7 +3289,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0419876,
-        "mfu": 1.4553,
+        "mfu": 4.3658,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 67.8899,
         "moe_fraction": 0.0,
@@ -3358,7 +3358,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0428606,
-        "mfu": 16.2272,
+        "mfu": 48.6817,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.4363,
         "moe_fraction": 0.0,
@@ -3427,7 +3427,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0379068,
-        "mfu": 3.2377,
+        "mfu": 9.7132,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 65.6462,
         "moe_fraction": 0.0,
@@ -3496,7 +3496,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0383939,
-        "mfu": 28.0208,
+        "mfu": 84.0624,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 28.4044,
         "moe_fraction": 0.0,
@@ -3565,7 +3565,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0708341,
-        "mfu": 0.5742,
+        "mfu": 1.7225,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 61.0212,
         "moe_fraction": 14.8293,
@@ -3634,7 +3634,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0760341,
-        "mfu": 6.7845,
+        "mfu": 20.3534,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.5842,
         "moe_fraction": 22.2664,
@@ -3706,7 +3706,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0444321,
-        "mfu": 26.0355,
+        "mfu": 78.1064,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 31.1306,
         "moe_fraction": 0.0,
@@ -3778,7 +3778,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0459496,
-        "mfu": 15.575,
+        "mfu": 46.7251,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.5637,
         "moe_fraction": 0.0,
@@ -3850,7 +3850,7 @@
       },
       "metrics": {
         "avg_step_time": 0.038909,
-        "mfu": 26.7481,
+        "mfu": 80.2443,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 29.5012,
         "moe_fraction": 0.0,
@@ -3922,7 +3922,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0767431,
-        "mfu": 6.2285,
+        "mfu": 18.6854,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.1834,
         "moe_fraction": 23.3514,
@@ -3990,7 +3990,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0448463,
-        "mfu": 29.3849,
+        "mfu": 88.1548,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 27.5566,
         "moe_fraction": 0.0,
@@ -4062,7 +4062,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0477274,
-        "mfu": 27.9568,
+        "mfu": 83.8704,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 25.0941,
         "moe_fraction": 0.0,
@@ -4130,7 +4130,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0353173,
-        "mfu": 40.8083,
+        "mfu": 122.425,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 39.3285,
         "moe_fraction": 0.0,
@@ -4202,7 +4202,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0411579,
-        "mfu": 39.0645,
+        "mfu": 117.194,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 40.985,
         "moe_fraction": 0.0,
@@ -4270,7 +4270,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0804438,
-        "mfu": 7.5147,
+        "mfu": 22.5441,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 55.5315,
         "moe_fraction": 14.1758,
@@ -4342,7 +4342,7 @@
       },
       "metrics": {
         "avg_step_time": 0.0824125,
-        "mfu": 7.647,
+        "mfu": 22.9409,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 46.4718,
         "moe_fraction": 17.001,
@@ -4411,7 +4411,7 @@
       },
       "metrics": {
         "avg_step_time": 0.128875,
-        "mfu": 0.4628,
+        "mfu": 1.3885,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 20.8491,
         "moe_fraction": 0.0,
@@ -4480,7 +4480,7 @@
       },
       "metrics": {
         "avg_step_time": 0.455548,
-        "mfu": 1.4541,
+        "mfu": 4.3623,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 33.0417,
         "moe_fraction": 0.0,
@@ -4549,7 +4549,7 @@
       },
       "metrics": {
         "avg_step_time": 0.12076,
-        "mfu": 0.8403,
+        "mfu": 2.5208,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 24.8198,
         "moe_fraction": 0.0,
@@ -4618,7 +4618,7 @@
       },
       "metrics": {
         "avg_step_time": 0.592039,
-        "mfu": 2.2729,
+        "mfu": 6.8187,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 46.4914,
         "moe_fraction": 0.0,
@@ -4687,7 +4687,7 @@
       },
       "metrics": {
         "avg_step_time": 0.135681,
-        "mfu": 0.2772,
+        "mfu": 0.8316,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 37.1536,
         "moe_fraction": 41.2393,
@@ -4756,7 +4756,7 @@
       },
       "metrics": {
         "avg_step_time": 0.347328,
-        "mfu": 1.4226,
+        "mfu": 4.2679,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 39.8777,
         "moe_fraction": 41.8388,
@@ -4814,22 +4814,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0499177,
+        "mfu": 0.524,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 80.4441,
+        "dominant_kernel_concentration": 80.518,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 1.06649,
-        "memory_transfer_overhead": 9.49435,
-        "communication_fraction": 81.0588,
-        "total_communication_time": 8.82314,
+        "average_memory_bandwidth": 1.13302,
+        "memory_transfer_overhead": 7.38775,
+        "communication_fraction": 81.1883,
+        "total_communication_time": 21.328,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -4878,22 +4884,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0502662,
+        "mfu": 25.8487,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 54.7067,
+        "dominant_kernel_concentration": 52.4103,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 1.12032,
-        "memory_transfer_overhead": 8.89753,
-        "communication_fraction": 55.3831,
-        "total_communication_time": 11.2746,
+        "average_memory_bandwidth": 2.52521,
+        "memory_transfer_overhead": 6.89357,
+        "communication_fraction": 53.1096,
+        "total_communication_time": 20.4357,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -4942,22 +4954,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0437134,
+        "mfu": 4.2123,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 76.0781,
+        "dominant_kernel_concentration": 73.894,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 0.712152,
-        "memory_transfer_overhead": 62.6971,
-        "communication_fraction": 76.7777,
-        "total_communication_time": 8.12829,
+        "average_memory_bandwidth": 0.727686,
+        "memory_transfer_overhead": 44.5767,
+        "communication_fraction": 74.5936,
+        "total_communication_time": 16.0797,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5006,22 +5024,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.042246,
+        "mfu": 46.6241,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 36.7697,
+        "dominant_kernel_concentration": 40.7842,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 2.28343,
-        "memory_transfer_overhead": 21.6541,
-        "communication_fraction": 37.2806,
-        "total_communication_time": 6.76808,
+        "average_memory_bandwidth": 2.40304,
+        "memory_transfer_overhead": 13.4879,
+        "communication_fraction": 41.3033,
+        "total_communication_time": 18.1021,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5070,22 +5094,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0651713,
+        "mfu": 0.6666,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 78.6542,
-        "moe_fraction": 9.03645,
-        "average_memory_bandwidth": 2.09645,
-        "memory_transfer_overhead": 18.5695,
-        "communication_fraction": 79.3671,
-        "total_communication_time": 8.98001,
+        "dominant_kernel_concentration": 71.7656,
+        "moe_fraction": 14.0497,
+        "average_memory_bandwidth": 2.11156,
+        "memory_transfer_overhead": 14.9247,
+        "communication_fraction": 72.3391,
+        "total_communication_time": 18.2427,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5134,22 +5164,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.076106,
+        "mfu": 14.6353,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 45.2431,
-        "moe_fraction": 26.1329,
-        "average_memory_bandwidth": 6.03667,
-        "memory_transfer_overhead": 13.1036,
-        "communication_fraction": 45.8575,
-        "total_communication_time": 9.45422,
+        "dominant_kernel_concentration": 38.3244,
+        "moe_fraction": 30.7877,
+        "average_memory_bandwidth": 6.22542,
+        "memory_transfer_overhead": 8.37606,
+        "communication_fraction": 38.8195,
+        "total_communication_time": 16.7447,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5198,22 +5234,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0582402,
+        "mfu": 0.5538,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 76.1117,
+        "dominant_kernel_concentration": 75.7884,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 1.07972,
-        "memory_transfer_overhead": 9.31697,
-        "communication_fraction": 77.5756,
-        "total_communication_time": 8.91614,
+        "average_memory_bandwidth": 1.08774,
+        "memory_transfer_overhead": 8.04689,
+        "communication_fraction": 77.5606,
+        "total_communication_time": 13.2001,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5262,22 +5304,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0746597,
+        "mfu": 25.0629,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 31.0272,
+        "dominant_kernel_concentration": 37.4248,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 2.46722,
-        "memory_transfer_overhead": 11.8471,
-        "communication_fraction": 37.6991,
-        "total_communication_time": 4.46798,
+        "average_memory_bandwidth": 2.50277,
+        "memory_transfer_overhead": 7.15451,
+        "communication_fraction": 48.4042,
+        "total_communication_time": 16.5186,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5326,22 +5374,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0532298,
+        "mfu": 4.1744,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 64.5915,
+        "dominant_kernel_concentration": 68.7813,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 0.732371,
-        "memory_transfer_overhead": 61.4331,
-        "communication_fraction": 67.8116,
-        "total_communication_time": 4.25743,
+        "average_memory_bandwidth": 0.720189,
+        "memory_transfer_overhead": 46.9276,
+        "communication_fraction": 71.1534,
+        "total_communication_time": 10.859,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5390,22 +5444,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.068966,
+        "mfu": 46.9348,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 39.3937,
+        "dominant_kernel_concentration": 33.2621,
         "moe_fraction": 0.0,
-        "average_memory_bandwidth": 2.32347,
-        "memory_transfer_overhead": 20.4552,
-        "communication_fraction": 30.4693,
-        "total_communication_time": 4.95231,
+        "average_memory_bandwidth": 2.43512,
+        "memory_transfer_overhead": 13.9487,
+        "communication_fraction": 35.1457,
+        "total_communication_time": 13.4198,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5454,22 +5514,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0793544,
+        "mfu": 0.6306,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 63.0539,
-        "moe_fraction": 15.3332,
-        "average_memory_bandwidth": 2.04907,
-        "memory_transfer_overhead": 17.657,
-        "communication_fraction": 64.8761,
-        "total_communication_time": 4.23996,
+        "dominant_kernel_concentration": 75.9852,
+        "moe_fraction": 11.7839,
+        "average_memory_bandwidth": 2.02765,
+        "memory_transfer_overhead": 14.9524,
+        "communication_fraction": 76.815,
+        "total_communication_time": 23.7043,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5518,22 +5584,28 @@
           "nvlink"
         ],
         "trace_types": [
+          "json",
           "sglang",
           "nsys"
         ],
         "metric_traces": [
-          "sglang_bench_serving",
+          "torch_profiler_json",
+          "sglang_one_batch",
           "nsys_sqlite"
         ]
       },
       "metrics": {
+        "avg_step_time": 0.0845166,
+        "mfu": 13.9869,
         "mean_sm_coverage": null,
-        "dominant_kernel_concentration": 30.315,
-        "moe_fraction": 34.002,
-        "average_memory_bandwidth": 5.96656,
-        "memory_transfer_overhead": 12.2924,
-        "communication_fraction": 30.0816,
-        "total_communication_time": 4.87516,
+        "dominant_kernel_concentration": 29.3596,
+        "moe_fraction": 32.4572,
+        "average_memory_bandwidth": 5.94482,
+        "memory_transfer_overhead": 8.65763,
+        "communication_fraction": 35.706,
+        "total_communication_time": 14.8535,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }

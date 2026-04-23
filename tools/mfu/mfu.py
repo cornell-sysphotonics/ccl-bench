@@ -127,20 +127,16 @@ def _load_vllm_latency_s(directory: str) -> Optional[float]:
 
 def _calc_json(directory: str, yaml_data: dict) -> float:
     """
-    Compute MFU from PyTorch-profiler JSON traces.
+    Compute MFU from PyTorch-profiler JSON traces (torchtitan format).
 
-    Training formula:
-      FLOP/token = 6(N_active - N_emb) + 12·L·H·Q·S
-
-    Inference formula:
-      FLOP/token = 2(N_active - N_emb) + 4·L·H·Q·S
-
-    Observed FLOPS = (FLOP/token) × (tokens/second)
-    MFU = Observed FLOPS / (world_size × peak_TFLOPS)
+    Formula (from "Efficient Large Scale Language Modeling with Mixtures of Experts"):
+      FLOP/token = 6(N - N_emb) + 12·L·H·Q·S
+      Observed FLOPS = (FLOP/token) × (tokens/second)
+      MFU = Observed FLOPS / (world_size × peak_TFLOPS)
 
     Where:
-      N_active = active per-token parameter count (model_arch.num_params_active)
-                 or total parameter count          (model_arch.num_params)
+      N     = total parameter count         (from YAML model_arch.num_params)
+              or active per-token count     (from YAML model_arch.num_params_active)
       N_emb = embedding parameter count     (from YAML model_arch.num_params_embedding)
       L     = number of transformer layers  (from YAML model_arch.num_layers)
       H     = per-head dimension (head_dim) (from YAML model_arch.head_dim)
@@ -151,7 +147,8 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
     workload = yaml_data.get("workload", {})
     data_cfg = workload.get("data", {})
     hw_cfg   = workload.get("hardware", {}).get("xpu_spec", {})
-    arch     = workload.get("model", {}).get("model_arch", {})
+    model_cfg = workload.get("model", {})
+    arch     = model_cfg.get("model_arch") or model_cfg
 
     if arch is None:
         model_family = workload.get("model", {}).get("model_family", "unknown")
@@ -224,19 +221,7 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
 
     # ── MFU ──────────────────────────────────────────────────────────────────
     effective_params = N_active or N
-    phase = (
-        yaml_data.get("workload", {})
-        .get("model", {})
-        .get("phase", "")
-        .lower()
-    )
-    is_inference = phase == "inference"
-
-    if is_inference:
-        flop_per_token = 2 * (effective_params - N_emb) + 4 * L * H * Q * seq_len
-    else:
-        flop_per_token = 6 * (effective_params - N_emb) + 12 * L * H * Q * seq_len
-
+    flop_per_token  = 6 * (effective_params - N_emb) + 12 * L * H * Q * seq_len
     tokens_per_sec  = (batch_size * seq_len) / step_time_s
     observed_flops  = flop_per_token * tokens_per_sec
     peak_flops_total = peak_tflops * 1e12 * world_size
