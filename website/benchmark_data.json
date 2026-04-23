@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T00:43:40.682259+00:00",
+  "generated_at": "2026-04-23T14:31:11.149710+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -5122,7 +5122,7 @@
         "average_memory_bandwidth": 1.06649,
         "memory_transfer_overhead": 9.49435,
         "communication_fraction": 81.0588,
-        "total_communication_time": null,
+        "total_communication_time": 8.82314,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5189,7 +5189,7 @@
         "average_memory_bandwidth": 1.12032,
         "memory_transfer_overhead": 8.89753,
         "communication_fraction": 55.3831,
-        "total_communication_time": null,
+        "total_communication_time": 11.2746,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5256,7 +5256,7 @@
         "average_memory_bandwidth": 0.712152,
         "memory_transfer_overhead": 62.6971,
         "communication_fraction": 76.7777,
-        "total_communication_time": null,
+        "total_communication_time": 8.12829,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5323,7 +5323,7 @@
         "average_memory_bandwidth": 2.28343,
         "memory_transfer_overhead": 21.6541,
         "communication_fraction": 37.2806,
-        "total_communication_time": null,
+        "total_communication_time": 6.76808,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5390,7 +5390,7 @@
         "average_memory_bandwidth": 2.09645,
         "memory_transfer_overhead": 18.5695,
         "communication_fraction": 79.3671,
-        "total_communication_time": null,
+        "total_communication_time": 8.98001,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5457,7 +5457,7 @@
         "average_memory_bandwidth": 6.03667,
         "memory_transfer_overhead": 13.1036,
         "communication_fraction": 45.8575,
-        "total_communication_time": null,
+        "total_communication_time": 9.45422,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5524,7 +5524,7 @@
         "average_memory_bandwidth": 1.07972,
         "memory_transfer_overhead": 9.31697,
         "communication_fraction": 77.5756,
-        "total_communication_time": null,
+        "total_communication_time": 8.91614,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5591,7 +5591,7 @@
         "average_memory_bandwidth": 2.46722,
         "memory_transfer_overhead": 11.8471,
         "communication_fraction": 37.6991,
-        "total_communication_time": null,
+        "total_communication_time": 4.46798,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5658,7 +5658,7 @@
         "average_memory_bandwidth": 0.732371,
         "memory_transfer_overhead": 61.4331,
         "communication_fraction": 67.8116,
-        "total_communication_time": null,
+        "total_communication_time": 4.25743,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5725,7 +5725,7 @@
         "average_memory_bandwidth": 2.32347,
         "memory_transfer_overhead": 20.4552,
         "communication_fraction": 30.4693,
-        "total_communication_time": null,
+        "total_communication_time": 4.95231,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5792,7 +5792,7 @@
         "average_memory_bandwidth": 2.04907,
         "memory_transfer_overhead": 17.657,
         "communication_fraction": 64.8761,
-        "total_communication_time": null,
+        "total_communication_time": 4.23996,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
@@ -5859,7 +5859,7 @@
         "average_memory_bandwidth": 5.96656,
         "memory_transfer_overhead": 12.2924,
         "communication_fraction": 30.0816,
-        "total_communication_time": null,
+        "total_communication_time": 4.87516,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
