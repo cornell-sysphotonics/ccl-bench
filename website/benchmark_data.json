@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-21T19:28:43.098896+00:00",
+  "generated_at": "2026-04-23T00:06:58.913853+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -13,7 +13,10 @@
     "memory_transfer_overhead",
     "mfu",
     "moe_fraction",
-    "total_communication_time"
+    "throughput_group_6",
+    "total_communication_time",
+    "tpot_group_6",
+    "ttft_group_6"
   ],
   "metric_categories": [
     {
@@ -348,12 +351,12 @@
       },
       "metrics": {
         "avg_step_time": 0.000221814,
+        "mfu": 8.5922,
         "dominant_kernel_concentration": 81.879,
         "average_memory_bandwidth": 5.16215,
         "memory_transfer_overhead": 0.1458,
         "communication_fraction": 1.30337e-06,
-        "total_communication_time": 1.49956,
-        "mfu": 8.5922
+        "total_communication_time": 1.49956
       }
     },
     {
@@ -410,12 +413,12 @@
       },
       "metrics": {
         "avg_step_time": 0.00017781,
+        "mfu": 10.4141,
         "dominant_kernel_concentration": 53.9645,
         "average_memory_bandwidth": 31.2078,
         "memory_transfer_overhead": 0.055,
         "communication_fraction": 16.5455,
-        "total_communication_time": 0.0726466,
-        "mfu": 10.4141
+        "total_communication_time": 0.0726466
       }
     },
     {
@@ -472,12 +475,12 @@
       },
       "metrics": {
         "avg_step_time": 8.5051e-05,
+        "mfu": 16.7047,
         "dominant_kernel_concentration": 45.8373,
         "average_memory_bandwidth": 36.6485,
         "memory_transfer_overhead": 0.0725,
         "communication_fraction": 19.3455,
-        "total_communication_time": 0.11252,
-        "mfu": 16.7047
+        "total_communication_time": 0.11252
       }
     },
     {
@@ -534,12 +537,12 @@
       },
       "metrics": {
         "avg_step_time": 9.76773e-05,
+        "mfu": 20.515,
         "dominant_kernel_concentration": 53.96,
         "average_memory_bandwidth": 12.1563,
         "memory_transfer_overhead": 0.0382,
         "communication_fraction": 26.9272,
-        "total_communication_time": 0.239226,
-        "mfu": 20.515
+        "total_communication_time": 0.239226
       }
     },
     {
@@ -596,12 +599,12 @@
       },
       "metrics": {
         "avg_step_time": 0.000194447,
+        "mfu": 8.0046,
         "dominant_kernel_concentration": 53.2536,
         "average_memory_bandwidth": 10.6774,
         "memory_transfer_overhead": 0.1074,
         "communication_fraction": 3.14031e-06,
-        "total_communication_time": 0.427017,
-        "mfu": 8.0046
+        "total_communication_time": 0.427017
       }
     },
     {
@@ -658,12 +661,12 @@
       },
       "metrics": {
         "avg_step_time": 0.000145632,
+        "mfu": 8.6877,
         "dominant_kernel_concentration": 38.5532,
         "average_memory_bandwidth": 24.4778,
         "memory_transfer_overhead": 0.0651,
         "communication_fraction": 15.0425,
-        "total_communication_time": 0.0523105,
-        "mfu": 8.6877
+        "total_communication_time": 0.0523105
       }
     },
     {
@@ -720,12 +723,12 @@
       },
       "metrics": {
         "avg_step_time": 9.73176e-05,
+        "mfu": 14.5975,
         "dominant_kernel_concentration": 36.9039,
         "average_memory_bandwidth": 8.90733,
         "memory_transfer_overhead": 0.0533,
         "communication_fraction": 18.4459,
-        "total_communication_time": 0.0759283,
-        "mfu": 14.5975
+        "total_communication_time": 0.0759283
       }
     },
     {
@@ -782,12 +785,12 @@
       },
       "metrics": {
         "avg_step_time": 7.54496e-05,
+        "mfu": 17.1789,
         "dominant_kernel_concentration": 51.1476,
         "average_memory_bandwidth": 20.6828,
         "memory_transfer_overhead": 0.0448,
         "communication_fraction": 25.5013,
-        "total_communication_time": 0.171671,
-        "mfu": 17.1789
+        "total_communication_time": 0.171671
       }
     },
     {
@@ -842,6 +845,7 @@
       },
       "metrics": {
         "avg_step_time": 4.42554,
+        "mfu": 7.25,
         "mean_sm_coverage": 14.2438,
         "dominant_kernel_concentration": 39.8263,
         "moe_fraction": 0.0095733,
@@ -850,8 +854,7 @@
         "communication_fraction": 90.1896,
         "total_communication_time": 3.79839,
         "bandwidth_utilization_allgather_group_6": 0.691226,
-        "bandwidth_utilization_allreduce_group_6": 0.000582978,
-        "mfu": 7.25
+        "bandwidth_utilization_allreduce_group_6": 0.000582978
       }
     },
     {
@@ -906,6 +909,7 @@
       },
       "metrics": {
         "avg_step_time": 12.4859,
+        "mfu": 2.5697,
         "mean_sm_coverage": 8.77416,
         "dominant_kernel_concentration": 46.6868,
         "moe_fraction": 0.00568145,
@@ -914,8 +918,7 @@
         "communication_fraction": 95.0665,
         "total_communication_time": 12.0873,
         "bandwidth_utilization_allgather_group_6": 0.640605,
-        "bandwidth_utilization_allreduce_group_6": 50.4074,
-        "mfu": 2.5697
+        "bandwidth_utilization_allreduce_group_6": 50.4074
       }
     },
     {
@@ -970,6 +973,7 @@
       },
       "metrics": {
         "avg_step_time": 13.4448,
+        "mfu": 2.3864,
         "mean_sm_coverage": 7.95756,
         "dominant_kernel_concentration": 45.2445,
         "moe_fraction": 0.00328002,
@@ -978,8 +982,7 @@
         "communication_fraction": 95.5984,
         "total_communication_time": 12.9735,
         "bandwidth_utilization_allgather_group_6": 0.679365,
-        "bandwidth_utilization_allreduce_group_6": 26.5272,
-        "mfu": 2.3864
+        "bandwidth_utilization_allreduce_group_6": 26.5272
       }
     },
     {
@@ -1034,6 +1037,7 @@
       },
       "metrics": {
         "avg_step_time": 3.63191,
+        "mfu": 8.8342,
         "mean_sm_coverage": 14.4299,
         "dominant_kernel_concentration": 38.1559,
         "moe_fraction": 0.0168489,
@@ -1042,8 +1046,7 @@
         "communication_fraction": 89.6675,
         "total_communication_time": 2.89107,
         "bandwidth_utilization_allgather_group_6": 1.37671,
-        "bandwidth_utilization_allreduce_group_6": 62.995,
-        "mfu": 8.8342
+        "bandwidth_utilization_allreduce_group_6": 62.995
       }
     },
     {
@@ -1098,6 +1101,7 @@
       },
       "metrics": {
         "avg_step_time": 3.79391,
+        "mfu": 8.5179,
         "mean_sm_coverage": 12.5278,
         "dominant_kernel_concentration": 56.4729,
         "moe_fraction": 0.0198112,
@@ -1106,8 +1110,7 @@
         "communication_fraction": 90.6411,
         "total_communication_time": 3.32568,
         "bandwidth_utilization_allgather_group_6": 11.6139,
-        "bandwidth_utilization_allreduce_group_6": 81.2942,
-        "mfu": 8.5179
+        "bandwidth_utilization_allreduce_group_6": 81.2942
       }
     },
     {
@@ -1162,6 +1165,7 @@
       },
       "metrics": {
         "avg_step_time": 9.66378,
+        "mfu": 3.3441,
         "mean_sm_coverage": 9.36788,
         "dominant_kernel_concentration": 40.0632,
         "moe_fraction": 0.00689339,
@@ -1170,8 +1174,7 @@
         "communication_fraction": 93.8724,
         "total_communication_time": 9.28479,
         "bandwidth_utilization_allgather_group_6": 9.36601,
-        "bandwidth_utilization_allreduce_group_6": 73.5363,
-        "mfu": 3.3441
+        "bandwidth_utilization_allreduce_group_6": 73.5363
       }
     },
     {
@@ -1224,6 +1227,7 @@
       },
       "metrics": {
         "avg_step_time": 11.7428,
+        "mfu": 2.752,
         "mean_sm_coverage": 6.3979,
         "dominant_kernel_concentration": 73.9092,
         "moe_fraction": 0.00637931,
@@ -1232,8 +1236,7 @@
         "communication_fraction": 98.3598,
         "total_communication_time": 11.498,
         "bandwidth_utilization_allgather_group_6": 15.3382,
-        "bandwidth_utilization_allreduce_group_6": 84.8103,
-        "mfu": 2.752
+        "bandwidth_utilization_allreduce_group_6": 84.8103
       }
     },
     {
@@ -1286,6 +1289,7 @@
       },
       "metrics": {
         "avg_step_time": 20.6762,
+        "mfu": 5.6485,
         "mean_sm_coverage": 6.94704,
         "dominant_kernel_concentration": 55.6554,
         "moe_fraction": 0.00535552,
@@ -1294,8 +1298,7 @@
         "communication_fraction": 96.7923,
         "total_communication_time": 20.0744,
         "bandwidth_utilization_allgather_group_6": 9.28075,
-        "bandwidth_utilization_allreduce_group_6": 101.387,
-        "mfu": 5.6485
+        "bandwidth_utilization_allreduce_group_6": 101.387
       }
     },
     {
@@ -2400,6 +2403,7 @@
       },
       "metrics": {
         "avg_step_time": 10.1309,
+        "mfu": 6.0445,
         "mean_sm_coverage": 19.1184,
         "dominant_kernel_concentration": 50.2328,
         "moe_fraction": 0.0,
@@ -2408,8 +2412,7 @@
         "communication_fraction": 83.9077,
         "total_communication_time": 8.09265,
         "bandwidth_utilization_allgather_group_6": 0.297824,
-        "bandwidth_utilization_allreduce_group_6": 41.712,
-        "mfu": 6.0445
+        "bandwidth_utilization_allreduce_group_6": 41.712
       }
     },
     {
@@ -2465,6 +2468,7 @@
       },
       "metrics": {
         "avg_step_time": 10.033,
+        "mfu": 6.1035,
         "mean_sm_coverage": 26.5361,
         "dominant_kernel_concentration": 36.9198,
         "moe_fraction": 0.0,
@@ -2473,8 +2477,7 @@
         "communication_fraction": 78.3779,
         "total_communication_time": 6.94209,
         "bandwidth_utilization_allgather_group_6": 0.292327,
-        "bandwidth_utilization_allreduce_group_6": 15.9835,
-        "mfu": 6.1035
+        "bandwidth_utilization_allreduce_group_6": 15.9835
       }
     },
     {
@@ -2528,12 +2531,12 @@
       },
       "metrics": {
         "avg_step_time": 0.87836,
+        "mfu": 50.8405,
         "dominant_kernel_concentration": 44.56,
         "average_memory_bandwidth": 19.883,
         "memory_transfer_overhead": 0.8077,
         "communication_fraction": 2.6606,
-        "total_communication_time": 0.0536802,
-        "mfu": 50.8405
+        "total_communication_time": 0.0536802
       }
     },
     {
@@ -2587,12 +2590,12 @@
       },
       "metrics": {
         "avg_step_time": 0.387289,
+        "mfu": 62.8425,
         "dominant_kernel_concentration": 27.8118,
         "average_memory_bandwidth": 74.4089,
         "memory_transfer_overhead": 3.0518,
         "communication_fraction": 6.37129,
-        "total_communication_time": 0.13406,
-        "mfu": 62.8425
+        "total_communication_time": 0.13406
       }
     },
     {
@@ -2646,12 +2649,12 @@
       },
       "metrics": {
         "avg_step_time": 0.719065,
+        "mfu": 45.1777,
         "dominant_kernel_concentration": 33.2512,
         "average_memory_bandwidth": 41.081,
         "memory_transfer_overhead": 1.0035,
         "communication_fraction": 28.6379,
-        "total_communication_time": 0.801672,
-        "mfu": 45.1777
+        "total_communication_time": 0.801672
       }
     },
     {
@@ -2705,12 +2708,12 @@
       },
       "metrics": {
         "avg_step_time": 0.326908,
+        "mfu": 44.5641,
         "dominant_kernel_concentration": 36.4911,
         "average_memory_bandwidth": 42.9344,
         "memory_transfer_overhead": 0.9167,
         "communication_fraction": 30.0314,
-        "total_communication_time": 0.675494,
-        "mfu": 44.5641
+        "total_communication_time": 0.675494
       }
     },
     {
@@ -2764,12 +2767,12 @@
       },
       "metrics": {
         "avg_step_time": 0.781121,
+        "mfu": 55.7192,
         "dominant_kernel_concentration": 69.8424,
         "average_memory_bandwidth": 17.1418,
         "memory_transfer_overhead": 0.6543,
         "communication_fraction": 7.00837,
-        "total_communication_time": 0.188792,
-        "mfu": 55.7192
+        "total_communication_time": 0.188792
       }
     },
     {
@@ -2823,12 +2826,12 @@
       },
       "metrics": {
         "avg_step_time": 0.532106,
+        "mfu": 54.9958,
         "dominant_kernel_concentration": 74.2653,
         "average_memory_bandwidth": 32.8446,
         "memory_transfer_overhead": 0.6477,
         "communication_fraction": 8.77354,
-        "total_communication_time": 0.278726,
-        "mfu": 54.9958
+        "total_communication_time": 0.278726
       }
     },
     {
@@ -4639,6 +4642,822 @@
         "total_communication_time": 28.108,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-batch8-gloo-perlmutter",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp4-batch8-gloo-perlmutter",
+        "description": "Qwen3-4B inference, TP=4, batch size 8, communication=Gloo. Gloo is torch.distributed's TCP backend; it has no NVLink or RDMA fast path and serves as the bandwidth-floor baseline for the ccl-bench comparison. Global batch size is 8 requests. Traces were collected on Perlmutter with vLLM bench latency, PyTorch Kineto profiler, and Nsight Systems. Input length is 1024 and output length is 128; seq_len records input plus output tokens for MFU accounting.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-batch8-gloo-perlmutter",
+        "model_family": "qwen3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1152,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "Gloo",
+        "comm_library_ver": "torch-2.10.0",
+        "comm_env": {
+          "CCL_BENCH_DIST_BACKEND": "gloo",
+          "CCL_BENCH_FORCE_TORCH_DISTRIBUTED": "1",
+          "VLLM_DISABLE_CUSTOM_ALL_REDUCE": "1"
+        },
+        "protocol_selection": [
+          "tcp"
+        ],
+        "trace_types": [
+          "nsys",
+          "json"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.128875,
+        "mfu": 0.4628,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 20.8491,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 17.0472,
+        "memory_transfer_overhead": 17.7104,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-batch128-gloo-perlmutter",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp4-batch128-gloo-perlmutter",
+        "description": "Qwen3-4B inference, TP=4, batch size 128, communication=Gloo. Gloo is torch.distributed's TCP backend; it has no NVLink or RDMA fast path and serves as the bandwidth-floor baseline for the ccl-bench comparison. Global batch size is 128 requests. Traces were collected on Perlmutter with vLLM bench latency, PyTorch Kineto profiler, and Nsight Systems. Input length is 1024 and output length is 128; seq_len records input plus output tokens for MFU accounting.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-batch128-gloo-perlmutter",
+        "model_family": "qwen3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 128,
+        "seq_len": 1152,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "Gloo",
+        "comm_library_ver": "torch-2.10.0",
+        "comm_env": {
+          "CCL_BENCH_DIST_BACKEND": "gloo",
+          "CCL_BENCH_FORCE_TORCH_DISTRIBUTED": "1",
+          "VLLM_DISABLE_CUSTOM_ALL_REDUCE": "1"
+        },
+        "protocol_selection": [
+          "tcp"
+        ],
+        "trace_types": [
+          "nsys",
+          "json"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.455548,
+        "mfu": 1.4541,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 33.0417,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 30.4378,
+        "memory_transfer_overhead": 34.2856,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp4-batch8-gloo-perlmutter",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-vllm-tp4-batch8-gloo-perlmutter",
+        "description": "Llama-3.1-8B inference, TP=4, batch size 8, communication=Gloo. Global batch size is 8 requests. Traces were collected on Perlmutter with vLLM bench latency, PyTorch Kineto profiler, and Nsight Systems. Input length is 1024 and output length is 128; seq_len records input plus output tokens for MFU accounting. Gloo was forced through torch.distributed by the ccl-bench vLLM patch.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp4-batch8-gloo-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1152,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "Gloo",
+        "comm_library_ver": "torch.distributed",
+        "comm_env": {
+          "CCL_BENCH_DIST_BACKEND": "gloo",
+          "CCL_BENCH_FORCE_TORCH_DISTRIBUTED": "1",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "tcp"
+        ],
+        "trace_types": [
+          "nsys",
+          "json"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.12076,
+        "mfu": 0.8403,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 24.8198,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 14.967,
+        "memory_transfer_overhead": 27.4771,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp4-batch128-gloo-perlmutter",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-vllm-tp4-batch128-gloo-perlmutter",
+        "description": "Llama-3.1-8B inference, TP=4, batch size 128, communication=Gloo. Global batch size is 128 requests. Traces were collected on Perlmutter with vLLM bench latency, PyTorch Kineto profiler, and Nsight Systems. Input length is 1024 and output length is 128; seq_len records input plus output tokens for MFU accounting. Gloo was forced through torch.distributed by the ccl-bench vLLM patch.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp4-batch128-gloo-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 128,
+        "seq_len": 1152,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "Gloo",
+        "comm_library_ver": "torch.distributed",
+        "comm_env": {
+          "CCL_BENCH_DIST_BACKEND": "gloo",
+          "CCL_BENCH_FORCE_TORCH_DISTRIBUTED": "1",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "tcp"
+        ],
+        "trace_types": [
+          "nsys",
+          "json"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.592039,
+        "mfu": 2.2729,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 46.4914,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 28.1963,
+        "memory_transfer_overhead": 39.4205,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-vllm-tp4-ep4-batch8-gloo-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-moe-16b-vllm-tp4-ep4-batch8-gloo-perlmutter",
+        "description": "DeepSeek-MoE-16B inference, TP=4, EP=4, batch size 8, communication=Gloo. Global batch size is 8 requests. Traces were collected on Perlmutter with vLLM bench latency, PyTorch Kineto profiler, and Nsight Systems. Input length is 1024 and output length is 128; seq_len records input plus output tokens for MFU accounting. Gloo was forced through torch.distributed by the ccl-bench vLLM patch.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-moe-16b-vllm-tp4-ep4-batch8-gloo-perlmutter",
+        "model_family": "deepseek-moe-16b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 8,
+        "seq_len": 1152,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "Gloo",
+        "comm_library_ver": "torch.distributed",
+        "comm_env": {
+          "CCL_BENCH_DIST_BACKEND": "gloo",
+          "CCL_BENCH_FORCE_TORCH_DISTRIBUTED": "1",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "tcp"
+        ],
+        "trace_types": [
+          "nsys",
+          "json"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.135681,
+        "mfu": 0.2772,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 37.1536,
+        "moe_fraction": 41.2393,
+        "average_memory_bandwidth": 6.50339,
+        "memory_transfer_overhead": 36.8815,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-vllm-tp4-ep4-batch128-gloo-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-moe-16b-vllm-tp4-ep4-batch128-gloo-perlmutter",
+        "description": "DeepSeek-MoE-16B inference, TP=4, EP=4, batch size 128, communication=Gloo. Global batch size is 128 requests. Traces were collected on Perlmutter with vLLM bench latency, PyTorch Kineto profiler, and Nsight Systems. Input length is 1024 and output length is 128; seq_len records input plus output tokens for MFU accounting. Gloo was forced through torch.distributed by the ccl-bench vLLM patch.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/data/ccl-bench_trace_collection/deepseek-moe-16b-vllm-tp4-ep4-batch128-gloo-perlmutter",
+        "model_family": "deepseek-moe-16b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 128,
+        "seq_len": 1152,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "Gloo",
+        "comm_library_ver": "torch.distributed",
+        "comm_env": {
+          "CCL_BENCH_DIST_BACKEND": "gloo",
+          "CCL_BENCH_FORCE_TORCH_DISTRIBUTED": "1",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "tcp"
+        ],
+        "trace_types": [
+          "nsys",
+          "json"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.347328,
+        "mfu": 1.4226,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 39.8777,
+        "moe_fraction": 41.8388,
+        "average_memory_bandwidth": 24.5764,
+        "memory_transfer_overhead": 38.1306,
+        "communication_fraction": 0.0,
+        "total_communication_time": 0.0,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-sglang-tp4-batch8-perlmutter",
+      "metadata": {
+        "workload_name": "qwen3-4b-sglang-tp4-batch8-perlmutter",
+        "description": "Qwen3-4B SGLang inference, TP=4, batch size 8.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "Qwen3-4B",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 8,
+        "seq_len": 1152,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.x",
+        "framework": "sglang",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": "",
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "p2p",
+          "nvlink"
+        ],
+        "trace_types": [
+          "sglang",
+          "nsys"
+        ],
+        "metric_traces": [
+          "sglang_bench_serving",
+          "nsys_sqlite"
+        ]
+      },
+      "metrics": {
+        "ttft_group_6": 55420.3,
+        "tpot_group_6": -0.000305945,
+        "throughput_group_6": 18.4674,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 80.4441,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 1.06649,
+        "memory_transfer_overhead": 9.49435,
+        "communication_fraction": 81.0588,
+        "total_communication_time": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-sglang-tp4-batch128-perlmutter",
+      "metadata": {
+        "workload_name": "qwen3-4b-sglang-tp4-batch128-perlmutter",
+        "description": "Qwen3-4B SGLang inference, TP=4, batch size 128.",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "Qwen3-4B",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 128,
+        "seq_len": 1152,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.x",
+        "framework": "sglang",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": "",
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "p2p",
+          "nvlink"
+        ],
+        "trace_types": [
+          "sglang",
+          "nsys"
+        ],
+        "metric_traces": [
+          "sglang_bench_serving",
+          "nsys_sqlite"
+        ]
+      },
+      "metrics": {
+        "ttft_group_6": 56850.8,
+        "tpot_group_6": -0.000152776,
+        "throughput_group_6": 287.859,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 54.7067,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 1.12032,
+        "memory_transfer_overhead": 8.89753,
+        "communication_fraction": 55.3831,
+        "total_communication_time": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp4-batch8-perlmutter",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-sglang-tp4-batch8-perlmutter",
+        "description": "Llama-3.1-8B SGLang inference, TP=4, batch size 8.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
+        "model_family": "Llama-3.1-8B",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 8,
+        "seq_len": 1152,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.x",
+        "framework": "sglang",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": "",
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "p2p",
+          "nvlink"
+        ],
+        "trace_types": [
+          "sglang",
+          "nsys"
+        ],
+        "metric_traces": [
+          "sglang_bench_serving",
+          "nsys_sqlite"
+        ]
+      },
+      "metrics": {
+        "ttft_group_6": 9183.62,
+        "tpot_group_6": -0.000196996,
+        "throughput_group_6": 111.29,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 76.0781,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 0.712152,
+        "memory_transfer_overhead": 62.6971,
+        "communication_fraction": 76.7777,
+        "total_communication_time": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp4-batch128-perlmutter",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-sglang-tp4-batch128-perlmutter",
+        "description": "Llama-3.1-8B SGLang inference, TP=4, batch size 128.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "",
+        "model_family": "Llama-3.1-8B",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 128,
+        "seq_len": 1152,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.x",
+        "framework": "sglang",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": "",
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": "",
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "p2p",
+          "nvlink"
+        ],
+        "trace_types": [
+          "sglang",
+          "nsys"
+        ],
+        "metric_traces": [
+          "sglang_bench_serving",
+          "nsys_sqlite"
+        ]
+      },
+      "metrics": {
+        "ttft_group_6": 11749.8,
+        "tpot_group_6": -0.000145949,
+        "throughput_group_6": 1389.41,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 36.7697,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 2.28343,
+        "memory_transfer_overhead": 21.6541,
+        "communication_fraction": 37.2806,
+        "total_communication_time": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-sglang-tp4-ep4-batch8-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-moe-16b-sglang-tp4-ep4-batch8-perlmutter",
+        "description": "DeepSeek-MoE-16B SGLang inference, TP=4, EP=4, batch size 8.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "",
+        "model_family": "DeepSeek-MoE-16B",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 8,
+        "seq_len": 1152,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.x",
+        "framework": "sglang",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": "",
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "p2p",
+          "nvlink"
+        ],
+        "trace_types": [
+          "sglang",
+          "nsys"
+        ],
+        "metric_traces": [
+          "sglang_bench_serving",
+          "nsys_sqlite"
+        ]
+      },
+      "metrics": {
+        "ttft_group_6": 24600.7,
+        "tpot_group_6": -0.000180897,
+        "throughput_group_6": 41.5959,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 78.6542,
+        "moe_fraction": 9.03645,
+        "average_memory_bandwidth": 2.09645,
+        "memory_transfer_overhead": 18.5695,
+        "communication_fraction": 79.3671,
+        "total_communication_time": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-sglang-tp4-ep4-batch128-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek-moe-16b-sglang-tp4-ep4-batch128-perlmutter",
+        "description": "DeepSeek-MoE-16B SGLang inference, TP=4, EP=4, batch size 128.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "",
+        "model_family": "DeepSeek-MoE-16B",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 128,
+        "seq_len": 1152,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.x",
+        "framework": "sglang",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": "",
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "p2p",
+          "nvlink"
+        ],
+        "trace_types": [
+          "sglang",
+          "nsys"
+        ],
+        "metric_traces": [
+          "sglang_bench_serving",
+          "nsys_sqlite"
+        ]
+      },
+      "metrics": {
+        "ttft_group_6": 12875.6,
+        "tpot_group_6": -0.00014402,
+        "throughput_group_6": 1268.77,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 45.2431,
+        "moe_fraction": 26.1329,
+        "average_memory_bandwidth": 6.03667,
+        "memory_transfer_overhead": 13.1036,
+        "communication_fraction": 45.8575,
+        "total_communication_time": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
