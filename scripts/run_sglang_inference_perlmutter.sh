@@ -81,6 +81,30 @@ fi
 
 mkdir -p "$TRACE_ROOT"
 
+backend_row_name() {
+  local name=$1
+  case "$COMM_BACKEND" in
+    nccl)
+      echo "$name"
+      ;;
+    pure_mscclpp)
+      echo "${name%-perlmutter}-puremscclpp-perlmutter"
+      ;;
+    mscclpp)
+      echo "${name%-perlmutter}-mscclpp-perlmutter"
+      ;;
+    gloo)
+      echo "${name%-perlmutter}-gloo-perlmutter"
+      ;;
+    native_mscclpp)
+      echo "${name%-perlmutter}-native-mscclpp-perlmutter"
+      ;;
+    *)
+      echo "${name%-perlmutter}-${COMM_BACKEND}-perlmutter"
+      ;;
+  esac
+}
+
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
     echo "missing required command: $1" >&2
@@ -157,6 +181,7 @@ run_one() {
 
   cfg=$(variant_config "$key") || return 1
   IFS="|" read -r name model tp ep batch family moe <<< "$cfg"
+  name=$(backend_row_name "$name")
 
   out_dir="$TRACE_ROOT/$name"
   port=$((PORT_BASE + RANDOM % 1000))

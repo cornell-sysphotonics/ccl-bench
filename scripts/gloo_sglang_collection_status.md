@@ -103,3 +103,64 @@ helper path does not handle these SGLang traces cleanly.
 
 The large `.sqlite`, `.nsys-rep`, and runtime logs are stored under
 `/data/ccl-bench_trace_collection` and should not be committed.
+
+## SGLang + MSCCL++ Follow-up
+
+After the SGLang NCCL rows were working, the same six SGLang workloads were
+collected with the MSCCL++ NCCL shim loaded directly through SGLang:
+
+```text
+SGLANG_NCCL_SO_PATH=/global/homes/k/kg597/mscclpp/build/lib/libmscclpp_nccl.so
+LD_PRELOAD=/global/homes/k/kg597/mscclpp/build/lib/libmscclpp_nccl.so
+COMM_BACKEND=pure_mscclpp
+```
+
+Rows:
+
+```text
+qwen3-4b-sglang-tp4-batch8-puremscclpp-perlmutter
+qwen3-4b-sglang-tp4-batch128-puremscclpp-perlmutter
+llama-3.1-8b-sglang-tp4-batch8-puremscclpp-perlmutter
+llama-3.1-8b-sglang-tp4-batch128-puremscclpp-perlmutter
+deepseek-moe-16b-sglang-tp4-ep4-batch8-puremscclpp-perlmutter
+deepseek-moe-16b-sglang-tp4-ep4-batch128-puremscclpp-perlmutter
+```
+
+The server log verified that SGLang loaded the MSCCL++ shim:
+
+```text
+Found nccl from environment variable SGLANG_NCCL_SO_PATH=/global/homes/k/kg597/mscclpp/build/lib/libmscclpp_nccl.so
+```
+
+The first completed SQLite was checked directly and contained MSCCL++ kernels,
+including:
+
+```text
+mscclpp::collective::allreducePacket
+mscclpp::collective::allreduceFullmesh
+mscclpp::collective::allgatherFullmesh2
+```
+
+The bundles were copied to:
+
+```text
+lambda7:/data/ccl-bench_trace_collection
+```
+
+The website was regenerated to 85 rows.
+
+Metric snapshot after regeneration:
+
+| Row | TTFT ms | TPOT ms | Throughput tok/s | Comm Fraction | Total Comm Time |
+|---|---:|---:|---:|---:|---:|
+| qwen3-4b-sglang-tp4-batch8-puremscclpp-perlmutter | 59947.1 | -0.000303 | 17.078 | 77.5756 | None |
+| qwen3-4b-sglang-tp4-batch128-puremscclpp-perlmutter | 12307.8 | -0.000228 | 1326.63 | 37.6991 | None |
+| llama-3.1-8b-sglang-tp4-batch8-puremscclpp-perlmutter | 9547.66 | -0.000174 | 107.095 | 67.8116 | None |
+| llama-3.1-8b-sglang-tp4-batch128-puremscclpp-perlmutter | 11950.2 | -0.000147 | 1365.57 | 30.4693 | None |
+| deepseek-moe-16b-sglang-tp4-ep4-batch8-puremscclpp-perlmutter | 24062.3 | -0.000172 | 42.5243 | 64.8761 | None |
+| deepseek-moe-16b-sglang-tp4-ep4-batch128-puremscclpp-perlmutter | 12694.9 | -0.000145 | 1286.67 | 30.0816 | None |
+
+The same SGLang caveat applies: TPOT is near zero/negative because of how
+`bench_serving` reports fixed random-id requests, and total communication time
+is still `None` for SGLang traces because the current NSYS helper path does not
+handle these traces cleanly.

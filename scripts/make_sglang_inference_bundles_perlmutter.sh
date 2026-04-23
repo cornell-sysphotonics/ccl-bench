@@ -40,6 +40,30 @@ esac
 
 mkdir -p "$BUNDLE_ROOT"
 
+backend_row_name() {
+  local name=$1
+  case "$COMM_BACKEND" in
+    nccl)
+      echo "$name"
+      ;;
+    pure_mscclpp)
+      echo "${name%-perlmutter}-puremscclpp-perlmutter"
+      ;;
+    mscclpp)
+      echo "${name%-perlmutter}-mscclpp-perlmutter"
+      ;;
+    gloo)
+      echo "${name%-perlmutter}-gloo-perlmutter"
+      ;;
+    native_mscclpp)
+      echo "${name%-perlmutter}-native-mscclpp-perlmutter"
+      ;;
+    *)
+      echo "${name%-perlmutter}-${COMM_BACKEND}-perlmutter"
+      ;;
+  esac
+}
+
 write_yaml() {
   local out_yaml=$1
   local name=$2
@@ -185,6 +209,8 @@ copy_one() {
   local heads=${12}
   local head_dim=${13}
   local active_params=${14}
+
+  name=$(backend_row_name "$name")
 
   local src="$SRC_ROOT/$name"
   local dst="$BUNDLE_ROOT/$name"

@@ -395,6 +395,36 @@
       "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-sglang-tp4-ep4-batch128-perlmutter",
       "metrics": "auto",
       "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-sglang-tp4-batch8-puremscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-sglang-tp4-batch128-puremscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp4-batch8-puremscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-sglang-tp4-batch128-puremscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-sglang-tp4-ep4-batch8-puremscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": true
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-moe-16b-sglang-tp4-ep4-batch128-puremscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": true
     }
   ],
   "metric_categories": [
