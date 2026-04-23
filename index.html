@@ -914,6 +914,13 @@ footer {
     <input id="search" type="search" placeholder="Filter workloads, models, hardware…" autocomplete="off">
   </div>
   <span class="filter-count" id="filter-count"></span>
+  <div class="scroll-nav" style="margin-left:auto">
+    <button class="scroll-btn" onclick="scrollTable(-320)" title="Scroll table left">&#8592;</button>
+    <button class="scroll-btn" onclick="scrollTable(320)" title="Scroll table right">&#8594;</button>
+  </div>
+  <a href="leaderboard.html" class="upload-btn" style="background:#0f172a;border-color:#334155;text-decoration:none" title="Standard workload leaderboard">
+    &#127942; Leaderboard
+  </a>
   <button class="upload-btn" onclick="openUploadPanel()" title="Upload trace files">
     <span class="upload-icon">&#8679;</span> Upload Traces
   </button>
@@ -1280,6 +1287,18 @@ footer {
   </div>
 </div>
 
+<!-- ── Compare bar ─────────────────────────────────────────────────────────── -->
+<div class="compare-bar" id="compare-bar">
+  <div style="min-width:0">
+    <div class="compare-bar-label" id="compare-bar-label">Select 1 more to compare</div>
+    <div class="compare-bar-names" id="compare-bar-names"></div>
+  </div>
+  <div class="compare-bar-actions">
+    <button class="compare-action-btn primary" id="compare-go-btn" onclick="showCompare()" style="display:none">Compare &#8596;</button>
+    <button class="compare-action-btn secondary" onclick="clearSelection()">Clear</button>
+  </div>
+</div>
+
 <!-- ── Modal ───────────────────────────────────────────────────────────────── -->
 <div class="modal-backdrop" id="modal-backdrop" onclick="onBackdropClick(event)">
   <div class="modal" id="modal-box">
@@ -1310,17 +1329,19 @@ footer {
 
 // ── State ────────────────────────────────────────────────────────────────────
 const S = {
-  data:    null,
-  cols:    [],
-  rows:    [],      // all rows, augmented with __idx
-  visible: [],      // after filter + sort
-  sort:    { col: null, dir: 1 },
-  filter:  '',
+  data:     null,
+  cols:     [],
+  rows:     [],      // all rows, augmented with __idx
+  visible:  [],      // after filter + sort
+  sort:     { col: null, dir: 1 },
+  filter:   '',
+  selected: new Set(),  // up to 2 row __idx values for compare
 };
 
 // ── Metadata columns shown left of the metric columns ────────────────────────
 const META_COLS = [
-  // key '__info' is the info-button column
+  // key '__select' is the checkbox column; '__info' is the info-button column
+  { key: '__select',       label: '',            group: 'Workload',     sortable: false },
   { key: '__info',         label: '',            group: 'Workload',     sortable: false },
   { key: 'workload_name',  label: 'Workload',    group: 'Workload',     sortable: true  },
   { key: 'model_family',   label: 'Model',       group: 'Model',        sortable: true  },
@@ -1519,22 +1540,31 @@ function renderHead() {
     else            { groups.push({ label: g, span: 1 }); last = g; }
   });
 
-  const groupCells = groups.map(g =>
-    `<th class="${g.label === 'Workload' ? 'g-workload' : ''}" colspan="${g.span}">${g.label ? esc(g.label) : ''}</th>`
-  ).join('');
+  // First group (Workload) spans __select + __info + workload_name — pin it
+  const groupCells = groups.map((g, gi) => {
+    const isFirst = gi === 0;
+    const cls = [g.label === 'Workload' ? 'g-workload' : '', isFirst ? 'sticky-col sticky-col-1' : ''].join(' ').trim();
+    return `<th class="${cls}" colspan="${g.span}">${g.label ? esc(g.label) : ''}</th>`;
+  }).join('');
+
+  const STICKY = { '__select': 'sticky-col sticky-col-1', '__info': 'sticky-col sticky-col-2', 'workload_name': 'sticky-col sticky-col-3' };
 
   const sc = S.sort.col;
   const colCells = S.cols.map(col => {
-    if (!col.sortable) return `<th class="no-sort" style="width:32px"></th>`;
+    const stickyClass = STICKY[col.key] || '';
+    if (col.key === '__select') {
+      return `<th class="no-sort ${stickyClass}" style="width:32px;text-align:center" title="Select rows to compare (max 5)">&#9745;</th>`;
+    }
+    if (!col.sortable) return `<th class="no-sort ${stickyClass}" style="width:32px"></th>`;
     const active  = sc && sc.key === col.key;
     const sortCls = active ? (S.sort.dir === 1 ? 'sorted-asc' : 'sorted-desc') : '';
     const mCls    = col.isMetric ? 'th-metric' : '';
     if (col.isMetric && col.metricInfo) {
       const dir     = col.metricInfo.higher_is_better ? ' \u2191' : ' \u2193';
       const infoBtn = `<span class="th-info-btn" onclick="event.stopPropagation();showMetricInfo('${col.metricName}')" title="View metric details">\u24d8</span>`;
-      return `<th class="${sortCls} ${mCls}" onclick="onSort('${col.key}')">${esc(col.label)}${dir}${infoBtn}</th>`;
+      return `<th class="${sortCls} ${mCls} ${stickyClass}" onclick="onSort('${col.key}')">${esc(col.label)}${dir}${infoBtn}</th>`;
     }
-    return `<th class="${sortCls} ${mCls}" onclick="onSort('${col.key}')">${esc(col.label)}</th>`;
+    return `<th class="${sortCls} ${mCls} ${stickyClass}" onclick="onSort('${col.key}')">${esc(col.label)}</th>`;
   }).join('');
 
   document.getElementById('bench-thead').innerHTML =
@@ -1575,20 +1605,28 @@ function renderBody() {
   });
 
   const renderRow = row => {
+    const idx        = row.__idx;
+    const isSelected = S.selected.has(idx);
+    const canSelect  = isSelected || S.selected.size < 5;
     const tds = S.cols.map(col => {
-      if (col.key === '__info')         return `<td style="width:32px;padding:4px 8px">${cellInfo(row)}</td>`;
-      if (col.key === 'workload_name')  return `<td>${cellWorkload(row)}</td>`;
-      if (col.key === 'phase')          return `<td>${cellPhase(row)}</td>`;
-      if (col.key === 'hardware_type')  return `<td>${cellHWType(row)}</td>`;
-      if (col.key === 'model_family')   return `<td>${cellModel(row)}</td>`;
-      if (col.key === '__accel')        return `<td>${cellAccel(row)}</td>`;
+      if (col.key === '__select') {
+        const chk = isSelected ? ' checked' : '';
+        const dis = canSelect  ? '' : ' disabled';
+        return `<td class="sticky-col sticky-col-1" style="width:32px;padding:4px 8px;text-align:center"><input type="checkbox" class="row-check"${chk}${dis} onchange="toggleSelect(${idx})" title="Select to compare"></td>`;
+      }
+      if (col.key === '__info')        return `<td class="sticky-col sticky-col-2" style="width:32px;padding:4px 8px">${cellInfo(row)}</td>`;
+      if (col.key === 'workload_name') return `<td class="sticky-col sticky-col-3">${cellWorkload(row)}</td>`;
+      if (col.key === 'phase')         return `<td>${cellPhase(row)}</td>`;
+      if (col.key === 'hardware_type') return `<td>${cellHWType(row)}</td>`;
+      if (col.key === 'model_family')  return `<td>${cellModel(row)}</td>`;
+      if (col.key === '__accel')       return `<td>${cellAccel(row)}</td>`;
       if (col.isMetric) {
         const v = row.metrics[col.metricName];
         return `<td class="td-metric">${metricPill(v, col.metricInfo)}</td>`;
       }
       return `<td>${fmt(row.metadata[col.key])}</td>`;
     }).join('');
-    return `<tr>${tds}</tr>`;
+    return `<tr${isSelected ? ' class="row-selected"' : ''}>${tds}</tr>`;
   };
 
   const renderSectionHeader = (phase, count) => {
@@ -1856,6 +1894,7 @@ function showModal(idx) {
 
 function closeModal() {
   document.getElementById('modal-backdrop').classList.remove('open');
+  document.getElementById('modal-box').classList.remove('modal-wide');
 }
 
 function showMetricInfo(name) {
@@ -1888,7 +1927,162 @@ function onBackdropClick(e) {
   if (e.target === document.getElementById('modal-backdrop')) closeModal();
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); return; }
+  // Arrow keys scroll the table — skip when focus is in an input/textarea
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'ArrowLeft')  { scrollTable(-320); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { scrollTable(320);  e.preventDefault(); }
+});
+
+// ── Select & Compare ──────────────────────────────────────────────────────────
+function toggleSelect(idx) {
+  if (S.selected.has(idx)) {
+    S.selected.delete(idx);
+  } else {
+    if (S.selected.size >= 5) return;
+    S.selected.add(idx);
+  }
+  renderBody();
+  updateCompareBar();
+}
+
+function clearSelection() {
+  S.selected.clear();
+  renderBody();
+  updateCompareBar();
+}
+
+function updateCompareBar() {
+  const bar   = document.getElementById('compare-bar');
+  const count = S.selected.size;
+  if (count === 0) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+
+  const names = [...S.selected].map(i => {
+    const r = S.rows[i];
+    return r ? (r.metadata.workload_name || `#${i}`) : `#${i}`;
+  });
+  document.getElementById('compare-bar-names').textContent = names.join('  vs.  ');
+  const remaining = Math.max(0, 2 - count);
+  document.getElementById('compare-bar-label').textContent =
+    count >= 2
+      ? `${count} selected — ready to compare:`
+      : `Select ${remaining} more to compare:`;
+  document.getElementById('compare-go-btn').style.display = count >= 2 ? '' : 'none';
+}
+
+function showCompare() {
+  const idxs = [...S.selected];
+  if (idxs.length < 2) return;
+  const rows = idxs.map(i => S.rows[i]);
+  const n    = rows.length;
+  const mi   = (S.data && S.data.metric_info) || {};
+
+  document.getElementById('modal-box').classList.add('modal-wide');
+
+  // Title: "A  vs  B  vs  C …"
+  const titleParts = rows.map(r => `<span style="color:var(--accent);font-family:ui-monospace,monospace">${esc(r.metadata.workload_name||'?')}</span>`);
+  document.getElementById('modal-title').innerHTML =
+    `<span class="modal-title-compare">${titleParts.join('<span style="color:var(--muted);font-weight:400;font-size:12px;margin:0 5px">vs</span>')}</span>`;
+
+  const hdCells = rows.map(r => `<th class="cmp-val-hd">${esc(r.metadata.workload_name||'?')}</th>`).join('');
+  const colspanAll = n + 1; // label col + N value cols
+
+  const parts = [];
+
+  // ── Config comparison ──
+  const metaFields = [
+    ['Model Family',   r => r.metadata.model_family],
+    ['Phase',          r => r.metadata.phase],
+    ['Precision',      r => r.metadata.precision],
+    ['HW Type',        r => r.metadata.hardware_type],
+    ['HW Model',       r => r.metadata.hardware_model],
+    ['Accelerators',   r => r.metadata.total_count],
+    ['Framework',      r => r.metadata.framework],
+    ['Compiler',       r => r.metadata.compiler],
+    ['TP',             r => r.metadata.tp],
+    ['PP',             r => r.metadata.pp],
+    ['DP',             r => r.metadata.dp_replicate],
+    ['DP Shard',       r => r.metadata.dp_shard],
+    ['EP',             r => r.metadata.ep],
+    ['Comm Library',   r => r.metadata.comm_library],
+    ['Batch Size',     r => r.metadata.batch_size],
+    ['Seq Length',     r => r.metadata.seq_len],
+  ].filter(([, fn]) => rows.some(r => fn(r) != null));
+
+  const cfgRows = metaFields.map(([label, fn]) => {
+    const vals  = rows.map(fn);
+    const first = String(vals[0] ?? '');
+    const diff  = vals.some(v => String(v ?? '') !== first);
+    const cells = vals.map(v => `<td class="cmp-val">${fmt(v)}</td>`).join('');
+    return `<tr class="${diff ? 'cmp-diff' : ''}"><td class="cmp-label">${esc(label)}</td>${cells}</tr>`;
+  }).join('');
+
+  parts.push(`<div class="m-section">
+    <div class="m-title">Configuration</div>
+    <table class="cmp-table">
+      <thead><tr><th class="cmp-label-hd"></th>${hdCells}</tr></thead>
+      <tbody>${cfgRows}</tbody>
+    </table>
+  </div>`);
+
+  // ── Metrics comparison ──
+  const cats     = (S.data && S.data.metric_categories) || [];
+  const catOrder = {}; const catLabels = {};
+  cats.forEach((c, i) => { catOrder[c.id] = i; catLabels[c.id] = c.label; });
+
+  const allKeys = [...new Set(rows.flatMap(r => Object.keys(r.metrics)))]
+    .filter(m => mi[m])
+    .sort((a, b) => {
+      const oa = catOrder[(mi[a]&&mi[a].category)||''] ?? 999;
+      const ob = catOrder[(mi[b]&&mi[b].category)||''] ?? 999;
+      return oa !== ob ? oa - ob : a.localeCompare(b);
+    });
+
+  if (allKeys.length) {
+    const byCat = {}; const noCat = [];
+    allKeys.forEach(m => {
+      const cat = (mi[m]&&mi[m].category)||'';
+      if (cat) { (byCat[cat] = byCat[cat]||[]).push(m); }
+      else      { noCat.push(m); }
+    });
+
+    const renderMetricSection = (metricsArr) => metricsArr.map(m => {
+      const info  = mi[m]||{};
+      const cells = rows.map(r => `<td class="cmp-val cmp-metric">${metricPill(r.metrics[m], info)}</td>`).join('');
+      return `<tr><td class="cmp-label">${esc(info.label||m)}</td>${cells}</tr>`;
+    }).join('');
+
+    const sections = [];
+    for (const catDef of cats) {
+      const arr = byCat[catDef.id];
+      if (!arr||!arr.length) continue;
+      sections.push(
+        `<tr><td colspan="${colspanAll}" style="background:var(--bg);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);padding:6px 10px 3px">${esc(catDef.label)}</td></tr>` +
+        renderMetricSection(arr)
+      );
+    }
+    if (noCat.length) sections.push(renderMetricSection(noCat));
+
+    parts.push(`<div class="m-section">
+      <div class="m-title">Metrics</div>
+      <table class="cmp-table">
+        <thead><tr><th class="cmp-label-hd">Metric</th>${hdCells}</tr></thead>
+        <tbody>${sections.join('')}</tbody>
+      </table>
+    </div>`);
+  }
+
+  document.getElementById('modal-body').innerHTML = parts.join('');
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+// ── Horizontal scroll ─────────────────────────────────────────────────────────
+function scrollTable(delta) {
+  document.getElementById('table-outer').scrollBy({ left: delta, behavior: 'smooth' });
+}
 
 // ── Initialise ────────────────────────────────────────────────────────────────
 function showNoData() {
