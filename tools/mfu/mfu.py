@@ -127,16 +127,22 @@ def _load_vllm_latency_s(directory: str) -> Optional[float]:
 
 def _calc_json(directory: str, yaml_data: dict) -> float:
     """
-    Compute MFU from PyTorch-profiler JSON traces (torchtitan format).
+    Compute MFU from PyTorch-profiler JSON traces.
 
-    Formula (from "Efficient Large Scale Language Modeling with Mixtures of Experts"):
-      FLOP/token = 6(N - N_emb) + 12·L·H·Q·S
-      Observed FLOPS = (FLOP/token) × (tokens/second)
-      MFU = Observed FLOPS / (world_size × peak_TFLOPS)
+    Training formula (forward + backward + optimizer):
+      FLOP/token = 6(N_active - N_emb) + 12·L·H·Q·S
+
+    Inference formula (forward only):
+      FLOP/token = 2(N_active - N_emb) + 4·L·H·Q·S
+
+    The inference branch is used when workload.model.phase == "inference".
+
+    Observed FLOPS = (FLOP/token) × (tokens/second)
+    MFU = Observed FLOPS / (world_size × peak_TFLOPS)
 
     Where:
-      N     = total parameter count         (from YAML model_arch.num_params)
-              or active per-token count     (from YAML model_arch.num_params_active)
+      N_active = active per-token parameter count (model_arch.num_params_active)
+                 or total parameter count          (model_arch.num_params)
       N_emb = embedding parameter count     (from YAML model_arch.num_params_embedding)
       L     = number of transformer layers  (from YAML model_arch.num_layers)
       H     = per-head dimension (head_dim) (from YAML model_arch.head_dim)
@@ -221,7 +227,19 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
 
     # ── MFU ──────────────────────────────────────────────────────────────────
     effective_params = N_active or N
-    flop_per_token  = 6 * (effective_params - N_emb) + 12 * L * H * Q * seq_len
+    phase = (
+        yaml_data.get("workload", {})
+        .get("model", {})
+        .get("phase", "")
+        .lower()
+    )
+    is_inference = phase == "inference"
+
+    if is_inference:
+        flop_per_token = 2 * (effective_params - N_emb) + 4 * L * H * Q * seq_len
+    else:
+        flop_per_token = 6 * (effective_params - N_emb) + 12 * L * H * Q * seq_len
+
     tokens_per_sec  = (batch_size * seq_len) / step_time_s
     observed_flops  = flop_per_token * tokens_per_sec
     peak_flops_total = peak_tflops * 1e12 * world_size
