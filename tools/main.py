@@ -302,7 +302,6 @@ if __name__ == "__main__":
         metric_cal_func = metric_cal
     elif metric_name == "throughput_group_6":
         from throughput_group_6.throughput_group_6 import metric_cal
-        metric_cal_func = metric_cal
     elif metric_name == "straggler_metrics":
         # group 5
         from straggler.straggler_metrics import metric_cal

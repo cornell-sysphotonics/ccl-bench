@@ -3,6 +3,7 @@ import sys
 import statistics
 from pathlib import Path
 from typing import Dict
+import matplotlib.pyplot as plt
 
 def compute_tpots_ms(record):
     """Compute per-request TPOTs (ms) from sglang 'itls'."""
@@ -18,11 +19,6 @@ def compute_tpots_ms(record):
 
 def plot_and_save(tpots, outfile):
     """Plot TPOT arrays and save figure."""
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        return
-
     plt.figure(figsize=(10, 6))
 
     # Unsorted subplot

@@ -2,15 +2,11 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict
+import matplotlib.pyplot as plt
 
 
 def plot_and_save(ttfts, outfile):
     """Plot TTFT arrays and save figure."""
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        return
-
     plt.figure(figsize=(10, 6))
 
     # Unsorted subplot
