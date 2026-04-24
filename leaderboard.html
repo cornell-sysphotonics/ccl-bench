@@ -176,6 +176,15 @@ body {
 .lb-table tr:nth-child(even) td { background: #f8fafc; }
 .lb-table tr:hover td { background: var(--accent-dim) !important; }
 .lb-table .td-metric { text-align: center; }
+
+/* ── Sticky left columns ── */
+.lb-table .sticky-col   { position: sticky; z-index: 3; background: var(--surface); }
+.lb-table .sticky-col-1 { left: 0; }
+.lb-table .sticky-col-2 { left: 32px; }
+.lb-table .sticky-col-3 { left: 64px; box-shadow: 2px 0 5px -2px rgba(0,0,0,.15); }
+.lb-table tr:nth-child(even) .sticky-col { background: #f8fafc; }
+.lb-table tr:hover           .sticky-col { background: var(--accent-dim) !important; }
+.lb-table thead              .sticky-col { z-index: 5; background: #1e293b; }
 .wl-name-cell {
   font-family: ui-monospace, monospace;
   font-size: 11px;
@@ -600,11 +609,14 @@ function buildCols(rows) {
   return cols;
 }
 
+const LB_STICKY = { '__select': 'sticky-col sticky-col-1', '__info': 'sticky-col sticky-col-2', 'm_workload_name': 'sticky-col sticky-col-3' };
+
 function renderThead(wlId, cols) {
   const st = G.sort[wlId] || {};
   return cols.map(col => {
-    if (col.key === '__select') return `<th style="width:32px;text-align:center" title="Select to compare">&#9745;</th>`;
-    if (col.key === '__info')   return `<th style="width:32px"></th>`;
+    const sc = LB_STICKY[col.key] || '';
+    if (col.key === '__select') return `<th class="${sc}" style="width:32px;text-align:center" title="Select to compare">&#9745;</th>`;
+    if (col.key === '__info')   return `<th class="${sc}" style="width:32px"></th>`;
     const sortCls = col.noSort ? '' : ('sortable' + (st.col === col.key ? (st.dir === 1 ? ' sorted-asc' : ' sorted-desc') : ''));
     const mCls    = col.isMetric ? 'th-metric' : '';
     const onclick = col.noSort ? '' : `onclick="sortSection(${wlId}, '${col.key}')"`;
@@ -613,7 +625,7 @@ function renderThead(wlId, cols) {
     const infoIcon = (col.isMetric && col.metricInfo && col.metricInfo.description)
       ? `<span class="metric-info-icon" onclick="event.stopPropagation();showMetricInfo('${col.metricKey}')" title="View metric details">ⓘ</span>`
       : '';
-    return `<th class="${sortCls} ${mCls}"${onclick}${ttip}${align}>${esc(col.label)}${infoIcon}</th>`;
+    return `<th class="${[sortCls, mCls, sc].filter(Boolean).join(' ')}"${onclick}${ttip}${align}>${esc(col.label)}${infoIcon}</th>`;
   }).join('');
 }
 
@@ -629,12 +641,12 @@ function renderTbody(wlId, cols) {
       if (col.key === '__select') {
         const chk = isSel  ? ' checked' : '';
         const dis = canSel ? '' : ' disabled';
-        return `<td style="width:32px;padding:4px 8px;text-align:center"><input type="checkbox" class="row-check"${chk}${dis} onchange="toggleSelect(${r.__idx})" title="Select to compare"></td>`;
+        return `<td class="sticky-col sticky-col-1" style="width:32px;padding:4px 8px;text-align:center"><input type="checkbox" class="row-check"${chk}${dis} onchange="toggleSelect(${r.__idx})" title="Select to compare"></td>`;
       }
       if (col.key === '__info') {
-        return `<td style="width:32px;padding:4px 8px"><button class="info-btn" onclick="showDetailModal(${r.__idx})" title="View workload details">i</button></td>`;
+        return `<td class="sticky-col sticky-col-2" style="width:32px;padding:4px 8px"><button class="info-btn" onclick="showDetailModal(${r.__idx})" title="View workload details">i</button></td>`;
       }
-      if (col.key === 'm_workload_name') return `<td class="wl-name-cell">${esc(m.workload_name||'')}</td>`;
+      if (col.key === 'm_workload_name') return `<td class="wl-name-cell sticky-col sticky-col-3">${esc(m.workload_name||'')}</td>`;
       if (col.key === 'm_hardware_type') return `<td><span class="badge ${hwCls}">${esc(m.hardware_type||'')}</span></td>`;
       if (col.isMetric) return `<td class="td-metric">${metricPill(r.metrics[col.metricKey], col.metricInfo)}</td>`;
       const field = col.key.slice(2);
