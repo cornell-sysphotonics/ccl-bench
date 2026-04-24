@@ -87,6 +87,7 @@ body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: auto;
   padding: 28px;
 }
 
@@ -138,7 +139,6 @@ body {
 
 /* ── Leaderboard table ── */
 .lb-table-wrap {
-  overflow-x: auto;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -149,6 +149,9 @@ body {
   font-size: 12px;
 }
 .lb-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: #1e293b;
   color: #cbd5e1;
   padding: 7px 12px;
@@ -157,6 +160,7 @@ body {
   font-weight: 600;
   white-space: nowrap;
   border-right: 1px solid #334155;
+  box-shadow: 0 1px 0 #334155;
 }
 .lb-table th:last-child { border-right: none; }
 .lb-table th.th-metric { background: #1a3050; text-align: center; }

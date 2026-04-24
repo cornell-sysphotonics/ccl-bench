@@ -37,7 +37,8 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -173,7 +174,8 @@ body {
 /* ── Table wrapper ──────────────────────────────────────────────────────── */
 .table-outer {
   flex: 1;
-  overflow-x: auto;
+  min-height: 0;
+  overflow: auto;
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -247,6 +249,16 @@ td {
 tr:nth-child(even) td { background: #f8fafc; }
 tr:hover td            { background: var(--accent-dim) !important; }
 td:last-child          { border-right: none; }
+
+/* Sticky left columns */
+.sticky-col   { position: sticky; z-index: 1; }
+.sticky-col-1 { left: 0; }
+.sticky-col-2 { left: 32px; }
+.sticky-col-3 { left: 64px; }
+td.sticky-col { background: #fff; box-shadow: 1px 0 0 #f1f5f9; }
+tr:nth-child(even) td.sticky-col { background: #f8fafc; }
+tr:hover td.sticky-col { background: var(--accent-dim); }
+th.sticky-col { z-index: 7; }
 
 /* Workload cell */
 .wl-cell {
@@ -893,7 +905,7 @@ footer {
   <p>
     Part of the <a href="https://cornell.network/" target="_blank" rel="noopener">Cornell sysphotonics research group</a>
     &nbsp;&middot;&nbsp;
-    Maintainers: Eric Ding, Kaiwen Guo, Jelena Gvero, Byungsoo Oh, Bhaskar Kataria, Atharv Sonwane, Rachee Singh
+    Maintainers: Eric Ding, Kaiwen Guo, Jelena Gvero, Bhaskar Kataria, Byungsoo Oh, Abhishek Vijay Kumar, Arjun Devraj, Lindsey Bowen, Rachee Singh
     &nbsp;&middot;&nbsp;
     Contact: <a href="mailto:ericding@cs.cornell.edu">Eric Ding</a>
     &nbsp;&middot;&nbsp;
