@@ -24,6 +24,8 @@ workload:
   data:
     batch_size: 128
     seq_len: 1024  # Fixed input sequence length
+    input_len: 1024  # Fixed input sequence length
+    output_len: 1  # Single generated token for TTFT-focused profiling
     dataset: custom  # Custom prompts for inference testing
   hardware:
     network_topo:

@@ -534,8 +534,9 @@
       "required_update": false
     },
     "memory_transfer_overhead": {
+      "required_update": true,
       "label": "Mem Transfer OH (%)",
-      "description": "Percentage of trace time spent on memory transfers (memcpy for NSYS, copy-like kernels for Kineto JSON)",
+      "description": "Percentage of execution time spent on memory transfers. GPU/NSYS: CUDA memcpy time over kernel span. GPU JSON: copy-like kernel fraction. TPU: DMA time from copy-start/copy-done device-clock pairs over total step time.",
       "higher_is_better": false,
       "unit": "%",
       "category": "memory",
@@ -547,8 +548,7 @@
       "thresholds": {
         "high": 20,
         "mid": 5
-      },
-      "required_update": false
+      }
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",

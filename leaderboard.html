@@ -557,6 +557,36 @@ function matchesWorkload(row, wl) {
   return true;
 }
 
+function isInferenceMeta(m) {
+  return String(m && m.phase || '').toLowerCase() === 'inference';
+}
+
+function metaInputLen(m) {
+  return m.input_len || m.seq_len;
+}
+
+function uniquePresent(vals) {
+  return [...new Set(vals.filter(v => v !== null && v !== undefined && v !== '').map(String))];
+}
+
+function inferenceLengthDetail(wl, rows = []) {
+  const parts = [];
+  if (wl.input_len !== undefined) parts.push(`input_len = ${wl.input_len}`);
+  else if (wl.seq_len !== undefined) parts.push(`input_len = ${wl.seq_len}`);
+
+  if (wl.output_len !== undefined) {
+    parts.push(`output_len = ${wl.output_len}`);
+  } else {
+    const outputLens = uniquePresent(rows.map(r => r.metadata.output_len));
+    if (outputLens.length === 1) parts.push(`output_len = ${outputLens[0]}`);
+    else if (outputLens.length > 1) parts.push(`output_len = ${outputLens.join('/')}`);
+  }
+
+  if (wl.batch_size !== undefined) parts.push(`batch = ${wl.batch_size}`);
+  else parts.push('batch size variable');
+  return parts.join('  ·  ');
+}
+
 // ── Sort helpers ──────────────────────────────────────────────────────────────
 function getSortVal(row, col) {
   if (col.startsWith('m_'))      return row.metadata[col.slice(2)];
@@ -681,7 +711,7 @@ function renderSection(wl, rows) {
     ? `<span class="badge b-inference">Inference</span>`
     : `<span class="badge b-training">Training</span>`;
   const detail = wl.phase === 'inference'
-    ? `seq_len = ${wl.seq_len}  ·  batch size variable`
+    ? inferenceLengthDetail(wl, rows)
     : `batch = ${wl.batch_size}  ·  seq_len = ${wl.seq_len}`;
 
   const hd = `<div class="wl-section-hd">
@@ -784,7 +814,9 @@ function showCompare() {
     ['Model Family',  r => r.metadata.model_family],
     ['Phase',         r => r.metadata.phase],
     ['Batch Size',    r => r.metadata.batch_size],
-    ['Seq Length',    r => r.metadata.seq_len],
+    ['Seq Length',    r => isInferenceMeta(r.metadata) ? null : r.metadata.seq_len],
+    ['Input Length',  r => isInferenceMeta(r.metadata) ? metaInputLen(r.metadata) : null],
+    ['Output Length', r => isInferenceMeta(r.metadata) ? r.metadata.output_len : null],
     ['HW Type',       r => r.metadata.hardware_type],
     ['HW Model',      r => r.metadata.hardware_model],
     ['Accelerators',  r => r.metadata.total_count],
@@ -878,7 +910,10 @@ function showDetailModal(idx) {
     ['HuggingFace URL', m.hf_url ? `<a href="${esc(m.hf_url)}" target="_blank">${esc(m.hf_url)}</a>` : null],
     ['Model Family', m.model_family], ['Phase', m.phase], ['Precision', m.precision],
     ['MoE', m.moe != null ? (m.moe ? 'Yes' : 'No') : null],
-    ['Batch Size', m.batch_size], ['Seq Length', m.seq_len],
+    ['Batch Size', m.batch_size],
+    ['Seq Length', isInferenceMeta(m) ? null : m.seq_len],
+    ['Input Length', isInferenceMeta(m) ? metaInputLen(m) : null],
+    ['Output Length', isInferenceMeta(m) ? m.output_len : null],
   ]));
 
   const numNodes = (m.total_count && m.count_per_node) ? Math.round(m.total_count / m.count_per_node) : null;
