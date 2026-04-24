@@ -90,6 +90,8 @@ def extract_metadata(yaml_data: dict | None, trace_dir: str) -> dict:
         # Data
         "batch_size":         dat.get("batch_size") or "",
         "seq_len":            dat.get("seq_len") or "",
+        "input_len":          dat.get("input_len") or "",
+        "output_len":         dat.get("output_len") or "",
         "dataset":            dat.get("dataset") or "",
         # Hardware — XPU
         "hardware_type":      xpu.get("type") or "",

@@ -37,8 +37,7 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -174,8 +173,7 @@ body {
 /* ── Table wrapper ──────────────────────────────────────────────────────── */
 .table-outer {
   flex: 1;
-  min-height: 0;
-  overflow: auto;
+  overflow-x: auto;
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -249,16 +247,6 @@ td {
 tr:nth-child(even) td { background: #f8fafc; }
 tr:hover td            { background: var(--accent-dim) !important; }
 td:last-child          { border-right: none; }
-
-/* Sticky left columns */
-.sticky-col   { position: sticky; z-index: 1; }
-.sticky-col-1 { left: 0; }
-.sticky-col-2 { left: 32px; }
-.sticky-col-3 { left: 64px; }
-td.sticky-col { background: #fff; box-shadow: 1px 0 0 #f1f5f9; }
-tr:nth-child(even) td.sticky-col { background: #f8fafc; }
-tr:hover td.sticky-col { background: var(--accent-dim); }
-th.sticky-col { z-index: 7; }
 
 /* Workload cell */
 .wl-cell {
