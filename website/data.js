@@ -41,7 +41,7 @@ const BENCHMARK_DATA = {
   "metric_info": {
     "avg_step_time": {
       "label": "Step Time (s)",
-      "description": "Average step time (inference: decode, training: forward + backward). Serving traces is not reported",
+      "description": "Average per-engine-iteration wall time. For vLLM inference (continuous batching), most iterations are decode steps so this is dominated by decode latency. For training, measures the full forward + backward pass. Serving traces (TPOT/TTFT) are reported separately.",
       "higher_is_better": false,
       "unit": "s",
       "category": "model_execution",
@@ -1495,6 +1495,248 @@ const BENCHMARK_DATA = {
       }
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[nccl]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp2-perlmutter[nccl]",
+        "description": "Online serving of Qwen3-4B on 2 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=2, NCCL collectives. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 2,
+        "count_per_node": 2,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 30.5268,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 25.8791,
+        "memory_transfer_overhead": 6.69033,
+        "communication_fraction": 36.8315,
+        "total_communication_time": 11.9261,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp2-perlmutter[mscclpp]",
+        "description": "Online serving of Qwen3-4B on 2 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=2. AllGather collectives are intercepted by MSCCL++ via LD_PRELOAD; AllReduce remains on NCCL. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 2,
+        "count_per_node": 2,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL+MSCCL++",
+        "comm_library_ver": "",
+        "comm_env": {
+          "LD_PRELOAD": "$HOME/mscclpp/build/lib/libmscclpp_nccl.so",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 29.1277,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 38.946,
+        "memory_transfer_overhead": 6.925,
+        "communication_fraction": 32.0634,
+        "total_communication_time": 10.9251,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[nccl]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp4-perlmutter[nccl]",
+        "description": "Online serving of Qwen3-4B on 4 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=4, NCCL collectives. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "",
+        "comm_env": {
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 59.1288,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 63.9481,
+        "memory_transfer_overhead": 8.27491,
+        "communication_fraction": 68.7403,
+        "total_communication_time": 63.9359,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
+      "metadata": {
+        "workload_name": "qwen3-4b-vllm-tp4-perlmutter[mscclpp]",
+        "description": "Online serving of Qwen3-4B on 4 NVIDIA A100-40GB GPUs (Perlmutter) with Tensor Parallelism (TP)=4. AllGather collectives are intercepted by MSCCL++ via LD_PRELOAD; AllReduce remains on NCCL. Workload: 200 random prompts at 8 RPS, input_len=1024, output_len=128, BF16, CUDA graphs disabled (--enforce-eager).",
+        "hf_url": "https://huggingface.co/Qwen/Qwen3-4B",
+        "trace_url": "",
+        "model_family": "qwen-3-4b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": "",
+        "iteration": "",
+        "batch_size": 1,
+        "seq_len": 1024,
+        "dataset": "random",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 600,
+        "driver_version": "cuda_12.9",
+        "framework": "vllm",
+        "compiler": "",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL+MSCCL++",
+        "comm_library_ver": "",
+        "comm_env": {
+          "LD_PRELOAD": "$HOME/mscclpp/build/lib/libmscclpp_nccl.so",
+          "NCCL_IB_DISABLE": "1"
+        },
+        "protocol_selection": [
+          "nvlink",
+          "p2p"
+        ],
+        "trace_types": [
+          "nsys"
+        ],
+        "metric_traces": []
+      },
+      "metrics": {
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 54.4916,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 63.9635,
+        "memory_transfer_overhead": 8.54976,
+        "communication_fraction": 63.9255,
+        "total_communication_time": 51.5766,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null
+      }
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
       "metadata": {
         "workload_name": "deepseek-v2-lite-vllm-dp_1_tp_4_ep_4-default-noCUgraph-perlmutter-group_9",
@@ -2600,7 +2842,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0352361,
-        "mfu": 10.5035,
+        "mfu": 3.5012,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 64.3701,
         "moe_fraction": 0.0,
@@ -2669,7 +2911,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0365609,
-        "mfu": 85.2567,
+        "mfu": 28.4189,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 29.7465,
         "moe_fraction": 0.0,
@@ -2738,7 +2980,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0721431,
-        "mfu": 1.7038,
+        "mfu": 0.5679,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 78.8449,
         "moe_fraction": 7.31983,
@@ -2807,7 +3049,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0812221,
-        "mfu": 21.5991,
+        "mfu": 7.1997,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 44.1563,
         "moe_fraction": 19.2047,
@@ -2876,7 +3118,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0410551,
-        "mfu": 5.0286,
+        "mfu": 1.6762,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 55.516,
         "moe_fraction": 0.0,
@@ -2945,7 +3187,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0418665,
-        "mfu": 40.0372,
+        "mfu": 13.3457,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 30.2123,
         "moe_fraction": 0.0,
@@ -3014,7 +3256,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0385199,
-        "mfu": 4.9432,
+        "mfu": 1.6477,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 54.8378,
         "moe_fraction": 0.0,
@@ -3083,7 +3325,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0413309,
-        "mfu": 39.5209,
+        "mfu": 13.1736,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 31.5974,
         "moe_fraction": 0.0,
@@ -3152,7 +3394,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0427342,
-        "mfu": 4.9109,
+        "mfu": 1.637,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 76.5917,
         "moe_fraction": 0.0,
@@ -3221,7 +3463,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0435927,
-        "mfu": 51.1859,
+        "mfu": 17.062,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 38.5872,
         "moe_fraction": 0.0,
@@ -3290,7 +3532,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0419876,
-        "mfu": 4.3658,
+        "mfu": 1.4553,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 67.8899,
         "moe_fraction": 0.0,
@@ -3359,7 +3601,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0428606,
-        "mfu": 48.6817,
+        "mfu": 16.2272,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.4363,
         "moe_fraction": 0.0,
@@ -3428,7 +3670,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0379068,
-        "mfu": 9.7132,
+        "mfu": 3.2377,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 65.6462,
         "moe_fraction": 0.0,
@@ -3497,7 +3739,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0383939,
-        "mfu": 84.0624,
+        "mfu": 28.0208,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 28.4044,
         "moe_fraction": 0.0,
@@ -3566,7 +3808,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0708341,
-        "mfu": 1.7225,
+        "mfu": 0.5742,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 61.0212,
         "moe_fraction": 14.8293,
@@ -3635,7 +3877,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0760341,
-        "mfu": 20.3534,
+        "mfu": 6.7845,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.5842,
         "moe_fraction": 22.2664,
@@ -3707,7 +3949,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0444321,
-        "mfu": 78.1064,
+        "mfu": 26.0355,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 31.1306,
         "moe_fraction": 0.0,
@@ -3779,7 +4021,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0459496,
-        "mfu": 46.7251,
+        "mfu": 15.575,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.5637,
         "moe_fraction": 0.0,
@@ -3851,7 +4093,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.038909,
-        "mfu": 80.2443,
+        "mfu": 26.7481,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 29.5012,
         "moe_fraction": 0.0,
@@ -3923,7 +4165,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0767431,
-        "mfu": 18.6854,
+        "mfu": 6.2285,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 36.1834,
         "moe_fraction": 23.3514,
@@ -3991,7 +4233,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0448463,
-        "mfu": 88.1548,
+        "mfu": 29.3849,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 27.5566,
         "moe_fraction": 0.0,
@@ -4063,7 +4305,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0477274,
-        "mfu": 83.8704,
+        "mfu": 27.9568,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 25.0941,
         "moe_fraction": 0.0,
@@ -4131,7 +4373,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0353173,
-        "mfu": 122.425,
+        "mfu": 40.8083,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 39.3285,
         "moe_fraction": 0.0,
@@ -4203,7 +4445,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0411579,
-        "mfu": 117.194,
+        "mfu": 39.0645,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 40.985,
         "moe_fraction": 0.0,
@@ -4271,7 +4513,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0804438,
-        "mfu": 22.5441,
+        "mfu": 7.5147,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 55.5315,
         "moe_fraction": 14.1758,
@@ -4343,7 +4585,7 @@ const BENCHMARK_DATA = {
       },
       "metrics": {
         "avg_step_time": 0.0824125,
-        "mfu": 22.9409,
+        "mfu": 7.647,
         "mean_sm_coverage": null,
         "dominant_kernel_concentration": 46.4718,
         "moe_fraction": 17.001,

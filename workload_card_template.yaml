@@ -26,6 +26,8 @@ workload:
   data:
     batch_size: 4  # Global batch size, e.g., 4, 8, 16.
     seq_len: 8192  # Sequence length, e.g., 512, 1024, 8192.
+    input_len: 1024 # for inference
+    output_len: 128 # for inference
     dataset: c4  # Dataset name, e.g., "c4", "wikitext".
   hardware:
     network_topo:

@@ -327,6 +327,20 @@ body {
 }
 .m-cat-label:first-child { margin-top: 0; }
 
+/* ── Metric header info icon ── */
+.metric-info-icon {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #7ab3d8;
+  opacity: 0.75;
+  vertical-align: middle;
+  line-height: 1;
+  transition: opacity .12s, color .12s;
+}
+.metric-info-icon:hover { opacity: 1; color: #fff; }
+
 /* ── Empty state ── */
 .empty-wl {
   padding: 18px 20px;
@@ -586,7 +600,10 @@ function renderThead(wlId, cols) {
     const onclick = col.noSort ? '' : `onclick="sortSection(${wlId}, '${col.key}')"`;
     const ttip    = col.title ? ` title="${esc(col.title)}"` : '';
     const align   = col.align !== 'left' ? ` style="text-align:${col.align}"` : '';
-    return `<th class="${sortCls} ${mCls}"${onclick}${ttip}${align}>${esc(col.label)}</th>`;
+    const infoIcon = (col.isMetric && col.metricInfo && col.metricInfo.description)
+      ? `<span class="metric-info-icon" onclick="event.stopPropagation();showMetricInfo('${col.metricKey}')" title="View metric details">ⓘ</span>`
+      : '';
+    return `<th class="${sortCls} ${mCls}"${onclick}${ttip}${align}>${esc(col.label)}${infoIcon}</th>`;
   }).join('');
 }
 
@@ -883,6 +900,32 @@ function showDetailModal(idx) {
   }
 
   document.getElementById('modal-body').innerHTML = parts.filter(Boolean).join('');
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function showMetricInfo(name) {
+  const mi   = G.mi;
+  const cats = G.cats;
+  const catLabels = {};
+  cats.forEach(c => { catLabels[c.id] = c.label; });
+  const info = mi[name] || {};
+  document.getElementById('modal-title').textContent = info.label || name;
+  const dir = info.higher_is_better != null
+    ? (info.higher_is_better ? 'Higher is better ↑' : 'Lower is better ↓') : '';
+  const kvs = [
+    ['Description', info.description],
+    ['Unit',        info.unit],
+    ['Direction',   dir],
+    ['Category',    catLabels[info.category] || info.category],
+  ].filter(([, v]) => v);
+  document.getElementById('modal-body').innerHTML = `
+    <div class="m-section">
+      <div class="kv-grid">
+        ${kvs.map(([k, v]) =>
+          `<span class="kv-k">${esc(k)}</span><span class="kv-v">${esc(v)}</span>`
+        ).join('')}
+      </div>
+    </div>`;
   document.getElementById('modal-backdrop').classList.add('open');
 }
 
