@@ -37,8 +37,7 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -174,8 +173,7 @@ body {
 /* ── Table wrapper ──────────────────────────────────────────────────────── */
 .table-outer {
   flex: 1;
-  min-height: 0;
-  overflow: auto;
+  overflow-x: auto;
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -187,18 +185,6 @@ table {
   font-size: 13px;
 }
 thead { position: sticky; top: 0; z-index: 6; }
-
-/* ── Sticky left columns ──────────────────────────────────────────────────── */
-.sticky-col   { position: sticky; z-index: 3; background: var(--surface); }
-.sticky-col-1 { left: 0; }
-.sticky-col-2 { left: 32px; }
-.sticky-col-3 { left: 64px; box-shadow: 2px 0 5px -2px rgba(0,0,0,.15); }
-
-tr:nth-child(even) .sticky-col { background: #f8fafc; }
-tr:hover           .sticky-col { background: var(--accent-dim) !important; }
-
-thead              .sticky-col { z-index: 7; background: #1e293b; }
-.th-group-row      .sticky-col { background: #0f172a; }
 
 /* Header rows */
 .th-group-row th {

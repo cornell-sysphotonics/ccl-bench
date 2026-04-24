@@ -436,6 +436,7 @@
   ],
   "metric_info": {
     "avg_step_time": {
+      "required_update": false,
       "label": "Step Time (s)",
       "description": "Average per-engine-iteration wall time. For vLLM inference (continuous batching), most iterations are decode steps so this is dominated by decode latency. For training, measures the full forward + backward pass. Serving traces (TPOT/TTFT) are reported separately.",
       "higher_is_better": false,
@@ -448,8 +449,7 @@
       "thresholds": {
         "high": 10,
         "mid": 5
-      },
-      "required_update": false
+      }
     },
     "mfu": {
       "label": "MFU (%)",

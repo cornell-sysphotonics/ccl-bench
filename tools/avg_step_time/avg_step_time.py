@@ -77,7 +77,7 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
     Step time from an XLA Chrome-trace JSON.
 
     Primary path: '$core.py:331 step' events (vLLM inference traces, e.g. group-4).
-    Durations are in nanoseconds.
+    Durations are in microseconds (Chrome trace format default), despite displayTimeUnit:ns label.
 
     Fallback: total trace wall time / iteration count from the YAML.
     XLA client-side traces for training (e.g. FSDP) only record async dispatch
@@ -104,9 +104,9 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
     ]
 
     if step_events:
-        durs_ns = [e["dur"] for e in step_events if "dur" in e]
-        inner = durs_ns[1:-1] if len(durs_ns) > 2 else durs_ns
-        return statistics.mean(inner) / 1e9  # ns → s
+        durs_us = [e["dur"] for e in step_events if "dur" in e]
+        inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
+        return statistics.mean(inner) / 1e6  # µs → s (XLA trace dur in µs despite displayTimeUnit:ns)
 
     # Fallback: wall_time / iteration_count
     # XLA client traces for training record async dispatches only; real step time
