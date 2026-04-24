@@ -129,11 +129,13 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
     """
     Compute MFU from PyTorch-profiler JSON traces.
 
-    Training formula:
+    Training formula (forward + backward + optimizer):
       FLOP/token = 6(N_active - N_emb) + 12·L·H·Q·S
 
-    Inference formula:
+    Inference formula (forward only):
       FLOP/token = 2(N_active - N_emb) + 4·L·H·Q·S
+
+    The inference branch is used when workload.model.phase == "inference".
 
     Observed FLOPS = (FLOP/token) × (tokens/second)
     MFU = Observed FLOPS / (world_size × peak_TFLOPS)
@@ -151,7 +153,8 @@ def _calc_json(directory: str, yaml_data: dict) -> float:
     workload = yaml_data.get("workload", {})
     data_cfg = workload.get("data", {})
     hw_cfg   = workload.get("hardware", {}).get("xpu_spec", {})
-    arch     = workload.get("model", {}).get("model_arch", {})
+    model_cfg = workload.get("model", {})
+    arch     = model_cfg.get("model_arch") or model_cfg
 
     if arch is None:
         model_family = workload.get("model", {}).get("model_family", "unknown")

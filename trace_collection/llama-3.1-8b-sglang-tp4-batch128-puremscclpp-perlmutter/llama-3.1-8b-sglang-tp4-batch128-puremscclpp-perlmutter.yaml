@@ -1,0 +1,73 @@
+version: 1
+
+description: >
+  Llama-3.1-8B SGLang inference, TP=4, batch size 128.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url:
+
+workload:
+  model:
+    phase: inference
+    moe: false
+    granularity: model_fwd
+    model_family: Llama-3.1-8B
+    precision: bf16
+    num_params: 8030261248
+    num_params_embedding: 1050673152
+    num_layers: 32
+    num_heads: 32
+    head_dim: 128
+  data:
+    batch_size: 128
+    seq_len: 1152
+    input_len: 1024
+    output_len: 128
+    dataset: random
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 4
+      count_per_node: 4
+    driver_version: cuda_12.x
+
+Model-executor:
+  framework:
+    name: sglang
+    version: 0.5.10.post1
+    compiler_tool_selection: plain_pytorch
+    env:
+      SGLANG_ENV: "/pscratch/sd/k/kg597/session1/csglang"
+      DISABLE_CUDA_GRAPH: "1"
+      DISABLE_PIECEWISE_CUDA_GRAPH: "1"
+      DISABLE_CUSTOM_ALL_REDUCE: "1"
+      DATASET_NAME: "random-ids"
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+  communication_library:
+    name: MSCCL++
+    env:
+      NCCL_IB_DISABLE: "1"
+  protocol_selection:
+    - p2p
+    - nvlink
+
+metric_source:
+  traces:
+    - json
+    - sglang
+    - nsys
+  metrics_specific_trace:
+    - torch_profiler_json
+    - sglang_one_batch
+    - nsys_sqlite

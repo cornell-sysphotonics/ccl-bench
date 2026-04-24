@@ -55,24 +55,40 @@ def _get_trace_types(directory: str) -> list:
 
 
 def _calc_nsys(directory: str) -> float:
-    from nsys_utils import collect_nsys_traces, run_nsys_kernsum_csv, extract_csv_block, parse_kernsum_csv
+    import sqlite3
+    from nsys_utils import find_sqlite_file
 
-    _NSYS_COMM_RE = [
-        re.compile(r"^nccl", re.IGNORECASE),
-        re.compile(r"sendrecv", re.IGNORECASE),
-        re.compile(r"cross[_\-]?device", re.IGNORECASE),
-        re.compile(r"allgather|reducescatter|allreduce|broadcast", re.IGNORECASE),
-    ]
+    sqlite_path = find_sqlite_file(directory)
+    if sqlite_path is None:
+        print(f"Error: No .sqlite file found in {directory}", file=sys.stderr)
+        return -1
 
-    def _is_nsys_comm(name):
-        return any(r.search(name) for r in _NSYS_COMM_RE)
+    try:
+        conn = sqlite3.connect(sqlite_path)
+        strings = {
+            sid: value
+            for sid, value in conn.execute("SELECT id, value FROM StringIds")
+        }
+        rows = conn.execute("""
+            SELECT (end - start) AS duration, demangledName, shortName
+            FROM CUPTI_ACTIVITY_KIND_KERNEL
+        """)
 
-    traces = collect_nsys_traces(directory)
-    pth = traces[0]
-    out = run_nsys_kernsum_csv(pth)
-    rows = parse_kernsum_csv(extract_csv_block(out))
-    comm_ns = sum(r["total_ns"] for r in rows if _is_nsys_comm(r["name"]))
-    return comm_ns / 1e9  # ns → s
+        comm_ns = 0
+        seen_kernel = False
+        for duration, demangled_id, short_id in rows:
+            seen_kernel = True
+            name = strings.get(short_id) or strings.get(demangled_id) or ""
+            if _COMM_RE.search(name):
+                comm_ns += int(duration)
+
+        conn.close()
+        if not seen_kernel:
+            return -1
+        return comm_ns / 1e9  # ns → s
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return -1
 
 
 def _load_json_events(path: str):
