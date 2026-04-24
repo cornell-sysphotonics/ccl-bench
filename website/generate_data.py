@@ -252,6 +252,11 @@ def main() -> None:
                 metrics = [
                     m for m, info in metric_info.items()
                     if set(info.get("trace_types", [])) & trace_types
+                    and (
+                        not info.get("phases")
+                        or str(metadata.get("phase", "")).lower()
+                        in {str(p).lower() for p in info.get("phases", [])}
+                    )
                 ]
                 print(f"  Auto-selected {len(metrics)} metrics for {sorted(trace_types)}: "
                       f"{', '.join(metrics)}")

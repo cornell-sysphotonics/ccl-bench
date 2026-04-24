@@ -476,6 +476,7 @@
   ],
   "metric_info": {
     "avg_step_time": {
+      "required_update": false,
       "label": "Step Time (s)",
       "description": "Average per-engine-iteration wall time. For vLLM inference (continuous batching), most iterations are decode steps so this is dominated by decode latency. For training, measures the full forward + backward pass. Serving traces (TPOT/TTFT) are reported separately.",
       "higher_is_better": false,
@@ -488,8 +489,45 @@
       "thresholds": {
         "high": 10,
         "mid": 5
-      },
-      "required_update": false
+      }
+    },
+    "ttft": {
+      "required_update": true,
+      "label": "TTFT (s)",
+      "description": "Trace-derived time to first token: duration of the first inference forward/engine execution pass. Only inference workloads report this metric.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "phases": [
+        "inference"
+      ],
+      "trace_types": [
+        "json_tpu",
+        "json"
+      ],
+      "thresholds": {
+        "high": 1,
+        "mid": 0.2
+      }
+    },
+    "tpot": {
+      "required_update": true,
+      "label": "TPOT (s)",
+      "description": "Trace-derived time per output token proxy: average decode forward/engine execution duration after the first inference pass. Only inference workloads with output_len > 1 report this metric.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "phases": [
+        "inference"
+      ],
+      "trace_types": [
+        "json_tpu",
+        "json"
+      ],
+      "thresholds": {
+        "high": 0.2,
+        "mid": 0.05
+      }
     },
     "mfu": {
       "label": "MFU (%)",
@@ -574,8 +612,9 @@
       "required_update": false
     },
     "memory_transfer_overhead": {
+      "required_update": true,
       "label": "Mem Transfer OH (%)",
-      "description": "Percentage of trace time spent on memory transfers (memcpy for NSYS, copy-like kernels for Kineto JSON)",
+      "description": "Percentage of execution time spent on memory transfers. GPU/NSYS: CUDA memcpy time over kernel span. GPU JSON: copy-like kernel fraction. TPU: DMA time from copy-start/copy-done device-clock pairs over total step time.",
       "higher_is_better": false,
       "unit": "%",
       "category": "memory",
@@ -587,8 +626,7 @@
       "thresholds": {
         "high": 20,
         "mid": 5
-      },
-      "required_update": false
+      }
     },
     "communication_fraction": {
       "label": "Comm Fraction (%)",

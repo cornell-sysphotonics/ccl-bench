@@ -234,6 +234,12 @@ if __name__ == "__main__":
     elif metric_name == "avg_step_time":
         from avg_step_time.avg_step_time import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "ttft":
+        from inference_latency.inference_latency import ttft_metric_cal
+        metric_cal_func = ttft_metric_cal
+    elif metric_name == "tpot":
+        from inference_latency.inference_latency import tpot_metric_cal
+        metric_cal_func = tpot_metric_cal
     elif metric_name == "communication_ratio":
         from communication_ratio.communication_ratio import metric_cal
         metric_cal_func = metric_cal
@@ -312,12 +318,6 @@ if __name__ == "__main__":
     elif metric_name == "comm_kernel_breakdown_tpu":
         from comm_kernel_breakdown_tpu_group_4.comm_kernel_breakdown_tpu_group_4 import comm_kernel_breakdown_tpu
         metric_cal_func = comm_kernel_breakdown_tpu
-    elif metric_name == "ttft":
-        from ttft_group_4.ttft import ttft
-        metric_cal_func = ttft
-    elif metric_name == "tpot":
-        from tpot_group_4.tpot import tpot
-        metric_cal_func = tpot
     elif metric_name == "estimated_bandwidth":
         from estimated_bandwidth_group_4.estimated_bandwidth import estimated_bandwidth
         metric_cal_func = estimated_bandwidth

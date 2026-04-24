@@ -1377,6 +1377,18 @@ function fmtDate(iso) {
   } catch { return iso; }
 }
 
+function isInferenceMeta(m) {
+  return String(m && m.phase || '').toLowerCase() === 'inference';
+}
+
+function dataLengthKvs(m) {
+  if (!isInferenceMeta(m)) return [['Seq Length', m.seq_len]];
+  return [
+    ['Input Length',  m.input_len || m.seq_len],
+    ['Output Length', m.output_len],
+  ];
+}
+
 // ── Cell renderers ────────────────────────────────────────────────────────────
 function cellInfo(row) {
   return `<button class="info-btn" onclick="showModal(${row.__idx})" title="View workload details">i</button>`;
@@ -1715,7 +1727,7 @@ function showModal(idx) {
     ['Epochs',          m.epochs],
     ['Iterations',      m.iteration],
     ['Batch Size',      m.batch_size],
-    ['Seq Length',      m.seq_len],
+    ...dataLengthKvs(m),
     ['Dataset',         m.dataset],
   ].filter(([, v]) => v != null && v !== '');
 
@@ -2009,7 +2021,9 @@ function showCompare() {
     ['EP',             r => r.metadata.ep],
     ['Comm Library',   r => r.metadata.comm_library],
     ['Batch Size',     r => r.metadata.batch_size],
-    ['Seq Length',     r => r.metadata.seq_len],
+    ['Seq Length',     r => isInferenceMeta(r.metadata) ? null : r.metadata.seq_len],
+    ['Input Length',   r => isInferenceMeta(r.metadata) ? (r.metadata.input_len || r.metadata.seq_len) : null],
+    ['Output Length',  r => isInferenceMeta(r.metadata) ? r.metadata.output_len : null],
   ].filter(([, fn]) => rows.some(r => fn(r) != null));
 
   const cfgRows = metaFields.map(([label, fn]) => {
