@@ -451,6 +451,44 @@
         "mid": 5
       }
     },
+    "ttft": {
+      "required_update": true,
+      "label": "TTFT (s)",
+      "description": "Trace-derived time to first token: duration of the first inference forward/engine execution pass. Only inference workloads report this metric.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "phases": [
+        "inference"
+      ],
+      "trace_types": [
+        "json_tpu",
+        "json"
+      ],
+      "thresholds": {
+        "high": 1,
+        "mid": 0.2
+      }
+    },
+    "tpot": {
+      "required_update": true,
+      "label": "TPOT (s)",
+      "description": "Trace-derived time per output token proxy: average decode forward/engine execution duration after the first inference pass. Only inference workloads with output_len > 1 report this metric.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "phases": [
+        "inference"
+      ],
+      "trace_types": [
+        "json_tpu",
+        "json"
+      ],
+      "thresholds": {
+        "high": 0.2,
+        "mid": 0.05
+      }
+    },
     "mfu": {
       "label": "MFU (%)",
       "description": "Model FLOPs Utilization \u2014 percentage of peak hardware FLOPs utilized during active compute windows",

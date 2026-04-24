@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T15:28:33.151113+00:00",
+  "generated_at": "2026-04-24T15:42:43.569496+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -13,7 +13,9 @@
     "memory_transfer_overhead",
     "mfu",
     "moe_fraction",
-    "total_communication_time"
+    "total_communication_time",
+    "tpot",
+    "ttft"
   ],
   "metric_categories": [
     {
@@ -52,6 +54,44 @@
       "thresholds": {
         "high": 10,
         "mid": 5
+      }
+    },
+    "ttft": {
+      "required_update": true,
+      "label": "TTFT (s)",
+      "description": "Trace-derived time to first token: duration of the first inference forward/engine execution pass. Only inference workloads report this metric.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "phases": [
+        "inference"
+      ],
+      "trace_types": [
+        "json_tpu",
+        "json"
+      ],
+      "thresholds": {
+        "high": 1,
+        "mid": 0.2
+      }
+    },
+    "tpot": {
+      "required_update": true,
+      "label": "TPOT (s)",
+      "description": "Trace-derived time per output token proxy: average decode forward/engine execution duration after the first inference pass. Only inference workloads with output_len > 1 report this metric.",
+      "higher_is_better": false,
+      "unit": "s",
+      "category": "model_execution",
+      "phases": [
+        "inference"
+      ],
+      "trace_types": [
+        "json_tpu",
+        "json"
+      ],
+      "thresholds": {
+        "high": 0.2,
+        "mid": 0.05
       }
     },
     "mfu": {
@@ -265,8 +305,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -310,6 +350,7 @@
         "average_memory_bandwidth": 5.16215,
         "communication_fraction": 1.30337e-06,
         "total_communication_time": 1.49956,
+        "ttft": 0.0355622,
         "memory_transfer_overhead": 35.4905
       }
     },
@@ -329,8 +370,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -374,6 +415,7 @@
         "average_memory_bandwidth": 31.2078,
         "communication_fraction": 16.5455,
         "total_communication_time": 0.0726466,
+        "ttft": 0.0168845,
         "memory_transfer_overhead": 8.2781
       }
     },
@@ -393,8 +435,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -438,6 +480,7 @@
         "average_memory_bandwidth": 36.6485,
         "communication_fraction": 19.3455,
         "total_communication_time": 0.11252,
+        "ttft": 0.0127897,
         "memory_transfer_overhead": 12.1348
       }
     },
@@ -457,8 +500,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -502,6 +545,7 @@
         "average_memory_bandwidth": 12.1563,
         "communication_fraction": 26.9272,
         "total_communication_time": 0.239226,
+        "ttft": 0.0206705,
         "memory_transfer_overhead": 41.8657
       }
     },
@@ -521,8 +565,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -566,6 +610,7 @@
         "average_memory_bandwidth": 10.6774,
         "communication_fraction": 3.14031e-06,
         "total_communication_time": 0.427017,
+        "ttft": 0.0307186,
         "memory_transfer_overhead": 32.6533
       }
     },
@@ -585,8 +630,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -630,6 +675,7 @@
         "average_memory_bandwidth": 24.4778,
         "communication_fraction": 15.0425,
         "total_communication_time": 0.0523105,
+        "ttft": 0.0204064,
         "memory_transfer_overhead": 13.6834
       }
     },
@@ -649,8 +695,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -694,6 +740,7 @@
         "average_memory_bandwidth": 8.90733,
         "communication_fraction": 18.4459,
         "total_communication_time": 0.0759283,
+        "ttft": 0.0158465,
         "memory_transfer_overhead": 28.6413
       }
     },
@@ -713,8 +760,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": "",
-        "output_len": "",
+        "input_len": 1024,
+        "output_len": 1,
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -758,6 +805,7 @@
         "average_memory_bandwidth": 20.6828,
         "communication_fraction": 25.5013,
         "total_communication_time": 0.171671,
+        "ttft": 0.0237861,
         "memory_transfer_overhead": 26.4861
       }
     },
@@ -2686,6 +2734,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0335659,
+        "tpot": 0.0352361,
         "memory_transfer_overhead": 31.5352
       }
     },
@@ -2757,6 +2807,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0446002,
+        "tpot": 0.0365609,
         "memory_transfer_overhead": 21.011
       }
     },
@@ -2828,6 +2880,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0773797,
+        "tpot": 0.0721431,
         "memory_transfer_overhead": 26.9839
       }
     },
@@ -2899,6 +2953,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0700774,
+        "tpot": 0.0812221,
         "memory_transfer_overhead": 34.4439
       }
     },
@@ -2970,6 +3026,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0490755,
+        "tpot": 0.0410551,
         "memory_transfer_overhead": 14.5802
       }
     },
@@ -3041,6 +3099,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0421303,
+        "tpot": 0.0418665,
         "memory_transfer_overhead": 10.6499
       }
     },
@@ -3112,6 +3172,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0496964,
+        "tpot": 0.0385199,
         "memory_transfer_overhead": 15.6429
       }
     },
@@ -3183,6 +3245,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0378622,
+        "tpot": 0.0413309,
         "memory_transfer_overhead": 11.5165
       }
     },
@@ -3254,6 +3318,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0390019,
+        "tpot": 0.0427342,
         "memory_transfer_overhead": 15.795
       }
     },
@@ -3325,6 +3391,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0398183,
+        "tpot": 0.0435927,
         "memory_transfer_overhead": 13.0642
       }
     },
@@ -3396,6 +3464,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.03662,
+        "tpot": 0.0419876,
         "memory_transfer_overhead": 17.4351
       }
     },
@@ -3467,6 +3537,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0375144,
+        "tpot": 0.0428606,
         "memory_transfer_overhead": 13.6916
       }
     },
@@ -3538,6 +3610,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0429304,
+        "tpot": 0.0379068,
         "memory_transfer_overhead": 31.4149
       }
     },
@@ -3609,6 +3683,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0328869,
+        "tpot": 0.0383939,
         "memory_transfer_overhead": 21.9104
       }
     },
@@ -3680,6 +3756,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0637729,
+        "tpot": 0.0708341,
         "memory_transfer_overhead": 38.9697
       }
     },
@@ -3751,6 +3829,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.069874,
+        "tpot": 0.0760341,
         "memory_transfer_overhead": 35.8093
       }
     },
@@ -3825,6 +3905,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0612608,
+        "tpot": 0.0444321,
         "memory_transfer_overhead": 9.85712
       }
     },
@@ -3899,6 +3981,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.059585,
+        "tpot": 0.0459496,
         "memory_transfer_overhead": 12.919
       }
     },
@@ -3973,6 +4057,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.050017,
+        "tpot": 0.038909,
         "memory_transfer_overhead": 21.5803
       }
     },
@@ -4047,6 +4133,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0811915,
+        "tpot": 0.0767431,
         "memory_transfer_overhead": 37.3122
       }
     },
@@ -4117,6 +4205,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0499445,
+        "tpot": 0.0448463,
         "memory_transfer_overhead": 12.6951
       }
     },
@@ -4191,6 +4281,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0677348,
+        "tpot": 0.0477274,
         "memory_transfer_overhead": 13.5046
       }
     },
@@ -4261,6 +4353,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0337481,
+        "tpot": 0.0353173,
         "memory_transfer_overhead": 21.4035
       }
     },
@@ -4335,6 +4429,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0556967,
+        "tpot": 0.0411579,
         "memory_transfer_overhead": 22.411
       }
     },
@@ -4405,6 +4501,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0753468,
+        "tpot": 0.0804438,
         "memory_transfer_overhead": 42.582
       }
     },
@@ -4479,6 +4577,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0867906,
+        "tpot": 0.0824125,
         "memory_transfer_overhead": 45.7038
       }
     },
@@ -4550,6 +4650,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.390766,
+        "tpot": 0.128875,
         "memory_transfer_overhead": 17.7104
       }
     },
@@ -4621,6 +4723,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.38896,
+        "tpot": 0.455548,
         "memory_transfer_overhead": 34.2856
       }
     },
@@ -4692,6 +4796,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.532454,
+        "tpot": 0.12076,
         "memory_transfer_overhead": 27.4771
       }
     },
@@ -4763,6 +4869,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.526843,
+        "tpot": 0.592039,
         "memory_transfer_overhead": 39.4205
       }
     },
@@ -4834,6 +4942,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.562592,
+        "tpot": 0.135681,
         "memory_transfer_overhead": 36.8815
       }
     },
@@ -4905,6 +5015,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.312786,
+        "tpot": 0.347328,
         "memory_transfer_overhead": 38.1306
       }
     },
@@ -4977,6 +5089,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0622456,
+        "tpot": 0.0499177,
         "memory_transfer_overhead": 7.38775
       }
     },
@@ -5049,6 +5163,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0544398,
+        "tpot": 0.0502662,
         "memory_transfer_overhead": 6.89357
       }
     },
@@ -5121,6 +5237,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0550642,
+        "tpot": 0.0437134,
         "memory_transfer_overhead": 44.5767
       }
     },
@@ -5193,6 +5311,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0494372,
+        "tpot": 0.042246,
         "memory_transfer_overhead": 13.4879
       }
     },
@@ -5265,6 +5385,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0788698,
+        "tpot": 0.0651713,
         "memory_transfer_overhead": 14.9247
       }
     },
@@ -5337,6 +5459,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0685506,
+        "tpot": 0.076106,
         "memory_transfer_overhead": 8.37606
       }
     },
@@ -5409,6 +5533,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0893769,
+        "tpot": 0.0582402,
         "memory_transfer_overhead": 8.04689
       }
     },
@@ -5481,6 +5607,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0954167,
+        "tpot": 0.0746597,
         "memory_transfer_overhead": 7.15451
       }
     },
@@ -5553,6 +5681,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0790498,
+        "tpot": 0.0532298,
         "memory_transfer_overhead": 46.9276
       }
     },
@@ -5625,6 +5755,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0792854,
+        "tpot": 0.068966,
         "memory_transfer_overhead": 13.9487
       }
     },
@@ -5697,6 +5829,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0936091,
+        "tpot": 0.0793544,
         "memory_transfer_overhead": 14.9524
       }
     },
@@ -5769,6 +5903,8 @@
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
+        "ttft": 0.0937333,
+        "tpot": 0.0845166,
         "memory_transfer_overhead": 8.65763
       }
     },
