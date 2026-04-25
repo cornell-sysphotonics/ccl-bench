@@ -492,7 +492,7 @@
       }
     },
     "ttft": {
-      "required_update": true,
+      "required_update": false,
       "label": "TTFT (s)",
       "description": "Trace-derived time to first token: duration of the first inference forward/engine execution pass. Only inference workloads report this metric.",
       "higher_is_better": false,
@@ -511,7 +511,7 @@
       }
     },
     "tpot": {
-      "required_update": true,
+      "required_update": false,
       "label": "TPOT (s)",
       "description": "Trace-derived time per output token proxy: average decode forward/engine execution duration after the first inference pass. Only inference workloads with output_len > 1 report this metric.",
       "higher_is_better": false,
@@ -612,7 +612,7 @@
       "required_update": false
     },
     "memory_transfer_overhead": {
-      "required_update": true,
+      "required_update": false,
       "label": "Mem Transfer OH (%)",
       "description": "Percentage of execution time spent on memory transfers. GPU/NSYS: CUDA memcpy time over kernel span. GPU JSON: copy-like kernel fraction. TPU: DMA time from copy-start/copy-done device-clock pairs over total step time.",
       "higher_is_better": false,

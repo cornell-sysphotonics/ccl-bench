@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T06:09:43.242950+00:00",
+  "generated_at": "2026-04-25T13:56:21.567603+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -305,8 +305,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -351,6 +351,7 @@
         "communication_fraction": 1.30337e-06,
         "total_communication_time": 1.49956,
         "ttft": 0.0355622,
+        "tpot": 0.221814,
         "memory_transfer_overhead": 35.4905
       }
     },
@@ -413,11 +414,11 @@
         "dominant_kernel_concentration": 29.0087,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 183.813,
-        "memory_transfer_overhead": 0.6727,
         "communication_fraction": 55.1681,
         "total_communication_time": 0.476312,
         "bandwidth_utilization_allgather_group_6": 17.7831,
-        "bandwidth_utilization_allreduce_group_6": 0.517744
+        "bandwidth_utilization_allreduce_group_6": 0.517744,
+        "memory_transfer_overhead": 0.6727
       }
     },
     {
@@ -479,11 +480,11 @@
         "dominant_kernel_concentration": 26.1173,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 184.832,
-        "memory_transfer_overhead": 0.6861,
         "communication_fraction": 55.4385,
         "total_communication_time": 0.489888,
         "bandwidth_utilization_allgather_group_6": 14.8624,
-        "bandwidth_utilization_allreduce_group_6": 0.55966
+        "bandwidth_utilization_allreduce_group_6": 0.55966,
+        "memory_transfer_overhead": 0.6861
       }
     },
     {
@@ -545,11 +546,11 @@
         "dominant_kernel_concentration": 20.2624,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 394.434,
-        "memory_transfer_overhead": 0.0499,
         "communication_fraction": 25.9987,
         "total_communication_time": 0.52993,
         "bandwidth_utilization_allgather_group_6": 16.6354,
-        "bandwidth_utilization_allreduce_group_6": 1.37616
+        "bandwidth_utilization_allreduce_group_6": 1.37616,
+        "memory_transfer_overhead": 0.0499
       }
     },
     {
@@ -611,11 +612,11 @@
         "dominant_kernel_concentration": 19.9197,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 385.808,
-        "memory_transfer_overhead": 0.049,
         "communication_fraction": 27.8997,
         "total_communication_time": 0.619568,
         "bandwidth_utilization_allgather_group_6": 14.7161,
-        "bandwidth_utilization_allreduce_group_6": 1.17159
+        "bandwidth_utilization_allreduce_group_6": 1.17159,
+        "memory_transfer_overhead": 0.049
       }
     },
     {
@@ -677,11 +678,11 @@
         "dominant_kernel_concentration": 22.2579,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 376.978,
-        "memory_transfer_overhead": 0.0412,
         "communication_fraction": 23.5252,
         "total_communication_time": 0.47062,
         "bandwidth_utilization_allgather_group_6": 32.2171,
-        "bandwidth_utilization_allreduce_group_6": 1.74028
+        "bandwidth_utilization_allreduce_group_6": 1.74028,
+        "memory_transfer_overhead": 0.0412
       }
     },
     {
@@ -743,11 +744,11 @@
         "dominant_kernel_concentration": 18.9915,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 367.414,
-        "memory_transfer_overhead": 0.0419,
         "communication_fraction": 23.8475,
         "total_communication_time": 0.466497,
         "bandwidth_utilization_allgather_group_6": 28.5834,
-        "bandwidth_utilization_allreduce_group_6": 1.39698
+        "bandwidth_utilization_allreduce_group_6": 1.39698,
+        "memory_transfer_overhead": 0.0419
       }
     },
     {
@@ -809,11 +810,11 @@
         "dominant_kernel_concentration": 21.4596,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 15.6064,
-        "memory_transfer_overhead": 1.3008,
         "communication_fraction": 35.8681,
         "total_communication_time": 0.424001,
         "bandwidth_utilization_allgather_group_6": 33.2346,
-        "bandwidth_utilization_allreduce_group_6": 0.000545697
+        "bandwidth_utilization_allreduce_group_6": 0.000545697,
+        "memory_transfer_overhead": 1.3008
       }
     },
     {
@@ -875,11 +876,11 @@
         "dominant_kernel_concentration": 18.8951,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 14.1707,
-        "memory_transfer_overhead": 1.3444,
         "communication_fraction": 34.2439,
         "total_communication_time": 0.390762,
         "bandwidth_utilization_allgather_group_6": 33.3994,
-        "bandwidth_utilization_allreduce_group_6": 1.73152e-05
+        "bandwidth_utilization_allreduce_group_6": 1.73152e-05,
+        "memory_transfer_overhead": 1.3444
       }
     },
     {
@@ -898,8 +899,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -944,6 +945,7 @@
         "communication_fraction": 16.5455,
         "total_communication_time": 0.0726466,
         "ttft": 0.0168845,
+        "tpot": 0.17781,
         "memory_transfer_overhead": 8.2781
       }
     },
@@ -963,8 +965,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -1009,6 +1011,7 @@
         "communication_fraction": 19.3455,
         "total_communication_time": 0.11252,
         "ttft": 0.0127897,
+        "tpot": 0.085051,
         "memory_transfer_overhead": 12.1348
       }
     },
@@ -1028,8 +1031,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -1074,6 +1077,7 @@
         "communication_fraction": 26.9272,
         "total_communication_time": 0.239226,
         "ttft": 0.0206705,
+        "tpot": 0.0976773,
         "memory_transfer_overhead": 41.8657
       }
     },
@@ -1093,8 +1097,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -1139,6 +1143,7 @@
         "communication_fraction": 3.14031e-06,
         "total_communication_time": 0.427017,
         "ttft": 0.0307186,
+        "tpot": 0.194447,
         "memory_transfer_overhead": 32.6533
       }
     },
@@ -1158,8 +1163,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -1204,6 +1209,7 @@
         "communication_fraction": 15.0425,
         "total_communication_time": 0.0523105,
         "ttft": 0.0204064,
+        "tpot": 0.145632,
         "memory_transfer_overhead": 13.6834
       }
     },
@@ -1223,8 +1229,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -1269,6 +1275,7 @@
         "communication_fraction": 18.4459,
         "total_communication_time": 0.0759283,
         "ttft": 0.0158465,
+        "tpot": 0.0973176,
         "memory_transfer_overhead": 28.6413
       }
     },
@@ -1288,8 +1295,8 @@
         "iteration": 3,
         "batch_size": 128,
         "seq_len": 1024,
-        "input_len": 1024,
-        "output_len": 1,
+        "input_len": "",
+        "output_len": "",
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
@@ -1334,6 +1341,7 @@
         "communication_fraction": 25.5013,
         "total_communication_time": 0.171671,
         "ttft": 0.0237861,
+        "tpot": 0.0754496,
         "memory_transfer_overhead": 26.4861
       }
     },
