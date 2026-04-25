@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T15:42:43.569496+00:00",
+  "generated_at": "2026-04-24T06:09:43.242950+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -352,6 +352,534 @@
         "total_communication_time": 1.49956,
         "ttft": 0.0355622,
         "memory_transfer_overhead": 35.4905
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-fsdp_2-tp_2-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-mscclpp-4gpu-fsdp_2-tp_2-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "mscclpp",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 1.21633,
+        "mfu": 6.5956,
+        "mean_sm_coverage": 47.486,
+        "dominant_kernel_concentration": 29.0087,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 183.813,
+        "memory_transfer_overhead": 0.6727,
+        "communication_fraction": 55.1681,
+        "total_communication_time": 0.476312,
+        "bandwidth_utilization_allgather_group_6": 17.7831,
+        "bandwidth_utilization_allreduce_group_6": 0.517744
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-fsdp_2-tp_2-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-nccl-4gpu-fsdp_2-tp_2-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "nccl",
+        "comm_library_ver": "2.24.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 1.34017,
+        "mfu": 5.9861,
+        "mean_sm_coverage": 47.7167,
+        "dominant_kernel_concentration": 26.1173,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 184.832,
+        "memory_transfer_overhead": 0.6861,
+        "communication_fraction": 55.4385,
+        "total_communication_time": 0.489888,
+        "bandwidth_utilization_allgather_group_6": 14.8624,
+        "bandwidth_utilization_allreduce_group_6": 0.55966
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-tp_2-pp_2-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-mscclpp-4gpu-tp_2-pp_2-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 2,
+        "pp": 2,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "mscclpp",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 2.08135,
+        "mfu": 3.8544,
+        "mean_sm_coverage": 74.8717,
+        "dominant_kernel_concentration": 20.2624,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 394.434,
+        "memory_transfer_overhead": 0.0499,
+        "communication_fraction": 25.9987,
+        "total_communication_time": 0.52993,
+        "bandwidth_utilization_allgather_group_6": 16.6354,
+        "bandwidth_utilization_allreduce_group_6": 1.37616
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-tp_2-pp_2-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-nccl-4gpu-tp_2-pp_2-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 2,
+        "pp": 2,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "nccl",
+        "comm_library_ver": "2.24.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 2.26417,
+        "mfu": 3.5432,
+        "mean_sm_coverage": 73.1399,
+        "dominant_kernel_concentration": 19.9197,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 385.808,
+        "memory_transfer_overhead": 0.049,
+        "communication_fraction": 27.8997,
+        "total_communication_time": 0.619568,
+        "bandwidth_utilization_allgather_group_6": 14.7161,
+        "bandwidth_utilization_allreduce_group_6": 1.17159
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-tp_4-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-mscclpp-4gpu-tp_4-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "mscclpp",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 2.0427,
+        "mfu": 3.9274,
+        "mean_sm_coverage": 75.7888,
+        "dominant_kernel_concentration": 22.2579,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 376.978,
+        "memory_transfer_overhead": 0.0412,
+        "communication_fraction": 23.5252,
+        "total_communication_time": 0.47062,
+        "bandwidth_utilization_allgather_group_6": 32.2171,
+        "bandwidth_utilization_allreduce_group_6": 1.74028
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-tp_4-b_4-s_512/",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-nccl-4gpu-tp_4-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "nccl",
+        "comm_library_ver": "2.24.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 2.21098,
+        "mfu": 3.6285,
+        "mean_sm_coverage": 80.0521,
+        "dominant_kernel_concentration": 18.9915,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 367.414,
+        "memory_transfer_overhead": 0.0419,
+        "communication_fraction": 23.8475,
+        "total_communication_time": 0.466497,
+        "bandwidth_utilization_allgather_group_6": 28.5834,
+        "bandwidth_utilization_allreduce_group_6": 1.39698
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-fsdp_4-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-mscclpp-4gpu-fsdp_4-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "mscclpp",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 1.31797,
+        "mfu": 6.087,
+        "mean_sm_coverage": 71.8253,
+        "dominant_kernel_concentration": 21.4596,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 15.6064,
+        "memory_transfer_overhead": 1.3008,
+        "communication_fraction": 35.8681,
+        "total_communication_time": 0.424001,
+        "bandwidth_utilization_allgather_group_6": 33.2346,
+        "bandwidth_utilization_allreduce_group_6": 0.000545697
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-fsdp_4-b_4-s_512",
+      "metadata": {
+        "workload_name": "llama3-torchtitan-nccl-4gpu-fsdp_4-b_4-s_512",
+        "description": "",
+        "hf_url": "",
+        "trace_url": "",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 10,
+        "batch_size": 4,
+        "seq_len": 512,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "c4",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 4,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2000,
+        "driver_version": "cuda_12.4",
+        "framework": "torchtitan",
+        "compiler": "plain_pytorch",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "nccl",
+        "comm_library_ver": "2.24.3",
+        "comm_env": {
+          "NCCL_IB_QPS_PER_CONNECTION": null
+        },
+        "protocol_selection": [
+          "rocev2",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 1.43918,
+        "mfu": 5.5743,
+        "mean_sm_coverage": 73.2897,
+        "dominant_kernel_concentration": 18.8951,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 14.1707,
+        "memory_transfer_overhead": 1.3444,
+        "communication_fraction": 34.2439,
+        "total_communication_time": 0.390762,
+        "bandwidth_utilization_allgather_group_6": 33.3994,
+        "bandwidth_utilization_allreduce_group_6": 1.73152e-05
       }
     },
     {

@@ -7,6 +7,46 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-fsdp_2-tp_2-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-fsdp_2-tp_2-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-tp_2-pp_2-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-tp_2-pp_2-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-tp_4-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-tp_4-b_4-s_512/",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-mscclpp-4gpu-fsdp_4-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3-torchtitan-nccl-4gpu-fsdp_4-b_4-s_512",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp2-tpu-group-4",
       "metrics": "auto",
       "required_update": false
