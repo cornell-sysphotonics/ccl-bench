@@ -614,7 +614,7 @@
     "memory_transfer_overhead": {
       "required_update": false,
       "label": "Mem Transfer OH (%)",
-      "description": "Percentage of execution time spent on memory transfers. GPU/NSYS: CUDA memcpy time over kernel span. GPU JSON: copy-like kernel fraction. TPU: DMA time from copy-start/copy-done device-clock pairs over total step time.",
+      "description": "Percentage of execution time spent exclusively on memory transfers — memcpy/DMA intervals that do NOT overlap with any compute kernel. Overlapping transfers are unioned before subtraction so concurrent copies are not double-counted. GPU/NSYS: non-overlapped CUDA memcpy time over trace span. GPU JSON: per-rank non-overlapped copy-like kernel time over rank kernel span. TPU: non-overlapped DMA time (copy-start/copy-done device-clock pairs, minus concurrent leaf compute ops) over total step time.",
       "higher_is_better": false,
       "unit": "%",
       "category": "memory",

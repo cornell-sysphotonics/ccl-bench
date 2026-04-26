@@ -1,8 +1,9 @@
 """
 Metric: memory_transfer_overhead
-Description: Percentage of trace time spent in memory copy operations (memcpy). High values
-             indicate memory transfer bottlenecks, often from PCIe transfers or inefficient
-             data movement.
+Description: Percentage of step/trace time spent exclusively on memory transfers —
+             i.e., memcpy/DMA intervals that do NOT overlap with any compute kernel.
+             Concurrent transfers are unioned before subtraction so overlapping
+             copies are not double-counted.
 Unit: Percentage (%)
 Returns: Float between 0-100, or -1 if data unavailable
 """
@@ -12,43 +13,79 @@ import sys
 import os
 
 
+# ── Interval arithmetic helpers ───────────────────────────────────────────────
+
+def _merge_intervals(intervals):
+    """Return sorted, non-overlapping union of (start, end) pairs."""
+    if not intervals:
+        return []
+    intervals = sorted(intervals)
+    merged = [list(intervals[0])]
+    for s, e in intervals[1:]:
+        if s <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], e)
+        else:
+            merged.append([s, e])
+    return [(s, e) for s, e in merged]
+
+
+def _subtract_intervals(base, subtract):
+    """
+    Remove portions of *base* intervals covered by *subtract* intervals.
+    Both inputs must already be sorted and merged (non-overlapping).
+    """
+    result = []
+    si = 0
+    n = len(subtract)
+    for bs, be in base:
+        # Advance lower bound: skip subtract intervals that end before this base interval
+        while si < n and subtract[si][1] <= bs:
+            si += 1
+        cur = bs
+        j = si
+        while j < n and subtract[j][0] < be:
+            ss, se = subtract[j]
+            if ss > cur:
+                result.append((cur, ss))
+            cur = max(cur, se)
+            j += 1
+        if cur < be:
+            result.append((cur, be))
+    return result
+
+
+def _sum_intervals(intervals):
+    return sum(e - s for s, e in intervals)
+
+
+# ── NSYS path ─────────────────────────────────────────────────────────────────
+
 def find_sqlite_file(path):
     """Find SQLite file in directory or return path if it's already a .sqlite file"""
-    # Convert to absolute path to avoid any relative path issues
     path = os.path.abspath(path)
-    
     if os.path.isfile(path) and path.endswith('.sqlite'):
         return path
-    
     if os.path.isdir(path):
         sqlite_files = [f for f in os.listdir(path) if f.endswith('.sqlite')]
         if len(sqlite_files) == 0:
             return None
-        # Prefer non-profiling files
         non_profiling = [f for f in sqlite_files if 'profiling' not in f.lower()]
         if non_profiling:
             return os.path.abspath(os.path.join(path, non_profiling[0]))
         return os.path.abspath(os.path.join(path, sqlite_files[0]))
-    
     return None
 
 
 def calculate_metric(path):
     """
-    Calculate metric from SQLite trace file.
-    
-    Args:
-        path: Either a directory containing .sqlite file or direct path to .sqlite file
-    
-    Returns:
-        float: Metric value, or -1 if calculation fails
+    NSYS/SQLite: time in merged memcpy intervals NOT covered by any compute kernel,
+    divided by total trace span.
     """
-    # Find the SQLite file
     sqlite_path = find_sqlite_file(path)
     if sqlite_path is None:
         print(f"Error: No .sqlite file found in {path}", file=sys.stderr)
         return -1
-    
+
     try:
         with sqlite3.connect(sqlite_path) as conn:
             cur = conn.cursor()
@@ -67,42 +104,48 @@ def calculate_metric(path):
             if cur.fetchone() is None:
                 return -1
 
-            cur.execute("""
-                SELECT COUNT(*), SUM(end - start), MIN(start), MAX(end)
-                FROM CUPTI_ACTIVITY_KIND_MEMCPY
-            """)
-            memcpy_count, total_memcpy_time, memcpy_start, memcpy_end = cur.fetchone()
+            # Memcpy intervals (manageable row count)
+            cur.execute("SELECT start, end FROM CUPTI_ACTIVITY_KIND_MEMCPY WHERE end > start")
+            memcpy_raw = cur.fetchall()
+            if not memcpy_raw:
+                return -1
 
-            cur.execute("""
-                SELECT COUNT(*), MIN(start), MAX(end)
-                FROM CUPTI_ACTIVITY_KIND_KERNEL
-            """)
-            kernel_count, kernel_start, kernel_end = cur.fetchone()
+            # Compute kernel intervals — fetch sorted to minimise merge work
+            cur.execute("SELECT start, end FROM CUPTI_ACTIVITY_KIND_KERNEL WHERE end > start ORDER BY start")
+            kernel_raw = cur.fetchall()
 
-        if not memcpy_count or not kernel_count:
-            return -1
+        memcpy_merged = _merge_intervals(memcpy_raw)
+        kernel_merged = _merge_intervals(kernel_raw)
 
-        # Use the full activity span including both kernels and memcpy.
-        trace_start = min(kernel_start, memcpy_start)
-        trace_end = max(kernel_end, memcpy_end)
-        trace_duration = trace_end - trace_start
+        pure_memcpy = _subtract_intervals(memcpy_merged, kernel_merged)
+        pure_memcpy_time = _sum_intervals(pure_memcpy)
+
+        all_starts = [s for s, _ in memcpy_merged] + ([kernel_merged[0][0]] if kernel_merged else [])
+        all_ends   = [e for _, e in memcpy_merged] + ([kernel_merged[-1][1]] if kernel_merged else [])
+        trace_duration = max(all_ends) - min(all_starts)
 
         if trace_duration == 0:
             return -1
-        
-        return float((total_memcpy_time / trace_duration) * 100)
-        
+
+        return float((pure_memcpy_time / trace_duration) * 100)
+
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return -1
 
 
+# ── JSON / Kineto path ────────────────────────────────────────────────────────
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from trace_metric_utils import load_yaml, get_trace_types, summarize_kineto_kernel_breakdown
+from trace_metric_utils import (
+    load_yaml, get_trace_types,
+    _MEMCPY_RE, _COMM_RE,
+)
 from json_sampling import select_json_files
 
-# Shared JSON loader (handles truncated files)
+
 def _load_json_events(path):
+    """Load traceEvents from a (possibly truncated) PyTorch-profiler JSON file."""
     import json
     try:
         with open(path, encoding="utf-8", errors="replace") as f:
@@ -136,91 +179,167 @@ def _load_json_events(path):
 
 
 def _calc_json(directory: str) -> float:
-    summary = summarize_kineto_kernel_breakdown(directory)
-    if summary is None:
-        return -1.0
-    total_kernel_dur, breakdown = summary
-    mem_transfer_dur = breakdown.get("memory_transfer", 0.0)
-    if total_kernel_dur <= 0:
-        return -1.0
-    return round((mem_transfer_dur / total_kernel_dur) * 100.0, 4)
+    """
+    JSON/Kineto: per-rank non-overlapped memcpy time over rank kernel span.
 
+    For each rank file:
+      - Collect memcpy kernel intervals and compute (non-memcpy, non-comm) intervals.
+      - Union-merge each set; subtract compute from memcpy union.
+      - Accumulate pure memcpy time and total kernel span.
+    Return summed_pure_memcpy / summed_span * 100.
+    """
+    json_files = select_json_files(directory)
+    if not json_files:
+        return -1.0
+
+    total_pure_memcpy = 0.0
+    total_span = 0.0
+
+    for path in json_files:
+        events = _load_json_events(path)
+        memcpy_ivs = []
+        compute_ivs = []
+        span_start = None
+        span_end = None
+
+        for e in events:
+            if not isinstance(e, dict) or e.get("ph") != "X":
+                continue
+            if e.get("cat") not in ("kernel", "Op", "gpu_op", "device_op", None):
+                continue
+            ts = e.get("ts")
+            dur = e.get("dur")
+            if ts is None or dur is None or float(dur) <= 0:
+                continue
+            ts, dur = float(ts), float(dur)
+            iv = (ts, ts + dur)
+
+            if span_start is None or ts < span_start:
+                span_start = ts
+            if span_end is None or iv[1] > span_end:
+                span_end = iv[1]
+
+            name = e.get("name", "")
+            if _MEMCPY_RE.search(name):
+                memcpy_ivs.append(iv)
+            elif not _COMM_RE.search(name):
+                compute_ivs.append(iv)
+
+        if span_start is None or span_end is None or not memcpy_ivs:
+            continue
+        span = span_end - span_start
+        if span <= 0:
+            continue
+
+        memcpy_merged = _merge_intervals(memcpy_ivs)
+        compute_merged = _merge_intervals(compute_ivs)
+        pure = _subtract_intervals(memcpy_merged, compute_merged)
+        total_pure_memcpy += _sum_intervals(pure)
+        total_span += span
+
+    if total_span <= 0:
+        return -1.0
+    return round((total_pure_memcpy / total_span) * 100.0, 4)
+
+
+# ── TPU path ──────────────────────────────────────────────────────────────────
 
 def _calc_json_tpu(directory: str) -> float:
     """
-    TPU memory-transfer overhead via XLA copy-start.N / copy-done.N event pairs.
+    TPU: non-overlapped DMA time over total step execution time.
 
-    Numerator:   union of DMA transfer intervals from device_offset_ps (picoseconds).
-                 Copies run in parallel, so overlapping intervals are merged before summing
-                 to avoid double-counting concurrent transfers.
-    Denominator: total step execution time from '$core.py:331 step' dur values
-                 (stored in microseconds; converted to ps for the ratio).
+    XLA pipelines DMA with compute aggressively, so raw merged DMA time
+    significantly overstates true overhead.  This function subtracts any DMA
+    time that is concurrent with a leaf device-compute op (fusion, matmul, etc.),
+    leaving only the DMA time during which no compute is executing.
+
+    DMA intervals:     copy-start.N / copy-done.N device_offset_ps pairs (ps).
+    Compute intervals: device ops with device_offset_ps + device_duration_ps,
+                       on TPU device PIDs, excluding jit_* container events
+                       (which span the entire model run) and dependency-wait.
+    Denominator:       total '$core.py:331 step' dur (µs) converted to ps.
     """
     import re
     COPY_START_RE = re.compile(r"copy-start\.([\d]+)")
     COPY_DONE_RE  = re.compile(r"copy-done\.([\d]+)")
+    COPY_ANY_RE   = re.compile(r"copy-(?:start|done)\.")
+    JIT_RE        = re.compile(r"^jit_")
     STEP_EVENT    = "$core.py:331 step"
 
     json_files = select_json_files(directory)
     if not json_files:
         return -1.0
 
-    intervals: list = []   # (start_ps, end_ps) for each completed copy
+    dma_intervals: list = []
+    compute_intervals: list = []
     total_step_us = 0.0
 
     for path in json_files:
         events = _load_json_events(path)
-        pending: dict = {}   # op_id → device_start_ps
+
+        # Identify TPU device PIDs from metadata in this file
+        tpu_pids: set = set()
+        for e in events:
+            if isinstance(e, dict) and e.get("ph") == "M" and e.get("name") == "process_name":
+                if "/device:TPU:" in str((e.get("args") or {}).get("name", "")):
+                    tpu_pids.add(e["pid"])
+
+        pending: dict = {}
 
         for e in events:
             if not isinstance(e, dict) or e.get("ph") != "X":
                 continue
             name = str(e.get("name", ""))
-            args  = e.get("args", {}) or {}
+            args  = e.get("args") or {}
 
-            # Step events — accumulate execution time (dur in µs)
+            # Host-side step timing (no pid filter needed)
             if name == STEP_EVENT:
                 dur = e.get("dur")
                 if dur is not None:
                     total_step_us += float(dur)
                 continue
 
-            # copy-start / copy-done pairs — collect DMA intervals (device ps)
+            if e.get("pid") not in tpu_pids:
+                continue
+
             dev_ps = args.get("device_offset_ps")
-            if dev_ps is None:
-                continue
-            dev_ps = float(dev_ps)
+            dev_dur_ps = args.get("device_duration_ps")
 
-            m = COPY_START_RE.search(name)
-            if m:
-                pending[m.group(1)] = dev_ps
-                continue
+            # DMA: track async copy-start / copy-done pairs via device_offset_ps
+            if dev_ps is not None:
+                m = COPY_START_RE.search(name)
+                if m:
+                    pending[m.group(1)] = float(dev_ps)
+                    continue
+                m = COPY_DONE_RE.search(name)
+                if m and m.group(1) in pending:
+                    t0 = pending.pop(m.group(1))
+                    t1 = float(dev_ps)
+                    if t1 > t0:
+                        dma_intervals.append((t0, t1))
+                    continue
 
-            m = COPY_DONE_RE.search(name)
-            if m and m.group(1) in pending:
-                t0 = pending.pop(m.group(1))
-                if dev_ps > t0:
-                    intervals.append((t0, dev_ps))
+            # Compute: leaf device ops (exclude copy events and jit_* containers)
+            if dev_ps is not None and dev_dur_ps is not None:
+                if COPY_ANY_RE.search(name) or JIT_RE.match(name) or "dependency-wait" in name:
+                    continue
+                dur = float(dev_dur_ps)
+                if dur > 0:
+                    compute_intervals.append((float(dev_ps), float(dev_ps) + dur))
 
-    if total_step_us <= 0 or not intervals:
+    if total_step_us <= 0 or not dma_intervals:
         return -1.0
 
-    # Merge overlapping intervals and sum their durations (union)
-    intervals.sort()
-    merged_ps = 0.0
-    cur_start, cur_end = intervals[0]
-    for s, e in intervals[1:]:
-        if s <= cur_end:
-            cur_end = max(cur_end, e)
-        else:
-            merged_ps += cur_end - cur_start
-            cur_start, cur_end = s, e
-    merged_ps += cur_end - cur_start
+    dma_merged     = _merge_intervals(dma_intervals)
+    compute_merged = _merge_intervals(compute_intervals)
+    pure_dma       = _subtract_intervals(dma_merged, compute_merged)
+    merged_ps      = _sum_intervals(pure_dma)
 
-    # Convert step time to ps and compute ratio
-    total_step_ps = total_step_us * 1e6   # µs × 1e6 ps/µs
+    total_step_ps = total_step_us * 1e6
     return round((merged_ps / total_step_ps) * 100.0, 4)
 
+
+# ── Dispatcher ────────────────────────────────────────────────────────────────
 
 def metric_cal(directory: str) -> float:
     trace_types = get_trace_types(load_yaml(directory))
