@@ -669,7 +669,8 @@
       "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "json"
+        "json",
+        "json_tpu"
       ],
       "thresholds": {
         "high": 200,
@@ -684,7 +685,8 @@
       "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "json"
+        "json",
+        "json_tpu"
       ],
       "thresholds": {
         "high": 200,
