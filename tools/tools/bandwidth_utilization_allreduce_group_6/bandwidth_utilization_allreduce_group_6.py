@@ -1,5 +1,4 @@
 import json
-from collections import defaultdict
 from pathlib import Path
 import pandas as pd
 
@@ -105,54 +104,6 @@ def _get_bandwidth_utilization_from_trace(trace_path: str, bandwidth: float = 60
     return _get_bandwidth_utilization(df, bandwidth=bandwidth)
 
 
-def _extract_allreduce_tpu_events(trace_path: str) -> pd.DataFrame:
-    events = _load_events(trace_path)
-    ar_events = []
-    for e in events:
-        if e.get("ph") == "X" and e.get("args", {}).get("hlo_category") == "all-reduce":
-            ar_events.append(e)
-    if not ar_events:
-        return pd.DataFrame()
-
-    uid_pids: dict = defaultdict(set)
-    for e in ar_events:
-        uid_pids[e["args"].get("all_reduce_unique_id", "")].add(e["pid"])
-    uid_group_size = {uid: len(pids) for uid, pids in uid_pids.items()}
-
-    rows = []
-    for e in ar_events:
-        args = e["args"]
-        uid = args.get("all_reduce_unique_id", "")
-        bytes_str = args.get("bytes_accessed")
-        dur_ps = args.get("device_duration_ps")
-        
-        if bytes_str is None or dur_ps is None:
-            continue
-        
-        nbytes = int(bytes_str)
-        dur_us = float(dur_ps) / 1e6
-        
-        if nbytes <= 0 or dur_us <= 0:
-            continue
-
-        rows.append({
-            "name": e.get("name", ""),
-            "ts": e.get("ts", 0),
-            "dur_us": dur_us,
-            "bytes": nbytes,
-            "group_size": uid_group_size.get(uid, 1),
-        })
-
-    return pd.DataFrame(rows)
-
-
-def _get_bandwidth_utilization_from_trace_tpu(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
-    df = _extract_allreduce_tpu_events(trace_path)
-    if df.empty:
-        return df
-    return _get_bandwidth_utilization(df, bandwidth=bandwidth)
-
-
 def metric_cal(directory: str) -> float:
     """
     Calculate the median allreduce bandwidth (GB/s) from *trace.json files.
@@ -167,32 +118,24 @@ def metric_cal(directory: str) -> float:
         float: The median allreduce bandwidth in GB/s, or float("nan") if no
                allreduce events are found.
     """
+    # Try rank trace files until one parses successfully
     d = Path(directory)
+    trace_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
+    if not trace_files:
+        print(f"No trace JSON found in {directory}")
+        return float("nan")
 
-    if "tpu" in d.name.lower():
-        # TPU: single multi-chip trace file
-        tpu_files = sorted(d.glob("*.json"))
-        for trace_path in tpu_files:
-            try:
-                df = _get_bandwidth_utilization_from_trace_tpu(str(trace_path))
-            except Exception as e:
-                print(f"error parsing {trace_path}: {e}")
-                continue
-            if df.empty:
-                continue
-            return float(df["effective bandwidth(GB/s)"].median())
-    else:
-        # GPU: try rank trace files until one parses successfully
-        gpu_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
-        for trace_path in gpu_files:
-            try:
-                df = _get_bandwidth_utilization_from_trace(str(trace_path))
-            except Exception as e:
-                print(f"error parsing {trace_path}, trying next rank: {e}")
-                continue
-            if df.empty:
-                continue
-            return float(df["effective bandwidth(GB/s)"].median())
+    for trace_path in trace_files:
+        try:
+            df = _get_bandwidth_utilization_from_trace(str(trace_path))
+        except Exception as e:
+            print(f"error parsing {trace_path}, trying next rank: {e}")
+            continue
 
-    print(f"No allreduce events found in {directory}")
+        if df.empty:
+            continue
+
+        return float(df["effective bandwidth(GB/s)"].median())
+
+    print(f"No nccl:all_reduce kernel events found in {directory}")
     return float("nan")

@@ -1,5 +1,4 @@
 import json
-from collections import defaultdict
 from pathlib import Path
 import pandas as pd
 
@@ -105,49 +104,6 @@ def _get_bandwidth_utilization_from_trace(trace_path: str, bandwidth: float = 60
     return _get_bandwidth_utilization(df, bandwidth=bandwidth)
 
 
-def _extract_allgather_tpu_events(trace_path: str) -> pd.DataFrame:
-    events = _load_events(trace_path)
-    ag_events = []
-    for e in events:
-        if e.get("ph") == "X" and e.get("args", {}).get("hlo_category") == "all-gather":
-            ag_events.append(e)
-    if not ag_events:
-        return pd.DataFrame()
-
-    name_pids: dict = defaultdict(set)
-    for e in ag_events:
-        name_pids[e.get("name", "")].add(e["pid"])
-    name_group_size = {name: len(pids) for name, pids in name_pids.items()}
-
-    rows = []
-    for e in ag_events:
-        args = e["args"]
-        bytes_str = args.get("bytes_accessed")
-        dur_ps = args.get("device_duration_ps")
-        if bytes_str is None or dur_ps is None:
-            continue
-        nbytes = int(bytes_str)
-        dur_us = float(dur_ps) / 1e6
-        if nbytes <= 0 or dur_us <= 0:
-            continue
-        rows.append({
-            "name": e.get("name", ""),
-            "ts": e.get("ts", 0),
-            "dur_us": dur_us,
-            "bytes": nbytes,
-            "group_size": name_group_size.get(e.get("name", ""), 1),
-        })
-
-    return pd.DataFrame(rows)
-
-
-def _get_bandwidth_utilization_from_trace_tpu(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
-    df = _extract_allgather_tpu_events(trace_path)
-    if df.empty:
-        return df
-    return _get_bandwidth_utilization(df, bandwidth=bandwidth)
-
-
 def metric_cal(directory: str) -> float:
     """
     Calculate the median allgather bandwidth (GB/s) from *trace.json files.
@@ -162,32 +118,24 @@ def metric_cal(directory: str) -> float:
         float: The median allgather bandwidth in GB/s, or float("nan") if no
                allgather events are found.
     """
+    # Try rank trace files until one parses successfully
     d = Path(directory)
+    trace_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
+    if not trace_files:
+        print(f"No trace JSON found in {directory}")
+        return float("nan")
 
-    if "tpu" in d.name.lower():
-        # TPU: single multi-chip trace file
-        tpu_files = sorted(d.glob("*.json"))
-        for trace_path in tpu_files:
-            try:
-                df = _get_bandwidth_utilization_from_trace_tpu(str(trace_path))
-            except Exception as e:
-                print(f"error parsing {trace_path}: {e}")
-                continue
-            if df.empty:
-                continue
-            return float(df["effective bandwidth(GB/s)"].median())
-    else:
-        # GPU: try rank trace files until one parses successfully
-        gpu_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
-        for trace_path in gpu_files:
-            try:
-                df = _get_bandwidth_utilization_from_trace(str(trace_path))
-            except Exception as e:
-                print(f"error parsing {trace_path}, trying next rank: {e}")
-                continue
-            if df.empty:
-                continue
-            return float(df["effective bandwidth(GB/s)"].median())
+    for trace_path in trace_files:
+        try:
+            df = _get_bandwidth_utilization_from_trace(str(trace_path))
+        except Exception as e:
+            print(f"error parsing {trace_path}, trying next rank: {e}")
+            continue
 
-    print(f"No allgather events found in {directory}")
+        if df.empty:
+            continue
+
+        return float(df["effective bandwidth(GB/s)"].median())
+
+    print(f"No nccl:all_gather kernel events found in {directory}")
     return float("nan")
