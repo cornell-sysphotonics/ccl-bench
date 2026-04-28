@@ -185,10 +185,14 @@ body {
   border-collapse: collapse;
   font-size: 13px;
 }
-#bench-thead {
+#bench-thead { --group-header-height: 26px; }
+#bench-thead th {
   position: sticky;
   top: 0;
   z-index: 10;
+}
+#bench-thead tr:nth-child(2) th {
+  top: var(--group-header-height);
 }
 
 /* Header rows */
@@ -242,11 +246,11 @@ th.th-metric:hover    { background: #1f3a5f; }
 #bench-table tr:nth-child(even) .sticky-col { background: #f8fafc; }
 #bench-table tr:hover .sticky-col { background: var(--accent-dim) !important; }
 #bench-table thead .sticky-col {
-  z-index: 12;
+  z-index: 14;
   background: #1e293b;
 }
 #bench-table thead .th-group-row .sticky-col {
-  z-index: 13;
+  z-index: 15;
   background: #0f172a;
 }
 

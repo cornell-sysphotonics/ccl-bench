@@ -1,0 +1,55 @@
+version: 1
+
+description: >
+  Llama-3.1-8B torchrun training.
+
+hf_url: https://huggingface.co/meta-llama/Meta-Llama-3.1-8B
+trace_url:
+
+workload:
+  model:
+    phase: training
+    moe: false
+    model_family: Llama-3.1-8B
+    granularity: model_fwd
+    precision: bf16
+    num_params: 8030261248
+    num_layers: 32
+    num_heads: 32
+    num_kv_heads: 8
+    head_dim: 128
+  data:
+    batch_size: 32
+    seq_len: 1024
+    dataset: random
+  hardware:
+    network_topo:
+      topology: nvlink_infiniband
+      bandwidth_gbps:
+        - 3200    # intra-node (NVLink)
+        - 400     # inter-node (InfiniBand HDR)
+    xpu_spec:
+      type: GPU
+      model: nvidia_h100
+      total_count: 32
+      count_per_node: 8
+    driver_version: cuda_12.4
+
+Model-executor:
+  framework:
+    name: torchrun
+    version: "2.4.0"
+    run_script: scripts/train_llama8b.sh
+    trace_dir: /tmp/traces/llama-8b/
+  model_plan_parallelization:
+    tp: null
+    dp: null
+    pp: null
+    micro_batch: null
+  compiler_tool_selection: null
+  communication_library:
+    name: NCCL
+
+metric_source:
+  traces:
+    - nsys

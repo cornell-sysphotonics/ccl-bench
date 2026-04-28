@@ -1,0 +1,48 @@
+# CCL-Bench ADRS Tuning Configuration
+#
+# Defines the search space and optimization objective for a tuning run.
+# Kept separate from the workload card so the card stays in standard CCL-Bench format.
+
+# ── Configuration search space ────────────────────────────────────────────────
+# Keys are passed to run_script as uppercase env vars (e.g. tp=4 → TP=4).
+# Add or remove dimensions to match the software stack being tuned.
+config_space:
+  - key: tp
+    type: int
+    description: Tensor parallelism degree
+    choices: [1, 2, 4, 8]
+  - key: dp
+    type: int
+    description: Data parallelism degree
+    choices: [1, 2, 4, 8, 16, 32]
+  - key: pp
+    type: int
+    description: Pipeline parallelism degree
+    choices: [1, 2, 4]
+  - key: micro_batch
+    type: int
+    description: Micro-batch size for pipeline stages
+    choices: [1, 2, 4, 8, 16, 32, 64]
+  - key: compile_mode
+    type: str
+    description: PyTorch compilation mode
+    choices: [eager, inductor, max-autotune]
+  - key: activation_checkpointing
+    type: bool
+    description: Enable gradient checkpointing to reduce peak memory
+    choices: [true, false]
+
+# ── Optimization objective ────────────────────────────────────────────────────
+# Metrics are computed by: python tools/main.py --trace <dir> --metric <name>
+# score = sum(weight_i * metric_i);  direction: minimize | maximize
+optimization_goal:
+  direction: minimize
+  metrics:
+    - name: avg_step_time
+      weight: 1.0
+  # Composite example:
+  # metrics:
+  #   - name: avg_step_time
+  #     weight: 0.7
+  #   - name: communication_fraction
+  #     weight: 0.3
