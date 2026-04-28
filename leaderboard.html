@@ -993,7 +993,31 @@ function closeModal() {
 function onBackdropClick(e) {
   if (e.target === document.getElementById('modal-backdrop')) closeModal();
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function shouldIgnoreArrowScroll() {
+  if (document.getElementById('modal-backdrop').classList.contains('open')) return true;
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+
+function scrollLeaderboardBy(dx, dy) {
+  const scroller = document.getElementById('lb-content');
+  if (!scroller) return;
+  scroller.scrollBy({ left: dx, top: dy, behavior: 'smooth' });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); return; }
+  if (shouldIgnoreArrowScroll()) return;
+
+  const step = 320;
+  if (e.key === 'ArrowLeft')  { scrollLeaderboardBy(-step, 0); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { scrollLeaderboardBy(step, 0);  e.preventDefault(); }
+  if (e.key === 'ArrowUp')    { scrollLeaderboardBy(0, -step); e.preventDefault(); }
+  if (e.key === 'ArrowDown')  { scrollLeaderboardBy(0, step);  e.preventDefault(); }
+});
 </script>
 </body>
 </html>

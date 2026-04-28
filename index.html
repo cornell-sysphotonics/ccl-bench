@@ -174,17 +174,22 @@ body {
 .table-outer {
   flex: 1;
   overflow-x: auto;
+  overflow-y: auto;
   background: var(--surface);
   box-shadow: var(--shadow);
 }
 
 /* ── Table ──────────────────────────────────────────────────────────────── */
-table {
+#bench-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
-thead { position: sticky; top: 0; z-index: 6; }
+#bench-thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
 /* Header rows */
 .th-group-row th {
@@ -221,6 +226,29 @@ th.sorted-desc::after { content: " ↓"; opacity: .75; }
 th.no-sort            { cursor: default; }
 th.th-metric          { background: #1a3050; text-align: center; }
 th.th-metric:hover    { background: #1f3a5f; }
+
+/* Sticky workload columns */
+#bench-table .sticky-col {
+  position: sticky;
+  z-index: 3;
+  background: var(--surface);
+}
+#bench-table .sticky-col-1 { left: 0; }
+#bench-table .sticky-col-2 { left: 32px; }
+#bench-table .sticky-col-3 {
+  left: 64px;
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,.15);
+}
+#bench-table tr:nth-child(even) .sticky-col { background: #f8fafc; }
+#bench-table tr:hover .sticky-col { background: var(--accent-dim) !important; }
+#bench-table thead .sticky-col {
+  z-index: 12;
+  background: #1e293b;
+}
+#bench-table thead .th-group-row .sticky-col {
+  z-index: 13;
+  background: #0f172a;
+}
 
 /* Metric column header info icon */
 .th-info-btn {

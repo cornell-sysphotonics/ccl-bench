@@ -1,83 +1,32 @@
-import json
-from collections import defaultdict
-from pathlib import Path
 import pandas as pd
 
-
-DTYPE_BYTES = {
-    "Float": 4, "Float32": 4,
-    "Double": 8, "Float64": 8,
-    "Half": 2, "Float16": 2,
-    "BFloat16": 2, "BF16": 2,
-    "Int": 4, "Int32": 4,
-    "Int64": 8, "Long": 8,
-    "Int16": 2, "Short": 2,
-    "Int8": 1, "Byte": 1,
-}
-
+from bandwidth_utilization_group_6_common import (
+    DTYPE_BYTES,
+    add_bandwidth_utilization,
+    extract_nccl_collective_events,
+    extract_tpu_collective_events,
+    get_bandwidth_utilization_from_trace,
+    is_nccl_collective_kernel,
+    load_events,
+    metric_cal_for_collective,
+)
 
 
-def _load_events(trace_path: str) -> list:
-    with open(trace_path, "r", encoding="utf-8", errors="replace") as f:
-        data = json.load(f)
-    if isinstance(data, dict) and "traceEvents" in data:
-        return data["traceEvents"]
-    if isinstance(data, list):
-        return data
-    return []
+_load_events = load_events
 
 
 def _is_allgather_kernel(event: dict) -> bool:
     """Check if an event is an nccl:all_gather kernel event."""
-    if event.get("ph") != "X" or event.get("cat") != "kernel":
-        return False
-    name = event.get("name", "")
-    args = event.get("args", {})
-    collective_name = args.get("Collective name", "")
-    if name.startswith("ncclDevKernel_AllGather") or name.startswith("ncclKernel_AllGather"):
-        return True
-    if collective_name in ("all_gather", "allgather"):
-        return True
-    return False
+    return is_nccl_collective_kernel(
+        event,
+        kernel_prefixes=("ncclDevKernel_AllGather", "ncclKernel_AllGather"),
+        collective_names=("all_gather", "allgather"),
+    )
 
 
 def _extract_allgather_events(trace_path: str) -> pd.DataFrame:
     """Extract all gather kernel events from a trace JSON file."""
-    events = _load_events(trace_path)
-    rows = []
-    for e in events:
-        if not _is_allgather_kernel(e):
-            continue
-        args = e.get("args", {})
-        in_nelems = args.get("In msg nelems")
-        dtype = args.get("dtype")
-        group_size = args.get("Group size")
-        dur = e.get("dur")  # microseconds
-
-        if in_nelems is None or dtype is None or group_size is None or dur is None:
-            continue
-        if not isinstance(in_nelems, (int, float)) or in_nelems <= 0:
-            continue
-        if dur <= 0:
-            continue
-
-        elem_bytes = DTYPE_BYTES.get(dtype)
-        if elem_bytes is None:
-            continue
-
-        rows.append({
-            "name": e.get("name", ""),
-            "ts": e.get("ts", 0),
-            "dur_us": dur,
-            "in_nelems": int(in_nelems),
-            "dtype": dtype,
-            "elem_bytes": elem_bytes,
-            "bytes": int(in_nelems) * elem_bytes,
-            "group_size": group_size,
-            "pg_desc": args.get("Process Group Description", ""),
-        })
-
-    return pd.DataFrame(rows)
+    return extract_nccl_collective_events(trace_path, _is_allgather_kernel)
 
 
 def _get_bandwidth_utilization(df: pd.DataFrame, bandwidth: float = 600.0) -> pd.DataFrame:
@@ -87,65 +36,33 @@ def _get_bandwidth_utilization(df: pd.DataFrame, bandwidth: float = 600.0) -> pd
     Effective bandwidth = data_size * algo_factor / duration.
     Utilization = effective_bandwidth / peak_bandwidth.
     """
-    df = df.copy()
-    n = df["group_size"]
-    df["duration_s"] = df["dur_us"] / 1e6
-    # all_gather algo factor: (N-1)/N
-    df["algo_factor"] = (n - 1) / n
-    df["data_size_GB"] = df["bytes"] / (2**30)
-    df["effective bandwidth(GB/s)"] = df["data_size_GB"] * df["algo_factor"] / df["duration_s"]
-    df["bandwidth utilization"] = df["effective bandwidth(GB/s)"] / bandwidth
-    return df
+    return add_bandwidth_utilization(df, algo_factor_multiplier=1, bandwidth=bandwidth)
 
 
 def _get_bandwidth_utilization_from_trace(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
-    df = _extract_allgather_events(trace_path)
-    if df.empty:
-        return df
-    return _get_bandwidth_utilization(df, bandwidth=bandwidth)
+    return get_bandwidth_utilization_from_trace(
+        trace_path,
+        extractor=_extract_allgather_events,
+        algo_factor_multiplier=1,
+        bandwidth=bandwidth,
+    )
 
 
 def _extract_allgather_tpu_events(trace_path: str) -> pd.DataFrame:
-    events = _load_events(trace_path)
-    ag_events = []
-    for e in events:
-        if e.get("ph") == "X" and e.get("args", {}).get("hlo_category") == "all-gather":
-            ag_events.append(e)
-    if not ag_events:
-        return pd.DataFrame()
-
-    name_pids: dict = defaultdict(set)
-    for e in ag_events:
-        name_pids[e.get("name", "")].add(e["pid"])
-    name_group_size = {name: len(pids) for name, pids in name_pids.items()}
-
-    rows = []
-    for e in ag_events:
-        args = e["args"]
-        bytes_str = args.get("bytes_accessed")
-        dur_ps = args.get("device_duration_ps")
-        if bytes_str is None or dur_ps is None:
-            continue
-        nbytes = int(bytes_str)
-        dur_us = float(dur_ps) / 1e6
-        if nbytes <= 0 or dur_us <= 0:
-            continue
-        rows.append({
-            "name": e.get("name", ""),
-            "ts": e.get("ts", 0),
-            "dur_us": dur_us,
-            "bytes": nbytes,
-            "group_size": name_group_size.get(e.get("name", ""), 1),
-        })
-
-    return pd.DataFrame(rows)
+    return extract_tpu_collective_events(
+        trace_path,
+        hlo_category="all-gather",
+        group_key=lambda event: event.get("name", ""),
+    )
 
 
 def _get_bandwidth_utilization_from_trace_tpu(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
-    df = _extract_allgather_tpu_events(trace_path)
-    if df.empty:
-        return df
-    return _get_bandwidth_utilization(df, bandwidth=bandwidth)
+    return get_bandwidth_utilization_from_trace(
+        trace_path,
+        extractor=_extract_allgather_tpu_events,
+        algo_factor_multiplier=1,
+        bandwidth=bandwidth,
+    )
 
 
 def metric_cal(directory: str) -> float:
@@ -162,32 +79,9 @@ def metric_cal(directory: str) -> float:
         float: The median allgather bandwidth in GB/s, or float("nan") if no
                allgather events are found.
     """
-    d = Path(directory)
-
-    if "tpu" in d.name.lower():
-        # TPU: single multi-chip trace file
-        tpu_files = sorted(d.glob("*.json"))
-        for trace_path in tpu_files:
-            try:
-                df = _get_bandwidth_utilization_from_trace_tpu(str(trace_path))
-            except Exception as e:
-                print(f"error parsing {trace_path}: {e}")
-                continue
-            if df.empty:
-                continue
-            return float(df["effective bandwidth(GB/s)"].median())
-    else:
-        # GPU: try rank trace files until one parses successfully
-        gpu_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
-        for trace_path in gpu_files:
-            try:
-                df = _get_bandwidth_utilization_from_trace(str(trace_path))
-            except Exception as e:
-                print(f"error parsing {trace_path}, trying next rank: {e}")
-                continue
-            if df.empty:
-                continue
-            return float(df["effective bandwidth(GB/s)"].median())
-
-    print(f"No allgather events found in {directory}")
-    return float("nan")
+    return metric_cal_for_collective(
+        directory,
+        collective_name="allgather",
+        gpu_trace_parser=_get_bandwidth_utilization_from_trace,
+        tpu_trace_parser=_get_bandwidth_utilization_from_trace_tpu,
+    )
