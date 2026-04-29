@@ -1,0 +1,71 @@
+version: 1
+
+description: >
+  llama-3.1-8b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes
+  using TorchTitan. Standard workload: global batch size 32,
+  sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node FSDP workload, indicating fallback.
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: /pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter
+contributor: Kaiwen Guo
+contact: kg597@cornell.edu
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1-8b
+    precision: bf16
+    epochs: 1
+    iteration: 6
+    model_arch:
+      num_params: 8030261248
+      num_params_embedding: 1050673152
+      num_layers: 32
+      num_heads: 32
+      head_dim: 128
+  data:
+    batch_size: 32
+    seq_len: 1024
+    dataset: c4_test
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 8
+      count_per_node: 4
+    driver_version: cuda_12.8
+
+Model-executor:
+  framework:
+    name: torchtitan
+    compiler_tool_selection: pytorch-2.12.0.dev20260408+cu128, triton
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 8
+    tp: 1
+    pp: 1
+    cp: 1
+    ep: 1
+    pp_mb: 1
+  communication_library:
+    name: MSCCL++ audit shim
+    version: 0.9.0
+    env:
+      NCCL_DEBUG: INFO
+      NCCL_SOCKET_IFNAME: hsn
+  protocol_selection:
+    - tcp
+    - p2p
+
+metric_source:
+  traces:
+    - json
+  metrics_specific_trace:
+    -

@@ -1,0 +1,71 @@
+version: 1
+
+description: >
+  deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes
+  using TorchTitan. Standard workload: global batch size 8,
+  sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment.
+
+hf_url: https://huggingface.co/deepseek-ai/deepseek-moe-16b-base
+trace_url: /pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter
+contributor: Kaiwen Guo
+contact: kg597@cornell.edu
+
+workload:
+  model:
+    phase: training
+    moe: true
+    granularity: model_fwd_bwd_pass
+    model_family: deepseek-v3-16b
+    precision: bf16
+    epochs: 1
+    iteration: 6
+    model_arch:
+      num_params: 16380544000
+      num_params_embedding: 204800000
+      num_layers: 28
+      num_heads: 16
+      head_dim: 128
+  data:
+    batch_size: 8
+    seq_len: 1024
+    dataset: c4_test
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 8
+      count_per_node: 4
+    driver_version: cuda_12.8
+
+Model-executor:
+  framework:
+    name: torchtitan
+    compiler_tool_selection: pytorch-2.12.0.dev20260408+cu128, triton
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 4
+    tp: 2
+    pp: 1
+    cp: 1
+    ep: 4
+    pp_mb: 1
+  communication_library:
+    name: NCCL
+    version: 2.29.7
+    env:
+      NCCL_DEBUG: INFO
+      NCCL_SOCKET_IFNAME: hsn
+  protocol_selection:
+    - tcp
+    - p2p
+
+metric_source:
+  traces:
+    - json
+  metrics_specific_trace:
+    -
