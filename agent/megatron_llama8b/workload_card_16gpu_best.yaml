@@ -1,0 +1,79 @@
+version: 1
+description: "Llama-3.1-8B Megatron-LM on 16\xD7 A100 (4 nodes \xD7 4 GPUs), Perlmutter"
+workload:
+  model:
+    phase: training
+    model_family: Llama-3.1-8B
+    precision: bf16
+    num_params: 8030261248
+    num_layers: 32
+    num_heads: 32
+    num_kv_heads: 8
+  data:
+    batch_size: 16
+    seq_len: 1024
+    dataset: mock
+  hardware:
+    network_topo:
+      topology: hybrid
+      bandwidth_gbps:
+      - 600
+      - 25
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      memory_gb: 40
+      total_count: 16
+      count_per_node: 4
+      num_nodes: 4
+Model-executor:
+  framework:
+    name: megatron-lm
+    version: core-0.9
+    run_script: /global/homes/b/byungsoo/cclbench-agent/ccl-bench/agent/megatron_llama8b/scripts/run.sh
+    trace_dir: /pscratch/sd/b/byungsoo/ccl-bench-traces/megatron_llama8b_16gpu/
+metric_source:
+  traces:
+  - json
+runs:
+- config:
+    tp: 4
+    dp: 1
+    pp: 4
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 0.46041229759375
+  score: 0.46041229759375
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/b/byungsoo/ccl-bench-traces/megatron_llama8b_16gpu/
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Best config so far: tp=4, pp=4, dp=1, mbs=1, ac=False \u2192 0.4713\n\
+    \    \n    Key findings:\n    - dp>1 is terrible (inter-node allreduce bottleneck\
+    \ with 25 Gbps)\n    - mbs=1 > mbs=2 (more microbatches = less pipeline bubble)\n\
+    \    - tp=4 intra-node, pp=4 across nodes is optimal parallelism\n    \n    Now\
+    \ testing: activation_checkpointing=True with the best parallelism config.\n \
+    \   This trades compute (recomputation) for memory savings. On A100 80GB with\n\
+    \    Llama-8B, memory probably isn't the bottleneck, so this might hurt.\n   \
+    \ But we need to explore to be sure.\n    \"\"\"\n    total_gpus = environment.get(\"\
+    total_gpus\", 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \n    # Build config space lookup for validation\n    config_space = workload.get(\"\
+    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
+    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n\n    # Best parallelism\
+    \ strategy: TP intra-node, PP across nodes, no DP\n    tp = min(gpus_per_node,\
+    \ 4)\n    pp = total_gpus // tp  # 16 / 4 = 4\n    dp = 1\n    micro_batch_size\
+    \ = 1  # More microbatches = less pipeline bubble\n    activation_checkpointing\
+    \ = True  # Test if this helps or hurts\n\n    # Validate choices\n    if \"tp\"\
+    \ in valid_choices and tp not in valid_choices[\"tp\"]:\n        tp = min(valid_choices[\"\
+    tp\"], key=lambda x: abs(x - tp))\n    if \"pp\" in valid_choices and pp not in\
+    \ valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"pp\"], key=lambda x:\
+    \ abs(x - pp))\n    if \"dp\" in valid_choices and dp not in valid_choices[\"\
+    dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x: abs(x - dp))\n \
+    \   if \"micro_batch_size\" in valid_choices and micro_batch_size not in valid_choices[\"\
+    micro_batch_size\"]:\n        micro_batch_size = min(valid_choices[\"micro_batch_size\"\
+    ], key=lambda x: abs(x - micro_batch_size))\n\n    # Ensure tp * pp * dp = total_gpus\n\
+    \    if tp * pp * dp != total_gpus:\n        tp, pp, dp = 4, 4, 1\n\n    return\
+    \ {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"\
+    micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n"

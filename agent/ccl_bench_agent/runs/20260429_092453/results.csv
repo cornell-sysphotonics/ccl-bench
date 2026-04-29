@@ -1,0 +1,67 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 8.6966708063125}",8.6966708063125,success,,8.6966708063125,
+1,1,"{""tp"": 2, ""pp"": 1, ""dp"": 8, ""micro_batch_size"": 2, ""activation_checkpointing"": true}",{},inf,error,"exit 143: me      : 2026-04-29_09:29:28
+  host      : nid002860-hsn0
+  rank      : 13 (local_rank: 1)
+  exitcode  : 1 (pid: 863779)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid002857: task 2: Exited with exit code 1
+[2026-04-29T16:29:29.054] error: *** STEP 52220299.4 ON nid002853 CANCELLED AT 2026-04-29T16:29:29 DUE TO TASK FAILURE ***
+srun: error: nid002860: task 3: Terminated
+srun: error: nid002853: task 0: Terminated
+srun: Force Terminated StepId=52220299.4
+",8.6966708063125,28.0
+2,2,"{""tp"": 4, ""pp"": 1, ""dp"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": false}",{},inf,error,"exit 143: : nid002856-hsn0
+  rank      : 5 (local_rank: 1)
+  exitcode  : -11 (pid: 327027)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 327027
+========================================================
+srun: error: nid002860: task 3: Exited with exit code 1
+srun: Terminating StepId=52220299.5
+[2026-04-29T16:31:40.630] error: *** STEP 52220299.5 ON nid002853 CANCELLED AT 2026-04-29T16:31:40 DUE TO TASK FAILURE ***
+srun: error: nid002853: task 0: Terminated
+srun: error: nid002857: task 2: Terminated
+srun: error: nid002856: task 1: Terminated
+srun: Force Terminated StepId=52220299.5
+",8.6966708063125,27.5
+3,3,"{""tp"": 4, ""pp"": 1, ""dp"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},inf,error,"exit 1: --------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+--------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-29_09:33:56
+  host      : nid002860-hsn0
+  rank      : 14 (local_rank: 2)
+  exitcode  : -11 (pid: 866182)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 866182
+========================================================
+srun: error: nid002853: task 0: Exited with exit code 1
+srun: error: nid002857: task 2: Exited with exit code 1
+srun: error: nid002860: task 3: Exited with exit code 1
+",8.6966708063125,30.0
+4,4,"{""tp"": 2, ""pp"": 2, ""dp"": 4, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 6.52397913471875}",6.52397913471875,success,,6.52397913471875,33.3
+5,5,"{""tp"": 2, ""pp"": 2, ""dp"": 4, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 6.06061319025}",6.06061319025,success,,6.06061319025,32.5
+6,6,"{""tp"": 1, ""pp"": 2, ""dp"": 8, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},inf,error,"exit 143: al_rank: 3)
+  exitcode  : 1 (pid: 1189669)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid002857: task 2: Exited with exit code 1
+srun: Terminating StepId=52220299.9
+[2026-04-29T16:42:17.249] error: *** STEP 52220299.9 ON nid002853 CANCELLED AT 2026-04-29T16:42:17 DUE TO TASK FAILURE ***
+srun: error: nid002853: task 0: Terminated
+srun: error: nid002860: task 3: Terminated
+srun: error: nid002856: task 1: Terminated
+srun: Force Terminated StepId=52220299.9
+",6.06061319025,36.5
+7,7,"{""tp"": 4, ""pp"": 2, ""dp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 3.4089931808125}",3.4089931808125,success,,3.4089931808125,31.1
+8,8,"{""tp"": 4, ""pp"": 4, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.4747247824375}",0.4747247824375,success,,0.4747247824375,26.5
+9,9,"{""tp"": 2, ""pp"": 4, ""dp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}",{},inf,error,"exit 1: srun: error: Unable to create step for job 52220299: Job/step already completing or completed
+",0.4747247824375,27.0
+10,10,"{""tp"": 8, ""pp"": 2, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}",{},inf,error,"exit 1: srun: error: Unable to create step for job 52220299: Job/step already completing or completed
+",0.4747247824375,32.6
