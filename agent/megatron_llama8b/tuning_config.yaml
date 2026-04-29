@@ -1,0 +1,36 @@
+config_space:
+  - key: tp
+    type: int
+    description: Tensor parallelism degree (splits each layer across GPUs)
+    choices: [1, 2, 4, 8]
+
+  - key: pp
+    type: int
+    description: Pipeline parallelism degree (splits layers across stages)
+    choices: [1, 2, 4]
+
+  - key: dp
+    type: int
+    description: Data parallelism degree (computed as total_gpus / tp / pp)
+    choices: [1, 2, 4, 8]
+
+  - key: micro_batch_size
+    type: int
+    description: Micro-batch size per data-parallel rank
+    choices: [1, 2, 4]
+
+  - key: activation_checkpointing
+    type: bool
+    description: Recompute activations to save memory
+    choices: [true, false]
+
+# Constraints the LLM should respect:
+#   tp * dp * pp == 8  (total GPUs)
+#   tp <= 4            (max GPUs per node, to keep TP intra-node)
+#   global_batch_size = dp * micro_batch_size (must be > 0)
+
+optimization_goal:
+  direction: minimize
+  metrics:
+    - name: avg_step_time
+      weight: 1.0

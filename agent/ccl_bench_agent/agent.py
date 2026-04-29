@@ -23,7 +23,6 @@ Usage:
 import argparse
 import importlib.util
 import json
-import shutil
 import sys
 import time
 from datetime import datetime
@@ -154,27 +153,23 @@ def load_gc(path: Path):
 
 # ── Scoring helpers ────────────────────────────────────────────────────────────
 
-def _sentinel(direction: str) -> float:
-    return float("inf") if direction == "minimize" else float("-inf")
+def _eval_score(history: list[dict], direction: str) -> tuple[float, float]:
+    """(success_rate, best_score) where best_score follows the optimization direction."""
+    ok = [r for r in history if r.get("status") == "success"]
+    sr = len(ok) / len(history) if history else 0.0
+    if not ok:
+        sentinel = float("inf") if direction == "minimize" else float("-inf")
+        return (sr, sentinel)
+    scores = [r["score"] for r in ok]
+    bs = min(scores) if direction == "minimize" else max(scores)
+    return (sr, bs)
 
 
-def _is_better(new: float, old: float, direction: str) -> bool:
-    return new < old if direction == "minimize" else new > old
-
-
-def _save_traces(record: dict, iteration: int) -> None:
-    """Copy traces from the current run into RUN_DIR/traces/{timestamp}_iter{N}."""
-    src = record.get("trace_dir")
-    if not src:
-        return
-    src_path = Path(src)
-    if not src_path.is_dir():
-        return
-    dest = RUN_DIR / "traces" / f"{_TIMESTAMP}_iter{iteration}"
-    if dest.exists():
-        shutil.rmtree(dest)
-    shutil.copytree(src_path, dest)
-    print(f"    [traces] saved → {dest}")
+def _is_better(new: tuple[float, float], old: tuple[float, float], direction: str) -> bool:
+    sr_n, bs_n = new
+    sr_o, bs_o = old
+    # Compare metric scores directly, ignoring success rate
+    return bs_n < bs_o if direction == "minimize" else bs_n > bs_o
 
 
 # ── Single-iteration runner ────────────────────────────────────────────────────
@@ -291,18 +286,16 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
     print("\n[eval] Seed generate_config...")
     seed_record = run_once(current_path, workload, environment, tuning)
     update_history(history, seed_record, card, card_path)          # step 5
-    _save_traces(seed_record, 0)
 
-    best_score = (seed_record["score"]
-                  if seed_record["status"] == "success"
-                  else _sentinel(direction))
+    best_score = _eval_score(history, direction)
     best_path  = current_path
     no_improve = 0
 
     _init_csv()
-    _log_csv(0, 0, seed_record, best_score)
+    _log_csv(0, 0, seed_record, best_score[1])
 
-    print(f"\n[agent] Seed: status={seed_record['status']}, score={best_score:.4g}")
+    _, ms = best_score
+    print(f"\n[agent] Seed: status={seed_record['status']}, score={ms:.4g}")
     print(f"[agent] Loop: max={max_iterations}, patience={patience}\n")
 
     # ── Main loop ──────────────────────────────────────────────────────────
@@ -339,23 +332,22 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
 
         # step 5 — update history
         update_history(history, record, card, card_path)
-        _save_traces(record, iteration)
 
-        score    = record.get("score", _sentinel(direction))
-        improved = (record["status"] == "success"
-                    and _is_better(score, best_score, direction))
+        cur_score = _eval_score(history, direction)
+        improved  = _is_better(cur_score, best_score, direction)
         if improved:
-            best_score = score
+            best_score = cur_score
             best_path  = gc_path
             no_improve = 0
         else:
             no_improve += 1
 
-        _log_csv(iteration, version, record, best_score, search_time_s)
+        _log_csv(iteration, version, record, best_score[1], search_time_s)
         current_code = code
 
         tag = "IMPROVED" if improved else "no improvement"
-        print(f"    {tag} — best score={best_score:.4g}")
+        _, b_ms = best_score
+        print(f"    {tag} — best score={b_ms:.4g}")
 
         if no_improve >= patience:
             print(f"\n[agent] Early stop: {patience} non-improving iterations.")
