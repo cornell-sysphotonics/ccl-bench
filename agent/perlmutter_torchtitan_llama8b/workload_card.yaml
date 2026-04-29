@@ -1,0 +1,565 @@
+version: 1
+description: 'Llama-3.1-8B training on Perlmutter (16× A100 SXM5 40GB, 4 nodes) using
+  torchtitan with 3D parallelism (TP/DP/PP). Batch size 32, sequence length 1024,
+  BF16 mixed precision.
+
+  '
+hf_url: https://huggingface.co/meta-llama/Meta-Llama-3.1-8B
+trace_url: null
+workload:
+  model:
+    phase: training
+    moe: false
+    model_family: Llama-3.1-8B
+    granularity: model_fwd
+    precision: bf16
+    num_params: 8030261248
+    num_layers: 32
+    num_heads: 32
+    num_kv_heads: 8
+    head_dim: 128
+  data:
+    batch_size: 32
+    seq_len: 1024
+    dataset: random
+  hardware:
+    network_topo:
+      topology: nvlink_slingshot
+      bandwidth_gbps:
+      - 2400
+      - 200
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      memory_gb: 40
+      total_count: 16
+      count_per_node: 4
+    driver_version: cuda_12.4
+Model-executor:
+  framework:
+    name: torchrun
+    version: 2.4.0
+    run_script: /pscratch/sd/e/ericding/ccl-bench/agent/perlmutter_torchtitan_llama8b/scripts/train_llama8b.sh
+    trace_dir: /tmp/ccl_bench_traces/perlmutter_llama8b/
+  model_plan_parallelization:
+    tp: null
+    dp: null
+    pp: null
+    micro_batch: null
+  compiler_tool_selection: null
+  communication_library:
+    name: NCCL
+metric_source:
+  traces:
+  - json
+runs:
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 8
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics: {}
+  score: .inf
+  status: error
+  error_msg: "exit 1: evice)\n      ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^\n    File \"\
+    /global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/cuda/__init__.py\"\
+    , line 424, in _lazy_init\n      torch._C._cuda_init()\n      ~~~~~~~~~~~~~~~~~~~^^\n\
+    \  RuntimeError: No CUDA GPUs are available\n  \n============================================================\n\
+    srun: error: nid001217: task 3: Exited with exit code 1\nsrun: Terminating StepId=52199114.0\n\
+    srun: error: nid001216: task 2: Exited with exit code 1\nsrun: error: nid001213:\
+    \ task 1: Exited with exit code 1\nsrun: error: nid001212: task 0: Exited with\
+    \ exit code 1\n"
+  trace_dir: null
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 4,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline: fill one\
+    \ node with TP (low-latency intra-node),\n    # scale data parallelism across\
+    \ nodes.\n    tp = min(gpus_per_node, 8)\n    dp = max(1, total_gpus // tp)\n\
+    \    pp = 1\n    micro_batch = max(1, batch_size // dp)\n\n    return {\n    \
+    \    \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": \"eager\",\n        \"activation_checkpointing\"\
+    : False,\n    }\n"
+- config: {}
+  metrics: {}
+  score: .inf
+  status: error
+  error_msg: 'generate_config raised: ''name'''
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 4)\n    batch_size = workload.get(\"batch_size\", 1)\n\n    #\
+    \ Build valid choices lookup from config_space\n    config_space = workload.get(\"\
+    config_space\", [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"\
+    name\"]] = dim[\"choices\"]\n\n    # Strategy: keep tp within a node, use dp across\
+    \ nodes, pp=1 if possible\n    # tp * dp * pp must equal total_gpus\n    \n  \
+    \  # Try tp=2 (moderate intra-node parallelism), rest as dp\n    # For 16 GPUs\
+    \ with 4 per node: tp=2, dp=8, pp=1\n    tp = 2\n    dp = total_gpus // tp  #\
+    \ 8\n    pp = 1\n    \n    # Validate tp*dp*pp == total_gpus\n    if tp * dp *\
+    \ pp != total_gpus:\n        # Fallback\n        tp = 1\n        dp = total_gpus\n\
+    \        pp = 1\n\n    # Ensure values are in valid choices\n    if \"tp\" in\
+    \ valid and tp not in valid[\"tp\"]:\n        tp = min(valid[\"tp\"], key=lambda\
+    \ x: abs(x - tp))\n    if \"dp\" in valid and dp not in valid[\"dp\"]:\n     \
+    \   dp = min(valid[\"dp\"], key=lambda x: abs(x - dp))\n    if \"pp\" in valid\
+    \ and pp not in valid[\"pp\"]:\n        pp = min(valid[\"pp\"], key=lambda x:\
+    \ abs(x - pp))\n\n    # Recalculate if product doesn't match\n    if tp * dp *\
+    \ pp != total_gpus:\n        # Try all valid combos\n        best = None\n   \
+    \     for t in valid.get(\"tp\", [1]):\n            for d in valid.get(\"dp\"\
+    , [1]):\n                for p in valid.get(\"pp\", [1]):\n                  \
+    \  if t * d * p == total_gpus:\n                        # Prefer higher dp, lower\
+    \ pp\n                        score = d * 100 - p * 10 - t\n                 \
+    \       if best is None or score > best[0]:\n                            best\
+    \ = (score, t, d, p)\n        if best:\n            _, tp, dp, pp = best\n\n \
+    \   # micro_batch: must divide local_batch_size = batch_size // dp\n    local_batch\
+    \ = max(1, batch_size // dp)\n    \n    # Pick largest valid micro_batch that\
+    \ divides local_batch\n    mb_choices = valid.get(\"micro_batch\", [1, 2, 4, 8])\n\
+    \    valid_mbs = [m for m in mb_choices if local_batch % m == 0 and m <= local_batch]\n\
+    \    if not valid_mbs:\n        valid_mbs = [min(mb_choices)]\n    micro_batch\
+    \ = max(valid_mbs)\n\n    # Use activation checkpointing to be safe on memory\
+    \ with A100 40GB\n    activation_checkpointing = True\n\n    # Use inductor for\
+    \ potential speedup\n    compile_mode = \"inductor\"\n\n    return {\n       \
+    \ \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 8
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 9.024279473916666
+  score: 9.024279473916666
+  status: success
+  error_msg: null
+  trace_dir: /tmp/ccl_bench_traces/perlmutter_llama8b/
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 4,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline: fill one\
+    \ node with TP (low-latency intra-node),\n    # scale data parallelism across\
+    \ nodes.\n    tp = min(gpus_per_node, 8)\n    dp = max(1, total_gpus // tp)\n\
+    \    pp = 1\n    micro_batch = max(1, batch_size // dp)\n\n    return {\n    \
+    \    \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": \"eager\",\n        \"activation_checkpointing\"\
+    : False,\n    }\n"
+- config: {}
+  metrics: {}
+  score: .inf
+  status: error
+  error_msg: 'generate_config raised: ''name'''
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"\
+    gpu_memory_gb\", 40)\n    batch_size    = workload.get(\"batch_size\", 1)\n  \
+    \  seq_len       = workload.get(\"seq_len\", 1024)\n    precision     = workload.get(\"\
+    precision\", \"bf16\")\n    \n    # Build lookup of valid choices for each dimension\n\
+    \    config_space = workload.get(\"config_space\", [])\n    valid = {}\n    for\
+    \ dim in config_space:\n        valid[dim[\"name\"]] = dim[\"choices\"]\n    \n\
+    \    # For Llama-3.1-8B on A100 40GB with bf16:\n    # Model params ~8B, ~16GB\
+    \ in bf16 for parameters alone\n    # With tp=2, each GPU holds ~8GB of params,\
+    \ leaving ~32GB for activations/optimizer\n    # With FSDP (dp=8), optimizer states\
+    \ are sharded across 8 GPUs\n    \n    # Strategy: minimize TP (communication\
+    \ heavy) while fitting in memory\n    # Maximize DP for better throughput scaling\n\
+    \    # Use inductor compilation for kernel fusion speedups\n    \n    # Determine\
+    \ model size category\n    model_family = workload.get(\"model_family\", \"\"\
+    ).lower()\n    \n    # Estimate model size in GB (bf16)\n    bytes_per_param =\
+    \ 2 if \"bf16\" in precision or \"fp16\" in precision else 4\n    \n    # For\
+    \ 8B model: ~16GB in bf16\n    # With optimizer (Adam): ~4x params for master\
+    \ weights + momentum + variance\n    # FSDP shards optimizer states across dp\
+    \ ranks\n    \n    # Try tp=2 to reduce intra-node comm while still fitting in\
+    \ memory\n    tp = 2\n    dp = total_gpus // tp  # 16 // 2 = 8\n    pp = 1\n \
+    \   \n    # Ensure tp * dp * pp = total_gpus\n    assert tp * dp * pp == total_gpus,\
+    \ f\"tp*dp*pp={tp*dp*pp} != total_gpus={total_gpus}\"\n    \n    # local batch\
+    \ = batch_size / dp = 32 / 8 = 4\n    local_batch = batch_size // dp\n    \n \
+    \   # micro_batch should divide local_batch; use largest valid micro_batch <=\
+    \ local_batch\n    micro_batch = local_batch  # 4\n    \n    # Validate against\
+    \ config space\n    if \"tp\" in valid and tp not in valid[\"tp\"]:\n        tp\
+    \ = min(valid[\"tp\"], key=lambda x: abs(x - tp))\n    if \"dp\" in valid and\
+    \ dp not in valid[\"dp\"]:\n        dp = min(valid[\"dp\"], key=lambda x: abs(x\
+    \ - dp))\n    if \"micro_batch\" in valid and micro_batch not in valid[\"micro_batch\"\
+    ]:\n        # Pick largest valid choice <= local_batch\n        candidates = [c\
+    \ for c in valid[\"micro_batch\"] if c <= local_batch]\n        micro_batch =\
+    \ max(candidates) if candidates else min(valid[\"micro_batch\"])\n    \n    return\
+    \ {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"\
+    micro_batch\": micro_batch,\n        \"compile_mode\": \"inductor\",\n       \
+    \ \"activation_checkpointing\": True,\n    }\n"
+- config:
+    tp: 2
+    dp: 8
+    pp: 1
+    micro_batch: 4
+    compile_mode: inductor
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 10.38500178575
+  score: 10.38500178575
+  status: success
+  error_msg: null
+  trace_dir: /tmp/ccl_bench_traces/perlmutter_llama8b/
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"\
+    gpu_memory_gb\", 40)\n    batch_size    = workload.get(\"batch_size\", 1)\n  \
+    \  seq_len       = workload.get(\"seq_len\", 1024)\n    precision     = workload.get(\"\
+    precision\", \"bf16\")\n    \n    # Build lookup of valid choices for each dimension\
+    \ - handle various key formats\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        # Try different possible\
+    \ key names\n        if isinstance(dim, dict):\n            dim_name = dim.get(\"\
+    name\") or dim.get(\"key\") or dim.get(\"dimension\") or dim.get(\"param\") or\
+    \ \"\"\n            dim_choices = dim.get(\"choices\") or dim.get(\"values\")\
+    \ or dim.get(\"options\") or []\n            if dim_name:\n                valid[dim_name]\
+    \ = dim_choices\n    \n    # Model analysis for Llama-3.1-8B:\n    # ~8B params,\
+    \ ~16GB in bf16\n    # Adam optimizer states: ~48GB total (params + grads + 2\
+    \ momentum states in fp32)\n    # FSDP with dp=8 shards this to ~6GB per GPU\n\
+    \    # TP=2 splits model across 2 GPUs -> ~8GB params per GPU\n    # Combined\
+    \ with FSDP: very comfortable memory fit on 40GB A100\n    \n    # Strategy: minimize\
+    \ TP to reduce all-reduce communication overhead\n    # TP=2 within node (fast\
+    \ NVLink), DP=8 across nodes (FSDP handles grad sync)\n    # No PP to avoid pipeline\
+    \ bubble overhead\n    \n    # Default strategy based on model size and GPU count\n\
+    \    model_family = workload.get(\"model_family\", \"\").lower()\n    \n    #\
+    \ For 8B class models on 40GB GPUs:\n    # TP=2 is sufficient to fit in memory\
+    \ with FSDP\n    tp = 2\n    pp = 1\n    dp = total_gpus // (tp * pp)  # 16 //\
+    \ 2 = 8\n    \n    # Ensure product equals total_gpus\n    if tp * dp * pp !=\
+    \ total_gpus:\n        # Fallback: use tp=4, dp=4\n        tp = min(4, gpus_per_node)\n\
+    \        dp = total_gpus // tp\n        pp = 1\n    \n    # local batch = batch_size\
+    \ / dp\n    local_batch = batch_size // dp if dp > 0 else batch_size\n    \n \
+    \   # micro_batch: use the largest valid value that divides local_batch\n    micro_batch\
+    \ = local_batch\n    \n    # Validate all parameters against config space\n  \
+    \  def pick_valid(name, desired, fallback=None):\n        if name not in valid\
+    \ or not valid[name]:\n            return desired\n        choices = valid[name]\n\
+    \        if desired in choices:\n            return desired\n        # Pick closest\
+    \ valid choice\n        return min(choices, key=lambda x: abs(x - desired) if\
+    \ isinstance(x, (int, float)) else 0)\n    \n    def pick_valid_dividing(name,\
+    \ desired, must_divide=None):\n        \"\"\"Pick largest valid choice <= desired\
+    \ that divides must_divide.\"\"\"\n        if name not in valid or not valid[name]:\n\
+    \            return desired\n        choices = valid[name]\n        if must_divide\
+    \ is not None:\n            # Filter to choices that divide must_divide\n    \
+    \        dividing = [c for c in choices if isinstance(c, int) and must_divide\
+    \ % c == 0]\n            if dividing:\n                # Pick largest <= desired\n\
+    \                good = [c for c in dividing if c <= desired]\n              \
+    \  if good:\n                    return max(good)\n                return min(dividing)\n\
+    \        # Fallback: pick closest\n        if desired in choices:\n          \
+    \  return desired\n        return min(choices, key=lambda x: abs(x - desired)\
+    \ if isinstance(x, (int, float)) else 0)\n    \n    tp = pick_valid(\"tp\", tp)\n\
+    \    dp = pick_valid(\"dp\", dp)\n    pp = pick_valid(\"pp\", pp)\n    \n    #\
+    \ Recompute local_batch after validation\n    local_batch = batch_size // dp if\
+    \ dp > 0 else batch_size\n    micro_batch = pick_valid_dividing(\"micro_batch\"\
+    , local_batch, local_batch)\n    \n    # Use inductor for kernel fusion speedups\n\
+    \    compile_mode = \"inductor\"\n    if \"compile_mode\" in valid and compile_mode\
+    \ not in valid[\"compile_mode\"]:\n        compile_mode = valid[\"compile_mode\"\
+    ][0] if valid[\"compile_mode\"] else \"eager\"\n    \n    # No activation checkpointing\
+    \ - avoids recomputation overhead when memory allows\n    # With tp=2 and dp=8,\
+    \ memory should be comfortable for 8B model\n    activation_checkpointing = False\n\
+    \    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"micro_batch\": micro_batch,\n        \"compile_mode\": compile_mode,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 8
+    compile_mode: inductor
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 9.08792390225
+  score: 9.08792390225
+  status: success
+  error_msg: null
+  trace_dir: /tmp/ccl_bench_traces/perlmutter_llama8b/
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"\
+    gpu_memory_gb\", 40)\n    intra_bw      = environment.get(\"intra_node_bandwidth_gbps\"\
+    , 300)\n    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n    seq_len       = workload.get(\"\
+    seq_len\", 1024)\n    precision     = workload.get(\"precision\", \"bf16\")\n\
+    \    model_family  = workload.get(\"model_family\", \"\").lower()\n    \n    #\
+    \ Build lookup of valid choices for each dimension - handle various key formats\n\
+    \    config_space = workload.get(\"config_space\", [])\n    valid = {}\n    for\
+    \ dim in config_space:\n        if isinstance(dim, dict):\n            # Try multiple\
+    \ possible key names for the dimension name\n            dim_name = None\n   \
+    \         for key in [\"name\", \"key\", \"dimension\", \"param\", \"parameter\"\
+    ]:\n                if key in dim:\n                    dim_name = dim[key]\n\
+    \                    break\n            if dim_name is None:\n               \
+    \ continue\n            # Try multiple possible key names for choices\n      \
+    \      dim_choices = None\n            for key in [\"choices\", \"values\", \"\
+    options\", \"range\"]:\n                if key in dim:\n                    dim_choices\
+    \ = dim[key]\n                    break\n            if dim_choices is None:\n\
+    \                dim_choices = []\n            valid[dim_name] = dim_choices\n\
+    \    \n    # Helper: pick valid choice closest to desired\n    def pick_valid(name,\
+    \ desired):\n        if name not in valid or not valid[name]:\n            return\
+    \ desired\n        choices = valid[name]\n        if desired in choices:\n   \
+    \         return desired\n        return min(choices, key=lambda x: abs(x - desired)\
+    \ if isinstance(x, (int, float)) else 0)\n    \n    def pick_valid_dividing(name,\
+    \ desired, must_divide):\n        \"\"\"Pick largest valid choice <= desired that\
+    \ divides must_divide.\"\"\"\n        if name not in valid or not valid[name]:\n\
+    \            return desired\n        choices = valid[name]\n        # Filter to\
+    \ choices that divide must_divide\n        dividing = [c for c in choices if isinstance(c,\
+    \ int) and must_divide % c == 0]\n        if dividing:\n            # Pick largest\
+    \ <= desired, or largest overall\n            good = [c for c in dividing if c\
+    \ <= desired]\n            if good:\n                return max(good)\n      \
+    \      return min(dividing)\n        # Fallback: closest to desired\n        if\
+    \ desired in choices:\n            return desired\n        return min(choices,\
+    \ key=lambda x: abs(x - desired) if isinstance(x, (int, float)) else 0)\n    \n\
+    \    # Core strategy:\n    # 1. Minimize inter-node communication by keeping DP\
+    \ within/across nodes efficiently\n    # 2. Use TP within nodes (fast NVLink)\n\
+    \    # 3. Avoid PP (pipeline bubble overhead) unless necessary for memory\n  \
+    \  \n    num_nodes = total_gpus // gpus_per_node if gpus_per_node > 0 else 1\n\
+    \    \n    # Communication cost analysis:\n    # - TP uses allreduce within TP\
+    \ group (best on NVLink within node)\n    # - DP uses allreduce for gradients\
+    \ (spans across nodes with FSDP)\n    # - Larger TP = more intra-node comm but\
+    \ less inter-node comm\n    # - Larger DP = more inter-node comm\n    \n    #\
+    \ When inter-node BW is much lower than intra-node BW, prefer larger TP within\
+    \ node\n    bw_ratio = intra_bw / max(inter_bw, 1)\n    \n    if bw_ratio > 5:\n\
+    \        # High intra/inter ratio: use full node for TP, minimize cross-node DP\n\
+    \        tp = gpus_per_node  # 4 in this case\n    elif bw_ratio > 2:\n      \
+    \  tp = max(2, gpus_per_node // 2)\n    else:\n        tp = 2\n    \n    tp =\
+    \ pick_valid(\"tp\", tp)\n    \n    # No pipeline parallelism by default\n   \
+    \ pp = 1\n    pp = pick_valid(\"pp\", pp)\n    \n    # DP fills remaining\n  \
+    \  dp = total_gpus // (tp * pp)\n    dp = pick_valid(\"dp\", dp)\n    \n    #\
+    \ Ensure tp * dp * pp = total_gpus; adjust if needed\n    while tp * dp * pp !=\
+    \ total_gpus:\n        # Try reducing dp\n        if tp * dp * pp > total_gpus\
+    \ and dp > 1:\n            dp = pick_valid(\"dp\", dp - 1)\n        elif tp *\
+    \ dp * pp < total_gpus:\n            # Try increasing dp\n            dp = pick_valid(\"\
+    dp\", dp + 1)\n        else:\n            break\n        # Safety: if we can't\
+    \ match, try different tp\n        if tp * dp * pp != total_gpus:\n          \
+    \  # Fallback: try tp=2\n            tp = pick_valid(\"tp\", 2)\n            dp\
+    \ = total_gpus // (tp * pp)\n            dp = pick_valid(\"dp\", dp)\n       \
+    \     if tp * dp * pp != total_gpus:\n                tp = pick_valid(\"tp\",\
+    \ 1)\n                dp = total_gpus // pp\n                dp = pick_valid(\"\
+    dp\", dp)\n            break\n    \n    # local batch = batch_size / dp\n    local_batch\
+    \ = batch_size // dp if dp > 0 else batch_size\n    \n    # micro_batch: with\
+    \ pp=1, use full local_batch to avoid unnecessary accumulation steps\n    micro_batch\
+    \ = pick_valid_dividing(\"micro_batch\", local_batch, local_batch)\n    \n   \
+    \ # Compile mode: try inductor for kernel fusion\n    # From history: tp=4/dp=4/eager\
+    \ gave 9.024, tp=2/dp=8/inductor gave 10.39\n    # The difference was likely due\
+    \ to parallelism, not compile mode\n    # Let's test inductor with the better\
+    \ parallelism config\n    compile_mode = \"inductor\"\n    if \"compile_mode\"\
+    \ in valid and compile_mode not in valid[\"compile_mode\"]:\n        compile_mode\
+    \ = valid[\"compile_mode\"][0] if valid[\"compile_mode\"] else \"eager\"\n   \
+    \ \n    # Activation checkpointing: disable when memory allows for speed\n   \
+    \ # 8B model with tp=4: ~4GB params per GPU, plenty of room on 40GB\n    activation_checkpointing\
+    \ = False\n    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n    \
+    \    \"pp\": pp,\n        \"micro_batch\": micro_batch,\n        \"compile_mode\"\
+    : compile_mode,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 8
+    compile_mode: eager
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 9.08012675925
+  score: 9.08012675925
+  status: success
+  error_msg: null
+  trace_dir: /tmp/ccl_bench_traces/perlmutter_llama8b/
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"\
+    gpu_memory_gb\", 40)\n    intra_bw      = environment.get(\"intra_node_bandwidth_gbps\"\
+    , 300)\n    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n    seq_len       = workload.get(\"\
+    seq_len\", 1024)\n    precision     = workload.get(\"precision\", \"bf16\")\n\
+    \    model_family  = workload.get(\"model_family\", \"\").lower()\n    \n    #\
+    \ Build lookup of valid choices for each dimension - handle various key formats\n\
+    \    config_space = workload.get(\"config_space\", [])\n    valid = {}\n    for\
+    \ dim in config_space:\n        if isinstance(dim, dict):\n            dim_name\
+    \ = None\n            for key in [\"name\", \"key\", \"dimension\", \"param\"\
+    , \"parameter\"]:\n                if key in dim:\n                    dim_name\
+    \ = dim[key]\n                    break\n            if dim_name is None:\n  \
+    \              # Try first string value as name\n                for k, v in dim.items():\n\
+    \                    if isinstance(v, str) and k != \"type\":\n              \
+    \          dim_name = v\n                        break\n                if dim_name\
+    \ is None:\n                    continue\n            dim_choices = None\n   \
+    \         for key in [\"choices\", \"values\", \"options\", \"range\"]:\n    \
+    \            if key in dim:\n                    dim_choices = dim[key]\n    \
+    \                break\n            if dim_choices is None:\n                dim_choices\
+    \ = []\n            valid[dim_name] = dim_choices\n    \n    def pick_valid(name,\
+    \ desired):\n        if name not in valid or not valid[name]:\n            return\
+    \ desired\n        choices = valid[name]\n        if desired in choices:\n   \
+    \         return desired\n        return min(choices, key=lambda x: abs(x - desired)\
+    \ if isinstance(x, (int, float)) else 0)\n    \n    def pick_valid_dividing(name,\
+    \ desired, must_divide):\n        \"\"\"Pick largest valid choice <= desired that\
+    \ divides must_divide.\"\"\"\n        if name not in valid or not valid[name]:\n\
+    \            return desired\n        choices = valid[name]\n        dividing =\
+    \ [c for c in choices if isinstance(c, int) and must_divide % c == 0]\n      \
+    \  if dividing:\n            good = [c for c in dividing if c <= desired]\n  \
+    \          if good:\n                return max(good)\n            return min(dividing)\n\
+    \        if desired in choices:\n            return desired\n        return min(choices,\
+    \ key=lambda x: abs(x - desired) if isinstance(x, (int, float)) else 0)\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node if gpus_per_node > 0 else 1\n   \
+    \ bw_ratio = intra_bw / max(inter_bw, 1)\n    \n    # Strategy based on execution\
+    \ history:\n    # tp=4/dp=4/eager/no-AC = 9.024 (best)\n    # tp=4/dp=4/inductor/no-AC\
+    \ = 9.088\n    # tp=2/dp=8/inductor/no-AC = 10.39\n    # \n    # Key: tp=gpus_per_node\
+    \ gives best results when intra >> inter BW\n    # eager slightly beats inductor\n\
+    \    # Now test: activation_checkpointing=True with best config\n    \n    # Use\
+    \ TP = gpus_per_node when high BW ratio\n    if bw_ratio > 5:\n        tp = gpus_per_node\n\
+    \    elif bw_ratio > 2:\n        tp = max(2, gpus_per_node // 2)\n    else:\n\
+    \        tp = 2\n    \n    tp = pick_valid(\"tp\", tp)\n    pp = pick_valid(\"\
+    pp\", 1)\n    \n    dp = total_gpus // (tp * pp)\n    dp = pick_valid(\"dp\",\
+    \ dp)\n    \n    # Adjust if product doesn't match\n    if tp * dp * pp != total_gpus:\n\
+    \        # Try fallbacks\n        for try_tp in [gpus_per_node, gpus_per_node\
+    \ // 2, 2, 1]:\n            try_tp = pick_valid(\"tp\", try_tp)\n            try_dp\
+    \ = total_gpus // (try_tp * pp)\n            try_dp = pick_valid(\"dp\", try_dp)\n\
+    \            if try_tp * try_dp * pp == total_gpus:\n                tp, dp =\
+    \ try_tp, try_dp\n                break\n    \n    local_batch = batch_size //\
+    \ dp if dp > 0 else batch_size\n    micro_batch = pick_valid_dividing(\"micro_batch\"\
+    , local_batch, local_batch)\n    \n    # Based on history: eager slightly better\
+    \ than inductor for this workload\n    compile_mode = \"eager\"\n    if \"compile_mode\"\
+    \ in valid and compile_mode not in valid[\"compile_mode\"]:\n        compile_mode\
+    \ = valid[\"compile_mode\"][0] if valid[\"compile_mode\"] else \"eager\"\n   \
+    \ \n    # Test activation checkpointing - it reduces memory but adds recomputation\n\
+    \    # For 8B model on 40GB A100 with tp=4, memory shouldn't be tight\n    # But\
+    \ AC can sometimes help by reducing memory pressure / enabling larger effective\
+    \ batch\n    # Testing True this iteration to see the effect\n    activation_checkpointing\
+    \ = True\n    if \"activation_checkpointing\" in valid and activation_checkpointing\
+    \ not in valid[\"activation_checkpointing\"]:\n        activation_checkpointing\
+    \ = False\n    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n    \
+    \    \"pp\": pp,\n        \"micro_batch\": micro_batch,\n        \"compile_mode\"\
+    : compile_mode,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 2
+    micro_batch: 4
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics: {}
+  score: .inf
+  status: error
+  error_msg: "exit 1:    model,\n      ...<4 lines>...\n          get_mesh=get_mesh,\n\
+    \      )\n  TypeError: PipelineStage.__init__() got an unexpected keyword argument\
+    \ 'get_mesh'\n  \n============================================================\n\
+    srun: error: nid001213: task 1: Exited with exit code 1\nsrun: Terminating StepId=52199114.5\n\
+    [2026-04-29T02:14:07.670] error: *** STEP 52199114.5 ON nid001212 CANCELLED AT\
+    \ 2026-04-29T02:14:07 DUE TO TASK FAILURE ***\nsrun: error: nid001216: task 2:\
+    \ Exited with exit code 1\nsrun: error: nid001217: task 3: Exited with exit code\
+    \ 1\nsrun: error: nid001212: task 0: Exited with exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"\
+    gpu_memory_gb\", 40)\n    intra_bw      = environment.get(\"intra_node_bandwidth_gbps\"\
+    , 300)\n    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n    seq_len       = workload.get(\"\
+    seq_len\", 1024)\n    precision     = workload.get(\"precision\", \"bf16\")\n\
+    \    model_family  = workload.get(\"model_family\", \"\").lower()\n    \n    #\
+    \ Build lookup of valid choices for each dimension\n    config_space = workload.get(\"\
+    config_space\", [])\n    valid = {}\n    for dim in config_space:\n        if\
+    \ isinstance(dim, dict):\n            dim_name = None\n            for key in\
+    \ [\"name\", \"key\", \"dimension\", \"param\", \"parameter\"]:\n            \
+    \    if key in dim:\n                    dim_name = dim[key]\n               \
+    \     break\n            if dim_name is None:\n                for k, v in dim.items():\n\
+    \                    if isinstance(v, str) and k != \"type\":\n              \
+    \          dim_name = v\n                        break\n                if dim_name\
+    \ is None:\n                    continue\n            dim_choices = None\n   \
+    \         for key in [\"choices\", \"values\", \"options\", \"range\"]:\n    \
+    \            if key in dim:\n                    dim_choices = dim[key]\n    \
+    \                break\n            if dim_choices is None:\n                dim_choices\
+    \ = []\n            valid[dim_name] = dim_choices\n    \n    def pick_valid(name,\
+    \ desired):\n        if name not in valid or not valid[name]:\n            return\
+    \ desired\n        choices = valid[name]\n        if desired in choices:\n   \
+    \         return desired\n        return min(choices, key=lambda x: abs(x - desired)\
+    \ if isinstance(x, (int, float)) else 0)\n    \n    def pick_valid_str(name, desired):\n\
+    \        if name not in valid or not valid[name]:\n            return desired\n\
+    \        choices = valid[name]\n        if desired in choices:\n            return\
+    \ desired\n        return choices[0]\n    \n    def pick_valid_bool(name, desired):\n\
+    \        if name not in valid or not valid[name]:\n            return desired\n\
+    \        choices = valid[name]\n        if desired in choices:\n            return\
+    \ desired\n        return choices[0]\n    \n    num_nodes = total_gpus // gpus_per_node\
+    \ if gpus_per_node > 0 else 1\n    bw_ratio = intra_bw / max(inter_bw, 1)\n  \
+    \  \n    # Execution history for this workload (Llama-8B, 16 GPUs, 4 per node):\n\
+    \    # tp=4, dp=4, pp=1, mb=8, eager, AC=False → 9.024 (BEST)\n    # tp=4, dp=4,\
+    \ pp=1, mb=8, eager, AC=True  → 9.08\n    # tp=4, dp=4, pp=1, mb=8, inductor,\
+    \ AC=False → 9.088\n    # tp=2, dp=8, pp=1, mb=4, inductor, AC=False → 10.39\n\
+    \    #\n    # Key insight: tp=gpus_per_node is best (uses fast NVLink), eager\
+    \ > inductor\n    # AC adds overhead without benefit here\n    #\n    # New exploration:\
+    \ try pp=2 to reduce inter-node all-reduce\n    # tp=4, dp=2, pp=2: TP within\
+    \ node, PP across 2 nodes, DP across 2 groups\n    # This reduces DP all-reduce\
+    \ volume by half (dp=2 vs dp=4)\n    # But adds pipeline bubble overhead\n   \
+    \ \n    # Strategy: try tp=4, dp=2, pp=2 with micro_batch to minimize bubble\n\
+    \    if bw_ratio > 5:\n        tp = gpus_per_node\n    elif bw_ratio > 2:\n  \
+    \      tp = max(2, gpus_per_node // 2)\n    else:\n        tp = 2\n    \n    tp\
+    \ = pick_valid(\"tp\", tp)\n    \n    # Try pp=2 to reduce inter-node DP communication\n\
+    \    # pp=2 with dp=2 means less all-reduce across nodes\n    pp = 2\n    pp =\
+    \ pick_valid(\"pp\", pp)\n    \n    dp = total_gpus // (tp * pp)\n    dp = pick_valid(\"\
+    dp\", dp)\n    \n    # Verify product matches total_gpus; fall back if not\n \
+    \   if tp * dp * pp != total_gpus:\n        # Fallback to known best: tp=gpus_per_node,\
+    \ dp=rest, pp=1\n        pp = 1\n        pp = pick_valid(\"pp\", pp)\n       \
+    \ dp = total_gpus // (tp * pp)\n        dp = pick_valid(\"dp\", dp)\n        if\
+    \ tp * dp * pp != total_gpus:\n            for try_tp in [gpus_per_node, gpus_per_node\
+    \ // 2, 2, 1]:\n                try_tp = pick_valid(\"tp\", try_tp)\n        \
+    \        try_dp = total_gpus // (try_tp * pp)\n                try_dp = pick_valid(\"\
+    dp\", try_dp)\n                if try_tp * try_dp * pp == total_gpus:\n      \
+    \              tp, dp = try_tp, try_dp\n                    break\n    \n    local_batch\
+    \ = batch_size // dp if dp > 0 else batch_size\n    \n    # For pp>1, want enough\
+    \ micro-batches to fill pipeline (ideally >= pp stages)\n    # micro_batch should\
+    \ divide local_batch\n    # With pp=2, dp=2: local_batch=16, want micro_batch=4\
+    \ → 4 micro-batches (good for 2 stages)\n    if pp > 1:\n        # Want num_microbatches\
+    \ >= 2*pp for good pipeline efficiency\n        target_mb = max(1, local_batch\
+    \ // (2 * pp))\n        # Find largest valid micro_batch that divides local_batch\
+    \ and gives enough microbatches\n        if \"micro_batch\" in valid and valid[\"\
+    micro_batch\"]:\n            candidates = [c for c in valid[\"micro_batch\"] \n\
+    \                         if isinstance(c, int) and c > 0 and local_batch % c\
+    \ == 0]\n            if candidates:\n                # Prefer micro_batch that\
+    \ gives >= 2*pp microbatches\n                good = [c for c in candidates if\
+    \ local_batch // c >= 2 * pp]\n                if good:\n                    micro_batch\
+    \ = max(good)  # largest mb that still gives enough microbatches\n           \
+    \     else:\n                    micro_batch = min(candidates)  # smallest to\
+    \ maximize microbatches\n            else:\n                micro_batch = pick_valid(\"\
+    micro_batch\", target_mb)\n        else:\n            micro_batch = target_mb\n\
+    \    else:\n        # pp=1: micro_batch = local_batch for best throughput\n  \
+    \      if \"micro_batch\" in valid and valid[\"micro_batch\"]:\n            candidates\
+    \ = [c for c in valid[\"micro_batch\"] \n                         if isinstance(c,\
+    \ int) and c > 0 and local_batch % c == 0]\n            if candidates:\n     \
+    \           micro_batch = max(candidates)\n            else:\n               \
+    \ micro_batch = pick_valid(\"micro_batch\", local_batch)\n        else:\n    \
+    \        micro_batch = local_batch\n    \n    compile_mode = pick_valid_str(\"\
+    compile_mode\", \"eager\")\n    activation_checkpointing = pick_valid_bool(\"\
+    activation_checkpointing\", False)\n    \n    return {\n        \"tp\": tp,\n\
+    \        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n\
+    \        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"

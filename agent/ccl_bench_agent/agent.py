@@ -23,6 +23,7 @@ Usage:
 import argparse
 import importlib.util
 import json
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -133,13 +134,14 @@ def run_once(gc_path: Path, workload: dict, environment: dict,
              tuning: dict) -> dict:
     """Steps 1-3: generate_config → execute → compute_metric → record."""
     mod = load_gc(gc_path)
+    policy_code = gc_path.read_text()
 
     try:
         config = mod.generate_config(workload=workload, environment=environment)
     except Exception as e:
         return {"config": {}, "metrics": {}, "score": float("inf"),
                 "status": "error", "error_msg": f"generate_config raised: {e}",
-                "trace_dir": None}
+                "trace_dir": None, "policy": policy_code}
 
     print("    config → " + "  ".join(f"{k}={v}" for k, v in sorted(config.items())))
 
@@ -153,6 +155,7 @@ def run_once(gc_path: Path, workload: dict, environment: dict,
         "status":    metric_result["status"],
         "error_msg": metric_result["error_msg"],
         "trace_dir": run_result.trace_dir,
+        "policy":    policy_code,
     }
 
     if metric_result["status"] == "success":
@@ -171,11 +174,14 @@ def _init_csv() -> None:
         import csv as _csv
         _csv.writer(f).writerow([
             "iteration", "version", "config", "metrics",
-            "score", "status", "error_msg", "best_score",
+            "score", "status", "error_msg", "best_score", "search_time_s",
         ])
 
 
-def _log_csv(iteration: int, version: int, record: dict, best_score: float) -> None:
+def _log_csv(
+    iteration: int, version: int, record: dict,
+    best_score: float, search_time_s: float | None = None,
+) -> None:
     with open(RESULTS_CSV, "a", newline="") as f:
         import csv as _csv
         _csv.writer(f).writerow([
@@ -186,6 +192,7 @@ def _log_csv(iteration: int, version: int, record: dict, best_score: float) -> N
             record.get("status", ""),
             record.get("error_msg", ""),
             best_score,
+            f"{search_time_s:.1f}" if search_time_s is not None else "",
         ])
 
 
@@ -230,6 +237,7 @@ def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
         print(f"{'='*65}")
 
         # step 4 — update policy
+        t0 = time.monotonic()
         gc_path, code = update_policy(
             gc_code=current_code,
             gc_dir=GC_DIR,
@@ -243,6 +251,7 @@ def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
             max_iterations=max_iterations,
             best_score=best_score,
         )
+        search_time_s = time.monotonic() - t0
 
         if gc_path is None:
             print(f"\n[agent] No program submitted at iteration {iteration}, stopping.")
@@ -265,7 +274,7 @@ def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
         else:
             no_improve += 1
 
-        _log_csv(iteration, version, record, best_score[1])
+        _log_csv(iteration, version, record, best_score[1], search_time_s)
         current_code = code
 
         tag = "IMPROVED" if improved else "no improvement"

@@ -1,0 +1,138 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,policy
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 8, ""compile_mode"": ""eager"", ""activation_checkpointing"": false}",{},inf,error,"exit 1: evice)
+      ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+    File ""/global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/cuda/__init__.py"", line 424, in _lazy_init
+      torch._C._cuda_init()
+      ~~~~~~~~~~~~~~~~~~~^^
+  RuntimeError: No CUDA GPUs are available
+  
+============================================================
+srun: error: nid001217: task 3: Exited with exit code 1
+srun: Terminating StepId=52199114.0
+srun: error: nid001216: task 2: Exited with exit code 1
+srun: error: nid001213: task 1: Exited with exit code 1
+srun: error: nid001212: task 0: Exited with exit code 1
+",inf,"""""""
+Seed configuration policy for the CCL-Bench ADRS agent.
+
+The agent iteratively refines `generate_config`. Each version is a self-contained
+Python program: given a workload card and environment, it returns a dict of
+configuration key-value pairs.
+
+Execution history is passed only to update_policy (the LLM step), not here.
+generate_config is a pure function of workload and environment.
+""""""
+
+
+def generate_config(workload: dict, environment: dict) -> dict:
+    """"""Return a configuration dict for the given workload and environment.
+
+    Args:
+        workload:    Workload card fields — model_family, phase, batch_size, seq_len,
+                     num_heads, num_layers, precision, config_space (list of tunable
+                     dimensions with valid choices), run_script, trace_dir, etc.
+        environment: Hardware/software descriptor — gpu_model, gpu_memory_gb,
+                     total_gpus, gpus_per_node, intra/inter_node_bandwidth_gbps,
+                     framework, framework_version.
+
+    Returns:
+        dict of configuration key-value pairs matching config_space keys, e.g.:
+          {""tp"": 4, ""dp"": 8, ""pp"": 1, ""micro_batch"": 4, ""compile_mode"": ""inductor""}
+    """"""
+    total_gpus    = environment.get(""total_gpus"", 1)
+    gpus_per_node = environment.get(""gpus_per_node"", 8)
+    batch_size    = workload.get(""batch_size"", 1)
+
+    # Baseline: fill one node with TP (low-latency intra-node),
+    # scale data parallelism across nodes.
+    tp = min(gpus_per_node, 8)
+    dp = max(1, total_gpus // tp)
+    pp = 1
+    micro_batch = max(1, batch_size // dp)
+
+    return {
+        ""tp"": tp,
+        ""dp"": dp,
+        ""pp"": pp,
+        ""micro_batch"": micro_batch,
+        ""compile_mode"": ""eager"",
+        ""activation_checkpointing"": False,
+    }
+"
+1,1,{},{},inf,error,generate_config raised: 'name',inf,"
+def generate_config(workload: dict, environment: dict) -> dict:
+    """"""Return a configuration dict for the given workload and environment.""""""
+    total_gpus = environment.get(""total_gpus"", 1)
+    gpus_per_node = environment.get(""gpus_per_node"", 4)
+    batch_size = workload.get(""batch_size"", 1)
+
+    # Build valid choices lookup from config_space
+    config_space = workload.get(""config_space"", [])
+    valid = {}
+    for dim in config_space:
+        valid[dim[""name""]] = dim[""choices""]
+
+    # Strategy: keep tp within a node, use dp across nodes, pp=1 if possible
+    # tp * dp * pp must equal total_gpus
+    
+    # Try tp=2 (moderate intra-node parallelism), rest as dp
+    # For 16 GPUs with 4 per node: tp=2, dp=8, pp=1
+    tp = 2
+    dp = total_gpus // tp  # 8
+    pp = 1
+    
+    # Validate tp*dp*pp == total_gpus
+    if tp * dp * pp != total_gpus:
+        # Fallback
+        tp = 1
+        dp = total_gpus
+        pp = 1
+
+    # Ensure values are in valid choices
+    if ""tp"" in valid and tp not in valid[""tp""]:
+        tp = min(valid[""tp""], key=lambda x: abs(x - tp))
+    if ""dp"" in valid and dp not in valid[""dp""]:
+        dp = min(valid[""dp""], key=lambda x: abs(x - dp))
+    if ""pp"" in valid and pp not in valid[""pp""]:
+        pp = min(valid[""pp""], key=lambda x: abs(x - pp))
+
+    # Recalculate if product doesn't match
+    if tp * dp * pp != total_gpus:
+        # Try all valid combos
+        best = None
+        for t in valid.get(""tp"", [1]):
+            for d in valid.get(""dp"", [1]):
+                for p in valid.get(""pp"", [1]):
+                    if t * d * p == total_gpus:
+                        # Prefer higher dp, lower pp
+                        score = d * 100 - p * 10 - t
+                        if best is None or score > best[0]:
+                            best = (score, t, d, p)
+        if best:
+            _, tp, dp, pp = best
+
+    # micro_batch: must divide local_batch_size = batch_size // dp
+    local_batch = max(1, batch_size // dp)
+    
+    # Pick largest valid micro_batch that divides local_batch
+    mb_choices = valid.get(""micro_batch"", [1, 2, 4, 8])
+    valid_mbs = [m for m in mb_choices if local_batch % m == 0 and m <= local_batch]
+    if not valid_mbs:
+        valid_mbs = [min(mb_choices)]
+    micro_batch = max(valid_mbs)
+
+    # Use activation checkpointing to be safe on memory with A100 40GB
+    activation_checkpointing = True
+
+    # Use inductor for potential speedup
+    compile_mode = ""inductor""
+
+    return {
+        ""tp"": tp,
+        ""dp"": dp,
+        ""pp"": pp,
+        ""micro_batch"": micro_batch,
+        ""compile_mode"": compile_mode,
+        ""activation_checkpointing"": activation_checkpointing,
+    }
+"

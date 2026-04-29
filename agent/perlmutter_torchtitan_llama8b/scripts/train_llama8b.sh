@@ -1,0 +1,138 @@
+#!/bin/bash
+# train_llama8b.sh — Llama-3.1-8B torchtitan benchmark for CCL-Bench agent
+#
+# Called by execute.py with env vars injected from the config dict:
+#   TP, DP, PP            — parallelism degrees
+#   MICRO_BATCH           — pipeline microbatch size
+#   COMPILE_MODE          — "eager" | "inductor" | "max-autotune"
+#   ACTIVATION_CHECKPOINTING — "true" | "false"
+#   TRACE_DIR             — output root for profiler traces and metric YAML
+#   WORKLOAD_NAME         — informational label
+
+set -e
+
+# ── Config from environment ────────────────────────────────────────────────────
+TP=${TP:-4}
+DP=${DP:-1}
+PP=${PP:-1}
+MICRO_BATCH=${MICRO_BATCH:-1}
+COMPILE_MODE=${COMPILE_MODE:-"eager"}
+ACTIVATION_CHECKPOINTING=${ACTIVATION_CHECKPOINTING:-"false"}
+TRACE_DIR=${TRACE_DIR:-"/tmp/ccl_bench_traces/llama8b"}
+
+# ── Workload constants (from workload card) ────────────────────────────────────
+GLOBAL_BATCH=32
+SEQ_LEN=1024
+GPUS_PER_NODE=4
+
+# ── Derived parameters ─────────────────────────────────────────────────────────
+TOTAL_GPUS=$(( TP * DP * PP ))
+NPROC_PER_NODE=$(( TOTAL_GPUS < GPUS_PER_NODE ? TOTAL_GPUS : GPUS_PER_NODE ))
+NNODES=$(( TOTAL_GPUS / NPROC_PER_NODE ))
+LOCAL_BATCH=$(( GLOBAL_BATCH / DP ))
+
+if [ "$ACTIVATION_CHECKPOINTING" = "true" ]; then
+    AC_MODE="full"
+else
+    AC_MODE="selective"
+fi
+
+# ── Paths ──────────────────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TORCHTITAN_DIR="$(cd "$SCRIPT_DIR/../../torchtitan" && pwd)"
+TOKENIZER_PATH="$TORCHTITAN_DIR/tests/assets/tokenizer"
+
+# ── Lustre fix: redirect HF cache to /tmp ─────────────────────────────────────
+# Perlmutter's $HOME and $PSCRATCH are on Lustre, which does not support
+# fcntl.flock.  huggingface_hub uses flock for cache locking and raises
+# OSError 524 on Lustre.  /tmp is node-local and supports flock.
+export HF_HOME="/tmp/hf_home_${USER}"
+export HF_DATASETS_CACHE="/tmp/hf_datasets_${USER}"
+mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE"
+
+# ── Profiler schedule: 2 wait + 3 warmup + 5 active = 10-step cycle ───────────
+TRAINING_STEPS=10
+PROFILE_FREQ=10
+PROFILER_WARMUP=3
+PROFILER_ACTIVE=5
+
+# Traces land at $TRACE_DIR/profile_traces/iteration_N/rank{r}_trace.json
+SAVE_TRACES_FOLDER="profile_traces"
+
+mkdir -p "$TRACE_DIR"
+
+# ── Build CLI overrides ────────────────────────────────────────────────────────
+OVERRIDES=(
+    --hf_assets_path "$TOKENIZER_PATH"
+    --training.local_batch_size "$LOCAL_BATCH"
+    --training.seq_len "$SEQ_LEN"
+    --training.steps "$TRAINING_STEPS"
+    --dataloader.dataset c4_test
+    --parallelism.tensor_parallel_degree "$TP"
+    --parallelism.data_parallel_shard_degree "$DP"
+    --parallelism.data_parallel_replicate_degree 1
+    --parallelism.pipeline_parallel_degree "$PP"
+    --parallelism.pipeline_parallel_microbatch_size "$MICRO_BATCH"
+    --activation_checkpoint.mode "$AC_MODE"
+    --profiler.enable_profiling
+    --profiler.profile_freq "$PROFILE_FREQ"
+    --profiler.profiler_warmup "$PROFILER_WARMUP"
+    --profiler.profiler_active "$PROFILER_ACTIVE"
+    --profiler.save_traces_folder "$SAVE_TRACES_FOLDER"
+    --dump_folder "$TRACE_DIR"
+    --metrics.no-enable_tensorboard
+)
+
+if [ "$COMPILE_MODE" != "eager" ]; then
+    OVERRIDES+=(--compile.enable --compile.backend "$COMPILE_MODE")
+fi
+
+# ── Launch ─────────────────────────────────────────────────────────────────────
+cd "$TORCHTITAN_DIR"
+
+export PYTORCH_ALLOC_CONF="expandable_segments:True"
+
+if [ "$NNODES" -gt 1 ] && [ -n "${SLURM_JOB_ID:-}" ]; then
+    # Multi-node inside a SLURM allocation (Perlmutter)
+    MASTER_ADDR=$(scontrol show hostnames "${SLURM_JOB_NODELIST}" | head -1)
+    MASTER_PORT=29510
+    srun --ntasks-per-node=1 --nodes="$NNODES" --gpus-per-node="$NPROC_PER_NODE" \
+        torchrun \
+            --nnodes="$NNODES" \
+            --nproc_per_node="$NPROC_PER_NODE" \
+            --rdzv_id=42 \
+            --rdzv_backend=c10d \
+            --rdzv_endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
+            -m torchtitan.train \
+            --module llama3 \
+            --config llama3_8b_ce_loss \
+            "${OVERRIDES[@]}"
+else
+    # Single-node
+    torchrun \
+        --nproc_per_node="$NPROC_PER_NODE" \
+        --rdzv_backend=c10d \
+        --rdzv_endpoint="localhost:0" \
+        -m torchtitan.train \
+        --module llama3 \
+        --config llama3_8b_ce_loss \
+        "${OVERRIDES[@]}"
+fi
+
+# ── Flatten traces into TRACE_DIR for metric tools ─────────────────────────────
+# avg_step_time scans the flat directory for *.json files; torchtitan writes
+# them nested under profile_traces/iteration_N/.  Copy them up to TRACE_DIR.
+PROFILE_DIR="$TRACE_DIR/$SAVE_TRACES_FOLDER"
+if [ -d "$PROFILE_DIR" ]; then
+    ITER_DIR=$(ls -td "$PROFILE_DIR"/iteration_* 2>/dev/null | head -1)
+    if [ -n "$ITER_DIR" ] && [ -d "$ITER_DIR" ]; then
+        cp "$ITER_DIR"/*.json "$TRACE_DIR/" 2>/dev/null || true
+    fi
+fi
+
+# Write minimal YAML so avg_step_time dispatches to the json backend
+cat > "$TRACE_DIR/trace_meta.yaml" << 'YAML'
+metric_source:
+  traces:
+    - json
+YAML
