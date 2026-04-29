@@ -2056,3 +2056,333 @@ runs:
     \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n\
     \        \"micro_batch\": micro_batch,\n        \"compile_mode\": \"eager\",\n\
     \        \"activation_checkpointing\": False,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 1
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 9.0695525326875
+  score: 9.0695525326875
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 1,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline:\n    tp\
+    \ = min(gpus_per_node, 4)\n    pp = 1\n    dp = max(1, total_gpus // (tp * pp))\n\
+    \    micro_batch = 1 # doesn't matter for pp = 1\n\n    return {\n        \"tp\"\
+    : tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n\
+    \        \"compile_mode\": \"eager\",\n        \"activation_checkpointing\": False,\n\
+    \    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 1
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 9.0695525326875
+  score: 9.0695525326875
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 1,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline:\n    tp\
+    \ = min(gpus_per_node, 4)\n    pp = 1\n    dp = max(1, total_gpus // (tp * pp))\n\
+    \    micro_batch = 1 # doesn't matter for pp = 1\n\n    return {\n        \"tp\"\
+    : tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n\
+    \        \"compile_mode\": \"eager\",\n        \"activation_checkpointing\": False,\n\
+    \    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 1
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 8.793112738604165
+  score: 8.793112738604165
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_065521/traces/20260429_065521_iter0
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 1,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline:\n    tp\
+    \ = min(gpus_per_node, 4)\n    pp = 1\n    dp = max(1, total_gpus // (tp * pp))\n\
+    \    micro_batch = 1 # doesn't matter for pp = 1\n\n    return {\n        \"tp\"\
+    : tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n\
+    \        \"compile_mode\": \"eager\",\n        \"activation_checkpointing\": False,\n\
+    \    }\n"
+- config:
+    tp: 2
+    dp: 8
+    pp: 1
+    micro_batch: 1
+    compile_mode: inductor
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 10.6015479716875
+  score: 10.6015479716875
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_065521/traces/20260429_065521_iter1
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
+    \    \n    # Build a lookup of valid choices for each config key\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid = {}\n    for dim in config_space:\n\
+    \        valid[dim[\"key\"]] = dim[\"choices\"]\n    \n    # Helper to pick closest\
+    \ valid choice\n    def pick_valid(key, target):\n        choices = valid.get(key,\
+    \ [target])\n        # For numeric types, pick the closest\n        if all(isinstance(c,\
+    \ (int, float)) for c in choices):\n            return min(choices, key=lambda\
+    \ c: abs(c - target))\n        # For string/bool, return target if valid, else\
+    \ first choice\n        if target in choices:\n            return target\n   \
+    \     return choices[0]\n    \n    # Estimate model size in billions of parameters\n\
+    \    model_size_b = 8  # default for Llama-3.1-8B\n    if \"70b\" in model_family:\n\
+    \        model_size_b = 70\n    elif \"13b\" in model_family:\n        model_size_b\
+    \ = 13\n    elif \"8b\" in model_family:\n        model_size_b = 8\n    elif \"\
+    7b\" in model_family:\n        model_size_b = 7\n    \n    # Memory estimation\
+    \ per GPU (rough): model params in bf16 = 2 bytes/param\n    # With FSDP (dp sharding),\
+    \ model memory is divided by dp\n    # With TP, model memory is divided by tp\n\
+    \    # Activations scale with batch_size_per_gpu * seq_len / tp\n    \n    # Strategy:\
+    \ minimize communication overhead\n    # - TP should stay within a node (NVLink\
+    \ is fast)\n    # - Prefer smaller TP if memory allows (less all-reduce overhead)\n\
+    \    # - Use FSDP (dp) for the rest\n    # - PP=1 to avoid pipeline bubbles unless\
+    \ model is very large\n    \n    # For 8B model on A100 40GB:\n    # bf16 model\
+    \ weights: ~16GB total\n    # With tp=2: ~8GB per GPU for weights, leaves room\
+    \ for activations\n    # With FSDP dp=8: further sharding of optimizer states\n\
+    \    \n    pp = 1\n    \n    # Determine TP based on model size and GPU memory\n\
+    \    if model_size_b >= 70:\n        tp = min(gpus_per_node, 8)\n    elif model_size_b\
+    \ >= 13:\n        tp = min(gpus_per_node, 4)\n    elif gpu_memory_gb <= 40:\n\
+    \        # Tight memory - use tp=2 for 8B models on 40GB GPUs\n        tp = 2\n\
+    \    else:\n        tp = 2\n    \n    tp = pick_valid(\"tp\", tp)\n    pp = pick_valid(\"\
+    pp\", pp)\n    \n    # dp uses remaining GPUs\n    dp = total_gpus // (tp * pp)\n\
+    \    dp = pick_valid(\"dp\", dp)\n    \n    # Ensure tp * dp * pp = total_gpus,\
+    \ adjust if needed\n    product = tp * dp * pp\n    if product != total_gpus:\n\
+    \        # Try to fix dp\n        dp = total_gpus // (tp * pp)\n        dp = pick_valid(\"\
+    dp\", dp)\n    \n    # Micro batch size (only matters if pp > 1, but set it anyway)\n\
+    \    # For pp=1, set to something reasonable\n    if pp == 1:\n        micro_batch\
+    \ = pick_valid(\"micro_batch\", 1)\n    else:\n        # More micro batches =\
+    \ less bubble, but more memory\n        num_micro = max(4, pp * 2)\n        per_gpu_batch\
+    \ = batch_size // dp\n        micro_batch = max(1, per_gpu_batch // num_micro)\n\
+    \        micro_batch = pick_valid(\"micro_batch\", micro_batch)\n    \n    # Use\
+    \ inductor for better kernel fusion\n    compile_mode = pick_valid(\"compile_mode\"\
+    , \"inductor\")\n    \n    # Activation checkpointing: enable for tight memory\
+    \ situations\n    # 8B model, tp=2, A100 40GB, batch=32, dp=8 -> 4 samples/gpu\n\
+    \    # This might be tight, enable checkpointing to be safe and potentially\n\
+    \    # allow the run to succeed with good throughput\n    bytes_per_param = 2\
+    \  # bf16\n    model_mem_gb = (model_size_b * 1e9 * bytes_per_param) / (tp * 1e9)\n\
+    \    optimizer_mem_gb = model_mem_gb * 3  # Adam states (divided by dp via FSDP)\n\
+    \    optimizer_mem_gb /= dp\n    per_gpu_batch = batch_size // (dp * pp)\n   \
+    \ activation_mem_gb = per_gpu_batch * seq_len * 0.001  # rough estimate\n    \n\
+    \    total_est_mem = model_mem_gb + optimizer_mem_gb + activation_mem_gb\n   \
+    \ \n    if total_est_mem > gpu_memory_gb * 0.8:\n        activation_checkpointing\
+    \ = True\n    else:\n        activation_checkpointing = False\n    \n    activation_checkpointing\
+    \ = pick_valid(\"activation_checkpointing\", activation_checkpointing)\n    \n\
+    \    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n\
+    \        \"micro_batch\": micro_batch,\n        \"compile_mode\": compile_mode,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 1
+    compile_mode: inductor
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 9.009007885208334
+  score: 9.009007885208334
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_065521/traces/20260429_065521_iter2
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
+    \    intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n    \n    # Build a lookup\
+    \ of valid choices for each config key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n    \n    # Helper to pick closest valid choice\n    def\
+    \ pick_valid(key, target):\n        choices = valid.get(key, [target])\n     \
+    \   if all(isinstance(c, (int, float)) for c in choices):\n            return\
+    \ min(choices, key=lambda c: abs(c - target))\n        if target in choices:\n\
+    \            return target\n        return choices[0]\n    \n    # Estimate model\
+    \ size in billions of parameters\n    model_size_b = 8  # default\n    if \"70b\"\
+    \ in model_family:\n        model_size_b = 70\n    elif \"13b\" in model_family:\n\
+    \        model_size_b = 13\n    elif \"8b\" in model_family:\n        model_size_b\
+    \ = 8\n    elif \"7b\" in model_family:\n        model_size_b = 7\n    elif \"\
+    405b\" in model_family:\n        model_size_b = 405\n    \n    # Strategy based\
+    \ on observations:\n    # - TP should max out intra-node (NVLink) for fast all-reduce\n\
+    \    # - Minimize inter-node communication by keeping dp low\n    # - PP=1 unless\
+    \ model is too large to fit\n    # - eager mode has been better than inductor\
+    \ so far\n    \n    # Bandwidth ratio determines how much we should prefer intra-node\
+    \ parallelism\n    bw_ratio = intra_bw / max(inter_bw, 1)\n    \n    # Set TP\
+    \ to fill the node (all intra-node communication via NVLink)\n    tp = gpus_per_node\n\
+    \    tp = pick_valid(\"tp\", tp)\n    \n    # Default: no pipeline parallelism\n\
+    \    pp = 1\n    pp = pick_valid(\"pp\", pp)\n    \n    # For very large models,\
+    \ may need PP\n    if model_size_b >= 70:\n        # Need more parallelism for\
+    \ memory\n        if gpu_memory_gb <= 40:\n            pp = pick_valid(\"pp\"\
+    , 4)\n        else:\n            pp = pick_valid(\"pp\", 2)\n    \n    # dp uses\
+    \ remaining GPUs\n    dp_target = total_gpus // (tp * pp)\n    dp = pick_valid(\"\
+    dp\", max(1, dp_target))\n    \n    # Ensure product = total_gpus; if not, adjust\n\
+    \    product = tp * dp * pp\n    if product != total_gpus:\n        # Try reducing\
+    \ tp\n        for tp_try in sorted(valid.get(\"tp\", [gpus_per_node]), reverse=True):\n\
+    \            for pp_try in sorted(valid.get(\"pp\", [1])):\n                dp_try\
+    \ = total_gpus // (tp_try * pp_try)\n                if dp_try in valid.get(\"\
+    dp\", [dp_try]) and tp_try * dp_try * pp_try == total_gpus:\n                \
+    \    if tp_try <= gpus_per_node:  # keep TP intra-node\n                     \
+    \   tp, dp, pp = tp_try, dp_try, pp_try\n                        break\n     \
+    \       else:\n                continue\n            break\n    \n    # Micro\
+    \ batch size\n    if pp <= 1:\n        micro_batch = pick_valid(\"micro_batch\"\
+    , 1)\n    else:\n        per_gpu_batch = batch_size // dp\n        # More micro\
+    \ batches reduces bubble ratio: aim for ~4*pp micro batches\n        target_micro\
+    \ = max(1, per_gpu_batch // (4 * pp))\n        micro_batch = pick_valid(\"micro_batch\"\
+    , target_micro)\n    \n    # Compile mode: try inductor with the optimal tp=4\
+    \ config this time\n    # Previous best was eager with tp=4, dp=4. Let's test\
+    \ inductor with same parallelism.\n    compile_mode = pick_valid(\"compile_mode\"\
+    , \"inductor\")\n    \n    # Activation checkpointing: only if memory is tight\n\
+    \    bytes_per_param = 2  # bf16\n    model_mem_gb = (model_size_b * 1e9 * bytes_per_param)\
+    \ / (tp * 1e9)\n    optimizer_mem_gb = (model_size_b * 1e9 * bytes_per_param *\
+    \ 3) / (dp * tp * 1e9)  # Adam: 3x model\n    per_gpu_batch = batch_size // (dp\
+    \ * pp)\n    # Rough activation memory estimate\n    activation_mem_gb = per_gpu_batch\
+    \ * seq_len * 4096 * 2 / (tp * 1e9) * workload.get(\"num_layers\", 32) * 0.1\n\
+    \    \n    total_est_mem = model_mem_gb + optimizer_mem_gb + activation_mem_gb\n\
+    \    \n    if total_est_mem > gpu_memory_gb * 0.85:\n        activation_checkpointing\
+    \ = True\n    else:\n        activation_checkpointing = False\n    \n    activation_checkpointing\
+    \ = pick_valid(\"activation_checkpointing\", activation_checkpointing)\n    \n\
+    \    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n\
+    \        \"micro_batch\": micro_batch,\n        \"compile_mode\": compile_mode,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 1
+    compile_mode: eager
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 8.9922884755625
+  score: 8.9922884755625
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_065521/traces/20260429_065521_iter3
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
+    \    intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n    \n    # Build a lookup\
+    \ of valid choices for each config key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n    \n    # Helper to pick closest valid choice\n    def\
+    \ pick_valid(key, target):\n        choices = valid.get(key, [target])\n     \
+    \   if all(isinstance(c, (int, float)) for c in choices):\n            return\
+    \ min(choices, key=lambda c: abs(c - target))\n        if target in choices:\n\
+    \            return target\n        return choices[0]\n    \n    # Estimate model\
+    \ size in billions of parameters\n    model_size_b = 8  # default\n    if \"405b\"\
+    \ in model_family:\n        model_size_b = 405\n    elif \"70b\" in model_family:\n\
+    \        model_size_b = 70\n    elif \"13b\" in model_family:\n        model_size_b\
+    \ = 13\n    elif \"8b\" in model_family:\n        model_size_b = 8\n    elif \"\
+    7b\" in model_family:\n        model_size_b = 7\n    \n    # Lessons learned from\
+    \ history on this workload:\n    # - tp=4, dp=4, pp=1, eager, no AC: 8.793 (best)\n\
+    \    # - tp=2, dp=8, pp=1, inductor, no AC: 10.6 (worse - more inter-node comm)\n\
+    \    # - tp=4, dp=4, pp=1, inductor, no AC: 9.009 (inductor slightly worse than\
+    \ eager)\n    #\n    # General strategy:\n    # 1. TP should fill intra-node (max\
+    \ gpus_per_node) for NVLink benefit\n    # 2. Minimize dp to reduce inter-node\
+    \ allreduce, but need enough for memory\n    # 3. PP=1 to avoid bubble overhead\
+    \ for smaller models\n    # 4. eager > inductor for this workload\n    # 5. Test\
+    \ activation_checkpointing=True: reduces memory, may allow faster compute\n  \
+    \  \n    # Bandwidth ratio\n    bw_ratio = intra_bw / max(inter_bw, 1)\n    \n\
+    \    # Set TP to fill the node\n    tp = gpus_per_node\n    tp = pick_valid(\"\
+    tp\", tp)\n    \n    # Default: no pipeline parallelism for models that fit\n\
+    \    pp = 1\n    \n    # For very large models, use PP\n    if model_size_b >=\
+    \ 70:\n        if gpu_memory_gb <= 40:\n            pp = pick_valid(\"pp\", 4)\n\
+    \        else:\n            pp = pick_valid(\"pp\", 2)\n    \n    pp = pick_valid(\"\
+    pp\", pp)\n    \n    # dp uses remaining GPUs\n    dp_target = total_gpus // (tp\
+    \ * pp)\n    dp = pick_valid(\"dp\", max(1, dp_target))\n    \n    # Ensure product\
+    \ = total_gpus; if not, adjust\n    product = tp * dp * pp\n    if product !=\
+    \ total_gpus:\n        best_combo = None\n        best_score = float('inf')\n\
+    \        for tp_try in sorted(valid.get(\"tp\", [gpus_per_node]), reverse=True):\n\
+    \            if tp_try > gpus_per_node:\n                continue  # Keep TP intra-node\n\
+    \            for pp_try in sorted(valid.get(\"pp\", [1])):\n                dp_try\
+    \ = total_gpus // (tp_try * pp_try)\n                if dp_try in valid.get(\"\
+    dp\", [dp_try]) and tp_try * dp_try * pp_try == total_gpus:\n                \
+    \    # Score: prefer high TP (intra-node), low PP (no bubble), moderate dp\n \
+    \                   # Penalize inter-node communication (dp) and pipeline bubbles\
+    \ (pp)\n                    score = dp_try * (inter_bw / intra_bw) + pp_try *\
+    \ 0.5\n                    if score < best_score:\n                        best_score\
+    \ = score\n                        best_combo = (tp_try, dp_try, pp_try)\n   \
+    \     if best_combo:\n            tp, dp, pp = best_combo\n    \n    # Micro batch\
+    \ size - only matters for PP > 1\n    if pp <= 1:\n        micro_batch = pick_valid(\"\
+    micro_batch\", 1)\n    else:\n        per_gpu_batch = batch_size // dp\n     \
+    \   # More micro batches reduces bubble ratio\n        target_micro = max(1, per_gpu_batch\
+    \ // (4 * pp))\n        micro_batch = pick_valid(\"micro_batch\", target_micro)\n\
+    \    \n    # Compile mode: eager has been better than inductor\n    compile_mode\
+    \ = pick_valid(\"compile_mode\", \"eager\")\n    \n    # Activation checkpointing:\
+    \ test True this iteration\n    # For small-medium models on limited memory GPUs,\
+    \ AC can help by reducing\n    # peak memory, potentially allowing better memory\
+    \ utilization\n    # For 8B on 40GB A100 with tp=4: model ~4GB per GPU, should\
+    \ have room\n    # Let's try AC=True to see if it helps or hurts\n    activation_checkpointing\
+    \ = pick_valid(\"activation_checkpointing\", True)\n    \n    return {\n     \
+    \   \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"

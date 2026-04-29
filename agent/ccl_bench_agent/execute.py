@@ -24,15 +24,17 @@ class RunResult:
     trace_dir: str | None = None
 
 
-def execute(workload: dict, config: dict, timeout: int = 3600) -> RunResult:
+def execute(workload: dict, config: dict, timeout: int = 3600,
+            dest_trace_dir: str | None = None) -> RunResult:
     """Run workload's run_script with config choices injected as env vars."""
     run_script = workload.get("run_script")
     if not run_script:
         return RunResult(workload, config, "error",
                          error_msg="workload card missing 'run_script'")
 
-    trace_dir = workload.get("trace_dir",
-                             f"/tmp/ccl_bench_traces/{workload.get('name', 'run')}/")
+    trace_dir = (dest_trace_dir or
+                 workload.get("trace_dir",
+                              f"/tmp/ccl_bench_traces/{workload.get('name', 'run')}/"))
 
     env = os.environ.copy()
     for k, v in config.items():

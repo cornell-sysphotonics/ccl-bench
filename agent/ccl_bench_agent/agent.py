@@ -153,29 +153,19 @@ def load_gc(path: Path):
 
 # ── Scoring helpers ────────────────────────────────────────────────────────────
 
-def _eval_score(history: list[dict], direction: str) -> tuple[float, float]:
-    """(success_rate, best_score) where best_score follows the optimization direction."""
-    ok = [r for r in history if r.get("status") == "success"]
-    sr = len(ok) / len(history) if history else 0.0
-    if not ok:
-        sentinel = float("inf") if direction == "minimize" else float("-inf")
-        return (sr, sentinel)
-    scores = [r["score"] for r in ok]
-    bs = min(scores) if direction == "minimize" else max(scores)
-    return (sr, bs)
+def _sentinel(direction: str) -> float:
+    return float("inf") if direction == "minimize" else float("-inf")
 
 
-def _is_better(new: tuple[float, float], old: tuple[float, float], direction: str) -> bool:
-    sr_n, bs_n = new
-    sr_o, bs_o = old
-    # Compare metric scores directly, ignoring success rate
-    return bs_n < bs_o if direction == "minimize" else bs_n > bs_o
+def _is_better(new: float, old: float, direction: str) -> bool:
+    return new < old if direction == "minimize" else new > old
+
 
 
 # ── Single-iteration runner ────────────────────────────────────────────────────
 
 def run_once(gc_path: Path, workload: dict, environment: dict,
-             tuning: dict) -> dict:
+             tuning: dict, dest_trace_dir: str | None = None) -> dict:
     """Steps 1-3: generate_config → execute → compute_metric → record."""
     mod = load_gc(gc_path)
     policy_code = gc_path.read_text()
@@ -194,7 +184,7 @@ def run_once(gc_path: Path, workload: dict, environment: dict,
         print("    [cache hit] reusing stored result")
         return {**cached, "policy": policy_code}
 
-    run_result    = execute(workload, config)
+    run_result    = execute(workload, config, dest_trace_dir=dest_trace_dir)
     metric_result = compute_metric(run_result, tuning["optimization_goal"])
 
     record = {
@@ -284,18 +274,21 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
 
     # ── Seed run (steps 1-3 + 5) ──────────────────────────────────────────
     print("\n[eval] Seed generate_config...")
-    seed_record = run_once(current_path, workload, environment, tuning)
+    seed_dest = str(RUN_DIR / "traces" / f"{_TIMESTAMP}_iter0")
+    seed_record = run_once(current_path, workload, environment, tuning,
+                           dest_trace_dir=seed_dest)
     update_history(history, seed_record, card, card_path)          # step 5
 
-    best_score = _eval_score(history, direction)
+    best_score = (seed_record["score"]
+                  if seed_record["status"] == "success"
+                  else _sentinel(direction))
     best_path  = current_path
     no_improve = 0
 
     _init_csv()
-    _log_csv(0, 0, seed_record, best_score[1])
+    _log_csv(0, 0, seed_record, best_score)
 
-    _, ms = best_score
-    print(f"\n[agent] Seed: status={seed_record['status']}, score={ms:.4g}")
+    print(f"\n[agent] Seed: status={seed_record['status']}, score={best_score:.4g}")
     print(f"[agent] Loop: max={max_iterations}, patience={patience}\n")
 
     # ── Main loop ──────────────────────────────────────────────────────────
@@ -328,26 +321,28 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
         version += 1
 
         # steps 1-3 — run the new policy
-        record = run_once(gc_path, workload, environment, tuning)
+        iter_dest = str(RUN_DIR / "traces" / f"{_TIMESTAMP}_iter{iteration}")
+        record = run_once(gc_path, workload, environment, tuning,
+                          dest_trace_dir=iter_dest)
 
         # step 5 — update history
         update_history(history, record, card, card_path)
 
-        cur_score = _eval_score(history, direction)
-        improved  = _is_better(cur_score, best_score, direction)
+        score    = record.get("score", _sentinel(direction))
+        improved = (record["status"] == "success"
+                    and _is_better(score, best_score, direction))
         if improved:
-            best_score = cur_score
+            best_score = score
             best_path  = gc_path
             no_improve = 0
         else:
             no_improve += 1
 
-        _log_csv(iteration, version, record, best_score[1], search_time_s)
+        _log_csv(iteration, version, record, best_score, search_time_s)
         current_code = code
 
         tag = "IMPROVED" if improved else "no improvement"
-        _, b_ms = best_score
-        print(f"    {tag} — best score={b_ms:.4g}")
+        print(f"    {tag} — best score={best_score:.4g}")
 
         if no_improve >= patience:
             print(f"\n[agent] Early stop: {patience} non-improving iterations.")

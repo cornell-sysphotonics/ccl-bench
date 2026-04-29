@@ -1,0 +1,5 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""eager"", ""activation_checkpointing"": false}","{""avg_step_time"": 8.793112738604165}",8.793112738604165,success,,8.793112738604165,
+1,1,"{""tp"": 2, ""dp"": 8, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": false}","{""avg_step_time"": 10.6015479716875}",10.6015479716875,success,,8.793112738604165,34.7
+2,2,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": false}","{""avg_step_time"": 9.009007885208334}",9.009007885208334,success,,8.793112738604165,35.4
+3,3,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""eager"", ""activation_checkpointing"": true}","{""avg_step_time"": 8.9922884755625}",8.9922884755625,success,,8.793112738604165,30.7
