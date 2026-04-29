@@ -1,0 +1,59 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 5.88926764525}",5.88926764525,success,,5.88926764525,
+1,1,"{""tp"": 2, ""dp"": 4, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": false}",{},inf,error,"exit 1: -------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-29_05:37:04
+  host      : nid001188-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 617738)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid001189: task 1: Exited with exit code 1
+srun: Terminating StepId=52215614.9
+srun: error: nid001188: task 0: Exited with exit code 1
+",5.88926764525,8.0
+2,2,"{""tp"": 4, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 5.763839735125}",5.763839735125,success,,5.763839735125,15.4
+3,3,"{""tp"": 4, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": false}",{},inf,error,"exit 143: Cause (first observed failure):
+[0]:
+  time      : 2026-04-29_05:41:04
+  host      : nid001188-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : -11 (pid: 621750)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 621750
+========================================================
+srun: error: nid001189: task 1: Exited with exit code 1
+srun: Terminating StepId=52215614.11
+[2026-04-29T12:41:05.585] error: *** STEP 52215614.11 ON nid001188 CANCELLED AT 2026-04-29T12:41:05 DUE TO TASK FAILURE ***
+srun: error: nid001188: task 0: Terminated
+srun: Force Terminated StepId=52215614.11
+",5.763839735125,13.6
+4,4,"{""tp"": 4, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},inf,error,"exit 1: D
+--------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+--------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-29_05:43:07
+  host      : nid001188-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : -11 (pid: 623310)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 623310
+========================================================
+srun: error: nid001189: task 1: Exited with exit code 1
+srun: Terminating StepId=52215614.12
+srun: error: nid001188: task 0: Exited with exit code 1
+",5.763839735125,29.5
+5,5,"{""tp"": 4, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 0.47428225756250003}",0.47428225756250003,success,,0.47428225756250003,19.5
+6,6,"{""tp"": 4, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 0.572193868875}",0.572193868875,success,,0.47428225756250003,21.1
+7,7,"{""tp"": 4, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.486594446125}",0.486594446125,success,,0.47428225756250003,15.8
+8,8,"{""tp"": 2, ""dp"": 2, ""pp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.767248115375}",0.767248115375,success,,0.47428225756250003,34.7
+9,9,"{""tp"": 4, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.486594446125}",0.486594446125,success,,0.47428225756250003,43.2
+10,10,"{""tp"": 8, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.9548064749999999}",0.9548064749999999,success,,0.47428225756250003,37.3
