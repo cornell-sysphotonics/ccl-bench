@@ -75,3 +75,4 @@ upload_server/uploads/
 venv/
 
 run_cache.json
+traces

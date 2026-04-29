@@ -2021,3 +2021,38 @@ runs:
     \ \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n  \
     \      \"compile_mode\": compile_mode,\n        \"activation_checkpointing\":\
     \ activation_checkpointing,\n    }\n\n    return config\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 1
+    micro_batch: 1
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 6.298200747875001
+  score: 6.298200747875001
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 1,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline:\n    tp\
+    \ = 4\n    dp = 2\n    pp = 1\n    micro_batch = 1 # doesn't matter for pp = 1\n\
+    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n\
+    \        \"micro_batch\": micro_batch,\n        \"compile_mode\": \"eager\",\n\
+    \        \"activation_checkpointing\": False,\n    }\n"

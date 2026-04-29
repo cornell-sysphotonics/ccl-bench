@@ -111,13 +111,12 @@ def _build_message(
     history: list[dict],
     iteration: int,
     max_iterations: int,
-    best_score: tuple[float, float],
+    best_score: float,
     workload: dict,
     environment: dict,
     tuning: dict,
 ) -> str:
     goal    = tuning["optimization_goal"]
-    b_sr, b_ms = best_score
     env_str = "\n".join(f"  {k}: {v}" for k, v in environment.items() if v is not None)
     cs_str  = "\n".join(
         f"  {c['key']} ({c['type']}) choices={c.get('choices','?')} — {c.get('description','')}"
@@ -146,7 +145,7 @@ def _build_message(
         f"## Execution History\n"
         f"```\n{_format_history_table(history, goal)}\n```\n\n"
         f"```json\n{recent_json}\n```\n\n"
-        f"Best so far:  success_rate={b_sr:.0%},  score={b_ms:.4g}\n\n"
+        f"Best so far:  score={best_score:.4g}\n\n"
         f"**Task:** fix failures first, then improve the score. "
         f"Submit via `submit_config`.\n"
     )
@@ -181,7 +180,7 @@ def update_policy(
     client: anthropic.Anthropic,
     iteration: int,
     max_iterations: int,
-    best_score: tuple[float, float],
+    best_score: float,
 ) -> tuple[Path, str] | tuple[None, None]:
     """Ask the LLM to produce an improved generate_config program.
 

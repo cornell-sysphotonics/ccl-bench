@@ -30,9 +30,9 @@ def generate_config(workload: dict, environment: dict) -> dict:
     batch_size    = workload.get("batch_size", 1)
 
     # Baseline:
-    tp = 4
-    dp = 2
+    tp = min(gpus_per_node, 4)
     pp = 1
+    dp = max(1, total_gpus // (tp * pp))
     micro_batch = 1 # doesn't matter for pp = 1
 
     return {
