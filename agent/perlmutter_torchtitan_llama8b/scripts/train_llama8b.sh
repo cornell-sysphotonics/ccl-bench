@@ -6,7 +6,6 @@
 #   MICRO_BATCH_SIZE      — pipeline microbatch size (also accepts MICRO_BATCH)
 #   COMPILE_MODE          — "eager" | "compile"
 #   ACTIVATION_CHECKPOINTING — "true" | "false"
-#   ENABLE_OPUS_BACKEND   — "true" | "false" (requires the opus Python package)
 #   TRACE_DIR             — output root for profiler traces and metric YAML
 #   WORKLOAD_NAME         — informational label
 
@@ -15,11 +14,10 @@ set -e
 # ── Config from environment ────────────────────────────────────────────────────
 TP=${TP:-4}
 DP=${DP:-1}
-PP=${PP:-2}
-MICRO_BATCH_SIZE=${MICRO_BATCH_SIZE:-${MICRO_BATCH:-1}}
+PP=${PP:-4}
+MICRO_BATCH_SIZE=${MICRO_BATCH_SIZE:-1}
 COMPILE_MODE=${COMPILE_MODE:-"eager"}
 ACTIVATION_CHECKPOINTING=${ACTIVATION_CHECKPOINTING:-"false"}
-ENABLE_OPUS_BACKEND=${ENABLE_OPUS_BACKEND:-"false"}
 TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b"}
 
 # ── Workload constants (from workload card) ────────────────────────────────────
@@ -57,7 +55,7 @@ export HF_HOME="/tmp/hf_home_${USER}"
 export HF_DATASETS_CACHE="/tmp/hf_datasets_${USER}"
 mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE"
 
-# ── Profiler schedule: Opus TorchTitan uses profile_freq with fixed warmup ─────
+# ── Profiler schedule: TorchTitan uses profile_freq with fixed warmup ─────
 TRAINING_STEPS=10
 PROFILE_FREQ=10
 
@@ -88,10 +86,6 @@ OVERRIDES=(
     --job.dump_folder "$TRACE_DIR"
     --metrics.disable_color_printing
 )
-
-if [ "$ENABLE_OPUS_BACKEND" = "true" ]; then
-    OVERRIDES+=(--training.enable_opus_backend)
-fi
 
 if [ "$COMPILE_MODE" != "eager" ]; then
     OVERRIDES+=(--compile.enable)
