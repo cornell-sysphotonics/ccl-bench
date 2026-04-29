@@ -1,3 +1,6 @@
 [submodule "agent/experiments/tools/astra-sim-hybrid-parallelism"]
 	path = agent/experiments/tools/astra-sim-hybrid-parallelism
 	url = git@github.com:EricDinging/astra-sim-hybrid-parallelism.git
+[submodule "agent/torchtitan"]
+	path = agent/torchtitan
+	url = https://github.com/pytorch/torchtitan.git
