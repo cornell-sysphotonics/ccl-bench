@@ -23,6 +23,7 @@ Usage:
 import argparse
 import importlib.util
 import json
+import shutil
 import sys
 import time
 from datetime import datetime
@@ -175,6 +176,21 @@ def _is_better(new: tuple[float, float], old: tuple[float, float], direction: st
     return bs_n < bs_o if direction == "minimize" else bs_n > bs_o
 
 
+def _save_traces(record: dict, iteration: int) -> None:
+    """Copy traces from the current run into RUN_DIR/traces/{timestamp}_iter{N}."""
+    src = record.get("trace_dir")
+    if not src:
+        return
+    src_path = Path(src)
+    if not src_path.is_dir():
+        return
+    dest = RUN_DIR / "traces" / f"{_TIMESTAMP}_iter{iteration}"
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src_path, dest)
+    print(f"    [traces] saved → {dest}")
+
+
 # ── Single-iteration runner ────────────────────────────────────────────────────
 
 def run_once(gc_path: Path, workload: dict, environment: dict,
@@ -289,6 +305,7 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
     print("\n[eval] Seed generate_config...")
     seed_record = run_once(current_path, workload, environment, tuning)
     update_history(history, seed_record, card, card_path)          # step 5
+    _save_traces(seed_record, 0)
 
     best_score = _eval_score(history, direction)
     best_path  = current_path
@@ -335,6 +352,7 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
 
         # step 5 — update history
         update_history(history, record, card, card_path)
+        _save_traces(record, iteration)
 
         cur_score = _eval_score(history, direction)
         improved  = _is_better(cur_score, best_score, direction)

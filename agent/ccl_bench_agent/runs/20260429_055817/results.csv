@@ -1,0 +1,50 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 1, ""dp"": 1, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""eager"", ""activation_checkpointing"": false}",{},inf,error,"exit 1: ut of memory. Tried to allocate 896.00 MiB. GPU 0 has a total capacity of 39.49 GiB of which 299.31 MiB is free. Including non-PyTorch memory, this process has 39.19 GiB memory in use. Of the allocated memory 38.15 GiB is allocated by PyTorch, and 93.59 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+  
+============================================================
+",inf,
+1,1,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": true}","{""avg_step_time"": 8.816564003333333}",8.816564003333333,success,,8.816564003333333,36.9
+2,2,"{""tp"": 1, ""dp"": 16, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": false}","{""avg_step_time"": 10.944369894541666}",10.944369894541666,success,,8.816564003333333,45.2
+3,3,"{""tp"": 1, ""dp"": 16, ""pp"": 1, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": false}","{""avg_step_time"": 10.944369894541666}",10.944369894541666,success,,8.816564003333333,55.0
+4,4,"{""tp"": 4, ""dp"": 1, ""pp"": 4, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": true}",{},inf,error,"exit 1: tan/lib/python3.13/site-packages/torch/distributed/pipelining/microbatch.py"", line 268, in _shard_dict_of_args
+      split_sizes.append(v.size(spec.split_dim))
+                         ~~~~~~^^^^^^^^^^^^^^^^
+  IndexError: Dimension specified as 0 but tensor has no dimensions
+  
+============================================================
+srun: error: nid001096: task 0: Exited with exit code 1
+srun: Terminating StepId=52216444.2
+srun: error: nid001097: task 1: Exited with exit code 1
+srun: error: nid001101: task 3: Exited with exit code 1
+srun: error: nid001100: task 2: Exited with exit code 1
+",8.816564003333333,45.0
+5,5,"{""tp"": 4, ""dp"": 2, ""pp"": 2, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": false}",{},inf,error,"exit 1: rch/distributed/elastic/agent/server/api.py"", line 908, in _invoke_run
+    time.sleep(monitor_interval)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File ""/global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py"", line 86, in _terminate_process_handler
+    raise SignalException(f""Process {os.getpid()} got signal: {sigval}"", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 947260 got signal: 15
+srun: error: nid001096: task 0: Exited with exit code 1
+srun: error: nid001097: task 1: Exited with exit code 1
+",8.816564003333333,45.8
+6,6,"{""tp"": 4, ""dp"": 1, ""pp"": 4, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": true}",{},inf,error,"exit 1: tan/lib/python3.13/site-packages/torch/distributed/pipelining/microbatch.py"", line 268, in _shard_dict_of_args
+      split_sizes.append(v.size(spec.split_dim))
+                         ~~~~~~^^^^^^^^^^^^^^^^
+  IndexError: Dimension specified as 0 but tensor has no dimensions
+  
+============================================================
+srun: error: nid001096: task 0: Exited with exit code 1
+srun: Terminating StepId=52216444.2
+srun: error: nid001097: task 1: Exited with exit code 1
+srun: error: nid001101: task 3: Exited with exit code 1
+srun: error: nid001100: task 2: Exited with exit code 1
+",8.816564003333333,44.9
+7,7,"{""tp"": 4, ""dp"": 2, ""pp"": 2, ""micro_batch"": 1, ""compile_mode"": ""inductor"", ""activation_checkpointing"": false}",{},inf,error,"exit 1: rch/distributed/elastic/agent/server/api.py"", line 908, in _invoke_run
+    time.sleep(monitor_interval)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File ""/global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py"", line 86, in _terminate_process_handler
+    raise SignalException(f""Process {os.getpid()} got signal: {sigval}"", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 947260 got signal: 15
+srun: error: nid001096: task 0: Exited with exit code 1
+srun: error: nid001097: task 1: Exited with exit code 1
+",8.816564003333333,46.7

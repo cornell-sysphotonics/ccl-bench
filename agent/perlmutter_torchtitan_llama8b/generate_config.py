@@ -23,18 +23,17 @@ def generate_config(workload: dict, environment: dict) -> dict:
 
     Returns:
         dict of configuration key-value pairs matching config_space keys, e.g.:
-          {"tp": 4, "dp": 8, "pp": 1, "micro_batch": 4, "compile_mode": "inductor"}
+          {"tp": 4, "dp": 8, "pp": 1, "micro_batch": 1, "compile_mode": "inductor"}
     """
     total_gpus    = environment.get("total_gpus", 1)
     gpus_per_node = environment.get("gpus_per_node", 8)
     batch_size    = workload.get("batch_size", 1)
 
-    # Baseline: fill one node with TP (low-latency intra-node),
-    # scale data parallelism across nodes.
-    tp = min(gpus_per_node, 8)
-    dp = max(1, total_gpus // tp)
+    # Baseline:
+    tp = 4
+    dp = 2
     pp = 1
-    micro_batch = max(1, batch_size // dp)
+    micro_batch = 1 # doesn't matter for pp = 1
 
     return {
         "tp": tp,

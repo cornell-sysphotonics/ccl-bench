@@ -1168,3 +1168,856 @@ runs:
     \ in valid:\n        config[\"compile_mode\"] = compile_mode\n    if \"activation_checkpointing\"\
     \ in valid:\n        config[\"activation_checkpointing\"] = activation_checkpointing\n\
     \    \n    return config\n"
+- config:
+    tp: 1
+    dp: 1
+    pp: 1
+    micro_batch: 1
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics: {}
+  score: .inf
+  status: error
+  error_msg: "exit 1: ut of memory. Tried to allocate 896.00 MiB. GPU 0 has a total\
+    \ capacity of 39.49 GiB of which 299.31 MiB is free. Including non-PyTorch memory,\
+    \ this process has 39.19 GiB memory in use. Of the allocated memory 38.15 GiB\
+    \ is allocated by PyTorch, and 93.59 MiB is reserved by PyTorch but unallocated.\
+    \ If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True\
+    \ to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n\
+    \  \n============================================================\n"
+  trace_dir: null
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 1,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline:\n    tp\
+    \ = 1\n    dp = 1\n    pp = 1\n    micro_batch = 1 # doesn't matter for pp = 1\n\
+    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n\
+    \        \"micro_batch\": micro_batch,\n        \"compile_mode\": \"eager\",\n\
+    \        \"activation_checkpointing\": False,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 1
+    compile_mode: inductor
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 8.816564003333333
+  score: 8.816564003333333
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n\n    # Build lookup of\
+    \ valid choices per key\n    config_space = workload.get(\"config_space\", [])\n\
+    \    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"]] = dim[\"\
+    choices\"]\n\n    # Estimate model size in GB (rough)\n    # Llama-3.1-8B ~ 8B\
+    \ params, bf16 = 2 bytes/param = ~16GB just for params\n    # With optimizer states\
+    \ (Adam: 2x fp32 copies) ~ 48GB for 8B model\n    # We need to shard across GPUs\n\
+    \n    # Strategy: \n    # 1. Use TP within node for fast comm (NVLink)\n    #\
+    \ 2. Use DP (FSDP) across nodes to shard optimizer states\n    # 3. Avoid PP if\
+    \ possible (pipeline bubbles)\n\n    def pick_closest(choices, target):\n    \
+    \    \"\"\"Pick the closest valid choice to target.\"\"\"\n        return min(choices,\
+    \ key=lambda x: abs(x - target))\n\n    # Determine TP: use full node width for\
+    \ large models, less for smaller ones\n    # For 8B model on 40GB GPUs, TP=2 might\
+    \ suffice per node, but TP=4 is safer\n    if \"8B\" in str(model_family) or \"\
+    8b\" in str(model_family):\n        tp_target = min(gpus_per_node, 4)  # TP=4\
+    \ within node\n    elif \"70B\" in str(model_family) or \"70b\" in str(model_family):\n\
+    \        tp_target = gpus_per_node  # Full node for large models\n    else:\n\
+    \        # Default: estimate based on memory\n        bytes_per_param = 2 if precision\
+    \ in [\"bf16\", \"fp16\"] else 4\n        # Rough param count heuristic - not\
+    \ critical, we'll be conservative\n        tp_target = min(gpus_per_node, 4)\n\
+    \n    tp = pick_closest(valid.get(\"tp\", [1]), tp_target)\n\n    # Remaining\
+    \ GPUs for DP * PP\n    remaining = total_gpus // tp\n\n    # Prefer PP=1, use\
+    \ all remaining for DP (FSDP shards optimizer states)\n    pp = 1\n    dp = remaining\n\
+    \n    # Validate against choices\n    if dp not in valid.get(\"dp\", [1]):\n \
+    \       # Try PP > 1 to find valid combination\n        best_dp, best_pp = 1,\
+    \ 1\n        best_total = 0\n        for pp_c in valid.get(\"pp\", [1]):\n   \
+    \         for dp_c in valid.get(\"dp\", [1]):\n                if dp_c * pp_c\
+    \ * tp <= total_gpus and dp_c * pp_c * tp > best_total:\n                    best_dp,\
+    \ best_pp = dp_c, pp_c\n                    best_total = dp_c * pp_c * tp\n  \
+    \      dp, pp = best_dp, best_pp\n    \n    pp = pick_closest(valid.get(\"pp\"\
+    , [1]), pp)\n    dp = pick_closest(valid.get(\"dp\", [1]), dp)\n\n    # Ensure\
+    \ tp * dp * pp <= total_gpus\n    while tp * dp * pp > total_gpus:\n        if\
+    \ dp > 1:\n            dp_choices = [c for c in valid.get(\"dp\", [1]) if c <\
+    \ dp]\n            if dp_choices:\n                dp = max(dp_choices)\n    \
+    \        else:\n                break\n        elif pp > 1:\n            pp_choices\
+    \ = [c for c in valid.get(\"pp\", [1]) if c < pp]\n            if pp_choices:\n\
+    \                pp = max(pp_choices)\n            else:\n                break\n\
+    \        else:\n            break\n\n    # Micro batch: for PP > 1, more micro-batches\
+    \ reduce bubble ratio\n    # For PP=1, it doesn't matter much\n    if pp > 1:\n\
+    \        # More micro-batches = less bubble. Target: at least 2*pp micro-batches\n\
+    \        local_batch = batch_size // dp\n        # micro_batch * num_microbatches\
+    \ = local_batch\n        # We want num_microbatches to be large, so micro_batch\
+    \ should be small but not too small\n        mb_target = max(1, local_batch //\
+    \ (2 * pp))\n        micro_batch = pick_closest(valid.get(\"micro_batch\", [1]),\
+    \ mb_target)\n    else:\n        micro_batch = pick_closest(valid.get(\"micro_batch\"\
+    , [1]), 1)\n\n    # Activation checkpointing: enable for memory-constrained setups\n\
+    \    # With 40GB A100 and 8B model, we likely need it\n    activation_checkpointing\
+    \ = True\n    if \"activation_checkpointing\" in valid:\n        activation_checkpointing\
+    \ = True if True in valid[\"activation_checkpointing\"] else False\n\n    # Compile\
+    \ mode: inductor generally faster for training\n    compile_mode = \"inductor\"\
+    \ if \"inductor\" in valid.get(\"compile_mode\", [\"eager\"]) else \"eager\"\n\
+    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n\
+    \        \"micro_batch\": micro_batch,\n        \"compile_mode\": compile_mode,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config: &id003
+    tp: 1
+    dp: 16
+    pp: 1
+    micro_batch: 1
+    compile_mode: inductor
+    activation_checkpointing: false
+  metrics: &id004
+    avg_step_time: 10.944369894541666
+  score: 10.944369894541666
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n\n    # Build\
+    \ lookup of valid choices per key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n\n    def pick_closest(choices, target):\n        \"\"\"\
+    Pick the closest valid choice to target.\"\"\"\n        return min(choices, key=lambda\
+    \ x: abs(x - target))\n\n    def pick_valid(key, target):\n        \"\"\"Pick\
+    \ closest valid choice for a key.\"\"\"\n        choices = valid.get(key, [target])\n\
+    \        return min(choices, key=lambda x: abs(x - target))\n\n    # Estimate\
+    \ model size roughly\n    # Common model sizes: 8B ~ 16GB bf16, 70B ~ 140GB bf16\n\
+    \    model_str = str(model_family).lower()\n    if \"70b\" in model_str:\n   \
+    \     param_billions = 70\n    elif \"13b\" in model_str:\n        param_billions\
+    \ = 13\n    elif \"8b\" in model_str:\n        param_billions = 8\n    elif \"\
+    7b\" in model_str:\n        param_billions = 7\n    elif \"3b\" in model_str:\n\
+    \        param_billions = 3\n    elif \"1b\" in model_str or \"1.5b\" in model_str:\n\
+    \        param_billions = 1.5\n    else:\n        param_billions = 8  # default\
+    \ guess\n\n    bytes_per_param = 2 if precision in [\"bf16\", \"fp16\"] else 4\n\
+    \    model_memory_gb = param_billions * bytes_per_param  # just params\n    #\
+    \ Training memory per GPU with FSDP: params/tp + optimizer_states/(tp*dp) + activations\n\
+    \    # optimizer states ~= 12 bytes/param for Adam (param + grad + 2 states in\
+    \ fp32)\n    # With activation checkpointing, activation memory is much reduced\n\
+    \n    # Strategy: minimize TP (communication overhead) while fitting in memory\n\
+    \    # FSDP shards optimizer states across dp ranks\n    # TP shards model params\
+    \ and reduces activation memory per GPU\n    \n    # For each valid TP, compute\
+    \ if memory fits, then maximize DP\n    # Lower TP = less communication overhead\
+    \ = faster step time\n    # But need enough TP to fit in GPU memory\n    \n  \
+    \  tp_choices = sorted(valid.get(\"tp\", [1]))\n    dp_choices = sorted(valid.get(\"\
+    dp\", [1]), reverse=True)\n    pp_choices = sorted(valid.get(\"pp\", [1]))\n \
+    \   \n    best_config = None\n    \n    for tp in tp_choices:\n        # TP must\
+    \ not exceed gpus_per_node for NVLink efficiency\n        if tp > gpus_per_node:\n\
+    \            continue\n            \n        remaining_gpus = total_gpus // tp\n\
+    \        \n        for dp in dp_choices:\n            if dp > remaining_gpus:\n\
+    \                continue\n            \n            pp_remaining = remaining_gpus\
+    \ // dp\n            # Prefer pp=1\n            if pp_remaining >= 1:\n      \
+    \          pp = pick_valid(\"pp\", 1) if pp_remaining >= 1 else pick_valid(\"\
+    pp\", pp_remaining)\n                \n                if tp * dp * pp > total_gpus:\n\
+    \                    continue\n                if pp not in valid.get(\"pp\",\
+    \ [1]):\n                    continue\n                    \n                #\
+    \ Check memory feasibility (rough estimate)\n                # Per-GPU param memory\
+    \ with TP\n                param_mem_per_gpu = model_memory_gb / tp  # params\
+    \ sharded by TP\n                \n                # Optimizer states: 12 bytes/param\
+    \ total, sharded by dp*tp\n                opt_mem_per_gpu = (param_billions *\
+    \ 12) / (tp * dp)\n                \n                # Activation memory (rough):\
+    \ batch_per_gpu * seq_len * hidden_dim * num_layers * 2bytes\n               \
+    \ # With activation checkpointing, this is greatly reduced (sqrt layers)\n   \
+    \             local_batch = batch_size // dp\n                if local_batch <\
+    \ 1:\n                    continue\n                    \n                # Very\
+    \ rough activation estimate\n                # hidden_dim ~ param_billions * 1024\
+    \ / num_layers (very rough)\n                hidden_dim = int((param_billions\
+    \ * 1e9 / (num_layers * 12)) ** 0.5) if num_layers > 0 else 4096\n           \
+    \     hidden_dim = min(hidden_dim, 8192)\n                \n                act_mem_per_gpu\
+    \ = (local_batch * seq_len * hidden_dim * num_layers * 2) / (tp * 1e9)\n     \
+    \           # With activation checkpointing, reduce by ~5x\n                act_mem_checkpointed\
+    \ = act_mem_per_gpu / 5\n                \n                total_mem = param_mem_per_gpu\
+    \ + opt_mem_per_gpu + act_mem_checkpointed\n                \n               \
+    \ # Add some buffer (fragmentation, etc.)\n                mem_limit = gpu_memory_gb\
+    \ * 0.85\n                \n                needs_act_ckpt = (param_mem_per_gpu\
+    \ + opt_mem_per_gpu + act_mem_per_gpu) > mem_limit\n                \n       \
+    \         if needs_act_ckpt:\n                    total_mem_final = param_mem_per_gpu\
+    \ + opt_mem_per_gpu + act_mem_checkpointed\n                    act_ckpt = True\n\
+    \                else:\n                    total_mem_final = param_mem_per_gpu\
+    \ + opt_mem_per_gpu + act_mem_per_gpu\n                    act_ckpt = False\n\
+    \                \n                if total_mem_final > mem_limit:\n         \
+    \           # Still doesn't fit, need more TP or activation checkpointing\n  \
+    \                  # Try with activation checkpointing\n                    total_mem_final\
+    \ = param_mem_per_gpu + opt_mem_per_gpu + act_mem_checkpointed\n             \
+    \       act_ckpt = True\n                    if total_mem_final > mem_limit:\n\
+    \                        continue\n                \n                # This config\
+    \ fits! \n                # Prefer: lower TP (less comm), higher DP, pp=1\n  \
+    \              # Score heuristic: lower TP is better, pp=1 is best\n         \
+    \       if best_config is None:\n                    best_config = {\n       \
+    \                 \"tp\": tp, \"dp\": dp, \"pp\": pp, \n                     \
+    \   \"activation_checkpointing\": act_ckpt,\n                        \"local_batch\"\
+    : local_batch\n                    }\n                    break  # We found the\
+    \ best dp for this tp\n        \n        if best_config is not None:\n       \
+    \     break  # Found a config with minimum TP\n    \n    # Fallback if no config\
+    \ found\n    if best_config is None:\n        # Conservative fallback: use all\
+    \ GPUs with TP=gpus_per_node\n        tp = pick_valid(\"tp\", gpus_per_node)\n\
+    \        dp = pick_valid(\"dp\", total_gpus // tp)\n        pp = pick_valid(\"\
+    pp\", 1)\n        best_config = {\n            \"tp\": tp, \"dp\": dp, \"pp\"\
+    : pp,\n            \"activation_checkpointing\": True,\n            \"local_batch\"\
+    : max(1, batch_size // dp)\n        }\n    \n    tp = best_config[\"tp\"]\n  \
+    \  dp = best_config[\"dp\"]\n    pp = best_config[\"pp\"]\n    activation_checkpointing\
+    \ = best_config[\"activation_checkpointing\"]\n    \n    # Micro batch: only matters\
+    \ for PP > 1\n    if pp > 1:\n        local_batch = batch_size // dp\n       \
+    \ # More micro-batches reduces pipeline bubble\n        # Target: num_microbatches\
+    \ >= 2*pp\n        mb_target = max(1, local_batch // (2 * pp))\n        micro_batch\
+    \ = pick_valid(\"micro_batch\", mb_target)\n        # Ensure micro_batch divides\
+    \ local_batch if possible\n        mb_choices = valid.get(\"micro_batch\", [1])\n\
+    \        valid_mbs = [m for m in mb_choices if local_batch % m == 0 and m <= local_batch]\n\
+    \        if valid_mbs:\n            # Pick smallest valid micro_batch for most\
+    \ pipeline stages\n            micro_batch = min(valid_mbs)\n    else:\n     \
+    \   micro_batch = pick_valid(\"micro_batch\", 1)\n    \n    # Compile mode: inductor\
+    \ is generally faster\n    compile_mode = \"inductor\" if \"inductor\" in valid.get(\"\
+    compile_mode\", [\"eager\"]) else \"eager\"\n    \n    config = {\n        \"\
+    tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\":\
+    \ micro_batch,\n        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"
+- config: *id003
+  metrics: *id004
+  score: 10.944369894541666
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n\n    # Build\
+    \ lookup of valid choices per key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n\n    def pick_valid(key, target):\n        \"\"\"Pick\
+    \ closest valid choice for a key.\"\"\"\n        choices = valid.get(key, [target])\n\
+    \        return min(choices, key=lambda x: abs(x - target))\n\n    # Estimate\
+    \ model size\n    model_str = str(model_family).lower()\n    if \"70b\" in model_str:\n\
+    \        param_billions = 70\n    elif \"13b\" in model_str:\n        param_billions\
+    \ = 13\n    elif \"8b\" in model_str:\n        param_billions = 8\n    elif \"\
+    7b\" in model_str:\n        param_billions = 7\n    elif \"3b\" in model_str:\n\
+    \        param_billions = 3\n    elif \"1b\" in model_str or \"1.5b\" in model_str:\n\
+    \        param_billions = 1.5\n    else:\n        param_billions = 8\n\n    bytes_per_param\
+    \ = 2 if precision in [\"bf16\", \"fp16\"] else 4\n    model_memory_gb = param_billions\
+    \ * bytes_per_param  # params in GB\n\n    # For Llama-3.1-8B on 16x A100-40GB\
+    \ (4 per node):\n    # History shows:\n    #   tp=4, dp=4, pp=1, inductor, act_ckpt=True\
+    \ → 8.817\n    #   tp=1, dp=16, pp=1, inductor, act_ckpt=False → 10.94\n    #\
+    \ \n    # Strategy: Try tp=2, dp=8 to reduce TP communication overhead\n    #\
+    \ while using FSDP across more GPUs. FSDP communication can overlap\n    # with\
+    \ computation, while TP all-reduce is on the critical path.\n    \n    # Memory\
+    \ estimation for feasibility\n    # Per-GPU with tp and dp (FSDP):\n    # - Params:\
+    \ model_memory_gb / tp (TP shards params)\n    # - Optimizer states: param_billions\
+    \ * 12 / (tp * dp) (FSDP shards these)\n    # - Activations: depends on local\
+    \ batch, seq_len, hidden_dim, tp\n    # - With activation checkpointing: activations\
+    \ reduced ~5x\n    \n    intra_bw = environment.get(\"intra_node_bandwidth_gbps\"\
+    , 600)\n    inter_bw = environment.get(\"inter_node_bandwidth_gbps\", 100)\n \
+    \   \n    tp_choices = sorted(valid.get(\"tp\", [1]))\n    dp_choices = sorted(valid.get(\"\
+    dp\", [1]), reverse=True)\n    pp_choices = sorted(valid.get(\"pp\", [1]))\n \
+    \   mb_choices = valid.get(\"micro_batch\", [1])\n    \n    mem_limit = gpu_memory_gb\
+    \ * 0.85  # leave some headroom\n    \n    # Estimate hidden_dim from model\n\
+    \    if param_billions >= 65:\n        hidden_dim = 8192\n    elif param_billions\
+    \ >= 12:\n        hidden_dim = 5120\n    elif param_billions >= 7:\n        hidden_dim\
+    \ = 4096\n    elif param_billions >= 3:\n        hidden_dim = 3200\n    else:\n\
+    \        hidden_dim = 2048\n    \n    best_config = None\n    best_cost = float('inf')\n\
+    \    \n    for tp in tp_choices:\n        if tp > gpus_per_node:\n           \
+    \ continue  # TP should stay within node for NVLink\n            \n        for\
+    \ pp in pp_choices:\n            dp_needed = total_gpus // (tp * pp)\n       \
+    \     if dp_needed < 1 or dp_needed not in valid.get(\"dp\", [1]):\n         \
+    \       continue\n            dp = dp_needed\n            \n            if tp\
+    \ * dp * pp != total_gpus:\n                continue\n            \n         \
+    \   local_batch = batch_size // dp\n            if local_batch < 1:\n        \
+    \        continue\n            \n            # Memory check\n            param_mem\
+    \ = model_memory_gb / tp\n            opt_mem = (param_billions * 12) / (tp *\
+    \ dp)\n            \n            # Activation memory estimate (rough, in GB)\n\
+    \            act_mem = (local_batch * seq_len * hidden_dim * num_layers * 2) /\
+    \ (tp * 1e9)\n            act_mem_ckpt = act_mem / 5.0\n            \n       \
+    \     # Try without activation checkpointing first\n            for act_ckpt in\
+    \ [False, True]:\n                eff_act_mem = act_mem_ckpt if act_ckpt else\
+    \ act_mem\n                total_mem = param_mem + opt_mem + eff_act_mem\n   \
+    \             \n                if total_mem > mem_limit:\n                  \
+    \  continue\n                \n                # Cost heuristic: estimate step\
+    \ time\n                # TP communication: 2 * model_memory_gb/tp * num_layers\
+    \ * 2 / intra_bw per step\n                # (all-reduce per layer, forward +\
+    \ backward)\n                # DP communication: model_memory_gb / dp (FSDP all-gather\
+    \ + reduce-scatter)\n                # PP communication: pipeline bubble overhead\n\
+    \                \n                # TP cost: proportional to tp (more GPUs =\
+    \ more all-reduce)\n                # Higher TP = less compute per GPU but more\
+    \ comm\n                tp_comm_cost = 0\n                if tp > 1:\n       \
+    \             # All-reduce volume per layer = 2 * hidden_dim * seq_len * local_batch\
+    \ * bytes_per_param\n                    # For forward + backward = 2x\n     \
+    \               # Total = 2 * num_layers * 2 * hidden_dim * seq_len * local_batch\
+    \ * 2 / intra_bw\n                    tp_comm_cost = (4 * num_layers * hidden_dim\
+    \ * seq_len * local_batch * bytes_per_param) / (intra_bw * 1e9 / 8)\n        \
+    \        \n                # DP cost: all-gather + reduce-scatter of params (overlapped\
+    \ with compute mostly)\n                # But inter-node is slower\n         \
+    \       dp_comm_cost = 0\n                if dp > 1:\n                    num_nodes_in_dp\
+    \ = max(1, dp * tp // gpus_per_node)\n                    if num_nodes_in_dp >\
+    \ 1:\n                        # Inter-node communication\n                   \
+    \     dp_comm_cost = (model_memory_gb * 2) / (inter_bw / 8) * 0.3  # partially\
+    \ overlapped\n                    else:\n                        dp_comm_cost\
+    \ = (model_memory_gb * 2) / (intra_bw / 8) * 0.1\n                \n         \
+    \       # PP cost: pipeline bubble\n                pp_bubble_cost = 0\n     \
+    \           if pp > 1:\n                    pp_bubble_cost = (pp - 1) * 0.5  #\
+    \ rough penalty per PP stage\n                \n                # Compute cost:\
+    \ inversely proportional to total_gpus\n                compute_cost = (param_billions\
+    \ * batch_size * seq_len) / (total_gpus * 100)\n                \n           \
+    \     # Activation checkpointing recomputation penalty (~33% extra compute)\n\
+    \                if act_ckpt:\n                    compute_cost *= 1.33\n    \
+    \            \n                # Inductor speedup (~10-15%)\n                #\
+    \ Will be applied to all configs\n                \n                total_cost\
+    \ = compute_cost + tp_comm_cost + dp_comm_cost + pp_bubble_cost\n            \
+    \    \n                if total_cost < best_cost:\n                    best_cost\
+    \ = total_cost\n                    best_config = {\n                        \"\
+    tp\": tp,\n                        \"dp\": dp,\n                        \"pp\"\
+    : pp,\n                        \"activation_checkpointing\": act_ckpt,\n     \
+    \               }\n                \n                break  # If no act_ckpt fits,\
+    \ use act_ckpt; don't need to try further\n    \n    if best_config is None:\n\
+    \        # Conservative fallback\n        tp = pick_valid(\"tp\", gpus_per_node)\n\
+    \        dp = pick_valid(\"dp\", total_gpus // tp)\n        pp = pick_valid(\"\
+    pp\", 1)\n        best_config = {\n            \"tp\": tp, \"dp\": dp, \"pp\"\
+    : pp,\n            \"activation_checkpointing\": True,\n        }\n    \n    tp\
+    \ = best_config[\"tp\"]\n    dp = best_config[\"dp\"]\n    pp = best_config[\"\
+    pp\"]\n    activation_checkpointing = best_config[\"activation_checkpointing\"\
+    ]\n    \n    # Micro batch: only matters for PP > 1\n    if pp > 1:\n        local_batch\
+    \ = batch_size // dp\n        # More micro-batches = less pipeline bubble\n  \
+    \      # Target smallest micro_batch that divides local_batch\n        valid_mbs\
+    \ = sorted([m for m in mb_choices if local_batch % m == 0 and m <= local_batch])\n\
+    \        if valid_mbs:\n            micro_batch = valid_mbs[0]  # smallest for\
+    \ most microbatches\n        else:\n            micro_batch = pick_valid(\"micro_batch\"\
+    , 1)\n    else:\n        micro_batch = pick_valid(\"micro_batch\", 1)\n    \n\
+    \    # Compile mode: inductor is generally faster for training\n    compile_mode\
+    \ = \"inductor\" if \"inductor\" in valid.get(\"compile_mode\", [\"eager\"]) else\
+    \ \"eager\"\n    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n\
+    \        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n        \"compile_mode\"\
+    : compile_mode,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n    \n    return config\n"
+- config: &id005
+    tp: 4
+    dp: 1
+    pp: 4
+    micro_batch: 1
+    compile_mode: inductor
+    activation_checkpointing: true
+  metrics: &id006 {}
+  score: .inf
+  status: error
+  error_msg: "exit 1: tan/lib/python3.13/site-packages/torch/distributed/pipelining/microbatch.py\"\
+    , line 268, in _shard_dict_of_args\n      split_sizes.append(v.size(spec.split_dim))\n\
+    \                         ~~~~~~^^^^^^^^^^^^^^^^\n  IndexError: Dimension specified\
+    \ as 0 but tensor has no dimensions\n  \n============================================================\n\
+    srun: error: nid001096: task 0: Exited with exit code 1\nsrun: Terminating StepId=52216444.2\n\
+    srun: error: nid001097: task 1: Exited with exit code 1\nsrun: error: nid001101:\
+    \ task 3: Exited with exit code 1\nsrun: error: nid001100: task 2: Exited with\
+    \ exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n\n    # Build\
+    \ lookup of valid choices per key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n\n    def pick_valid(key, target):\n        \"\"\"Pick\
+    \ closest valid choice for a key.\"\"\"\n        choices = valid.get(key, [target])\n\
+    \        if isinstance(target, bool):\n            return target if target in\
+    \ choices else choices[0]\n        return min(choices, key=lambda x: abs(x - target))\n\
+    \n    # Estimate model size\n    model_str = str(model_family).lower()\n    if\
+    \ \"70b\" in model_str:\n        param_billions = 70\n    elif \"13b\" in model_str:\n\
+    \        param_billions = 13\n    elif \"8b\" in model_str:\n        param_billions\
+    \ = 8\n    elif \"7b\" in model_str:\n        param_billions = 7\n    elif \"\
+    3b\" in model_str:\n        param_billions = 3\n    elif \"1b\" in model_str or\
+    \ \"1.5b\" in model_str:\n        param_billions = 1.5\n    else:\n        param_billions\
+    \ = 8\n\n    bytes_per_param = 2 if precision in [\"bf16\", \"fp16\"] else 4\n\
+    \    model_memory_gb = param_billions * bytes_per_param  # params in GB\n\n  \
+    \  intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n\n    # For this specific\
+    \ scenario (Llama-3.1-8B, 16 A100-40GB, 4/node):\n    # Best so far: tp=4, dp=4,\
+    \ pp=1, inductor, act_ckpt=True → 8.817\n    # tp=2, dp=8 and tp=1, dp=16 both\
+    \ gave 10.94 (without act_ckpt)\n    #\n    # Strategy: tp=4, dp=4 is clearly\
+    \ best parallelism config.\n    # Try WITHOUT activation checkpointing to save\
+    \ recomputation overhead.\n    # Memory estimate with tp=4, dp=4:\n    #   Params:\
+    \ 16GB / 4(tp) = 4GB per GPU\n    #   Optimizer (Adam fp32): 8B * 12 bytes / (4*4)\
+    \ = 6GB per GPU  \n    #   Gradients: 4GB per GPU\n    #   Activations (batch=8,\
+    \ seq=1024, hidden=4096, 32 layers, /tp=4):\n    #     ~8 * 1024 * 4096 * 32 *\
+    \ 2 * 2 / 4 / 1e9 ≈ ~17GB without checkpointing\n    #   Total: ~31GB - might\
+    \ be tight on 40GB but worth trying\n    \n    # General algorithm for choosing\
+    \ parallelism\n    num_nodes = total_gpus // gpus_per_node\n    \n    # Determine\
+    \ hidden_dim from model\n    if param_billions >= 65:\n        hidden_dim = 8192\n\
+    \    elif param_billions >= 12:\n        hidden_dim = 5120\n    elif param_billions\
+    \ >= 7:\n        hidden_dim = 4096\n    elif param_billions >= 3:\n        hidden_dim\
+    \ = 3200\n    else:\n        hidden_dim = 2048\n\n    # Try configurations in\
+    \ order of expected performance\n    # Prefer: tp within node, dp across nodes,\
+    \ pp=1\n    candidates = []\n    \n    tp_choices = sorted(valid.get(\"tp\", [1]))\n\
+    \    pp_choices = sorted(valid.get(\"pp\", [1]))\n    \n    for tp in tp_choices:\n\
+    \        if tp > gpus_per_node:\n            continue\n        for pp in pp_choices:\n\
+    \            dp_needed = total_gpus // (tp * pp)\n            if dp_needed < 1\
+    \ or dp_needed not in valid.get(\"dp\", [1]):\n                continue\n    \
+    \        if tp * dp_needed * pp != total_gpus:\n                continue\n   \
+    \         dp = dp_needed\n            \n            local_batch = batch_size //\
+    \ dp\n            if local_batch < 1:\n                continue\n            \n\
+    \            # Memory estimation per GPU\n            param_mem = model_memory_gb\
+    \ / tp\n            # Optimizer states: Adam has 2 fp32 copies + gradients\n \
+    \           # Total ~12 bytes per param for bf16 training with Adam\n        \
+    \    opt_mem = (param_billions * 12) / (tp * dp)  # FSDP shards across dp\n  \
+    \          grad_mem = model_memory_gb / (tp * dp)  # FSDP shards gradients too\n\
+    \            \n            # Activation memory (very rough)\n            act_per_layer\
+    \ = (local_batch * seq_len * hidden_dim * bytes_per_param * 4) / (tp * 1e9)\n\
+    \            act_mem_full = act_per_layer * num_layers\n            act_mem_ckpt\
+    \ = act_per_layer * 2  # Only keep ~2 layers with checkpointing\n            \n\
+    \            for act_ckpt in [False, True]:\n                act_mem = act_mem_ckpt\
+    \ if act_ckpt else act_mem_full\n                total_mem = param_mem + opt_mem\
+    \ + grad_mem + act_mem\n                \n                if total_mem > gpu_memory_gb\
+    \ * 0.9:\n                    continue\n                \n                # Cost\
+    \ model\n                # Compute time (base)\n                compute = (param_billions\
+    \ * local_batch * seq_len * 6) / (tp * 1e12)\n                if act_ckpt:\n \
+    \                   compute *= 1.33  # recomputation overhead\n              \
+    \  \n                # TP communication cost (all-reduce, within node via NVLink)\n\
+    \                tp_comm = 0\n                if tp > 1:\n                   \
+    \ msg_size = 2 * local_batch * seq_len * hidden_dim * bytes_per_param / 1e9\n\
+    \                    # Ring all-reduce: 2*(tp-1)/tp * msg_size\n             \
+    \       tp_comm = 2 * (tp - 1) / tp * msg_size * num_layers * 2 / (intra_bw /\
+    \ 8)\n                \n                # DP communication cost (FSDP all-gather\
+    \ + reduce-scatter)\n                dp_comm = 0\n                if dp > 1:\n\
+    \                    dp_msg = model_memory_gb / tp  # params to gather/scatter\n\
+    \                    nodes_in_dp = max(1, dp // (gpus_per_node // tp))\n     \
+    \               if nodes_in_dp > 1:\n                        effective_bw = inter_bw\
+    \ / 8  # GB/s\n                        dp_comm = dp_msg * 2 * 2 * (dp - 1) / dp\
+    \ / effective_bw\n                        dp_comm *= 0.3  # overlap with compute\n\
+    \                    else:\n                        dp_comm = dp_msg * 2 * 2 *\
+    \ (dp - 1) / dp / (intra_bw / 8)\n                        dp_comm *= 0.1  # mostly\
+    \ overlapped within node\n                \n                # PP bubble cost\n\
+    \                pp_cost = 0\n                if pp > 1:\n                   \
+    \ pp_cost = compute * (pp - 1) / pp  # bubble fraction\n                \n   \
+    \             total_cost = compute + tp_comm + dp_comm + pp_cost\n           \
+    \     \n                candidates.append({\n                    \"tp\": tp, \"\
+    dp\": dp, \"pp\": pp,\n                    \"activation_checkpointing\": act_ckpt,\n\
+    \                    \"cost\": total_cost,\n                    \"mem\": total_mem,\n\
+    \                })\n    \n    # Sort by cost\n    candidates.sort(key=lambda\
+    \ x: x[\"cost\"])\n    \n    if candidates:\n        best = candidates[0]\n  \
+    \  else:\n        # Fallback: safe config\n        best = {\n            \"tp\"\
+    : pick_valid(\"tp\", gpus_per_node),\n            \"dp\": pick_valid(\"dp\", total_gpus\
+    \ // gpus_per_node),\n            \"pp\": pick_valid(\"pp\", 1),\n           \
+    \ \"activation_checkpointing\": True,\n        }\n    \n    tp = best[\"tp\"]\n\
+    \    dp = best[\"dp\"]\n    pp = best[\"pp\"]\n    activation_checkpointing =\
+    \ best[\"activation_checkpointing\"]\n    \n    # Micro batch: only matters for\
+    \ PP > 1\n    if pp > 1:\n        local_batch = batch_size // dp\n        mb_choices\
+    \ = valid.get(\"micro_batch\", [1])\n        valid_mbs = sorted([m for m in mb_choices\
+    \ if local_batch % m == 0 and m <= local_batch])\n        if valid_mbs:\n    \
+    \        micro_batch = valid_mbs[0]\n        else:\n            micro_batch =\
+    \ pick_valid(\"micro_batch\", 1)\n    else:\n        micro_batch = pick_valid(\"\
+    micro_batch\", 1)\n    \n    # Compile mode: inductor generally faster\n    compile_mode\
+    \ = \"inductor\" if \"inductor\" in valid.get(\"compile_mode\", [\"eager\"]) else\
+    \ \"eager\"\n    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n\
+    \        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n        \"compile_mode\"\
+    : compile_mode,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n    \n    return config\n"
+- config: &id007
+    tp: 4
+    dp: 2
+    pp: 2
+    micro_batch: 1
+    compile_mode: inductor
+    activation_checkpointing: false
+  metrics: &id008 {}
+  score: .inf
+  status: error
+  error_msg: "exit 1: rch/distributed/elastic/agent/server/api.py\", line 908, in\
+    \ _invoke_run\n    time.sleep(monitor_interval)\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n\
+    \  File \"/global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py\"\
+    , line 86, in _terminate_process_handler\n    raise SignalException(f\"Process\
+    \ {os.getpid()} got signal: {sigval}\", sigval=sigval)\ntorch.distributed.elastic.multiprocessing.api.SignalException:\
+    \ Process 947260 got signal: 15\nsrun: error: nid001096: task 0: Exited with exit\
+    \ code 1\nsrun: error: nid001097: task 1: Exited with exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n\n    # Build\
+    \ lookup of valid choices per key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n\n    def pick_valid(key, target):\n        \"\"\"Pick\
+    \ closest valid choice for a key.\"\"\"\n        choices = valid.get(key, [target])\n\
+    \        if isinstance(target, bool):\n            return target if target in\
+    \ choices else choices[0]\n        return min(choices, key=lambda x: abs(x - target))\n\
+    \n    # Estimate model size\n    model_str = str(model_family).lower()\n    if\
+    \ \"70b\" in model_str:\n        param_billions = 70\n    elif \"13b\" in model_str:\n\
+    \        param_billions = 13\n    elif \"8b\" in model_str:\n        param_billions\
+    \ = 8\n    elif \"7b\" in model_str:\n        param_billions = 7\n    elif \"\
+    3b\" in model_str:\n        param_billions = 3\n    elif \"1b\" in model_str or\
+    \ \"1.5b\" in model_str:\n        param_billions = 1.5\n    else:\n        param_billions\
+    \ = 8\n\n    bytes_per_param = 2 if precision in [\"bf16\", \"fp16\"] else 4\n\
+    \    model_memory_gb = param_billions * bytes_per_param  # params in GB\n\n  \
+    \  intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n    num_nodes = total_gpus\
+    \ // gpus_per_node\n\n    # Hidden dim estimation\n    if param_billions >= 65:\n\
+    \        hidden_dim = 8192\n    elif param_billions >= 12:\n        hidden_dim\
+    \ = 5120\n    elif param_billions >= 7:\n        hidden_dim = 4096\n    elif param_billions\
+    \ >= 3:\n        hidden_dim = 3200\n    else:\n        hidden_dim = 2048\n\n \
+    \   # For Llama-3.1-8B on 16 A100-40GB (4/node):\n    # Best result: tp=4, dp=4,\
+    \ pp=1, inductor, act_ckpt=True → 8.817\n    # tp=2,dp=8 → 10.94, tp=1,dp=16 →\
+    \ 10.94\n    # \n    # Now try: tp=4, dp=4, act_ckpt=False to see if memory fits\n\
+    \    # and we can save the ~33% recomputation overhead\n    # If it OOMs, next\
+    \ iteration we know act_ckpt=True is needed\n    # and can try other optimizations\
+    \ (e.g., tp=2, dp=4, pp=2)\n\n    # Generate candidates\n    candidates = []\n\
+    \    \n    tp_choices = sorted(valid.get(\"tp\", [1]))\n    pp_choices = sorted(valid.get(\"\
+    pp\", [1]))\n    dp_choices = valid.get(\"dp\", [1])\n    mb_choices = sorted(valid.get(\"\
+    micro_batch\", [1]))\n\n    for tp in tp_choices:\n        if tp > gpus_per_node:\n\
+    \            continue  # TP should stay within node\n        for pp in pp_choices:\n\
+    \            dp_needed = total_gpus // (tp * pp)\n            if dp_needed < 1\
+    \ or dp_needed not in dp_choices:\n                continue\n            if tp\
+    \ * dp_needed * pp != total_gpus:\n                continue\n            dp =\
+    \ dp_needed\n\n            local_batch = batch_size // dp\n            if local_batch\
+    \ < 1:\n                continue\n\n            # Memory estimation per GPU\n\
+    \            param_mem = model_memory_gb / tp  # params after TP sharding\n  \
+    \          # FSDP shards optimizer states and gradients across dp\n          \
+    \  # Adam: params(bf16) + grad(bf16) + master_weights(fp32) + momentum(fp32) +\
+    \ variance(fp32) \n            # = 2 + 2 + 4 + 4 + 4 = 16 bytes per param total,\
+    \ but sharded by dp\n            opt_and_grad_mem = (param_billions * 16) / (tp\
+    \ * dp)\n            \n            # Activation memory (rough estimate)\n    \
+    \        # Per layer: ~10 * batch * seq * hidden * bytes_per_param / tp\n    \
+    \        act_per_layer = (10 * local_batch * seq_len * hidden_dim * bytes_per_param)\
+    \ / (tp * 1e9)\n            eff_layers = num_layers\n            if pp > 1:\n\
+    \                eff_layers = num_layers // pp\n            \n            act_mem_full\
+    \ = act_per_layer * eff_layers\n            act_mem_ckpt = act_per_layer * 2 \
+    \ # Only ~2 layers active with checkpointing\n\n            for act_ckpt in [False,\
+    \ True]:\n                act_mem = act_mem_ckpt if act_ckpt else act_mem_full\n\
+    \                total_mem = param_mem + opt_and_grad_mem + act_mem + 1.0  # +1GB\
+    \ overhead\n                \n                if total_mem > gpu_memory_gb * 0.92:\n\
+    \                    continue\n\n                # Cost model\n              \
+    \  compute_base = (param_billions * local_batch * seq_len * 6) / (tp * 1e12)\n\
+    \                if pp > 1:\n                    compute_base /= pp  # work split\
+    \ across pp stages\n                recomp_factor = 1.33 if act_ckpt else 1.0\n\
+    \                compute = compute_base * recomp_factor\n\n                # TP\
+    \ communication (all-reduce within node via NVLink)\n                tp_comm =\
+    \ 0\n                if tp > 1:\n                    msg_size = 2 * local_batch\
+    \ * seq_len * hidden_dim * bytes_per_param / 1e9\n                    layers =\
+    \ eff_layers\n                    tp_comm = 2 * (tp - 1) / tp * msg_size * layers\
+    \ * 2 / (intra_bw / 8)\n\n                # DP communication (FSDP all-gather\
+    \ + reduce-scatter)\n                dp_comm = 0\n                if dp > 1:\n\
+    \                    dp_msg = model_memory_gb / tp\n                    nodes_in_dp\
+    \ = dp * tp / gpus_per_node\n                    if nodes_in_dp > 1:\n       \
+    \                 effective_bw = inter_bw / 8\n                        dp_comm\
+    \ = dp_msg * 2 * 2 * (dp - 1) / dp / effective_bw\n                        dp_comm\
+    \ *= 0.3  # partial overlap with compute\n                    else:\n        \
+    \                dp_comm = dp_msg * 2 * 2 * (dp - 1) / dp / (intra_bw / 8)\n \
+    \                       dp_comm *= 0.1\n\n                # PP bubble cost\n \
+    \               pp_cost = 0\n                if pp > 1:\n                    num_microbatches\
+    \ = local_batch  # will be divided by micro_batch\n                    bubble_frac\
+    \ = (pp - 1) / (num_microbatches + pp - 1)\n                    pp_cost = compute\
+    \ * bubble_frac * pp\n                    # P2P communication cost\n         \
+    \           pp_p2p = 2 * local_batch * seq_len * hidden_dim * bytes_per_param\
+    \ / (tp * 1e9)\n                    if num_nodes > 1:\n                      \
+    \  pp_cost += pp_p2p / (inter_bw / 8)\n                    else:\n           \
+    \             pp_cost += pp_p2p / (intra_bw / 8)\n\n                total_cost\
+    \ = compute + tp_comm + dp_comm + pp_cost\n\n                candidates.append({\n\
+    \                    \"tp\": tp, \"dp\": dp, \"pp\": pp,\n                   \
+    \ \"activation_checkpointing\": act_ckpt,\n                    \"cost\": total_cost,\n\
+    \                    \"mem\": total_mem,\n                })\n\n    # Sort by\
+    \ cost\n    candidates.sort(key=lambda x: x[\"cost\"])\n\n    if candidates:\n\
+    \        best = candidates[0]\n    else:\n        # Fallback: safe config using\
+    \ all GPUs with activation checkpointing\n        best = {\n            \"tp\"\
+    : pick_valid(\"tp\", min(gpus_per_node, 4)),\n            \"dp\": pick_valid(\"\
+    dp\", max(1, total_gpus // min(gpus_per_node, 4))),\n            \"pp\": pick_valid(\"\
+    pp\", 1),\n            \"activation_checkpointing\": True,\n        }\n\n    tp\
+    \ = best[\"tp\"]\n    dp = best[\"dp\"]\n    pp = best[\"pp\"]\n    activation_checkpointing\
+    \ = best[\"activation_checkpointing\"]\n\n    # Micro batch: only matters for\
+    \ PP > 1\n    if pp > 1:\n        local_batch = batch_size // dp\n        valid_mbs\
+    \ = sorted([m for m in mb_choices if local_batch % m == 0 and m <= local_batch])\n\
+    \        if valid_mbs:\n            # More microbatches = smaller bubble, pick\
+    \ smallest micro_batch\n            micro_batch = valid_mbs[0]\n        else:\n\
+    \            micro_batch = pick_valid(\"micro_batch\", 1)\n    else:\n       \
+    \ micro_batch = pick_valid(\"micro_batch\", 1)\n\n    # Compile mode: inductor\
+    \ generally faster for training\n    compile_mode = \"inductor\" if \"inductor\"\
+    \ in valid.get(\"compile_mode\", [\"eager\"]) else \"eager\"\n\n    config = {\n\
+    \        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n\n    return config\n"
+- config: *id005
+  metrics: *id006
+  score: .inf
+  status: error
+  error_msg: "exit 1: tan/lib/python3.13/site-packages/torch/distributed/pipelining/microbatch.py\"\
+    , line 268, in _shard_dict_of_args\n      split_sizes.append(v.size(spec.split_dim))\n\
+    \                         ~~~~~~^^^^^^^^^^^^^^^^\n  IndexError: Dimension specified\
+    \ as 0 but tensor has no dimensions\n  \n============================================================\n\
+    srun: error: nid001096: task 0: Exited with exit code 1\nsrun: Terminating StepId=52216444.2\n\
+    srun: error: nid001097: task 1: Exited with exit code 1\nsrun: error: nid001101:\
+    \ task 3: Exited with exit code 1\nsrun: error: nid001100: task 2: Exited with\
+    \ exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n\n    # Build\
+    \ lookup of valid choices per key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n\n    def pick_valid(key, target):\n        \"\"\"Pick\
+    \ closest valid choice for a key.\"\"\"\n        choices = valid.get(key, [target])\n\
+    \        if isinstance(target, bool):\n            return target if target in\
+    \ choices else choices[0]\n        return min(choices, key=lambda x: abs(x - target))\n\
+    \n    # Estimate model size\n    model_str = str(model_family).lower()\n    if\
+    \ \"70b\" in model_str:\n        param_billions = 70\n    elif \"13b\" in model_str:\n\
+    \        param_billions = 13\n    elif \"8b\" in model_str:\n        param_billions\
+    \ = 8\n    elif \"7b\" in model_str:\n        param_billions = 7\n    elif \"\
+    3b\" in model_str:\n        param_billions = 3\n    elif \"1b\" in model_str or\
+    \ \"1.5b\" in model_str:\n        param_billions = 1.5\n    else:\n        param_billions\
+    \ = 8\n\n    bytes_per_param = 2 if precision in [\"bf16\", \"fp16\"] else 4\n\
+    \    model_memory_gb = param_billions * bytes_per_param  # params in GB\n\n  \
+    \  intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n    num_nodes = total_gpus\
+    \ // gpus_per_node\n\n    # Hidden dim estimation\n    if param_billions >= 65:\n\
+    \        hidden_dim = 8192\n    elif param_billions >= 12:\n        hidden_dim\
+    \ = 5120\n    elif param_billions >= 7:\n        hidden_dim = 4096\n    elif param_billions\
+    \ >= 3:\n        hidden_dim = 3200\n    else:\n        hidden_dim = 2048\n\n \
+    \   # For this specific scenario (Llama-3.1-8B, 16 A100-40GB, 4/node):\n    #\
+    \ Best known: tp=4, dp=4, pp=1, inductor, act_ckpt=True → 8.817\n    # Try: tp=4,\
+    \ dp=4, pp=1, inductor, act_ckpt=False\n    # This removes recomputation overhead\
+    \ (~33% of forward pass)\n    # Memory estimate: params=16GB/4tp=4GB per GPU\n\
+    \    # Optimizer states (Adam): 8B * 12 bytes / (4tp*4dp) = 6GB per GPU  \n  \
+    \  # Activations (no ckpt): ~10 * 8 * 1024 * 4096 * 2 / (4 * 1e9) * 32 layers\
+    \ ≈ 5.4GB\n    # Total ≈ 15.4GB + overhead → should fit in 40GB\n    \n    # Generate\
+    \ candidates sorted by estimated performance\n    candidates = []\n    \n    tp_choices\
+    \ = sorted(valid.get(\"tp\", [1]))\n    pp_choices = sorted(valid.get(\"pp\",\
+    \ [1]))\n    dp_choices = valid.get(\"dp\", [1])\n    mb_choices = sorted(valid.get(\"\
+    micro_batch\", [1]))\n\n    for tp in tp_choices:\n        if tp > gpus_per_node:\n\
+    \            continue  # TP should stay within node for NVLink\n        for pp\
+    \ in pp_choices:\n            dp_needed = total_gpus // (tp * pp)\n          \
+    \  if dp_needed < 1 or dp_needed not in dp_choices:\n                continue\n\
+    \            if tp * dp_needed * pp != total_gpus:\n                continue\n\
+    \            dp = dp_needed\n\n            local_batch = batch_size // dp\n  \
+    \          if local_batch < 1:\n                continue\n\n            # Memory\
+    \ estimation per GPU\n            param_mem = model_memory_gb / tp  # params after\
+    \ TP sharding (bf16)\n            \n            # FSDP shards optimizer states\
+    \ across dp\n            # Adam: master_weights(fp32) + momentum(fp32) + variance(fp32)\
+    \ = 12 bytes/param\n            # Gradients(bf16) = 2 bytes/param, but transient\n\
+    \            # Full sharding: (12 + 2) * params / (tp * dp)\n            opt_and_grad_mem\
+    \ = (param_billions * 14) / (tp * dp)\n            \n            # Activation\
+    \ memory (rough estimate)\n            # Per layer: ~12 * local_batch * seq *\
+    \ hidden * bytes / tp\n            act_per_layer = (12 * local_batch * seq_len\
+    \ * hidden_dim * bytes_per_param) / (tp * 1e9)\n            eff_layers = num_layers\n\
+    \            if pp > 1:\n                eff_layers = num_layers // pp\n     \
+    \       \n            act_mem_full = act_per_layer * eff_layers\n            act_mem_ckpt\
+    \ = act_per_layer * 2  # Only ~2 layers active with checkpointing\n\n        \
+    \    for act_ckpt in [False, True]:\n                act_mem = act_mem_ckpt if\
+    \ act_ckpt else act_mem_full\n                total_mem = param_mem + opt_and_grad_mem\
+    \ + act_mem + 2.0  # +2GB overhead/fragmentation\n                \n         \
+    \       if total_mem > gpu_memory_gb * 0.90:\n                    continue\n\n\
+    \                # Cost model for avg_step_time\n                # Forward + backward\
+    \ compute\n                compute_base = (param_billions * local_batch * seq_len\
+    \ * 6) / (tp * 1e12)\n                if pp > 1:\n                    compute_base\
+    \ /= pp\n                recomp_factor = 1.33 if act_ckpt else 1.0\n         \
+    \       compute = compute_base * recomp_factor\n\n                # TP communication\
+    \ (all-reduce within node via NVLink)\n                tp_comm = 0\n         \
+    \       if tp > 1:\n                    msg_size = 2 * local_batch * seq_len *\
+    \ hidden_dim * bytes_per_param / 1e9\n                    layers = eff_layers\n\
+    \                    tp_comm = 2 * (tp - 1) / tp * msg_size * layers * 2 / (intra_bw\
+    \ / 8)\n\n                # DP communication (FSDP all-gather + reduce-scatter)\n\
+    \                dp_comm = 0\n                if dp > 1:\n                   \
+    \ dp_msg = model_memory_gb / tp\n                    # Check if DP group spans\
+    \ nodes\n                    gpus_in_dp_same_node = gpus_per_node // tp\n    \
+    \                if dp > gpus_in_dp_same_node:\n                        # Some\
+    \ DP communication is inter-node\n                        effective_bw = inter_bw\
+    \ / 8\n                        dp_comm = dp_msg * 2 * 2 * (dp - 1) / dp / effective_bw\n\
+    \                        dp_comm *= 0.3  # partial overlap with compute\n    \
+    \                else:\n                        dp_comm = dp_msg * 2 * 2 * (dp\
+    \ - 1) / dp / (intra_bw / 8)\n                        dp_comm *= 0.1\n\n     \
+    \           # PP bubble cost\n                pp_cost = 0\n                if\
+    \ pp > 1:\n                    # Best micro_batch for this config\n          \
+    \          valid_mbs = sorted([m for m in mb_choices if local_batch % m == 0 and\
+    \ m <= local_batch])\n                    if valid_mbs:\n                    \
+    \    best_mb = valid_mbs[0]  # smallest = most microbatches = smallest bubble\n\
+    \                    else:\n                        best_mb = 1\n            \
+    \        num_microbatches = local_batch // best_mb\n                    bubble_frac\
+    \ = (pp - 1) / (num_microbatches + pp - 1)\n                    pp_cost = compute\
+    \ * bubble_frac * pp\n                    # P2P communication\n              \
+    \      pp_p2p = 2 * local_batch * seq_len * hidden_dim * bytes_per_param / (tp\
+    \ * 1e9)\n                    if num_nodes > 1:\n                        pp_cost\
+    \ += pp_p2p / (inter_bw / 8)\n                    else:\n                    \
+    \    pp_cost += pp_p2p / (intra_bw / 8)\n\n                total_cost = compute\
+    \ + tp_comm + dp_comm + pp_cost\n\n                candidates.append({\n     \
+    \               \"tp\": tp, \"dp\": dp, \"pp\": pp,\n                    \"activation_checkpointing\"\
+    : act_ckpt,\n                    \"cost\": total_cost,\n                    \"\
+    mem\": total_mem,\n                })\n\n    # Sort by cost\n    candidates.sort(key=lambda\
+    \ x: x[\"cost\"])\n\n    if candidates:\n        best = candidates[0]\n    else:\n\
+    \        # Fallback: safe config\n        best = {\n            \"tp\": pick_valid(\"\
+    tp\", min(gpus_per_node, 4)),\n            \"dp\": pick_valid(\"dp\", max(1, total_gpus\
+    \ // min(gpus_per_node, 4))),\n            \"pp\": pick_valid(\"pp\", 1),\n  \
+    \          \"activation_checkpointing\": True,\n        }\n\n    tp = best[\"\
+    tp\"]\n    dp = best[\"dp\"]\n    pp = best[\"pp\"]\n    activation_checkpointing\
+    \ = best[\"activation_checkpointing\"]\n\n    # Micro batch: only matters for\
+    \ PP > 1\n    if pp > 1:\n        local_batch = batch_size // dp\n        valid_mbs\
+    \ = sorted([m for m in mb_choices if local_batch % m == 0 and m <= local_batch])\n\
+    \        if valid_mbs:\n            micro_batch = valid_mbs[0]  # smallest for\
+    \ least bubble\n        else:\n            micro_batch = pick_valid(\"micro_batch\"\
+    , 1)\n    else:\n        micro_batch = pick_valid(\"micro_batch\", 1)\n\n    #\
+    \ Compile mode: inductor generally faster for training\n    compile_mode = \"\
+    inductor\" if \"inductor\" in valid.get(\"compile_mode\", [\"eager\"]) else \"\
+    eager\"\n\n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"\
+    pp\": pp,\n        \"micro_batch\": micro_batch,\n        \"compile_mode\": compile_mode,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n\n  \
+    \  return config\n"
+- config: *id007
+  metrics: *id008
+  score: .inf
+  status: error
+  error_msg: "exit 1: rch/distributed/elastic/agent/server/api.py\", line 908, in\
+    \ _invoke_run\n    time.sleep(monitor_interval)\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n\
+    \  File \"/global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py\"\
+    , line 86, in _terminate_process_handler\n    raise SignalException(f\"Process\
+    \ {os.getpid()} got signal: {sigval}\", sigval=sigval)\ntorch.distributed.elastic.multiprocessing.api.SignalException:\
+    \ Process 947260 got signal: 15\nsrun: error: nid001096: task 0: Exited with exit\
+    \ code 1\nsrun: error: nid001097: task 1: Exited with exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\")\n  \
+    \  precision = workload.get(\"precision\", \"fp32\")\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n\n    # Build\
+    \ lookup of valid choices per key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n\n    def pick_valid(key, target):\n        \"\"\"Pick\
+    \ closest valid choice for a key.\"\"\"\n        choices = valid.get(key, [target])\n\
+    \        if isinstance(target, bool):\n            return target if target in\
+    \ choices else choices[0]\n        return min(choices, key=lambda x: abs(x - target))\n\
+    \n    # Estimate model size\n    model_str = str(model_family).lower()\n    if\
+    \ \"70b\" in model_str:\n        param_billions = 70\n    elif \"13b\" in model_str:\n\
+    \        param_billions = 13\n    elif \"8b\" in model_str:\n        param_billions\
+    \ = 8\n    elif \"7b\" in model_str:\n        param_billions = 7\n    elif \"\
+    3b\" in model_str:\n        param_billions = 3\n    elif \"1b\" in model_str or\
+    \ \"1.5b\" in model_str:\n        param_billions = 1.5\n    else:\n        param_billions\
+    \ = 8\n\n    bytes_per_param = 2 if precision in [\"bf16\", \"fp16\"] else 4\n\
+    \    model_memory_gb = param_billions * bytes_per_param  # params in GB\n\n  \
+    \  intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n    num_nodes = total_gpus\
+    \ // gpus_per_node\n\n    # Hidden dim estimation\n    if param_billions >= 65:\n\
+    \        hidden_dim = 8192\n    elif param_billions >= 12:\n        hidden_dim\
+    \ = 5120\n    elif param_billions >= 7:\n        hidden_dim = 4096\n    elif param_billions\
+    \ >= 3:\n        hidden_dim = 3200\n    else:\n        hidden_dim = 2048\n\n \
+    \   # Strategy based on execution history:\n    # Best: tp=4, dp=4, pp=1, inductor,\
+    \ act_ckpt=True → 8.817\n    # tp=4, dp=4, pp=1, inductor, act_ckpt=False → 10.94\
+    \ (worse! maybe OOM-adjacent or other issue)\n    # \n    # Now try: tp=2, dp=8,\
+    \ pp=1, inductor, act_ckpt=True\n    # Less TP overhead (2 vs 4), more DP but\
+    \ FSDP overlaps well\n    # local_batch = 32/8 = 4 (smaller, less activation memory)\n\
+    \    # DP goes inter-node but bandwidth is 200 Gbps which is decent\n    \n  \
+    \  # Ensure tp * dp * pp = total_gpus and all values are valid\n    tp_choices\
+    \ = sorted(valid.get(\"tp\", [1]))\n    dp_choices = sorted(valid.get(\"dp\",\
+    \ [1]))\n    pp_choices = sorted(valid.get(\"pp\", [1]))\n    mb_choices = sorted(valid.get(\"\
+    micro_batch\", [1]))\n    \n    # Generate candidate configs and pick best based\
+    \ on cost model\n    candidates = []\n    \n    for tp in tp_choices:\n      \
+    \  if tp > gpus_per_node:\n            continue  # TP should stay within node\
+    \ for NVLink\n        # num_heads must be divisible by tp\n        if num_heads\
+    \ % tp != 0:\n            continue\n        for pp in pp_choices:\n          \
+    \  dp_needed = total_gpus // (tp * pp)\n            if dp_needed < 1 or dp_needed\
+    \ not in dp_choices:\n                continue\n            if tp * dp_needed\
+    \ * pp != total_gpus:\n                continue\n            dp = dp_needed\n\n\
+    \            local_batch = batch_size // dp\n            if local_batch < 1:\n\
+    \                continue\n\n            # Memory estimation per GPU\n       \
+    \     # FSDP shards parameters and optimizer states across dp dimension\n    \
+    \        # During forward: all-gather brings full params (sharded by tp)\n   \
+    \         # Peak param memory = model_memory_gb / tp (full params after all-gather)\n\
+    \            param_mem = model_memory_gb / tp\n            \n            # Optimizer\
+    \ states: sharded across dp\n            # Adam: 12 bytes/param (master fp32 weights\
+    \ + momentum + variance)\n            opt_mem = (param_billions * 12) / (tp *\
+    \ dp)\n            # Gradients: 2 bytes/param, sharded by dp after reduce-scatter\n\
+    \            grad_mem = (param_billions * bytes_per_param) / (tp * dp)\n     \
+    \       \n            # Activation memory\n            # Per layer: roughly batch\
+    \ * seq * hidden * factor / tp\n            act_per_layer = (10 * local_batch\
+    \ * seq_len * hidden_dim * bytes_per_param) / (tp * 1e9)\n            eff_layers\
+    \ = num_layers if pp == 1 else num_layers // pp\n\n            for act_ckpt in\
+    \ [False, True]:\n                if act_ckpt:\n                    # With checkpointing:\
+    \ only ~2 layers of activations at a time\n                    act_mem = act_per_layer\
+    \ * 2\n                else:\n                    act_mem = act_per_layer * eff_layers\n\
+    \                \n                total_mem = param_mem + opt_mem + grad_mem\
+    \ + act_mem + 3.0  # 3GB overhead\n                \n                if total_mem\
+    \ > gpu_memory_gb * 0.90:\n                    continue\n\n                # Cost\
+    \ model\n                # Compute cost (proportional to FLOPs per GPU)\n    \
+    \            compute_base = (param_billions * local_batch * seq_len * 6) / (tp\
+    \ * 1e12)\n                if pp > 1:\n                    compute_base /= pp\n\
+    \                recomp_factor = 1.33 if act_ckpt else 1.0\n                compute\
+    \ = compute_base * recomp_factor\n\n                # TP communication cost\n\
+    \                tp_comm = 0\n                if tp > 1:\n                   \
+    \ # 2 all-reduces per layer (forward + backward), each with msg_size\n       \
+    \             msg_size = 2 * local_batch * seq_len * hidden_dim * bytes_per_param\
+    \ / 1e9\n                    tp_comm = 4 * (tp - 1) / tp * msg_size * eff_layers\
+    \ / (intra_bw / 8)\n\n                # DP (FSDP) communication cost\n       \
+    \         # All-gather in forward + reduce-scatter in backward\n             \
+    \   dp_comm = 0\n                if dp > 1:\n                    dp_msg = model_memory_gb\
+    \ / tp  # total param data to communicate\n                    # Determine effective\
+    \ bandwidth\n                    gpus_in_dp_same_node = gpus_per_node // tp\n\
+    \                    if dp > gpus_in_dp_same_node:\n                        #\
+    \ Inter-node communication dominates\n                        effective_bw = inter_bw\
+    \ / 8  # GB/s\n                        dp_comm = dp_msg * 2 * (dp - 1) / dp /\
+    \ effective_bw\n                        # FSDP can overlap with compute\n    \
+    \                    dp_comm *= 0.4\n                    else:\n             \
+    \           effective_bw = intra_bw / 8\n                        dp_comm = dp_msg\
+    \ * 2 * (dp - 1) / dp / effective_bw\n                        dp_comm *= 0.15\n\
+    \n                # PP bubble cost\n                pp_cost = 0\n            \
+    \    if pp > 1:\n                    valid_mbs = sorted([m for m in mb_choices\
+    \ if local_batch % m == 0 and m <= local_batch])\n                    if valid_mbs:\n\
+    \                        best_mb = valid_mbs[0]\n                    else:\n \
+    \                       best_mb = 1\n                    num_microbatches = local_batch\
+    \ // best_mb\n                    bubble_frac = (pp - 1) / (num_microbatches +\
+    \ pp - 1)\n                    pp_cost = compute * bubble_frac * pp\n        \
+    \            pp_p2p = 2 * local_batch * seq_len * hidden_dim * bytes_per_param\
+    \ / (tp * 1e9)\n                    if num_nodes > 1:\n                      \
+    \  pp_cost += pp_p2p / (inter_bw / 8)\n                    else:\n           \
+    \             pp_cost += pp_p2p / (intra_bw / 8)\n\n                total_cost\
+    \ = compute + tp_comm + dp_comm + pp_cost\n\n                candidates.append({\n\
+    \                    \"tp\": tp, \"dp\": dp, \"pp\": pp,\n                   \
+    \ \"activation_checkpointing\": act_ckpt,\n                    \"cost\": total_cost,\n\
+    \                    \"mem\": total_mem,\n                })\n\n    # Sort by\
+    \ cost\n    candidates.sort(key=lambda x: x[\"cost\"])\n\n    if candidates:\n\
+    \        best = candidates[0]\n    else:\n        # Fallback\n        best = {\n\
+    \            \"tp\": pick_valid(\"tp\", min(gpus_per_node, 4)),\n            \"\
+    dp\": pick_valid(\"dp\", max(1, total_gpus // min(gpus_per_node, 4))),\n     \
+    \       \"pp\": pick_valid(\"pp\", 1),\n            \"activation_checkpointing\"\
+    : True,\n        }\n\n    tp = best[\"tp\"]\n    dp = best[\"dp\"]\n    pp = best[\"\
+    pp\"]\n    activation_checkpointing = best[\"activation_checkpointing\"]\n\n \
+    \   # Micro batch\n    if pp > 1:\n        local_batch = batch_size // dp\n  \
+    \      valid_mbs = sorted([m for m in mb_choices if local_batch % m == 0 and m\
+    \ <= local_batch])\n        if valid_mbs:\n            micro_batch = valid_mbs[0]\n\
+    \        else:\n            micro_batch = pick_valid(\"micro_batch\", 1)\n   \
+    \ else:\n        micro_batch = pick_valid(\"micro_batch\", 1)\n\n    # Compile\
+    \ mode\n    compile_mode = \"inductor\" if \"inductor\" in valid.get(\"compile_mode\"\
+    , [\"eager\"]) else \"eager\"\n\n    config = {\n        \"tp\": tp,\n       \
+    \ \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n  \
+    \      \"compile_mode\": compile_mode,\n        \"activation_checkpointing\":\
+    \ activation_checkpointing,\n    }\n\n    return config\n"

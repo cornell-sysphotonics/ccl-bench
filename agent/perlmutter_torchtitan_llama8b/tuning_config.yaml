@@ -16,7 +16,7 @@ config_space:
     choices: [1, 2, 4, 8, 16]
   - key: micro_batch
     type: int
-    description: Pipeline microbatch size (must divide local_batch_size = 32/dp)
+    description: Pipeline microbatch size (does not matter if PP=1)
     choices: [1, 2, 4, 8, 16, 32]
   - key: compile_mode
     type: str
