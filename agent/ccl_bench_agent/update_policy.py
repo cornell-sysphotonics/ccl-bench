@@ -71,6 +71,8 @@ Priority 1 — fix errors/timeouts. Priority 2 — improve the score.
 
 - Write general logic, not a lookup table. The policy must generalise to unseen workloads.
 - Read `workload["config_space"]` to discover valid dimensions and their choices.
+  Each entry is a dict: `{"key": "tp", "type": "int", "choices": [1,2,4,8], "description": "..."}`.
+  Always use `dim["key"]` (not `dim["name"]`) to get the dimension name.
 - Each iteration should incorporate lessons learned from the history.
 - You MUST call `submit_config` exactly once per iteration.
 """
@@ -135,7 +137,10 @@ def _build_message(
         f"batch={workload.get('batch_size','?')}  seq={workload.get('seq_len','?')}  "
         f"precision={workload.get('precision','?')}\n\n"
         f"## Environment\n{env_str}\n\n"
-        f"## Config Space\n{cs_str}\n\n"
+        f"## Config Space\n"
+        f"(Each entry is a dict with fields `key`, `type`, `choices`, `description`.\n"
+        f"Access the dimension name as `dim['key']`, not `dim['name']`.)\n"
+        f"{cs_str}\n\n"
         f"## Optimization Objective\n{goal_str}\n\n"
         f"## Current generate_config\n```python\n{gc_code}\n```\n\n"
         f"## Execution History\n"

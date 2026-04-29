@@ -23,6 +23,7 @@ Usage:
 import argparse
 import importlib.util
 import json
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -34,6 +35,7 @@ from execute import execute
 from compute_metric import compute_metric
 from update_policy import update_policy
 from update_history import update_history
+import run_cache
 
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
@@ -42,9 +44,48 @@ API_KEY_FILE = _HERE.parent / "API_KEY"
 DEFAULT_CARD   = _HERE / "workload_card.yaml"
 DEFAULT_TUNING = _HERE / "tuning_config.yaml"
 DEFAULT_SEED   = _HERE / "generate_config.py"
+DEFAULT_OUTPUT = _HERE / "runs"
 _TIMESTAMP   = datetime.now().strftime("%Y%m%d_%H%M%S")
-GC_DIR       = _HERE / f"generate_config_{_TIMESTAMP}"
-RESULTS_CSV  = _HERE / f"results_{_TIMESTAMP}.csv"
+
+# These are set by _init_output_dir() once the output dir is known.
+RUN_DIR     : Path
+GC_DIR      : Path
+RESULTS_CSV : Path
+AGENT_LOG   : Path
+
+
+def _init_output_dir(output_root: Path) -> None:
+    """Create a timestamped run directory and set all output path globals."""
+    global RUN_DIR, GC_DIR, RESULTS_CSV, AGENT_LOG
+    RUN_DIR     = output_root / _TIMESTAMP
+    GC_DIR      = RUN_DIR / "policies"
+    RESULTS_CSV = RUN_DIR / "results.csv"
+    AGENT_LOG   = RUN_DIR / "agent.log"
+    RUN_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class _Tee:
+    """Mirrors writes to both the original stream and a log file."""
+
+    def __init__(self, stream, log_path: Path):
+        self._stream = stream
+        self._log = open(log_path, "w", buffering=1)  # line-buffered
+
+    def write(self, data: str) -> int:
+        self._stream.write(data)
+        self._log.write(data)
+        return len(data)
+
+    def flush(self) -> None:
+        self._stream.flush()
+        self._log.flush()
+
+    def close(self) -> None:
+        self._log.close()
+
+    # Proxy everything else (isatty, fileno, …) to the original stream.
+    def __getattr__(self, name: str):
+        return getattr(self._stream, name)
 
 
 # ── Workload card I/O ──────────────────────────────────────────────────────────
@@ -112,20 +153,26 @@ def load_gc(path: Path):
 
 # ── Scoring helpers ────────────────────────────────────────────────────────────
 
-def _eval_score(history: list[dict]) -> tuple[float, float]:
-    """(success_rate, mean_score). Higher success_rate is better; lower score is better."""
+def _eval_score(history: list[dict], direction: str) -> tuple[float, float]:
+    """(success_rate, best_score) where best_score follows the optimization direction."""
     ok = [r for r in history if r.get("status") == "success"]
     sr = len(ok) / len(history) if history else 0.0
-    ms = sum(r["score"] for r in ok) / len(ok) if ok else float("inf")
-    return (sr, ms)
+    if not ok:
+        sentinel = float("inf") if direction == "minimize" else float("-inf")
+        return (sr, sentinel)
+    scores = [r["score"] for r in ok]
+    bs = min(scores) if direction == "minimize" else max(scores)
+    return (sr, bs)
 
 
-def _is_better(new: tuple[float, float], old: tuple[float, float]) -> bool:
-    sr_n, ms_n = new
-    sr_o, ms_o = old
+def _is_better(new: tuple[float, float], old: tuple[float, float], direction: str) -> bool:
+    sr_n, bs_n = new
+    sr_o, bs_o = old
     if sr_n > sr_o:
         return True
-    return sr_n == sr_o and ms_n < ms_o
+    if sr_n < sr_o:
+        return False
+    return bs_n < bs_o if direction == "minimize" else bs_n > bs_o
 
 
 # ── Single-iteration runner ────────────────────────────────────────────────────
@@ -145,6 +192,11 @@ def run_once(gc_path: Path, workload: dict, environment: dict,
 
     print("    config → " + "  ".join(f"{k}={v}" for k, v in sorted(config.items())))
 
+    cached = run_cache.get(workload, config)
+    if cached is not None:
+        print("    [cache hit] reusing stored result")
+        return {**cached, "policy": policy_code}
+
     run_result    = execute(workload, config)
     metric_result = compute_metric(run_result, tuning["optimization_goal"])
 
@@ -157,6 +209,8 @@ def run_once(gc_path: Path, workload: dict, environment: dict,
         "trace_dir": run_result.trace_dir,
         "policy":    policy_code,
     }
+
+    run_cache.put(workload, config, record)
 
     if metric_result["status"] == "success":
         m_str = "  ".join(f"{k}={v:.4g}" for k, v in metric_result["metrics"].items())
@@ -199,8 +253,24 @@ def _log_csv(
 # ── Agent loop ─────────────────────────────────────────────────────────────────
 
 def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
-              max_iterations: int = 15, patience: int = 5) -> Path:
+              max_iterations: int = 15, patience: int = 5,
+              output_root: Path | None = None) -> Path:
     """ADRS config tuning loop. Returns path of the best generate_config program."""
+    _init_output_dir(output_root or DEFAULT_OUTPUT)
+    tee = _Tee(sys.stdout, AGENT_LOG)
+    sys.stdout = tee
+    print(f"[agent] Run dir → {RUN_DIR}")
+
+    try:
+        return _run_agent(card_path, tuning_path, seed_path, max_iterations, patience)
+    finally:
+        sys.stdout = tee._stream
+        tee.close()
+
+
+def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
+               max_iterations: int = 15, patience: int = 5) -> Path:
+    run_cache.load()
     api_key = API_KEY_FILE.read_text().strip()
     client  = anthropic.Anthropic(api_key=api_key)
 
@@ -208,6 +278,7 @@ def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
     tuning      = load_yaml(tuning_path)
     workload    = _flatten_workload(card, tuning)
     environment = _flatten_environment(card)
+    direction   = tuning["optimization_goal"].get("direction", "minimize")
 
     current_path = seed_path
     current_code = seed_path.read_text()
@@ -219,7 +290,7 @@ def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
     seed_record = run_once(current_path, workload, environment, tuning)
     update_history(history, seed_record, card, card_path)          # step 5
 
-    best_score = _eval_score(history)
+    best_score = _eval_score(history, direction)
     best_path  = current_path
     no_improve = 0
 
@@ -265,8 +336,8 @@ def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
         # step 5 — update history
         update_history(history, record, card, card_path)
 
-        cur_score = _eval_score(history)
-        improved  = _is_better(cur_score, best_score)
+        cur_score = _eval_score(history, direction)
+        improved  = _is_better(cur_score, best_score, direction)
         if improved:
             best_score = cur_score
             best_path  = gc_path
@@ -297,6 +368,8 @@ def main() -> None:
     parser.add_argument("--card",           default=str(DEFAULT_CARD))
     parser.add_argument("--tuning",         default=str(DEFAULT_TUNING))
     parser.add_argument("--seed",           default=str(DEFAULT_SEED))
+    parser.add_argument("--output-dir",     default=str(DEFAULT_OUTPUT),
+                        help="Root directory for run outputs (default: runs/)")
     parser.add_argument("--max-iterations", type=int, default=15)
     parser.add_argument("--patience",       type=int, default=5)
     args = parser.parse_args()
@@ -329,6 +402,7 @@ def main() -> None:
         seed_path=Path(args.seed),
         max_iterations=args.max_iterations,
         patience=args.patience,
+        output_root=Path(args.output_dir),
     )
     print(f"\nBest → {best}\n")
     print(best.read_text())

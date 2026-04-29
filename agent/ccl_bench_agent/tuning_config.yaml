@@ -21,7 +21,7 @@ config_space:
     choices: [1, 2, 4]
   - key: micro_batch
     type: int
-    description: Micro-batch size for pipeline stages
+    description: Micro-batch size for pipeline stages, doesn't matter for PP=1
     choices: [1, 2, 4, 8, 16, 32, 64]
   - key: compile_mode
     type: str

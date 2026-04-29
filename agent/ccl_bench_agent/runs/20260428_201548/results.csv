@@ -1,0 +1,3 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 8, ""compile_mode"": ""eager"", ""activation_checkpointing"": false}","{""avg_step_time"": 8.9635779995}",8.9635779995,success,,8.9635779995,
+1,1,{},{},inf,error,generate_config raised: 'name',8.9635779995,23.3

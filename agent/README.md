@@ -101,8 +101,9 @@ Model-executor:
     version: "2.4.0"
     # Absolute path — execute.py calls `bash run_script`
     run_script: /absolute/path/to/your_experiment/scripts/run.sh
-    # TRACE_DIR: where the run script writes traces
-    trace_dir: /tmp/ccl_bench_traces/your_experiment/
+    # Must be on a shared filesystem (not /tmp) so traces are visible
+    # from the node running the agent (login node or head node).
+    trace_dir: /shared/path/ccl_bench_traces/your_experiment/
 
 metric_source:
   traces:
@@ -113,6 +114,27 @@ metric_source:
 **For TPUs** use `xpu_spec.type: TPU`, set `model` (e.g. `v4-8`), and set
 `metric_source.traces: [json_tpu]`.
 
+#### Choosing `trace_dir`
+
+`trace_dir` must be visible from wherever the agent process runs (typically
+the login or head node) **and** from the compute nodes running the job.
+
+| Filesystem | Suitable? | Notes |
+|---|---|---|
+| Lustre / GPFS (`$PSCRATCH`, `$SCRATCH`) | **Yes** | Shared across all nodes; use this on Perlmutter |
+| `/tmp` | **No** | Node-local; traces written on compute nodes are invisible on login node |
+| NFS home (`$HOME`) | Sometimes | Available but may be slow for large traces |
+
+On Perlmutter set `trace_dir` under `$PSCRATCH`:
+```yaml
+trace_dir: /pscratch/sd/<letter>/<username>/ccl-bench-traces/your_experiment/
+```
+
+Also update the default in your run script:
+```bash
+TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/yourname/ccl-bench-traces/your_experiment"}
+```
+
 ### Step 3 — Write `tuning_config.yaml`
 
 Defines what the agent can tune and what it is optimising.
@@ -120,6 +142,7 @@ Defines what the agent can tune and what it is optimising.
 ```yaml
 config_space:
   # Each entry becomes an uppercase env var passed to the run script.
+  # Use `key` (not `name`) to identify each dimension.
   - key: tp
     type: int
     description: Tensor parallelism degree
@@ -173,7 +196,9 @@ set -e
 
 TP=${TP:-1}
 DP=${DP:-1}
-TRACE_DIR=${TRACE_DIR:-"/tmp/traces"}
+TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/yourname/ccl-bench-traces/your_experiment"}
+
+mkdir -p "$TRACE_DIR"
 
 # ... launch your job using $TP, $DP, etc. ...
 
@@ -227,7 +252,13 @@ def generate_config(workload: dict, environment: dict) -> dict:
 
 The function receives the flattened workload and environment fields defined
 in `agent.py:_flatten_workload` / `_flatten_environment`.  The returned
-dict must have keys that match `config_space` entries.
+dict must have keys that match `config_space` entries.  Access dimension
+metadata with `dim["key"]` (not `dim["name"]`):
+
+```python
+config_space = workload.get("config_space", [])
+valid_tp = next(d["choices"] for d in config_space if d["key"] == "tp")
+```
 
 ---
 
@@ -238,35 +269,137 @@ dict must have keys that match `config_space` entries.
 cd agent/ccl_bench_agent
 
 # Prerequisites
-pip install anthropic pyyaml
+pip install anthropic pyyaml requests
 echo "sk-ant-..." > ../API_KEY
 
 # Launch
 python agent.py \
-  --card    ../your_experiment/workload_card.yaml \
-  --tuning  ../your_experiment/tuning_config.yaml \
-  --seed    ../your_experiment/generate_config.py \
+  --card        ../your_experiment/workload_card.yaml \
+  --tuning      ../your_experiment/tuning_config.yaml \
+  --seed        ../your_experiment/generate_config.py \
   --max-iterations 20 \
   --patience 5
+
+# Override output directory (default: ccl_bench_agent/runs/)
+python agent.py --card ... --output-dir /path/to/my_runs
 ```
 
-The agent writes two outputs alongside the agent source:
+### Output layout
 
-| Output | Contents |
+Each agent run creates a timestamped subdirectory under `runs/`:
+
+```
+ccl_bench_agent/
+  runs/
+    20260428_202809/        ← one directory per agent invocation
+      agent.log             ← full console transcript
+      results.csv           ← one row per iteration
+      results.png           ← plot (generated separately, see below)
+      policies/
+        generate_config_v1.py
+        generate_config_v2.py
+        ...
+  run_cache.json            ← result cache shared across all runs
+```
+
+`results.csv` columns:
+
+| Column | Description |
 |---|---|
-| `results_<timestamp>.csv` | One row per iteration: config, metrics, score, best_score |
-| `generate_config_<timestamp>/generate_config_vN.py` | Each LLM-revised policy version |
+| `iteration` | Loop iteration index (0 = seed run) |
+| `version` | Policy version number |
+| `config` | JSON of the config dict tried |
+| `metrics` | JSON of measured metric values |
+| `score` | Weighted objective score |
+| `status` | `success`, `error`, or `timeout` |
+| `error_msg` | Error details on failure |
+| `best_score` | Running best score up to this iteration |
+| `search_time_s` | Seconds spent in LLM `update_policy` call |
 
 The workload card YAML is also updated in-place with a `runs:` section
-containing every execution record (for upload to the CCL-Bench platform).
+containing every execution record.
+
+### Result cache
+
+`run_cache.json` persists the result of every `(run_script, config)` pair.
+If the agent is restarted or a duplicate config is proposed, the result is
+served from cache without re-running the job.  Delete the file to force
+a fresh run of all configs.
+
+---
+
+## Plotting results
+
+```bash
+cd agent/ccl_bench_agent
+
+# Plot the most recent run (auto-discovers latest runs/*/results.csv):
+python plot_results.py
+
+# Plot a specific run:
+python plot_results.py runs/20260428_202809/results.csv
+```
+
+The script saves `results.png` alongside the CSV with three panels:
+
+1. **Score per iteration** — scatter (green = success, red = failed) with a
+   running-best line
+2. **LLM search time** — seconds spent in `update_policy` per iteration
+3. **Config heatmap** — each config dimension as a row, each iteration as a
+   column, annotated with values
+
+---
+
+## Uploading traces to CCL-Bench
+
+After a run completes, upload traces and the populated workload card to the
+CCL-Bench upload server using `upload_traces.py`.
+
+```bash
+cd agent/ccl_bench_agent
+
+# Upload all successful runs recorded in the workload card:
+python upload_traces.py \
+  --server http://your-server:5000 \
+  --card   ../your_experiment/workload_card.yaml
+
+# Check what would be sent without hitting the server:
+python upload_traces.py --card ... --dry-run
+
+# Also upload failed runs:
+python upload_traces.py --card ... --include-failed
+
+# Upload a single trace directory manually:
+python upload_traces.py \
+  --server    http://your-server:5000 \
+  --card      ../your_experiment/workload_card.yaml \
+  --trace-dir /pscratch/sd/e/yourname/ccl-bench-traces/run1 \
+  --group     "tp4_dp4_manual" \
+  --desc      "manual rerun"
+```
+
+Set the server URL once via environment variable to avoid repeating it:
+
+```bash
+export CCL_UPLOAD_URL=http://your-server:5000
+python upload_traces.py --card ../your_experiment/workload_card.yaml
+```
+
+Each run is uploaded as a separate group named `iter{N}_{config}` (e.g.
+`iter003_dp4pp1tp4`), with the full config and metrics embedded in the
+description and the workload card attached as JSON.
 
 ---
 
 ## Example: Perlmutter / torchtitan / Llama-3.1-8B
 
-See `agent/perlmutter_torchtitan_llama8b/` for a complete working example:
+See `agent/perlmutter_torchtitan_llama8b/` for a complete working example.
 
 ```bash
+# Launch via the convenience wrapper (handles venv + API key):
+bash agent/perlmutter_torchtitan_llama8b/run_agent.sh
+
+# Or directly:
 cd agent/ccl_bench_agent
 python agent.py \
   --card    ../perlmutter_torchtitan_llama8b/workload_card.yaml \
@@ -275,9 +408,11 @@ python agent.py \
 ```
 
 The run script (`scripts/train_llama8b.sh`) handles single-node `torchrun`
-and multi-node `srun + torchrun` automatically, and flattens the torchtitan
+and multi-node `srun + torchrun` automatically, flattens the torchtitan
 profiler traces from their nested `profile_traces/iteration_N/` structure
-into the flat `$TRACE_DIR/` layout that `avg_step_time` expects.
+into the flat `$TRACE_DIR/` layout that `avg_step_time` expects, and writes
+`trace_meta.yaml`.  Traces are written to `$PSCRATCH` so they are visible
+from the login node.
 
 ---
 
@@ -286,26 +421,39 @@ into the flat `$TRACE_DIR/` layout that `avg_step_time` expects.
 ```
 agent/
   ccl_bench_agent/
-    agent.py           — ADRS loop orchestrator; entry point
-    execute.py         — step 2: runs run_script, returns RunResult
-    compute_metric.py  — step 3: calls tools/main.py to score traces
-    update_policy.py   — step 4: asks Claude to improve generate_config
-    update_history.py  — step 5: appends record to card YAML
-    generate_config.py — default seed policy (template)
-    workload_card.yaml — template workload card
-    tuning_config.yaml — template tuning config
+    agent.py            — ADRS loop orchestrator; entry point
+    execute.py          — step 2: runs run_script, returns RunResult
+    compute_metric.py   — step 3: calls tools/main.py to score traces
+    update_policy.py    — step 4: asks Claude to improve generate_config
+    update_history.py   — step 5: appends record to card YAML
+    run_cache.py        — result cache (keyed by run_script + config)
+    plot_results.py     — plot runs/*/results.csv → results.png
+    upload_traces.py    — upload traces + workload card to CCL-Bench server
+    generate_config.py  — default seed policy (template)
+    workload_card.yaml  — template workload card
+    tuning_config.yaml  — template tuning config
+    runs/               — agent output (created at runtime)
+      <timestamp>/
+        agent.log
+        results.csv
+        results.png
+        policies/
+          generate_config_v1.py
+          ...
+    run_cache.json      — persisted result cache
 
   perlmutter_torchtitan_llama8b/   — reference experiment
     workload_card.yaml
     tuning_config.yaml
     generate_config.py
-    scripts/train_llama8b.sh
+    run_agent.sh        — convenience launcher (handles venv + API key)
+    scripts/
+      train_llama8b.sh
 
-  experiments/         — simulation-based experiments (separate from agent)
-  torchtitan/          — torchtitan source (framework backend)
+  torchtitan/           — torchtitan source (framework backend)
 
-tools/                 — CCL-Bench metric tools
-  main.py              — dispatches --metric name to the right tool
+tools/                  — CCL-Bench metric tools
+  main.py               — dispatches --metric name to the right tool
   avg_step_time/
   communication_fraction/
   mfu/

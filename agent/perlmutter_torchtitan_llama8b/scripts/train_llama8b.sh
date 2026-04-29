@@ -18,7 +18,7 @@ PP=${PP:-1}
 MICRO_BATCH=${MICRO_BATCH:-1}
 COMPILE_MODE=${COMPILE_MODE:-"eager"}
 ACTIVATION_CHECKPOINTING=${ACTIVATION_CHECKPOINTING:-"false"}
-TRACE_DIR=${TRACE_DIR:-"/tmp/ccl_bench_traces/llama8b"}
+TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b"}
 
 # ── Workload constants (from workload card) ────────────────────────────────────
 GLOBAL_BATCH=32
@@ -30,6 +30,11 @@ TOTAL_GPUS=$(( TP * DP * PP ))
 NPROC_PER_NODE=$(( TOTAL_GPUS < GPUS_PER_NODE ? TOTAL_GPUS : GPUS_PER_NODE ))
 NNODES=$(( TOTAL_GPUS / NPROC_PER_NODE ))
 LOCAL_BATCH=$(( GLOBAL_BATCH / DP ))
+
+# micro_batch has no effect when pp=1; normalize so the agent sees consistent results
+if [ "$PP" -eq 1 ]; then
+    MICRO_BATCH=1
+fi
 
 if [ "$ACTIVATION_CHECKPOINTING" = "true" ]; then
     AC_MODE="full"

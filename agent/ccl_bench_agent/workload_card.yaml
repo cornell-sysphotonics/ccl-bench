@@ -40,7 +40,7 @@ Model-executor:
     name: torchrun
     version: "2.4.0"
     run_script: scripts/train_llama8b.sh
-    trace_dir: /tmp/traces/llama-8b/
+    trace_dir: /pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b
   model_plan_parallelization:
     tp: null
     dp: null
