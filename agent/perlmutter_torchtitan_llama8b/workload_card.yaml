@@ -2386,3 +2386,785 @@ runs:
     \   \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
     : micro_batch,\n        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
     : activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 2
+    micro_batch: 2
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics: {}
+  score: .inf
+  status: error
+  error_msg: "exit 1: rch/distributed/elastic/agent/server/api.py\", line 908, in\
+    \ _invoke_run\n    time.sleep(monitor_interval)\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n\
+    \  File \"/global/homes/e/ericding/.conda/envs/titan/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py\"\
+    , line 86, in _terminate_process_handler\n    raise SignalException(f\"Process\
+    \ {os.getpid()} got signal: {sigval}\", sigval=sigval)\ntorch.distributed.elastic.multiprocessing.api.SignalException:\
+    \ Process 105337 got signal: 15\nsrun: error: nid001105: task 1: Exited with exit\
+    \ code 1\nsrun: error: nid001104: task 0: Exited with exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus = environment.get(\"total_gpus\", 1)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 8)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
+    \    intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    inter_bw\
+    \ = environment.get(\"inter_node_bandwidth_gbps\", 100)\n    \n    # Build a lookup\
+    \ of valid choices for each config key\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid = {}\n    for dim in config_space:\n        valid[dim[\"key\"\
+    ]] = dim[\"choices\"]\n    \n    # Helper to pick closest valid choice\n    def\
+    \ pick_valid(key, target):\n        choices = valid.get(key, [target])\n     \
+    \   if all(isinstance(c, (int, float)) for c in choices):\n            return\
+    \ min(choices, key=lambda c: abs(c - target))\n        if target in choices:\n\
+    \            return target\n        return choices[0]\n    \n    # Estimate model\
+    \ size in billions of parameters\n    model_size_b = 8  # default\n    if \"405b\"\
+    \ in model_family:\n        model_size_b = 405\n    elif \"70b\" in model_family:\n\
+    \        model_size_b = 70\n    elif \"13b\" in model_family:\n        model_size_b\
+    \ = 13\n    elif \"8b\" in model_family:\n        model_size_b = 8\n    elif \"\
+    7b\" in model_family:\n        model_size_b = 7\n    \n    # Bandwidth ratio determines\
+    \ how much we should avoid inter-node communication\n    bw_ratio = intra_bw /\
+    \ max(inter_bw, 1)  # e.g., 2400/200 = 12x\n    \n    num_nodes = total_gpus //\
+    \ gpus_per_node  # 4 nodes\n    \n    # ---- Strategy for this iteration ----\n\
+    \    # History results (Llama-3.1-8B, 16 GPUs, 4 per node):\n    #   tp=4, dp=4,\
+    \ pp=1, eager, AC=False → 8.793 (BEST)\n    #   tp=4, dp=4, pp=1, inductor, AC=False\
+    \ → 9.009\n    #   tp=4, dp=4, pp=1, eager, AC=True → 8.992\n    #   tp=2, dp=8,\
+    \ pp=1, inductor, AC=False → 10.6\n    #\n    # Try: tp=4, dp=2, pp=2 to reduce\
+    \ inter-node allreduce at cost of pipeline bubble\n    # With batch=32, dp=2:\
+    \ per-rank batch=16, micro_batch=2 → 8 microbatches (good for pp=2)\n    \n  \
+    \  # For general logic:\n    # 1. TP fills intra-node (gpus_per_node) for NVLink\n\
+    \    # 2. Try to minimize inter-node dp by using some pp\n    # 3. eager > inductor,\
+    \ AC=False is better for 8B\n    \n    tp = min(gpus_per_node, total_gpus)\n \
+    \   tp = pick_valid(\"tp\", tp)\n    \n    # For small/medium models (< 30B),\
+    \ try pp=2 to cut dp in half when we have many nodes\n    # For very large models,\
+    \ use more pp\n    if model_size_b >= 70:\n        if gpu_memory_gb <= 40:\n \
+    \           pp = pick_valid(\"pp\", 4)\n        else:\n            pp = pick_valid(\"\
+    pp\", 2)\n    elif model_size_b >= 8 and num_nodes >= 4 and bw_ratio >= 10:\n\
+    \        # Inter-node is relatively slow; using pp=2 cuts dp communication in\
+    \ half\n        pp = pick_valid(\"pp\", 2)\n    else:\n        pp = 1\n    \n\
+    \    pp = pick_valid(\"pp\", pp)\n    \n    # dp uses remaining GPUs\n    dp_target\
+    \ = total_gpus // (tp * pp)\n    dp = pick_valid(\"dp\", max(1, dp_target))\n\
+    \    \n    # Verify product equals total_gpus; if not, search for best combo\n\
+    \    product = tp * dp * pp\n    if product != total_gpus:\n        best_combo\
+    \ = None\n        best_score = float('inf')\n        for tp_try in sorted(valid.get(\"\
+    tp\", [gpus_per_node]), reverse=True):\n            if tp_try > gpus_per_node:\n\
+    \                continue\n            for pp_try in sorted(valid.get(\"pp\",\
+    \ [1])):\n                dp_try = total_gpus // (tp_try * pp_try)\n         \
+    \       if dp_try in valid.get(\"dp\", [dp_try]) and tp_try * dp_try * pp_try\
+    \ == total_gpus:\n                    score = dp_try * (inter_bw / intra_bw) +\
+    \ pp_try * 0.5\n                    if score < best_score:\n                 \
+    \       best_score = score\n                        best_combo = (tp_try, dp_try,\
+    \ pp_try)\n        if best_combo:\n            tp, dp, pp = best_combo\n    \n\
+    \    # Micro batch size - optimize for pipeline efficiency\n    if pp <= 1:\n\
+    \        micro_batch = pick_valid(\"micro_batch\", 1)\n    else:\n        per_gpu_batch\
+    \ = batch_size // dp\n        # Want many micro-batches relative to pp to minimize\
+    \ bubble\n        # Ideal: num_microbatches >= 4*pp\n        # per_gpu_batch /\
+    \ micro_batch = num_microbatches\n        # So micro_batch = per_gpu_batch / (4*pp)\n\
+    \        target_micro = max(1, per_gpu_batch // (4 * pp))\n        micro_batch\
+    \ = pick_valid(\"micro_batch\", target_micro)\n        # Make sure micro_batch\
+    \ doesn't exceed per_gpu_batch\n        if micro_batch > per_gpu_batch:\n    \
+    \        micro_batch = pick_valid(\"micro_batch\", per_gpu_batch)\n    \n    #\
+    \ Compile mode: eager has been consistently better\n    compile_mode = pick_valid(\"\
+    compile_mode\", \"eager\")\n    \n    # Activation checkpointing: False is better\
+    \ for 8B (enough memory)\n    # Only enable for very large models or tight memory\n\
+    \    if model_size_b >= 30 and gpu_memory_gb <= 40:\n        activation_checkpointing\
+    \ = pick_valid(\"activation_checkpointing\", True)\n    else:\n        activation_checkpointing\
+    \ = pick_valid(\"activation_checkpointing\", False)\n    \n    return {\n    \
+    \    \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": compile_mode,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch: 2
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 11.8667514054375
+  score: 11.8667514054375
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter0
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 1,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline:\n    tp\
+    \ = min(gpus_per_node, 4)\n    pp = 1\n    dp = max(1, total_gpus // (tp * pp))\n\
+    \    micro_batch = 2 # doesn't matter for pp = 1\n\n    return {\n        \"tp\"\
+    : tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\": micro_batch,\n\
+    \        \"activation_checkpointing\": False,\n    }\n"
+- config:
+    tp: 2
+    dp: 8
+    pp: 1
+    micro_batch_size: 4
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 14.218367519375
+  score: 14.218367519375
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter1
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    \n    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    # Strategy: minimize communication overhead\n    # - Keep tp within a single\
+    \ node (use NVLink)\n    # - Prefer dp for scaling (less communication overhead\
+    \ for large batches)\n    # - Use pp only if memory constrained\n    \n    # For\
+    \ Llama-3.1-8B on A100-40GB:\n    # ~16GB for model params in bf16, need room\
+    \ for activations and optimizer states\n    # tp=2 should be sufficient for memory,\
+    \ maximizes dp\n    \n    tp = 2\n    pp = 1\n    dp = total_gpus // (tp * pp)\
+    \  # = 8\n    \n    # Validate dp is in valid choices\n    if \"dp\" in valid_choices\
+    \ and dp not in valid_choices[\"dp\"]:\n        # Try other combinations\n   \
+    \     best_dp = max(c for c in valid_choices[\"dp\"] if c <= dp)\n        dp =\
+    \ best_dp\n        # Adjust tp or pp to match\n        remaining = total_gpus\
+    \ // dp\n        if \"tp\" in valid_choices:\n            for t in sorted(valid_choices[\"\
+    tp\"], reverse=True):\n                if remaining % t == 0:\n              \
+    \      p = remaining // t\n                    if \"pp\" not in valid_choices\
+    \ or p in valid_choices[\"pp\"]:\n                        tp = t\n           \
+    \             pp = p\n                        break\n    \n    # Validate all\
+    \ choices\n    if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n\
+    \        tp = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n    if \"\
+    pp\" in valid_choices and pp not in valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"\
+    pp\"], key=lambda x: abs(x - pp))\n    if \"dp\" in valid_choices and dp not in\
+    \ valid_choices[\"dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x:\
+    \ abs(x - dp))\n    \n    # Use larger micro_batch_size to reduce number of gradient\
+    \ accumulation steps\n    micro_batch = 4\n    if \"micro_batch_size\" in valid_choices\
+    \ and micro_batch not in valid_choices[\"micro_batch_size\"]:\n        micro_batch\
+    \ = max(valid_choices[\"micro_batch_size\"])\n    \n    return {\n        \"tp\"\
+    : tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch_size\"\
+    : micro_batch,\n        \"activation_checkpointing\": False,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch_size: 4
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 11.9176455259375
+  score: 11.9176455259375
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter2
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Strategy: \n    # 1.\
+    \ Keep TP within a node to use fast NVLink\n    # 2. Minimize cross-node communication\n\
+    \    # 3. Use largest micro_batch_size to reduce gradient accumulation steps\n\
+    \    # 4. Avoid PP unless needed for memory\n    \n    # From experiments: tp=4,\
+    \ dp=4 (11.87) beat tp=2, dp=8 (14.22)\n    # tp=4 with 4 GPUs/node means all\
+    \ TP is intra-node (good)\n    # dp=4 means 4 nodes doing allreduce (less cross-node\
+    \ comm than dp=8)\n    \n    # Best approach: tp = gpus_per_node to keep all TP\
+    \ intra-node\n    # Then dp = total_gpus / tp, pp = 1\n    tp = min(gpus_per_node,\
+    \ total_gpus)\n    pp = 1\n    dp = total_gpus // (tp * pp)\n    \n    # Validate\
+    \ tp\n    if \"tp\" in valid_choices:\n        # Pick largest valid tp that fits\
+    \ within a node\n        valid_tp = sorted([t for t in valid_choices[\"tp\"] if\
+    \ t <= gpus_per_node], reverse=True)\n        if valid_tp:\n            tp = valid_tp[0]\n\
+    \        else:\n            tp = min(valid_choices[\"tp\"])\n    \n    # Compute\
+    \ dp\n    dp = total_gpus // (tp * pp)\n    \n    # Validate dp\n    if \"dp\"\
+    \ in valid_choices and dp not in valid_choices[\"dp\"]:\n        # Try adjusting\
+    \ pp to get a valid dp\n        best_config = None\n        best_score = float('inf')\n\
+    \        \n        tp_choices = valid_choices.get(\"tp\", [tp])\n        pp_choices\
+    \ = valid_choices.get(\"pp\", [pp])\n        dp_choices = valid_choices.get(\"\
+    dp\", [dp])\n        \n        for t in tp_choices:\n            for p in pp_choices:\n\
+    \                d = total_gpus // (t * p)\n                if d in dp_choices\
+    \ and t * p * d == total_gpus:\n                    # Score: prefer high tp (within\
+    \ node), low pp, high dp\n                    # Penalize tp > gpus_per_node (cross-node\
+    \ TP is slow)\n                    cross_node_tp = max(0, t - gpus_per_node)\n\
+    \                    score = cross_node_tp * 100 + p * 10  # lower is better\n\
+    \                    if score < best_score:\n                        best_score\
+    \ = score\n                        best_config = (t, p, d)\n        \n       \
+    \ if best_config:\n            tp, pp, dp = best_config\n    \n    # Micro-batch\
+    \ size: larger is better to reduce gradient accumulation steps\n    # But must\
+    \ fit in memory. Per-rank batch = batch_size / dp\n    per_rank_batch = batch_size\
+    \ // dp if dp > 0 else batch_size\n    \n    micro_batch = 4  # largest available\n\
+    \    if \"micro_batch_size\" in valid_choices:\n        # Pick largest valid micro_batch\
+    \ that divides per_rank_batch\n        valid_mb = sorted(valid_choices[\"micro_batch_size\"\
+    ], reverse=True)\n        micro_batch = valid_mb[0]  # default to largest\n  \
+    \      for mb in valid_mb:\n            if per_rank_batch % mb == 0:\n       \
+    \         micro_batch = mb\n                break\n    \n    # Activation checkpointing:\
+    \ only if memory constrained\n    # For 8B model on 40GB with tp=4, each GPU holds\
+    \ ~2B params → ~4GB in bf16\n    # Optimizer states: ~12GB (Adam), activations\
+    \ depend on batch/seq\n    # With tp=4, should fit without checkpointing\n   \
+    \ activation_checkpointing = False\n    \n    config = {\n        \"tp\": tp,\n\
+    \        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch_size\": micro_batch,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n    \n\
+    \    return config\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    micro_batch_size: 1
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 12.5854420361875
+  score: 12.5854420361875
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter3
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Strategy learned from\
+    \ experiments:\n    # - tp=4 within node (NVLink) >> tp=2 with more dp across\
+    \ nodes\n    # - pp=1 avoids pipeline bubble overhead\n    # - micro_batch=2 slightly\
+    \ better than micro_batch=4 for this workload\n    # Now try micro_batch=1 to\
+    \ see if trend continues\n    \n    # Enumerate all valid (tp, pp, dp) combos\
+    \ where tp*pp*dp == total_gpus\n    tp_choices = valid_choices.get(\"tp\", [1])\n\
+    \    pp_choices = valid_choices.get(\"pp\", [1])\n    dp_choices = valid_choices.get(\"\
+    dp\", [1])\n    \n    best_config = None\n    best_score = float('inf')\n    \n\
+    \    for t in tp_choices:\n        for p in pp_choices:\n            d = total_gpus\
+    \ // (t * p)\n            if d in dp_choices and t * p * d == total_gpus:\n  \
+    \              # Scoring heuristic (lower is better):\n                # 1. Strongly\
+    \ prefer TP within a single node (intra-node NVLink)\n                cross_node_tp\
+    \ = t > gpus_per_node\n                # 2. Minimize dp to reduce cross-node allreduce\n\
+    \                # 3. Avoid pp (pipeline bubbles)\n                # 4. TP within\
+    \ node is great - prefer max TP within node\n                \n              \
+    \  score = 0\n                if cross_node_tp:\n                    score +=\
+    \ 1000  # heavy penalty\n                score += d * 10   # penalize high dp\
+    \ (more allreduce)\n                score += p * 50   # penalize pp (pipeline\
+    \ bubbles)\n                score -= t * 5    # reward higher tp within node\n\
+    \                \n                if score < best_score:\n                  \
+    \  best_score = score\n                    best_config = (t, p, d)\n    \n   \
+    \ if best_config:\n        tp, pp, dp = best_config\n    else:\n        tp, pp,\
+    \ dp = 4, 1, 4  # fallback\n    \n    # Micro-batch size: try 1 this time (experiments\
+    \ show 2 > 4, try 1)\n    per_rank_batch = batch_size // dp if dp > 0 else batch_size\n\
+    \    \n    micro_batch = 1  # trying smallest to see if trend continues\n    if\
+    \ \"micro_batch_size\" in valid_choices:\n        if micro_batch not in valid_choices[\"\
+    micro_batch_size\"]:\n            micro_batch = min(valid_choices[\"micro_batch_size\"\
+    ])\n    \n    # Activation checkpointing: off for speed (model fits in memory\
+    \ with tp=4)\n    activation_checkpointing = False\n    \n    config = {\n   \
+    \     \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch_size\"\
+    : micro_batch,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n    \n    return config\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 2
+    micro_batch_size: 4
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 7.7014199846875
+  score: 7.7014199846875
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter4
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Lessons learned from\
+    \ iterations 1-4:\n    # - tp=4, dp=4, pp=1 is best parallelism so far (score\
+    \ 11.87)\n    # - micro_batch=2 is optimal (2 > 4 > 1 for this workload)\n   \
+    \ # - tp=2, dp=8 is worse due to more cross-node allreduce\n    # \n    # Now\
+    \ exploring: tp=4, pp=2, dp=2\n    # Rationale: dp=2 means less cross-node allreduce\
+    \ (only 2 ranks vs 4)\n    # pp=2 introduces pipeline bubbles but with micro_batch=4,\
+    \ bubble ratio is smaller\n    # tp=4 stays within node (NVLink)\n    # If this\
+    \ is worse, we know pp=1 with dp=4 is optimal\n    \n    # Try tp=4, pp=2, dp=2\
+    \ with micro_batch=4 to reduce bubble overhead\n    tp = 4\n    pp = 2\n    dp\
+    \ = total_gpus // (tp * pp)  # = 2\n    micro_batch = 4  # larger micro_batch\
+    \ reduces pipeline bubble ratio\n    activation_checkpointing = False\n    \n\
+    \    # Validate\n    if \"tp\" in valid_choices and tp not in valid_choices[\"\
+    tp\"]:\n        tp = 4\n    if \"pp\" in valid_choices and pp not in valid_choices[\"\
+    pp\"]:\n        pp = 1\n    if \"dp\" in valid_choices and dp not in valid_choices[\"\
+    dp\"]:\n        dp = total_gpus // (tp * pp)\n    if \"micro_batch_size\" in valid_choices\
+    \ and micro_batch not in valid_choices[\"micro_batch_size\"]:\n        micro_batch\
+    \ = 2\n    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n      \
+    \  \"pp\": pp,\n        \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"
+- config:
+    tp: 4
+    dp: 1
+    pp: 4
+    micro_batch_size: 4
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 10.1408710913125
+  score: 10.1408710913125
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter5
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Lessons learned from\
+    \ iterations 1-5:\n    # - tp=4, pp=1, dp=4, micro_batch=2: score 11.87\n    #\
+    \ - tp=2, pp=1, dp=8, micro_batch=4: score 14.22\n    # - tp=4, pp=1, dp=4, micro_batch=4:\
+    \ score 12.59\n    # - tp=4, pp=2, dp=2, micro_batch=4: score 7.70 (BEST!)\n \
+    \   #\n    # Key insight: reducing dp (and thus cross-node allreduce) is critical.\n\
+    \    # Inter-node BW (200 Gbps) is 12x slower than intra-node (2400 Gbps).\n \
+    \   # pp=2 with dp=2 was much better than pp=1 with dp=4.\n    #\n    # Now try:\
+    \ tp=4, pp=4, dp=1 to completely eliminate allreduce.\n    # dp=1 means zero gradient\
+    \ synchronization overhead.\n    # pp=4 introduces more pipeline bubbles but with\
+    \ micro_batch_size=4:\n    #   global_batch=32, micro_batches_per_step = 32/(1*4)\
+    \ = 8\n    #   bubble_ratio = (pp-1)/num_micro_batches = 3/8 = 37.5%\n    # vs\
+    \ pp=2: bubble_ratio = 1/4 = 25% (with dp=2, 32/(2*4)=4 micro_batches)\n    #\
+    \ The question is: does eliminating allreduce offset the extra bubble?\n    \n\
+    \    tp = 4\n    pp = 4\n    dp = total_gpus // (tp * pp)  # = 1\n    micro_batch\
+    \ = 4  # maximize to reduce bubble ratio\n    activation_checkpointing = False\n\
+    \    \n    # Validate\n    if \"tp\" in valid_choices and tp not in valid_choices[\"\
+    tp\"]:\n        tp = 4\n    if \"pp\" in valid_choices and pp not in valid_choices[\"\
+    pp\"]:\n        pp = 2\n        dp = total_gpus // (tp * pp)\n    if \"dp\" in\
+    \ valid_choices and dp not in valid_choices[\"dp\"]:\n        # fallback\n   \
+    \     dp = min(valid_choices[\"dp\"], key=lambda x: abs(x - dp))\n    if \"micro_batch_size\"\
+    \ in valid_choices and micro_batch not in valid_choices[\"micro_batch_size\"]:\n\
+    \        micro_batch = 2\n    \n    config = {\n        \"tp\": tp,\n        \"\
+    dp\": dp,\n        \"pp\": pp,\n        \"micro_batch_size\": micro_batch,\n \
+    \       \"activation_checkpointing\": activation_checkpointing,\n    }\n    \n\
+    \    return config\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 2
+    micro_batch_size: 2
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 10.483093010375
+  score: 10.483093010375
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter6
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Lessons learned from\
+    \ iterations 1-6:\n    # - tp=4, pp=2, dp=2, micro_batch=4: score 7.701 (BEST)\n\
+    \    # - tp=4, pp=4, dp=1, micro_batch=4: score 10.14\n    # - tp=4, pp=1, dp=4,\
+    \ micro_batch=2: score 11.87\n    # - tp=4, pp=1, dp=4, micro_batch=4: score 12.59\n\
+    \    # - tp=2, pp=1, dp=8, micro_batch=4: score 14.22\n    #\n    # Best config:\
+    \ tp=4, pp=2, dp=2 balances pipeline bubbles vs allreduce.\n    # Now try micro_batch=2\
+    \ instead of 4:\n    #   With micro_batch=4: num_micro_batches = 32/(2*4) = 4,\
+    \ bubble_ratio = 1/4 = 25%\n    #   With micro_batch=2: num_micro_batches = 32/(2*2)\
+    \ = 8, bubble_ratio = 1/8 = 12.5%\n    # Smaller micro_batch means more micro-batches\
+    \ and lower bubble ratio.\n    # Trade-off: each micro-batch has less compute\
+    \ efficiency, but bubble reduction may win.\n    \n    tp = 4\n    pp = 2\n  \
+    \  dp = total_gpus // (tp * pp)  # = 2\n    micro_batch = 2  # Try smaller to\
+    \ reduce bubble ratio\n    activation_checkpointing = False\n    \n    # Validate\n\
+    \    if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n       \
+    \ tp = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n    if \"pp\" in\
+    \ valid_choices and pp not in valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"\
+    pp\"], key=lambda x: abs(x - pp))\n    dp = total_gpus // (tp * pp)\n    if \"\
+    dp\" in valid_choices and dp not in valid_choices[\"dp\"]:\n        dp = min(valid_choices[\"\
+    dp\"], key=lambda x: abs(x - dp))\n    if \"micro_batch_size\" in valid_choices\
+    \ and micro_batch not in valid_choices[\"micro_batch_size\"]:\n        micro_batch\
+    \ = min(valid_choices[\"micro_batch_size\"], key=lambda x: abs(x - micro_batch))\n\
+    \    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"
+- config:
+    tp: 2
+    dp: 4
+    pp: 2
+    micro_batch_size: 1
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 15.2834929168125
+  score: 15.2834929168125
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter7
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history scores\
+    \ (minimizing avg_step_time):\n    # tp=4, pp=2, dp=2, mb=4, AC=False: 7.701 (BEST)\n\
+    \    # tp=4, pp=4, dp=1, mb=4, AC=False: 10.14\n    # tp=4, pp=2, dp=2, mb=2,\
+    \ AC=False: 10.48\n    # tp=4, pp=1, dp=4, mb=2, AC=False: 11.87\n    # tp=4,\
+    \ pp=1, dp=4, mb=4, AC=False: 12.59 (iter 4, slightly different from iter 1)\n\
+    \    # tp=2, pp=1, dp=8, mb=4, AC=False: 14.22\n    #\n    # Best: tp=4, pp=2,\
+    \ dp=2, mb=4. Try tp=2, pp=2, dp=4, mb=1 to see if\n    # less TP + more DP +\
+    \ low bubble ratio (1/8) can beat it.\n    # Also haven't tried activation_checkpointing=True.\n\
+    \    #\n    # Try: tp=2, pp=2, dp=4, micro_batch=1\n    # num_micro_batches =\
+    \ 32 / (4 * 1) = 8, bubble_ratio = 1/8\n    \n    tp = 2\n    pp = 2\n    dp =\
+    \ total_gpus // (tp * pp)  # = 4\n    micro_batch = 1\n    activation_checkpointing\
+    \ = False\n    \n    # Validate\n    if \"tp\" in valid_choices and tp not in\
+    \ valid_choices[\"tp\"]:\n        tp = min(valid_choices[\"tp\"], key=lambda x:\
+    \ abs(x - tp))\n    if \"pp\" in valid_choices and pp not in valid_choices[\"\
+    pp\"]:\n        pp = min(valid_choices[\"pp\"], key=lambda x: abs(x - pp))\n \
+    \   dp = total_gpus // (tp * pp)\n    if \"dp\" in valid_choices and dp not in\
+    \ valid_choices[\"dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x:\
+    \ abs(x - dp))\n    if \"micro_batch_size\" in valid_choices and micro_batch not\
+    \ in valid_choices[\"micro_batch_size\"]:\n        micro_batch = min(valid_choices[\"\
+    micro_batch_size\"], key=lambda x: abs(x - micro_batch))\n    \n    config = {\n\
+    \        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch_size\"\
+    : micro_batch,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n    \n    return config\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 2
+    micro_batch_size: 4
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 7.450842229499999
+  score: 7.450842229499999
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter8
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=4, pp=2, dp=2, mb=4, AC=False: 7.701 (BEST)\n\
+    \    # tp=4, pp=4, dp=1, mb=4, AC=False: 10.14\n    # tp=4, pp=2, dp=2, mb=2,\
+    \ AC=False: 10.48\n    # tp=4, pp=1, dp=4, mb=2, AC=False: 11.87\n    # tp=4,\
+    \ pp=1, dp=4, mb=4, AC=False: 11.92 / 12.59\n    # tp=2, pp=1, dp=8, mb=4, AC=False:\
+    \ 14.22\n    # tp=2, pp=2, dp=4, mb=1, AC=False: 15.28\n    #\n    # Key insights:\n\
+    \    # - tp=4 is clearly better than tp=2 (keeps comm on NVLink within node)\n\
+    \    # - pp=2 with dp=2 is the best parallelism split\n    # - mb=4 is better\
+    \ than mb=2 (fewer pipeline bubbles)\n    # - AC=True not yet tested with best\
+    \ config\n    #\n    # Try: tp=4, pp=2, dp=2, mb=4, AC=True\n    # This tests\
+    \ if activation checkpointing can improve the best config\n    # by reducing memory\
+    \ pressure (though it adds recomputation overhead)\n    \n    # General strategy\
+    \ for good configs:\n    # 1. Maximize TP within a node (use fast NVLink)\n  \
+    \  # 2. Use moderate PP (2 stages) to balance pipeline bubbles vs memory\n   \
+    \ # 3. Use remaining GPUs for DP\n    # 4. Use largest micro_batch to minimize\
+    \ pipeline bubbles\n    \n    tp = min(gpus_per_node, 4)  # tp=4, fits within\
+    \ a node\n    if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n\
+    \        tp = max(c for c in valid_choices[\"tp\"] if c <= gpus_per_node)\n  \
+    \  \n    pp = 2\n    if \"pp\" in valid_choices and pp not in valid_choices[\"\
+    pp\"]:\n        pp = min(valid_choices[\"pp\"], key=lambda x: abs(x - pp))\n \
+    \   \n    dp = total_gpus // (tp * pp)\n    if \"dp\" in valid_choices and dp\
+    \ not in valid_choices[\"dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda\
+    \ x: abs(x - dp))\n    \n    # Use largest micro_batch to reduce pipeline bubbles\n\
+    \    micro_batch = 4\n    if \"micro_batch_size\" in valid_choices:\n        micro_batch\
+    \ = max(valid_choices[\"micro_batch_size\"])\n    \n    # Try activation checkpointing\
+    \ with the best config\n    activation_checkpointing = True\n    \n    config\
+    \ = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n       \
+    \ \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n    \n    return config\n"
+- config:
+    tp: 2
+    dp: 4
+    pp: 2
+    micro_batch_size: 4
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 8.9173075005
+  score: 8.9173075005
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter9
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=4, pp=2, dp=2, mb=4, AC=True:  7.451 (BEST)\n\
+    \    # tp=4, pp=2, dp=2, mb=4, AC=False: 7.701\n    # tp=4, pp=4, dp=1, mb=4,\
+    \ AC=False: 10.14\n    # tp=4, pp=2, dp=2, mb=2, AC=False: 10.48\n    # tp=4,\
+    \ pp=1, dp=4, mb=2, AC=False: 11.87\n    # tp=4, pp=1, dp=4, mb=4, AC=False: 11.92\n\
+    \    # tp=4, pp=1, dp=4, mb=4, AC=False: 12.59\n    # tp=2, pp=1, dp=8, mb=4,\
+    \ AC=False: 14.22\n    # tp=2, pp=2, dp=4, mb=1, AC=False: 15.28\n    #\n    #\
+    \ Key insights:\n    # - tp=4, pp=2, dp=2, mb=4 is the best parallelism config\n\
+    \    # - AC=True gives modest improvement (~3.3%)\n    # - Now explore: tp=2,\
+    \ pp=2, dp=4, mb=4, AC=True\n    #   Previously tp=2,pp=2,dp=4,mb=1 = 15.28, but\
+    \ mb=4 could help a lot\n    \n    # For this iteration: try tp=2, pp=2, dp=4,\
+    \ mb=4, AC=True\n    # This tests whether lower TP with more DP can work with\
+    \ large micro_batch\n    \n    tp = 2\n    pp = 2\n    dp = 4  # 2*2*4 = 16\n\
+    \    micro_batch = 4\n    activation_checkpointing = True\n    \n    # Validate\
+    \ choices\n    if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n\
+    \        tp = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n    if \"\
+    pp\" in valid_choices and pp not in valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"\
+    pp\"], key=lambda x: abs(x - pp))\n    if \"dp\" in valid_choices and dp not in\
+    \ valid_choices[\"dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x:\
+    \ abs(x - dp))\n    if \"micro_batch_size\" in valid_choices and micro_batch not\
+    \ in valid_choices[\"micro_batch_size\"]:\n        micro_batch = max(valid_choices[\"\
+    micro_batch_size\"])\n    \n    config = {\n        \"tp\": tp,\n        \"dp\"\
+    : dp,\n        \"pp\": pp,\n        \"micro_batch_size\": micro_batch,\n     \
+    \   \"activation_checkpointing\": activation_checkpointing,\n    }\n    \n   \
+    \ return config\n"
+- config:
+    tp: 8
+    dp: 1
+    pp: 2
+    micro_batch_size: 4
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 25.986211347875
+  score: 25.986211347875
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter10
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=4, pp=2, dp=2, mb=4, AC=True:  7.451 (BEST)\n\
+    \    # tp=4, pp=2, dp=2, mb=4, AC=False: 7.701\n    # tp=2, pp=2, dp=4, mb=4,\
+    \ AC=True:  8.917\n    # tp=4, pp=2, dp=2, mb=2, AC=False: 10.48\n    # tp=4,\
+    \ pp=4, dp=1, mb=4, AC=False: 10.14\n    # tp=4, pp=1, dp=4, mb=2, AC=False: 11.87\n\
+    \    # tp=4, pp=1, dp=4, mb=4, AC=False: 11.92\n    # tp=4, pp=1, dp=4, mb=4,\
+    \ AC=False: 12.59\n    # tp=2, pp=1, dp=8, mb=4, AC=False: 14.22\n    # tp=2,\
+    \ pp=2, dp=4, mb=1, AC=False: 15.28\n    #\n    # Key insights:\n    # - tp=4,\
+    \ pp=2, dp=2 is the best parallelism decomposition\n    # - AC=True helps modestly\n\
+    \    # - mb=4 is clearly better than mb=1 or mb=2\n    #\n    # Unexplored promising\
+    \ configs:\n    # - tp=8, pp=2, dp=1, mb=4, AC=True (8*2*1=16) - max TP, pipeline\
+    \ to split memory\n    # - tp=8, pp=1, dp=2, mb=4, AC=True (8*1*2=16) - max TP,\
+    \ no pipeline\n    #\n    # Try tp=8, pp=2, dp=1, mb=4, AC=True\n    # tp=8 means\
+    \ each tensor op is split across 8 GPUs - more communication but less memory\n\
+    \    # pp=2 splits model into 2 stages\n    # dp=1 means no data parallel all-reduce\
+    \ overhead\n    \n    tp = 8\n    pp = 2\n    dp = 1  # 8*2*1 = 16\n    micro_batch\
+    \ = 4\n    activation_checkpointing = True\n    \n    # Validate choices\n   \
+    \ if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n        tp\
+    \ = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n    if \"pp\" in valid_choices\
+    \ and pp not in valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"pp\"\
+    ], key=lambda x: abs(x - pp))\n    if \"dp\" in valid_choices and dp not in valid_choices[\"\
+    dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x: abs(x - dp))\n \
+    \   if \"micro_batch_size\" in valid_choices and micro_batch not in valid_choices[\"\
+    micro_batch_size\"]:\n        micro_batch = max(valid_choices[\"micro_batch_size\"\
+    ])\n    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"\
+    pp\": pp,\n        \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 4
+    micro_batch_size: 4
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 1.7028980808125
+  score: 1.7028980808125
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter11
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=4, pp=2, dp=2, mb=4, AC=True:  7.451 (BEST)\n\
+    \    # tp=4, pp=2, dp=2, mb=4, AC=False: 7.701\n    # tp=2, pp=2, dp=4, mb=4,\
+    \ AC=True:  8.917\n    # tp=4, pp=4, dp=1, mb=4, AC=False: 10.14\n    # tp=4,\
+    \ pp=2, dp=2, mb=2, AC=False: 10.48\n    # tp=4, pp=1, dp=4, mb=2, AC=False: 11.87\n\
+    \    # tp=4, pp=1, dp=4, mb=4, AC=False: 11.92\n    # tp=4, pp=1, dp=4, mb=4,\
+    \ AC=False: 12.59\n    # tp=2, pp=1, dp=8, mb=4, AC=False: 14.22\n    # tp=2,\
+    \ pp=2, dp=4, mb=1, AC=False: 15.28\n    # tp=8, pp=2, dp=1, mb=4, AC=True:  25.99\
+    \ (worst - too much cross-node TP)\n    #\n    # Try tp=2, pp=4, dp=2, mb=4, AC=True\
+    \ (2*4*2=16)\n    # This reduces TP communication (only 2 GPUs within node for\
+    \ TP)\n    # pp=4 splits model into more stages\n    # dp=2 provides some data\
+    \ parallelism\n    \n    tp = 2\n    pp = 4\n    dp = 2  # 2*4*2 = 16\n    micro_batch\
+    \ = 4\n    activation_checkpointing = True\n    \n    # Validate choices\n   \
+    \ if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n        tp\
+    \ = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n    if \"pp\" in valid_choices\
+    \ and pp not in valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"pp\"\
+    ], key=lambda x: abs(x - pp))\n    if \"dp\" in valid_choices and dp not in valid_choices[\"\
+    dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x: abs(x - dp))\n \
+    \   if \"micro_batch_size\" in valid_choices and micro_batch not in valid_choices[\"\
+    micro_batch_size\"]:\n        micro_batch = max(valid_choices[\"micro_batch_size\"\
+    ])\n    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"\
+    pp\": pp,\n        \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 4
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 1.5780182904375
+  score: 1.5780182904375
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter12
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=2, pp=4, dp=2, mb=4, AC=True:  1.703 (BEST\
+    \ by far!)\n    # tp=4, pp=2, dp=2, mb=4, AC=True:  7.451\n    # tp=4, pp=2, dp=2,\
+    \ mb=4, AC=False: 7.701\n    # tp=2, pp=2, dp=4, mb=4, AC=True:  8.917\n    #\
+    \ tp=4, pp=4, dp=1, mb=4, AC=False: 10.14\n    # tp=4, pp=2, dp=2, mb=2, AC=False:\
+    \ 10.48\n    # ...\n    #\n    # The winning config: tp=2, pp=4, dp=2, mb=4, AC=True\n\
+    \    # Now try tp=2, pp=4, dp=2, mb=2, AC=True to see if smaller micro-batch\n\
+    \    # improves pipeline scheduling with pp=4 stages.\n    \n    tp = 2\n    pp\
+    \ = 4\n    dp = 2  # 2*4*2 = 16\n    micro_batch = 2\n    activation_checkpointing\
+    \ = True\n    \n    # Validate choices\n    if \"tp\" in valid_choices and tp\
+    \ not in valid_choices[\"tp\"]:\n        tp = min(valid_choices[\"tp\"], key=lambda\
+    \ x: abs(x - tp))\n    if \"pp\" in valid_choices and pp not in valid_choices[\"\
+    pp\"]:\n        pp = min(valid_choices[\"pp\"], key=lambda x: abs(x - pp))\n \
+    \   if \"dp\" in valid_choices and dp not in valid_choices[\"dp\"]:\n        dp\
+    \ = min(valid_choices[\"dp\"], key=lambda x: abs(x - dp))\n    if \"micro_batch_size\"\
+    \ in valid_choices and micro_batch not in valid_choices[\"micro_batch_size\"]:\n\
+    \        micro_batch = max(valid_choices[\"micro_batch_size\"])\n    \n    config\
+    \ = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n       \
+    \ \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\": activation_checkpointing,\n\
+    \    }\n    \n    return config\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 4
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 2.968376218625
+  score: 2.968376218625
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter13
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=2, pp=4, dp=2, mb=2, AC=True:  1.578 (BEST!)\n\
+    \    # tp=2, pp=4, dp=2, mb=4, AC=True:  1.703\n    # tp=4, pp=2, dp=2, mb=4,\
+    \ AC=True:  7.451\n    # tp=4, pp=2, dp=2, mb=4, AC=False: 7.701\n    # tp=2,\
+    \ pp=2, dp=4, mb=4, AC=True:  8.917\n    # ...\n    #\n    # The winning config\
+    \ uses tp=2, pp=4, dp=2, AC=True\n    # mb=2 beat mb=4. Let's try mb=1 to see\
+    \ if even smaller micro-batch\n    # further improves pipeline bubble ratio with\
+    \ pp=4.\n    \n    tp = 2\n    pp = 4\n    dp = 2  # 2*4*2 = 16\n    micro_batch\
+    \ = 1\n    activation_checkpointing = True\n    \n    # Validate choices\n   \
+    \ if \"tp\" in valid_choices and tp not in valid_choices[\"tp\"]:\n        tp\
+    \ = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n    if \"pp\" in valid_choices\
+    \ and pp not in valid_choices[\"pp\"]:\n        pp = min(valid_choices[\"pp\"\
+    ], key=lambda x: abs(x - pp))\n    if \"dp\" in valid_choices and dp not in valid_choices[\"\
+    dp\"]:\n        dp = min(valid_choices[\"dp\"], key=lambda x: abs(x - dp))\n \
+    \   if \"micro_batch_size\" in valid_choices and micro_batch not in valid_choices[\"\
+    micro_batch_size\"]:\n        micro_batch = min(valid_choices[\"micro_batch_size\"\
+    ])\n    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"\
+    pp\": pp,\n        \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"
+- config:
+    tp: 1
+    dp: 4
+    pp: 4
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 1.499781809
+  score: 1.499781809
+  status: success
+  error_msg: null
+  trace_dir: /pscratch/sd/e/ericding/ccl-bench/agent/ccl_bench_agent/runs/20260429_093910/traces/20260429_093910_iter14
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Return a configuration dict for the given workload and environment.\"\"\
+    \"\n    total_gpus    = environment.get(\"total_gpus\", 1)\n    gpus_per_node\
+    \ = environment.get(\"gpus_per_node\", 8)\n    batch_size    = workload.get(\"\
+    batch_size\", 1)\n    gpu_memory    = environment.get(\"gpu_memory_gb\", 80)\n\
+    \    inter_bw      = environment.get(\"inter_node_bandwidth_gbps\", 100)\n   \
+    \ intra_bw      = environment.get(\"intra_node_bandwidth_gbps\", 600)\n    \n\
+    \    # Build lookup of valid choices for each config dimension\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    num_nodes = total_gpus // gpus_per_node\n    \n    # Execution history analysis\
+    \ (minimizing avg_step_time):\n    # tp=2, pp=4, dp=2, mb=2, AC=True:  1.578 (BEST!)\n\
+    \    # tp=2, pp=4, dp=2, mb=4, AC=True:  1.703\n    # tp=2, pp=4, dp=2, mb=1,\
+    \ AC=True:  2.968\n    # tp=4, pp=2, dp=2, mb=4, AC=True:  7.451\n    # tp=4,\
+    \ pp=2, dp=2, mb=4, AC=False: 7.701\n    # tp=2, pp=2, dp=4, mb=4, AC=True:  8.917\n\
+    \    #\n    # pp=4 is clearly the dominant factor. tp=2 with mb=2 is the sweet\
+    \ spot.\n    # Now try tp=1, pp=4, dp=4 to see if eliminating TP comm helps.\n\
+    \    # 1*4*4=16 GPUs total.\n    \n    tp = 1\n    pp = 4\n    dp = 4  # 1*4*4\
+    \ = 16\n    micro_batch = 2\n    activation_checkpointing = True\n    \n    #\
+    \ Validate choices\n    if \"tp\" in valid_choices and tp not in valid_choices[\"\
+    tp\"]:\n        tp = min(valid_choices[\"tp\"], key=lambda x: abs(x - tp))\n \
+    \   if \"pp\" in valid_choices and pp not in valid_choices[\"pp\"]:\n        pp\
+    \ = min(valid_choices[\"pp\"], key=lambda x: abs(x - pp))\n    if \"dp\" in valid_choices\
+    \ and dp not in valid_choices[\"dp\"]:\n        dp = min(valid_choices[\"dp\"\
+    ], key=lambda x: abs(x - dp))\n    if \"micro_batch_size\" in valid_choices and\
+    \ micro_batch not in valid_choices[\"micro_batch_size\"]:\n        micro_batch\
+    \ = min(valid_choices[\"micro_batch_size\"], key=lambda x: abs(x - micro_batch))\n\
+    \    \n    config = {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"micro_batch_size\": micro_batch,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n    \n    return config\n"

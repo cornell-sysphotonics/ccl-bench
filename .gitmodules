@@ -3,4 +3,4 @@
 	url = git@github.com:EricDinging/astra-sim-hybrid-parallelism.git
 [submodule "agent/torchtitan"]
 	path = agent/torchtitan
-	url = https://github.com/pytorch/torchtitan.git
+	url = https://github.com/EricDinging/torchtitan-opus.git

@@ -3,9 +3,10 @@
 #
 # Called by execute.py with env vars injected from the config dict:
 #   TP, DP, PP            — parallelism degrees
-#   MICRO_BATCH           — pipeline microbatch size
-#   COMPILE_MODE          — "eager" | "inductor" | "max-autotune"
+#   MICRO_BATCH_SIZE      — pipeline microbatch size (also accepts MICRO_BATCH)
+#   COMPILE_MODE          — "eager" | "compile"
 #   ACTIVATION_CHECKPOINTING — "true" | "false"
+#   ENABLE_OPUS_BACKEND   — "true" | "false" (requires the opus Python package)
 #   TRACE_DIR             — output root for profiler traces and metric YAML
 #   WORKLOAD_NAME         — informational label
 
@@ -14,10 +15,11 @@ set -e
 # ── Config from environment ────────────────────────────────────────────────────
 TP=${TP:-4}
 DP=${DP:-1}
-PP=${PP:-1}
-MICRO_BATCH=${MICRO_BATCH:-1}
+PP=${PP:-2}
+MICRO_BATCH_SIZE=${MICRO_BATCH_SIZE:-${MICRO_BATCH:-1}}
 COMPILE_MODE=${COMPILE_MODE:-"eager"}
 ACTIVATION_CHECKPOINTING=${ACTIVATION_CHECKPOINTING:-"false"}
+ENABLE_OPUS_BACKEND=${ENABLE_OPUS_BACKEND:-"false"}
 TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/ericding/ccl-bench/perlmutter_llama8b"}
 
 # ── Workload constants (from workload card) ────────────────────────────────────
@@ -31,9 +33,9 @@ NPROC_PER_NODE=$(( TOTAL_GPUS < GPUS_PER_NODE ? TOTAL_GPUS : GPUS_PER_NODE ))
 NNODES=$(( TOTAL_GPUS / NPROC_PER_NODE ))
 LOCAL_BATCH=$(( GLOBAL_BATCH / DP ))
 
-# micro_batch has no effect when pp=1; normalize so the agent sees consistent results
+# micro_batch_size has no effect when pp=1; normalize so the agent sees consistent results
 if [ "$PP" -eq 1 ]; then
-    MICRO_BATCH=1
+    MICRO_BATCH_SIZE=1
 fi
 
 if [ "$ACTIVATION_CHECKPOINTING" = "true" ]; then
@@ -55,11 +57,9 @@ export HF_HOME="/tmp/hf_home_${USER}"
 export HF_DATASETS_CACHE="/tmp/hf_datasets_${USER}"
 mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE"
 
-# ── Profiler schedule: 2 wait + 3 warmup + 5 active = 10-step cycle ───────────
+# ── Profiler schedule: Opus TorchTitan uses profile_freq with fixed warmup ─────
 TRAINING_STEPS=10
 PROFILE_FREQ=10
-PROFILER_WARMUP=3
-PROFILER_ACTIVE=5
 
 # Traces land at $TRACE_DIR/profile_traces/iteration_N/rank{r}_trace.json
 SAVE_TRACES_FOLDER="profile_traces"
@@ -68,28 +68,33 @@ mkdir -p "$TRACE_DIR"
 
 # ── Build CLI overrides ────────────────────────────────────────────────────────
 OVERRIDES=(
-    --hf_assets_path "$TOKENIZER_PATH"
+    --model.name llama3
+    --model.flavor 8B
+    --model.hf_assets_path "$TOKENIZER_PATH"
     --training.local_batch_size "$LOCAL_BATCH"
     --training.seq_len "$SEQ_LEN"
     --training.steps "$TRAINING_STEPS"
-    --dataloader.dataset c4_test
+    --training.dataset c4_test
     --parallelism.tensor_parallel_degree "$TP"
     --parallelism.data_parallel_shard_degree "$DP"
     --parallelism.data_parallel_replicate_degree 1
+    --parallelism.fsdp_reshard_after_forward always
     --parallelism.pipeline_parallel_degree "$PP"
-    --parallelism.pipeline_parallel_microbatch_size "$MICRO_BATCH"
+    --parallelism.pipeline_parallel_microbatch_size "$MICRO_BATCH_SIZE"
     --activation_checkpoint.mode "$AC_MODE"
-    --profiler.enable_profiling
-    --profiler.profile_freq "$PROFILE_FREQ"
-    --profiler.profiler_warmup "$PROFILER_WARMUP"
-    --profiler.profiler_active "$PROFILER_ACTIVE"
-    --profiler.save_traces_folder "$SAVE_TRACES_FOLDER"
-    --dump_folder "$TRACE_DIR"
-    --metrics.no-enable_tensorboard
+    --profiling.enable_profiling
+    --profiling.profile_freq "$PROFILE_FREQ"
+    --profiling.save_traces_folder "$SAVE_TRACES_FOLDER"
+    --job.dump_folder "$TRACE_DIR"
+    --metrics.disable_color_printing
 )
 
+if [ "$ENABLE_OPUS_BACKEND" = "true" ]; then
+    OVERRIDES+=(--training.enable_opus_backend)
+fi
+
 if [ "$COMPILE_MODE" != "eager" ]; then
-    OVERRIDES+=(--compile.enable --compile.backend "$COMPILE_MODE")
+    OVERRIDES+=(--compile.enable)
 fi
 
 # ── Launch ─────────────────────────────────────────────────────────────────────
@@ -109,8 +114,6 @@ if [ "$NNODES" -gt 1 ] && [ -n "${SLURM_JOB_ID:-}" ]; then
             --rdzv_backend=c10d \
             --rdzv_endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
             -m torchtitan.train \
-            --module llama3 \
-            --config llama3_8b_ce_loss \
             "${OVERRIDES[@]}"
 else
     # Single-node
@@ -119,8 +122,6 @@ else
         --rdzv_backend=c10d \
         --rdzv_endpoint="localhost:0" \
         -m torchtitan.train \
-        --module llama3 \
-        --config llama3_8b_ce_loss \
         "${OVERRIDES[@]}"
 fi
 

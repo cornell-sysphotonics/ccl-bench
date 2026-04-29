@@ -33,13 +33,12 @@ def generate_config(workload: dict, environment: dict) -> dict:
     tp = min(gpus_per_node, 4)
     pp = 1
     dp = max(1, total_gpus // (tp * pp))
-    micro_batch = 1 # doesn't matter for pp = 1
+    micro_batch = 2 # doesn't matter for pp = 1
 
     return {
         "tp": tp,
         "dp": dp,
         "pp": pp,
         "micro_batch": micro_batch,
-        "compile_mode": "eager",
         "activation_checkpointing": False,
     }

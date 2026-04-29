@@ -1,0 +1,16 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 11.8667514054375}",11.8667514054375,success,,11.8667514054375,
+1,1,"{""tp"": 2, ""dp"": 8, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 14.218367519375}",14.218367519375,success,,11.8667514054375,16.0
+2,2,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 11.9176455259375}",11.9176455259375,success,,11.8667514054375,31.6
+3,3,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 12.5854420361875}",12.5854420361875,success,,11.8667514054375,21.2
+4,4,"{""tp"": 4, ""dp"": 2, ""pp"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 7.7014199846875}",7.7014199846875,success,,7.7014199846875,22.0
+5,5,"{""tp"": 4, ""dp"": 1, ""pp"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 10.1408710913125}",10.1408710913125,success,,7.7014199846875,22.8
+6,6,"{""tp"": 4, ""dp"": 2, ""pp"": 2, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 10.483093010375}",10.483093010375,success,,7.7014199846875,17.7
+7,7,"{""tp"": 2, ""dp"": 4, ""pp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 15.2834929168125}",15.2834929168125,success,,7.7014199846875,28.6
+8,8,"{""tp"": 4, ""dp"": 2, ""pp"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": true}","{""avg_step_time"": 7.450842229499999}",7.450842229499999,success,,7.450842229499999,27.9
+9,9,"{""tp"": 2, ""dp"": 4, ""pp"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": true}","{""avg_step_time"": 8.9173075005}",8.9173075005,success,,7.450842229499999,31.6
+10,10,"{""tp"": 8, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": true}","{""avg_step_time"": 25.986211347875}",25.986211347875,success,,7.450842229499999,25.2
+11,11,"{""tp"": 2, ""dp"": 2, ""pp"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": true}","{""avg_step_time"": 1.7028980808125}",1.7028980808125,success,,1.7028980808125,18.8
+12,12,"{""tp"": 2, ""dp"": 2, ""pp"": 4, ""micro_batch_size"": 2, ""activation_checkpointing"": true}","{""avg_step_time"": 1.5780182904375}",1.5780182904375,success,,1.5780182904375,16.8
+13,13,"{""tp"": 2, ""dp"": 2, ""pp"": 4, ""micro_batch_size"": 1, ""activation_checkpointing"": true}","{""avg_step_time"": 2.968376218625}",2.968376218625,success,,1.5780182904375,11.1
+14,14,"{""tp"": 1, ""dp"": 4, ""pp"": 4, ""micro_batch_size"": 2, ""activation_checkpointing"": true}","{""avg_step_time"": 1.499781809}",1.499781809,success,,1.499781809,17.2

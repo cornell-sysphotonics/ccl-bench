@@ -4,28 +4,33 @@
 config_space:
   - key: tp
     type: int
-    description: Tensor parallelism degree (intra-node, NVLink)
-    choices: [1, 2, 4, 8, 16]
-  - key: dp
-    type: int
-    description: Data parallelism sharding degree (FSDP)
-    choices: [1, 2, 4, 8, 16]
+    description: Tensor parallelism degree (splits each layer across GPUs)
+    choices: [1, 2, 4, 8]
+
   - key: pp
     type: int
-    description: Pipeline parallelism degree
-    choices: [1, 2, 4, 8, 16]
-  - key: micro_batch
+    description: Pipeline parallelism degree (splits layers across stages)
+    choices: [1, 2, 4]
+
+  - key: dp
     type: int
-    description: Pipeline microbatch size (does not matter if PP=1)
-    choices: [1, 2, 4, 8, 16, 32]
-  - key: compile_mode
-    type: str
-    description: torch.compile backend
-    choices: [eager, inductor]
+    description: Data parallelism degree (computed as total_gpus / tp / pp)
+    choices: [1, 2, 4, 8]
+
+  - key: micro_batch_size
+    type: int
+    description: Micro-batch size per data-parallel rank
+    choices: [1, 2, 4]
+
   - key: activation_checkpointing
     type: bool
     description: Full activation checkpointing to reduce peak memory
     choices: [true, false]
+
+# Constraints the LLM should respect:
+#   tp * dp * pp == 16 (total GPUs)
+#   tp <= 4            (max GPUs per node, to keep TP intra-node)
+#   micro_batch_size divides local_batch_size = 32 / dp when pp > 1
 
 optimization_goal:
   direction: minimize

@@ -76,3 +76,8 @@ venv/
 
 run_cache.json
 traces
+
+package-lock.json
+package.json
+.codex
+node_modules

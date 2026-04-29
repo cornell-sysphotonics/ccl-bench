@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Plot CCL-Bench ADRS agent results from a results_<timestamp>.csv file.
 
@@ -13,12 +14,11 @@ Usage:
     python plot_results.py results_*.csv          # glob OK in bash
 """
 
-from __future__ import annotations
-
 import csv
 import json
 import sys
 from pathlib import Path
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -35,7 +35,21 @@ def _latest_csv() -> Path:
     return candidates[-1]
 
 
-def load_csv(csv_path: Path) -> list[dict]:
+_CONFIG_ALIASES = {
+    "micro_batch_size": "micro_batch",
+}
+
+
+def _canonicalize_config(config):
+    """Merge known config-key aliases so one tunable gets one heatmap row."""
+    canonical = {}
+    for key, value in config.items():
+        canonical_key = _CONFIG_ALIASES.get(key, key)
+        canonical[canonical_key] = value
+    return canonical
+
+
+def load_csv(csv_path):
     rows = []
     with open(csv_path, newline="") as f:
         for row in csv.DictReader(f):
@@ -43,7 +57,7 @@ def load_csv(csv_path: Path) -> list[dict]:
             score = float(row["score"]) if row.get("score") else float("nan")
             best  = float(row["best_score"]) if row.get("best_score") else float("nan")
             stime = float(row["search_time_s"]) if row.get("search_time_s") else float("nan")
-            config = json.loads(row.get("config") or "{}")
+            config = _canonicalize_config(json.loads(row.get("config") or "{}"))
             rows.append({
                 "iteration":     it,
                 "version":       int(row.get("version", 0)),
@@ -64,7 +78,7 @@ _BEST_COLOR = "#2563eb"   # blue  — running best line
 _BAR_COLOR  = "#9333ea"   # purple — search time bars
 
 
-def _plot_scores(ax: plt.Axes, rows: list[dict]) -> None:
+def _plot_scores(ax, rows):
     iters  = [r["iteration"] for r in rows]
     scores = [r["score"] for r in rows]
     bests  = [r["best_score"] for r in rows]
@@ -90,7 +104,7 @@ def _plot_scores(ax: plt.Axes, rows: list[dict]) -> None:
     ax.grid(axis="y", alpha=0.3)
 
 
-def _plot_search_time(ax: plt.Axes, rows: list[dict]) -> None:
+def _plot_search_time(ax, rows):
     iters = [r["iteration"] for r in rows]
     times = [r["search_time_s"] for r in rows]
     valid = [(i, t) for i, t in zip(iters, times) if not np.isnan(t)]
@@ -105,7 +119,7 @@ def _plot_search_time(ax: plt.Axes, rows: list[dict]) -> None:
     ax.grid(axis="y", alpha=0.3)
 
 
-def _plot_config_heatmap(ax: plt.Axes, rows: list[dict]) -> None:
+def _plot_config_heatmap(ax, rows):
     """Heatmap of numeric/bool config dimensions across iterations."""
     # Collect all config keys that ever appear
     all_keys = []
