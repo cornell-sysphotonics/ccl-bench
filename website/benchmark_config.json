@@ -716,7 +716,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_allreduce_group_6": {
       "label": "AllReduce BW (GB/s)",
@@ -732,7 +732,7 @@
         "high": 200,
         "mid": 0.1
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
       "label": "AllToAll BW (%)",
