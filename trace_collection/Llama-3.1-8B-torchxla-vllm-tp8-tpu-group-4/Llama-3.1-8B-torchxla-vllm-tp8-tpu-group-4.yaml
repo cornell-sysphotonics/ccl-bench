@@ -36,7 +36,7 @@ workload:
     xpu_spec:
       type: TPU  # Tensor Processing Unit
       model: tpu_v6e  # TPU v6e hardware
-      total_count: 8  # Maximum 8 chips used (TP=8)
+      total_count: 8  # Chips used (TP=8)
       count_per_node: 8  # All chips in single TPU VM
     driver_version: v2-alpha-tpuv6e  # TPU VM runtime version
   
