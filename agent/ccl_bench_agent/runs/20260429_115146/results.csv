@@ -1,0 +1,61 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 8.3581441925}",8.3581441925,success,,8.3581441925,
+1,1,"{""tp"": 4, ""pp"": 1, ""dp"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": false}",{},inf,error,"exit 1: ------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-29_11:57:38
+  host      : nid001240-hsn0
+  rank      : 5 (local_rank: 1)
+  exitcode  : -11 (pid: 717670)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 717670
+========================================================
+srun: error: nid001244: task 3: Exited with exit code 1
+srun: Terminating StepId=52225631.1
+srun: error: nid001237: task 0: Exited with exit code 1
+srun: error: nid001240: task 1: Exited with exit code 1
+srun: error: nid001241: task 2: Exited with exit code 1
+",8.3581441925,36.2
+2,2,"{""tp"": 2, ""pp"": 1, ""dp"": 8, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},inf,error,"exit 143: cal_rank: 3)
+  exitcode  : 1 (pid: 815472)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid001244: task 3: Exited with exit code 1
+srun: Terminating StepId=52225631.2
+[2026-04-29T19:00:08.660] error: *** STEP 52225631.2 ON nid001237 CANCELLED AT 2026-04-29T19:00:08 DUE TO TASK FAILURE ***
+srun: error: nid001241: task 2: Terminated
+srun: error: nid001237: task 0: Terminated
+srun: error: nid001240: task 1: Terminated
+srun: Force Terminated StepId=52225631.2
+",8.3581441925,40.9
+3,3,"{""tp"": 2, ""pp"": 1, ""dp"": 8, ""micro_batch_size"": 2, ""activation_checkpointing"": false}",{},inf,error,"exit 1: 
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-29_12:02:38
+  host      : nid001241-hsn0
+  rank      : 9 (local_rank: 1)
+  exitcode  : 1 (pid: 426097)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid001237: task 0: Exited with exit code 1
+srun: Terminating StepId=52225631.3
+srun: error: nid001244: task 3: Exited with exit code 1
+srun: error: nid001240: task 1: Exited with exit code 1
+srun: error: nid001241: task 2: Exited with exit code 1
+",8.3581441925,41.4
+4,4,"{""tp"": 2, ""pp"": 2, ""dp"": 4, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 6.06780345434375}",6.06780345434375,success,,6.06780345434375,28.8
+5,5,"{""tp"": 2, ""pp"": 2, ""dp"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 6.2309969240625}",6.2309969240625,success,,6.06780345434375,34.0
+6,6,"{""tp"": 2, ""pp"": 4, ""dp"": 2, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 0.8841301715}",0.8841301715,success,,0.8841301715,31.3
+7,7,"{""tp"": 2, ""pp"": 4, ""dp"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""avg_step_time"": 1.0265980448125}",1.0265980448125,success,,0.8841301715,30.5
+8,8,"{""tp"": 1, ""pp"": 4, ""dp"": 4, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 1.33202886603125}",1.33202886603125,success,,0.8841301715,32.6
+9,9,"{""tp"": 2, ""pp"": 4, ""dp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.6739495083125}",0.6739495083125,success,,0.6739495083125,26.6
+10,10,"{""tp"": 2, ""pp"": 8, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.6068023986250001}",0.6068023986250001,success,,0.6068023986250001,25.5
+11,11,"{""tp"": 1, ""pp"": 8, ""dp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 1.0882901713125}",1.0882901713125,success,,0.6068023986250001,30.6
+12,12,"{""tp"": 4, ""pp"": 4, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.4427202638125}",0.4427202638125,success,,0.4427202638125,34.8
+13,13,"{""tp"": 8, ""pp"": 2, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 1.0314657380625}",1.0314657380625,success,,0.4427202638125,37.2
+14,14,"{""tp"": 4, ""pp"": 4, ""dp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""avg_step_time"": 0.47071762990625}",0.47071762990625,success,,0.4427202638125,30.6
+15,15,"{""tp"": 4, ""pp"": 4, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.4427202638125}",0.4427202638125,success,,0.4427202638125,45.8
+16,16,"{""tp"": 4, ""pp"": 4, ""dp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 0.4427202638125}",0.4427202638125,success,,0.4427202638125,40.7
+17,17,"{""tp"": 4, ""pp"": 2, ""dp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""avg_step_time"": 3.33906201475}",3.33906201475,success,,0.4427202638125,25.2
