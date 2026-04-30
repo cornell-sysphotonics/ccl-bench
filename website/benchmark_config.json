@@ -490,6 +490,26 @@
       "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp8-batch128-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp8_batch8_seq512-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp2_tp4_batch4_seq512-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_tp8_batch1_seq512-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [
