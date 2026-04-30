@@ -450,6 +450,46 @@
       "trace": "/data/ccl-bench_trace_collection/nanochat-8b-pytorch-dp-2-dgx_spark",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [

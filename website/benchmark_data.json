@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-28T15:17:46.377476+00:00",
+  "generated_at": "2026-04-30T01:48:00.778965+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -6537,6 +6537,542 @@
         "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+        "description": "llama-3.1-8b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 32, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 32,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 8,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 10.8207,
+        "mfu": 5.2762,
+        "mean_sm_coverage": 16.838,
+        "dominant_kernel_concentration": 45.4016,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 15.8929,
+        "memory_transfer_overhead": 0.3244,
+        "communication_fraction": 89.8025,
+        "total_communication_time": 10.451,
+        "bandwidth_utilization_allgather_group_6": 0.618114,
+        "bandwidth_utilization_allreduce_group_6": 8.97463e-05
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+        "description": "llama-3.1-8b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 32, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node FSDP workload, indicating fallback.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 32,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 8,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 10.508,
+        "mfu": 5.4332,
+        "mean_sm_coverage": 17.0965,
+        "dominant_kernel_concentration": 45.2832,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 15.514,
+        "memory_transfer_overhead": 0.3318,
+        "communication_fraction": 89.5223,
+        "total_communication_time": 10.1407,
+        "bandwidth_utilization_allgather_group_6": 0.630872,
+        "bandwidth_utilization_allreduce_group_6": 0.000178708
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.4364,
+        "mfu": 2.5799,
+        "mean_sm_coverage": 7.62777,
+        "dominant_kernel_concentration": 53.923,
+        "moe_fraction": 0.00387095,
+        "average_memory_bandwidth": 398.792,
+        "memory_transfer_overhead": 0.0973,
+        "communication_fraction": 95.1725,
+        "total_communication_time": 12.2554,
+        "bandwidth_utilization_allgather_group_6": 4.9098,
+        "bandwidth_utilization_allreduce_group_6": 26.5259
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node MoE workload, indicating fallback.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.9431,
+        "mfu": 2.4789,
+        "mean_sm_coverage": 7.45141,
+        "dominant_kernel_concentration": 52.676,
+        "moe_fraction": 0.00385149,
+        "average_memory_bandwidth": 411.299,
+        "memory_transfer_overhead": 0.0932,
+        "communication_fraction": 95.2895,
+        "total_communication_time": 12.7051,
+        "bandwidth_utilization_allgather_group_6": 0.77874,
+        "bandwidth_utilization_allreduce_group_6": 25.6882
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=4.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 11.9832,
+        "mfu": 2.6775,
+        "mean_sm_coverage": 10.3779,
+        "dominant_kernel_concentration": 56.371,
+        "moe_fraction": 0.00594862,
+        "average_memory_bandwidth": 422.685,
+        "memory_transfer_overhead": 0.1042,
+        "communication_fraction": 95.2327,
+        "total_communication_time": 11.6966,
+        "bandwidth_utilization_allgather_group_6": 0.625296,
+        "bandwidth_utilization_allreduce_group_6": 58.1246
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node MoE workload, indicating fallback. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=4.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.367,
+        "mfu": 2.5944,
+        "mean_sm_coverage": 10.845,
+        "dominant_kernel_concentration": 58.6992,
+        "moe_fraction": 0.00556129,
+        "average_memory_bandwidth": 435.536,
+        "memory_transfer_overhead": 0.0997,
+        "communication_fraction": 95.5356,
+        "total_communication_time": 12.0011,
+        "bandwidth_utilization_allgather_group_6": 0.592587,
+        "bandwidth_utilization_allreduce_group_6": 60.2321
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=8.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 3.67276,
+        "mfu": 8.7359,
+        "mean_sm_coverage": 14.3896,
+        "dominant_kernel_concentration": 42.978,
+        "moe_fraction": 0.0239354,
+        "average_memory_bandwidth": 604.516,
+        "memory_transfer_overhead": 0.7877,
+        "communication_fraction": 89.8156,
+        "total_communication_time": 3.08812,
+        "bandwidth_utilization_allgather_group_6": 6.13854,
+        "bandwidth_utilization_allreduce_group_6": 63.7369
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node MoE workload, indicating fallback. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=8.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 3.59666,
+        "mfu": 8.9208,
+        "mean_sm_coverage": 14.3965,
+        "dominant_kernel_concentration": 44.4348,
+        "moe_fraction": 0.0254934,
+        "average_memory_bandwidth": 600.976,
+        "memory_transfer_overhead": 0.8121,
+        "communication_fraction": 89.4823,
+        "total_communication_time": 3.03348,
+        "bandwidth_utilization_allgather_group_6": 3.89827,
+        "bandwidth_utilization_allreduce_group_6": 64.6965
       }
     }
   ]

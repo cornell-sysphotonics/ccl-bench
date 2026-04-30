@@ -1,0 +1,82 @@
+[job]
+dump_folder = "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter"
+description = "DeepSeek-V3 16B training, 2-node/8-GPU TorchTitan standard workload #10"
+print_args = false
+
+[profiling]
+enable_profiling = true
+save_traces_folder = "profile_trace"
+profile_freq = 4
+enable_memory_snapshot = false
+save_memory_snapshot_folder = "memory_snapshot"
+
+[metrics]
+log_freq = 1
+disable_color_printing = true
+enable_tensorboard = false
+save_tb_folder = "tb"
+enable_wandb = false
+
+[model]
+name = "deepseek_v3"
+flavor = "16B"
+hf_assets_path = "./tests/assets/tokenizer"
+
+[optimizer]
+name = "AdamW"
+lr = 8e-4
+eps = 1e-8
+
+[lr_scheduler]
+warmup_steps = 2
+decay_ratio = 0.8
+decay_type = "linear"
+min_lr_factor = 0.0
+
+[training]
+local_batch_size = 2
+seq_len = 1024
+max_norm = 1.0
+steps = 6
+dataset = "c4_test"
+enable_opus_backend = false
+
+[parallelism]
+data_parallel_replicate_degree = 1
+data_parallel_shard_degree = 4
+fsdp_reshard_after_forward = "always"
+tensor_parallel_degree = 2
+enable_async_tensor_parallel = false
+pipeline_parallel_degree = 1
+pipeline_parallel_microbatch_size = 1
+context_parallel_degree = 1
+expert_parallel_degree = 4
+expert_tensor_parallel_degree = 1
+
+[checkpoint]
+enable = false
+folder = "checkpoint"
+interval = 10
+last_save_model_only = false
+export_dtype = "float32"
+async_mode = "disabled"
+
+[activation_checkpoint]
+mode = "none"
+selective_ac_option = "2"
+
+[compile]
+enable = false
+components = ["model", "loss"]
+
+[float8]
+enable_fsdp_float8_all_gather = false
+precompute_float8_dynamic_scale_for_fsdp = false
+filter_fqns = ["output", "router.gate"]
+moe_fqns_prototype = ["experts"]
+
+[validation]
+enable = false
+dataset = "c4_validation"
+freq = 5
+steps = 3
