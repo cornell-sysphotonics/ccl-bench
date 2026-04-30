@@ -4,3 +4,4 @@
 [submodule "agent/torchtitan"]
 	path = agent/torchtitan
 	url = https://github.com/EricDinging/torchtitan-opus.git
+	update = none
