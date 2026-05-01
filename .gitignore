@@ -82,3 +82,4 @@ package.json
 .codex
 node_modules
 perlmutter_llama8b_trace
+chakra_trace*

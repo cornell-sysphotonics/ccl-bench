@@ -42,11 +42,11 @@ No host Python packages are required beyond the standard library — all heavy l
 ## Quick Start
 
 ```bash
-# Baseline: deepseek-v3-16b on A100 Slingshot (200 GB/s Switch)
+# Baseline: deepseek-v3-16b on A100 Slingshot
 python simulation/pipeline.py --mode comm-only \
     --trace-dir /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter
 
-# What-if: 2× network bandwidth
+# What-if: 2× scale-out network bandwidth
 python simulation/pipeline.py --mode comm-only \
     --trace-dir /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter \
     --bandwidth 400
@@ -59,16 +59,38 @@ python simulation/pipeline.py --mode comm-only \
 # What-if: H100 hardware (900 TFLOPS BF16, 3.35 TB/s HBM, 900 GB/s NVLink)
 python simulation/pipeline.py --mode full \
     --trace-dir trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter \
-    --peak-perf 900 --mem-bw 3350 --bandwidth 900
+    --peak-perf 900 --mem-bw 3350 --gpus-per-node 8 \
+    --intra-bandwidth 900 --bandwidth 50
 ```
 
 Run from the repo root (`/home/dd687/ccl-bench/`).
+
+## Examples
+
+Ready-to-run scripts are in `simulation/examples/`:
+
+| Script | What it shows |
+|--------|---------------|
+| `01_baseline.sh` | Single baseline run, ep4-dp2-tp4, A100 defaults |
+| `02_bandwidth_sweep.sh` | Step time vs scale-out bandwidth (50→800 GB/s) |
+| `03_algo_compare.sh` | `ring` vs `halving_doubling` vs `doubleBinaryTree` |
+| `04_parallelism_compare.sh` | ep4-dp2-tp4 vs ep4-dp4-tp2 vs ep8-dp2-tp4 vs ep8-dp8 |
+| `05_topology_compare.sh` | Scale-out Switch vs Ring vs FullyConnected with fixed scale-up |
+| `06_hardware_generations.sh` | Two-tier A100 → H100 → next-gen network presets |
+
+Run any example from the repo root:
+
+```bash
+bash simulation/examples/02_bandwidth_sweep.sh
+```
 
 ## Arguments
 
 ```
 --trace-dir PATH        Trace directory (required)
 --mode {full,comm-only} Simulation mode (default: full)
+--compute-model {gap,kernels}
+                        comm-only compute model (default: gap)
 --output-dir PATH       Output directory (default: /var/tmp/ccl_bench_sim_*)
 ```
 
@@ -76,14 +98,32 @@ Run from the repo root (`/home/dd687/ccl-bench/`).
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--topology` | `Switch` | `Ring`, `Switch`, or `FullyConnected` |
-| `--bandwidth` | `200.0` | Per-link bandwidth in GB/s |
-| `--latency` | `500.0` | Per-link latency in ns |
+| `--topology` | `Switch` | Inter-node topology: `Ring`, `Switch`, or `FullyConnected` |
+| `--bandwidth` | `200.0` | Inter-node per-link bandwidth in GB/s |
+| `--latency` | `500.0` | Inter-node per-link latency in ns |
+| `--gpus-per-node` | `4` | Ranks/GPUs sharing the intra-node fabric |
+| `--intra-topology` | `FullyConnected` | Intra-node topology: `Ring`, `Switch`, or `FullyConnected` |
+| `--intra-bandwidth` | `400.0` | Intra-node per-link bandwidth in GB/s |
+| `--intra-latency` | `50.0` | Intra-node per-link latency in ns |
+
+For multi-node traces, the pipeline writes a two-dimensional ASTRA network:
+
+```yaml
+topology: [ FullyConnected, Switch ]
+npus_count: [ <gpus-per-node>, <num_nodes> ]
+bandwidth: [ <intra-bandwidth>, <bandwidth> ]
+latency: [ <intra-latency>, <latency> ]
+```
+
+Ranks are assumed to be node-contiguous: ranks `0..gpus_per_node-1` are on node 0,
+the next block is on node 1, and so on. Single-node traces use the intra-node
+topology and keep a one-dimensional network because there is no inter-node tier.
 
 **System parameters:**
 
 | Flag | Default | Description |
 |------|---------|-------------|
+| `--compute-model` | `gap` | `gap` inserts replayed compute gaps between collectives; `kernels` emits non-NCCL GPU kernels as replayed `COMP_NODE`s |
 | `--collective-algo` | `ring` | `ring`, `halving_doubling`, `direct_point2point`, `doubleBinaryTree` |
 | `--peak-perf` | `312.0` | Peak compute TFLOPS (A100 BF16) |
 | `--mem-bw` | `2000.0` | HBM bandwidth GB/s (A100) |
@@ -124,7 +164,8 @@ The pipeline prints a summary table at the end:
 1. **Trace parsing** (`gen_chakra_et.py`, runs inside Docker):
    - Reads each `rankN_trace.json` and extracts NCCL collective kernel events (`ncclDevKernel_AllGather_*`, `ncclDevKernel_ReduceScatter_*`, etc.)
    - P2P send/recv (`ncclDevKernel_SendRecv`) are excluded — they represent pipeline-parallel point-to-point transfers that don't fit the flat-topology collective model
-   - Each collective op is preceded by a `COMP_NODE` whose `duration_micros` captures the measured compute gap since the previous collective
+   - With `--compute-model gap`, each collective op is preceded by a `COMP_NODE` whose `duration_micros` captures the measured compute gap since the previous collective in that process group
+   - With `--compute-model kernels`, non-NCCL GPU kernels are emitted as replayed `COMP_NODE`s with their measured kernel durations. Dependencies preserve CUDA stream order, and NCCL collectives also preserve process-group ordering.
 
 2. **Process group extraction** (automatic for torchtitan traces):
    - NCCL kernel events in torchtitan traces carry `"Process Group Ranks"` in their args (e.g., `[0, 1, 2, 3]` for a TP group)
@@ -163,5 +204,5 @@ trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter/
 ## Known Limitations
 
 - **PP send/recv not simulated**: Pipeline-parallel point-to-point transfers (`ncclDevKernel_SendRecv`) are filtered out. The simulated step time excludes these communication events, so comm fraction will be understated for PP-heavy configurations.
-- **Flat topology**: All communication groups share the same bandwidth and latency parameters. Intra-node (NVLink) and inter-node (InfiniBand/Slingshot) links are not modeled separately.
-- **No overlap modeling**: AstraSim's congestion-unaware analytical backend reports zero compute-communication overlap; actual overlap is visible in the `simulation.log` per-rank `exposed communication` cycle counts.
+- **Node-contiguous rank assumption**: Two-tier topology assumes contiguous rank blocks per node. If a trace uses a different rank placement, adjust `--gpus-per-node` or reorder/remap the trace ranks before simulation.
+- **Overlap is approximate**: `--compute-model gap` allows overlap between independent process-group chains but serializes compute gaps with communication inside each chain. `--compute-model kernels` preserves per-stream event ordering and process-group collective ordering, so compute and communication can overlap when they are on independent streams, but it does not reconstruct absolute launch-time gaps or the full PyTorch dependency graph.

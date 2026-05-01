@@ -1,0 +1,5 @@
+# Network configuration for Astra-sim what-if analysis
+topology: [ FullyConnected, Switch ]
+npus_count: [ 4, 2 ]
+bandwidth: [ 300.00, 25.00 ]  # GB/s
+latency: [ 50.00, 500.00 ]  # ns
