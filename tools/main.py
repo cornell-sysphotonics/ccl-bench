@@ -285,6 +285,9 @@ if __name__ == "__main__":
     elif metric_name == "communication_overlap_ratio":
         from communication_overlap_ratio.communication_overlap_ratio import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "compute_comm_overlap":
+        from compute_comm_overlap.compute_comm_overlap import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "ttft_group_6":
         from ttft_group_6.ttft_group_6 import metric_cal
         metric_cal_func = metric_cal

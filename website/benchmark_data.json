@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-28T15:17:46.377476+00:00",
+  "generated_at": "2026-05-01T23:30:43.849662+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -8,6 +8,7 @@
     "bandwidth_utilization_alltoall_group_6",
     "bandwidth_utilization_peertopeer_group_6",
     "communication_fraction",
+    "compute_comm_overlap",
     "dominant_kernel_concentration",
     "mean_sm_coverage",
     "memory_transfer_overhead",
@@ -288,6 +289,23 @@
         "mid": 20
       },
       "required_update": false
+    },
+    "compute_comm_overlap": {
+      "label": "Compute-Comm Overlap (%)",
+      "description": "Percentage of total communication time that runs concurrently with compute kernels. Higher values indicate more effective pipelining of communication behind compute.",
+      "higher_is_better": true,
+      "unit": "%",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu",
+        "nsys"
+      ],
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      },
+      "required_update": true
     }
   },
   "rows": [
@@ -312,7 +330,7 @@
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
-        "total_count": 8,
+        "total_count": 1,
         "count_per_node": 8,
         "network_topology": "torus",
         "bandwidth_scaleout": "N/A",
@@ -356,7 +374,8 @@
         "communication_fraction": 1.30337e-06,
         "total_communication_time": 1.49956,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 82.4935
       }
     },
     {
@@ -422,7 +441,8 @@
         "communication_fraction": 55.1681,
         "total_communication_time": 0.476312,
         "bandwidth_utilization_allgather_group_6": 17.7831,
-        "bandwidth_utilization_allreduce_group_6": 0.517744
+        "bandwidth_utilization_allreduce_group_6": 0.517744,
+        "compute_comm_overlap": 48.0783
       }
     },
     {
@@ -488,7 +508,8 @@
         "communication_fraction": 55.4385,
         "total_communication_time": 0.489888,
         "bandwidth_utilization_allgather_group_6": 14.8624,
-        "bandwidth_utilization_allreduce_group_6": 0.55966
+        "bandwidth_utilization_allreduce_group_6": 0.55966,
+        "compute_comm_overlap": 45.2674
       }
     },
     {
@@ -554,7 +575,8 @@
         "communication_fraction": 25.9987,
         "total_communication_time": 0.52993,
         "bandwidth_utilization_allgather_group_6": 16.6354,
-        "bandwidth_utilization_allreduce_group_6": 1.37616
+        "bandwidth_utilization_allreduce_group_6": 1.37616,
+        "compute_comm_overlap": 0.00325058
       }
     },
     {
@@ -620,7 +642,8 @@
         "communication_fraction": 27.8997,
         "total_communication_time": 0.619568,
         "bandwidth_utilization_allgather_group_6": 14.7161,
-        "bandwidth_utilization_allreduce_group_6": 1.17159
+        "bandwidth_utilization_allreduce_group_6": 1.17159,
+        "compute_comm_overlap": 0.00421244
       }
     },
     {
@@ -686,7 +709,8 @@
         "communication_fraction": 23.5252,
         "total_communication_time": 0.47062,
         "bandwidth_utilization_allgather_group_6": 32.2171,
-        "bandwidth_utilization_allreduce_group_6": 1.74028
+        "bandwidth_utilization_allreduce_group_6": 1.74028,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -752,7 +776,8 @@
         "communication_fraction": 23.8475,
         "total_communication_time": 0.466497,
         "bandwidth_utilization_allgather_group_6": 28.5834,
-        "bandwidth_utilization_allreduce_group_6": 1.39698
+        "bandwidth_utilization_allreduce_group_6": 1.39698,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -818,7 +843,8 @@
         "communication_fraction": 35.8681,
         "total_communication_time": 0.424001,
         "bandwidth_utilization_allgather_group_6": 33.2346,
-        "bandwidth_utilization_allreduce_group_6": 0.000545697
+        "bandwidth_utilization_allreduce_group_6": 0.000545697,
+        "compute_comm_overlap": 76.7495
       }
     },
     {
@@ -884,7 +910,8 @@
         "communication_fraction": 34.2439,
         "total_communication_time": 0.390762,
         "bandwidth_utilization_allgather_group_6": 33.3994,
-        "bandwidth_utilization_allreduce_group_6": 1.73152e-05
+        "bandwidth_utilization_allreduce_group_6": 1.73152e-05,
+        "compute_comm_overlap": 80.2494
       }
     },
     {
@@ -908,7 +935,7 @@
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
-        "total_count": 8,
+        "total_count": 2,
         "count_per_node": 8,
         "network_topology": "torus",
         "bandwidth_scaleout": "N/A",
@@ -952,7 +979,8 @@
         "communication_fraction": 16.5455,
         "total_communication_time": 0.0726466,
         "bandwidth_utilization_allgather_group_6": 0.074005,
-        "bandwidth_utilization_allreduce_group_6": 151.166
+        "bandwidth_utilization_allreduce_group_6": 151.166,
+        "compute_comm_overlap": 55.512
       }
     },
     {
@@ -976,7 +1004,7 @@
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
-        "total_count": 8,
+        "total_count": 4,
         "count_per_node": 8,
         "network_topology": "torus",
         "bandwidth_scaleout": "N/A",
@@ -1020,7 +1048,8 @@
         "communication_fraction": 19.3455,
         "total_communication_time": 0.11252,
         "bandwidth_utilization_allgather_group_6": 0.0684186,
-        "bandwidth_utilization_allreduce_group_6": 311.035
+        "bandwidth_utilization_allreduce_group_6": 311.035,
+        "compute_comm_overlap": 48.0609
       }
     },
     {
@@ -1088,7 +1117,8 @@
         "communication_fraction": 26.9272,
         "total_communication_time": 0.239226,
         "bandwidth_utilization_allgather_group_6": 0.139939,
-        "bandwidth_utilization_allreduce_group_6": 326.912
+        "bandwidth_utilization_allreduce_group_6": 326.912,
+        "compute_comm_overlap": 37.2474
       }
     },
     {
@@ -1112,7 +1142,7 @@
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
-        "total_count": 8,
+        "total_count": 1,
         "count_per_node": 8,
         "network_topology": "torus",
         "bandwidth_scaleout": "N/A",
@@ -1156,7 +1186,8 @@
         "communication_fraction": 3.14031e-06,
         "total_communication_time": 0.427017,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 55.2837
       }
     },
     {
@@ -1180,7 +1211,7 @@
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
-        "total_count": 8,
+        "total_count": 2,
         "count_per_node": 8,
         "network_topology": "torus",
         "bandwidth_scaleout": "N/A",
@@ -1224,7 +1255,8 @@
         "communication_fraction": 15.0425,
         "total_communication_time": 0.0523105,
         "bandwidth_utilization_allgather_group_6": 0.075199,
-        "bandwidth_utilization_allreduce_group_6": 150.732
+        "bandwidth_utilization_allreduce_group_6": 150.732,
+        "compute_comm_overlap": 40.6958
       }
     },
     {
@@ -1248,7 +1280,7 @@
         "dataset": "custom",
         "hardware_type": "TPU",
         "hardware_model": "tpu_v6e",
-        "total_count": 8,
+        "total_count": 4,
         "count_per_node": 8,
         "network_topology": "torus",
         "bandwidth_scaleout": "N/A",
@@ -1292,7 +1324,8 @@
         "communication_fraction": 18.4459,
         "total_communication_time": 0.0759283,
         "bandwidth_utilization_allgather_group_6": 0.119377,
-        "bandwidth_utilization_allreduce_group_6": 310.216
+        "bandwidth_utilization_allreduce_group_6": 310.216,
+        "compute_comm_overlap": 32.2813
       }
     },
     {
@@ -1360,7 +1393,8 @@
         "communication_fraction": 25.5013,
         "total_communication_time": 0.171671,
         "bandwidth_utilization_allgather_group_6": 0.140253,
-        "bandwidth_utilization_allreduce_group_6": 330.799
+        "bandwidth_utilization_allreduce_group_6": 330.799,
+        "compute_comm_overlap": 27.1695
       }
     },
     {
@@ -1426,7 +1460,8 @@
         "communication_fraction": 90.1896,
         "total_communication_time": 3.79839,
         "bandwidth_utilization_allgather_group_6": 0.691226,
-        "bandwidth_utilization_allreduce_group_6": 0.000582978
+        "bandwidth_utilization_allreduce_group_6": 0.000582978,
+        "compute_comm_overlap": 2.78071
       }
     },
     {
@@ -1492,7 +1527,8 @@
         "communication_fraction": 95.0665,
         "total_communication_time": 12.0873,
         "bandwidth_utilization_allgather_group_6": 0.640605,
-        "bandwidth_utilization_allreduce_group_6": 50.4074
+        "bandwidth_utilization_allreduce_group_6": 50.4074,
+        "compute_comm_overlap": 5.27335
       }
     },
     {
@@ -1558,7 +1594,8 @@
         "communication_fraction": 95.5984,
         "total_communication_time": 12.9735,
         "bandwidth_utilization_allgather_group_6": 0.679365,
-        "bandwidth_utilization_allreduce_group_6": 26.5272
+        "bandwidth_utilization_allreduce_group_6": 26.5272,
+        "compute_comm_overlap": 3.4265
       }
     },
     {
@@ -1624,7 +1661,8 @@
         "communication_fraction": 89.6675,
         "total_communication_time": 2.89107,
         "bandwidth_utilization_allgather_group_6": 1.37671,
-        "bandwidth_utilization_allreduce_group_6": 62.995
+        "bandwidth_utilization_allreduce_group_6": 62.995,
+        "compute_comm_overlap": 6.3137
       }
     },
     {
@@ -1690,7 +1728,8 @@
         "communication_fraction": 90.6411,
         "total_communication_time": 3.32568,
         "bandwidth_utilization_allgather_group_6": 11.6139,
-        "bandwidth_utilization_allreduce_group_6": 81.2942
+        "bandwidth_utilization_allreduce_group_6": 81.2942,
+        "compute_comm_overlap": 1.68029
       }
     },
     {
@@ -1756,7 +1795,8 @@
         "communication_fraction": 93.8724,
         "total_communication_time": 9.28479,
         "bandwidth_utilization_allgather_group_6": 9.36601,
-        "bandwidth_utilization_allreduce_group_6": 73.5363
+        "bandwidth_utilization_allreduce_group_6": 73.5363,
+        "compute_comm_overlap": 4.54054
       }
     },
     {
@@ -1820,7 +1860,8 @@
         "communication_fraction": 98.3598,
         "total_communication_time": 11.498,
         "bandwidth_utilization_allgather_group_6": 15.3382,
-        "bandwidth_utilization_allreduce_group_6": 84.8103
+        "bandwidth_utilization_allreduce_group_6": 84.8103,
+        "compute_comm_overlap": 0.348396
       }
     },
     {
@@ -1884,7 +1925,8 @@
         "communication_fraction": 96.7923,
         "total_communication_time": 20.0744,
         "bandwidth_utilization_allgather_group_6": 9.28075,
-        "bandwidth_utilization_allreduce_group_6": 101.387
+        "bandwidth_utilization_allreduce_group_6": 101.387,
+        "compute_comm_overlap": 1.76157
       }
     },
     {
@@ -1946,7 +1988,8 @@
         "communication_fraction": 55.6226,
         "total_communication_time": 169.143,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 53.8985
       }
     },
     {
@@ -2008,7 +2051,8 @@
         "communication_fraction": 44.7695,
         "total_communication_time": 116.164,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 87.4019
       }
     },
     {
@@ -2070,7 +2114,8 @@
         "communication_fraction": 44.283,
         "total_communication_time": 110.983,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 88.5467
       }
     },
     {
@@ -2132,7 +2177,8 @@
         "communication_fraction": 53.2851,
         "total_communication_time": 155.182,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 57.2582
       }
     },
     {
@@ -2197,7 +2243,8 @@
         "communication_fraction": 75.6585,
         "total_communication_time": 84.6033,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -2262,7 +2309,8 @@
         "communication_fraction": 87.6409,
         "total_communication_time": 230.225,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 14.0654
       }
     },
     {
@@ -2327,7 +2375,8 @@
         "communication_fraction": 84.6295,
         "total_communication_time": 178.282,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 11.8193
       }
     },
     {
@@ -2392,7 +2441,8 @@
         "communication_fraction": 88.9071,
         "total_communication_time": 259.943,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 9.48077
       }
     },
     {
@@ -2457,7 +2507,8 @@
         "communication_fraction": 84.0106,
         "total_communication_time": 162.268,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 17.8791
       }
     },
     {
@@ -2522,7 +2573,8 @@
         "communication_fraction": 66.7988,
         "total_communication_time": 19.0716,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 20.9829
       }
     },
     {
@@ -2587,7 +2639,8 @@
         "communication_fraction": 87.4407,
         "total_communication_time": 227.798,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 14.2488
       }
     },
     {
@@ -2652,7 +2705,8 @@
         "communication_fraction": 68.7353,
         "total_communication_time": 11.1467,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 25.1346
       }
     },
     {
@@ -2717,7 +2771,8 @@
         "communication_fraction": 11.9033,
         "total_communication_time": 6.6318,
         "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 16.3577
       }
     },
     {
@@ -2784,7 +2839,8 @@
         "communication_fraction": 83.9077,
         "total_communication_time": 8.09265,
         "bandwidth_utilization_allgather_group_6": 0.297824,
-        "bandwidth_utilization_allreduce_group_6": 41.712
+        "bandwidth_utilization_allreduce_group_6": 41.712,
+        "compute_comm_overlap": 1.48905
       }
     },
     {
@@ -2851,7 +2907,8 @@
         "communication_fraction": 78.3779,
         "total_communication_time": 6.94209,
         "bandwidth_utilization_allgather_group_6": 0.292327,
-        "bandwidth_utilization_allreduce_group_6": 15.9835
+        "bandwidth_utilization_allreduce_group_6": 15.9835,
+        "compute_comm_overlap": 3.34086
       }
     },
     {
@@ -2914,7 +2971,8 @@
         "communication_fraction": 2.6606,
         "total_communication_time": 0.0536802,
         "bandwidth_utilization_allgather_group_6": 3.53376,
-        "bandwidth_utilization_allreduce_group_6": 9.00002
+        "bandwidth_utilization_allreduce_group_6": 9.00002,
+        "compute_comm_overlap": 20.3386
       }
     },
     {
@@ -2977,7 +3035,8 @@
         "communication_fraction": 6.37129,
         "total_communication_time": 0.13406,
         "bandwidth_utilization_allgather_group_6": 1.38516,
-        "bandwidth_utilization_allreduce_group_6": 0.981735
+        "bandwidth_utilization_allreduce_group_6": 0.981735,
+        "compute_comm_overlap": 36.4811
       }
     },
     {
@@ -3040,7 +3099,8 @@
         "communication_fraction": 28.6379,
         "total_communication_time": 0.801672,
         "bandwidth_utilization_allgather_group_6": 158.45,
-        "bandwidth_utilization_allreduce_group_6": 28.7224
+        "bandwidth_utilization_allreduce_group_6": 28.7224,
+        "compute_comm_overlap": 4.16895
       }
     },
     {
@@ -3103,7 +3163,8 @@
         "communication_fraction": 30.0314,
         "total_communication_time": 0.675494,
         "bandwidth_utilization_allgather_group_6": 215.992,
-        "bandwidth_utilization_allreduce_group_6": 19.0352
+        "bandwidth_utilization_allreduce_group_6": 19.0352,
+        "compute_comm_overlap": 9.43563
       }
     },
     {
@@ -3166,7 +3227,8 @@
         "communication_fraction": 7.00837,
         "total_communication_time": 0.188792,
         "bandwidth_utilization_allgather_group_6": 196.406,
-        "bandwidth_utilization_allreduce_group_6": 0.145046
+        "bandwidth_utilization_allreduce_group_6": 0.145046,
+        "compute_comm_overlap": 3.33554
       }
     },
     {
@@ -3229,7 +3291,8 @@
         "communication_fraction": 8.77354,
         "total_communication_time": 0.278726,
         "bandwidth_utilization_allgather_group_6": 166.398,
-        "bandwidth_utilization_allreduce_group_6": 0.128231
+        "bandwidth_utilization_allreduce_group_6": 0.128231,
+        "compute_comm_overlap": 13.4116
       }
     },
     {
@@ -3302,7 +3365,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3375,7 +3439,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3448,7 +3513,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3521,7 +3587,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3594,7 +3661,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3667,7 +3735,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3740,7 +3809,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3813,7 +3883,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3886,7 +3957,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -3959,7 +4031,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4032,7 +4105,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4105,7 +4179,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4178,7 +4253,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4251,7 +4327,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4324,7 +4401,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4397,7 +4475,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4473,7 +4552,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4549,7 +4629,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4625,7 +4706,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4701,7 +4783,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4773,7 +4856,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4849,7 +4933,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4921,7 +5006,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -4997,7 +5083,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -5069,7 +5156,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -5145,7 +5233,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -5218,7 +5307,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     },
     {
@@ -5291,7 +5381,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     },
     {
@@ -5364,7 +5455,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     },
     {
@@ -5437,7 +5529,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     },
     {
@@ -5510,7 +5603,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     },
     {
@@ -5583,7 +5677,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     },
     {
@@ -5657,7 +5752,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0195752
       }
     },
     {
@@ -5731,7 +5827,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.137059
       }
     },
     {
@@ -5805,7 +5902,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0293409
       }
     },
     {
@@ -5879,7 +5977,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.178739
       }
     },
     {
@@ -5953,7 +6052,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0180058
       }
     },
     {
@@ -6027,7 +6127,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.152143
       }
     },
     {
@@ -6101,7 +6202,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.000157575
       }
     },
     {
@@ -6175,7 +6277,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.000154395
       }
     },
     {
@@ -6249,7 +6352,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.00278125
       }
     },
     {
@@ -6323,7 +6427,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.174451
       }
     },
     {
@@ -6397,7 +6502,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     },
     {
@@ -6471,7 +6577,8 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": 4.86889e-05
       }
     },
     {
@@ -6536,7 +6643,8 @@
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "compute_comm_overlap": null
       }
     }
   ]

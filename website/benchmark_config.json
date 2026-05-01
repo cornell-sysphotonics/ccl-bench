@@ -723,6 +723,23 @@
         "mid": 20
       },
       "required_update": false
+    },
+    "compute_comm_overlap": {
+      "label": "Compute-Comm Overlap (%)",
+      "description": "Percentage of total communication time that runs concurrently with compute kernels. Higher values indicate more effective pipelining of communication behind compute.",
+      "higher_is_better": true,
+      "unit": "%",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu",
+        "nsys"
+      ],
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      },
+      "required_update": true
     }
   }
 }
