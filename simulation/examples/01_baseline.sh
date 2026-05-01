@@ -9,9 +9,14 @@ TRACE=/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-pe
 OUTDIR="$REPO/simulation/examples/01_baseline_output"
 
 GPUS_PER_NODE=4
-INTRA_BW=300
+# INTRA_BW=300
+# INTRA_LAT=50
+# INTER_BW=25
+# INTER_LAT=500
+
+INTRA_BW=600
 INTRA_LAT=50
-INTER_BW=25
+INTER_BW=50
 INTER_LAT=500
 
 python "$REPO/simulation/pipeline.py" \
