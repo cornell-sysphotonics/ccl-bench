@@ -65,14 +65,47 @@ def validate_full_mode(trace_dir: Path, ranks: list[int]):
 
 
 def write_network_config(path: Path, topology: str, npus_count: int,
-                         bandwidth_gbps: float, latency_ns: float):
+                         bandwidth_gbps: float, latency_ns: float,
+                         gpus_per_node: int, intra_topology: str,
+                         intra_bandwidth_gbps: float,
+                         intra_latency_ns: float) -> dict[str, list]:
+    if gpus_per_node <= 0:
+        raise ValueError("--gpus-per-node must be positive")
+    if npus_count <= gpus_per_node:
+        topologies = [intra_topology]
+        npus_counts = [npus_count]
+        bandwidths = [intra_bandwidth_gbps]
+        latencies = [intra_latency_ns]
+    else:
+        if npus_count % gpus_per_node != 0:
+            raise ValueError(
+                f"rank count ({npus_count}) must be divisible by "
+                f"--gpus-per-node ({gpus_per_node}) for two-tier topology"
+            )
+        topologies = [intra_topology, topology]
+        npus_counts = [gpus_per_node, npus_count // gpus_per_node]
+        bandwidths = [intra_bandwidth_gbps, bandwidth_gbps]
+        latencies = [intra_latency_ns, latency_ns]
+
+    def _fmt(values):
+        return ", ".join(str(v) for v in values)
+
+    def _fmt_float(values):
+        return ", ".join(f"{v:.2f}" for v in values)
+
     path.write_text(
         f"# Network configuration for Astra-sim what-if analysis\n"
-        f"topology: [ {topology} ]\n"
-        f"npus_count: [ {npus_count} ]\n"
-        f"bandwidth: [ {bandwidth_gbps:.2f} ]  # GB/s\n"
-        f"latency: [ {latency_ns:.2f} ]  # ns\n"
+        f"topology: [ {_fmt(topologies)} ]\n"
+        f"npus_count: [ {_fmt(npus_counts)} ]\n"
+        f"bandwidth: [ {_fmt_float(bandwidths)} ]  # GB/s\n"
+        f"latency: [ {_fmt_float(latencies)} ]  # ns\n"
     )
+    return {
+        "topologies": topologies,
+        "npus_counts": npus_counts,
+        "bandwidths": bandwidths,
+        "latencies": latencies,
+    }
 
 
 def write_system_config(path: Path, collective_algo: str, peak_perf_tflops: float,
@@ -138,7 +171,8 @@ echo "[pipeline] Done."
 
 
 def build_comm_only_docker_script(trace_dir_docker: str, output_dir_docker: str,
-                                  scripts_dir_docker: str, ranks: list[int]) -> str:
+                                  scripts_dir_docker: str, ranks: list[int],
+                                  compute_model: str) -> str:
     ranks_str = ",".join(str(r) for r in ranks)
     # comm_group.json is written by gen_chakra_et.py when process group info is
     # present in the traces; otherwise the file is absent and we skip the flag.
@@ -149,7 +183,8 @@ echo "[pipeline] Extracting NCCL collectives and generating Chakra ET files..."
 python3 {scripts_dir_docker}/gen_chakra_et.py \\
     --trace-dir {trace_dir_docker} \\
     --output-dir {output_dir_docker} \\
-    --ranks {ranks_str}
+    --ranks {ranks_str} \\
+    --compute-model {compute_model}
 
 echo "[pipeline] Running AstraSim..."
 COMM_GROUP_ARG=""
@@ -257,8 +292,9 @@ Modes:
   full       Requires pytorch_et_N.json + kineto_trace_N.json (full op graph fidelity)
              → trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter/
   comm-only  Requires rankN_trace.json only (any torchtitan trace in /data/)
-             Extracts NCCL collectives + compute gaps. Compute time is replayed
-             as measured; only communication time varies with hardware params.
+             Extracts NCCL collectives and either compute gaps or non-NCCL
+             kernel replay nodes. Compute time is replayed as measured; only
+             communication time varies with hardware params.
              Torchtitan traces (deepseek-v3, etc.) include process group info and
              automatically enable hybrid-parallelism-aware simulation via comm_group.json.
              → /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-*/
@@ -273,6 +309,11 @@ Examples:
       --trace-dir /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter \\
       --bandwidth 400
 
+  # Comm-only: replay actual non-NCCL GPU kernels as compute nodes
+  python simulation/pipeline.py --mode comm-only \\
+      --trace-dir /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter \\
+      --compute-model kernels
+
   # Comm-only: compare ring vs halving_doubling collective algorithm
   python simulation/pipeline.py --mode comm-only \\
       --trace-dir /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-pp2-tp4-perlmutter \\
@@ -281,24 +322,38 @@ Examples:
   # Full mode, what-if H100 hardware (900 TFLOPS BF16, 3.35 TB/s HBM)
   python simulation/pipeline.py --mode full \\
       --trace-dir trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter \\
-      --peak-perf 989 --mem-bw 3350 --bandwidth 900
+      --peak-perf 989 --mem-bw 3350 --gpus-per-node 8 \\
+      --intra-bandwidth 900 --bandwidth 50
 """,
     )
     parser.add_argument("--trace-dir", required=True,
                         help="Trace directory path")
     parser.add_argument("--mode", default="full", choices=["full", "comm-only"],
                         help="full: needs pytorch_et+kineto; comm-only: needs rankN_trace.json only")
+    parser.add_argument("--compute-model", default="gap", choices=["gap", "kernels"],
+                        help="comm-only compute model: gap inserts measured gaps between "
+                             "collectives; kernels replays non-NCCL GPU kernels as "
+                             "COMP_NODEs (default: gap)")
     parser.add_argument("--output-dir", default=None,
                         help="Output directory (default: /var/tmp/ccl_bench_sim_*)")
 
     net = parser.add_argument_group("Network what-if parameters")
     net.add_argument("--topology", default="Switch",
                      choices=["Ring", "Switch", "FullyConnected"],
-                     help="Network topology (default: Switch)")
+                     help="Inter-node network topology (default: Switch)")
     net.add_argument("--bandwidth", type=float, default=200.0,
-                     help="Per-link bandwidth GB/s (default: 200, A100 Slingshot)")
+                     help="Inter-node per-link bandwidth GB/s (default: 200, A100 Slingshot)")
     net.add_argument("--latency", type=float, default=500.0,
-                     help="Per-link latency ns (default: 500)")
+                     help="Inter-node per-link latency ns (default: 500)")
+    net.add_argument("--gpus-per-node", type=int, default=4,
+                     help="Ranks/GPUs that share the intra-node fabric (default: 4, Perlmutter A100)")
+    net.add_argument("--intra-topology", default="FullyConnected",
+                     choices=["Ring", "Switch", "FullyConnected"],
+                     help="Intra-node topology (default: FullyConnected)")
+    net.add_argument("--intra-bandwidth", type=float, default=400.0,
+                     help="Intra-node per-link bandwidth GB/s (default: 400, NVLink-class)")
+    net.add_argument("--intra-latency", type=float, default=50.0,
+                     help="Intra-node per-link latency ns (default: 50)")
 
     sys_grp = parser.add_argument_group("System what-if parameters")
     sys_grp.add_argument("--collective-algo", default="ring",
@@ -352,17 +407,34 @@ Examples:
     # Write hardware configs
     # comm-only disables roofline for compute (compute time comes from duration_micros)
     roofline = 0 if args.mode == "comm-only" else 1
-    write_network_config(output_dir / "network.yml", args.topology, len(ranks),
-                         args.bandwidth, args.latency)
+    try:
+        network_shape = write_network_config(
+            output_dir / "network.yml", args.topology, len(ranks),
+            args.bandwidth, args.latency, args.gpus_per_node,
+            args.intra_topology, args.intra_bandwidth, args.intra_latency
+        )
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
     write_system_config(output_dir / "system.json", args.collective_algo,
                         args.peak_perf, args.mem_bw, args.scheduling_policy,
                         args.active_chunks, args.dataset_splits,
                         roofline_enabled=roofline)
     write_remote_memory_config(output_dir / "remote_memory.json")
 
-    print(f"[pipeline] Hardware: topology={args.topology}, npus={len(ranks)}, "
-          f"bw={args.bandwidth}GB/s, latency={args.latency}ns, "
-          f"algo={args.collective_algo}")
+    if len(network_shape["npus_counts"]) == 1:
+        print(f"[pipeline] Hardware: topology={network_shape['topologies'][0]}, "
+              f"npus={len(ranks)}, "
+              f"bw={network_shape['bandwidths'][0]}GB/s, "
+              f"latency={network_shape['latencies'][0]}ns, "
+              f"algo={args.collective_algo}")
+    else:
+        print(f"[pipeline] Hardware: topology={network_shape['topologies']}, "
+              f"npus={network_shape['npus_counts'][0]}x{network_shape['npus_counts'][1]} "
+              f"(gpus/node={args.gpus_per_node}), "
+              f"bw={network_shape['bandwidths']}GB/s, "
+              f"latency={network_shape['latencies']}ns, "
+              f"algo={args.collective_algo}")
 
     # Build Docker run
     if args.mode == "full":
@@ -370,7 +442,8 @@ Examples:
         extra_mounts = None
     else:
         script = build_comm_only_docker_script(
-            "/mnt/traces", "/mnt/output", "/mnt/scripts", ranks
+            "/mnt/traces", "/mnt/output", "/mnt/scripts", ranks,
+            args.compute_model
         )
         extra_mounts = [(SIMULATION_DIR, "/mnt/scripts")]
 

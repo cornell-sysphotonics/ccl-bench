@@ -3,8 +3,10 @@
 Generate Chakra Execution Trace (.et) files from kineto-only rankN_trace.json files.
 
 Runs inside the astra-sim Docker container where the chakra package is installed.
-Extracts NCCL collective operations from each rank's trace and emits a sequence of
-COMP_NODE (measured compute gap) + COMM_COLL_NODE (collective op) nodes per rank.
+Extracts NCCL collective operations from each rank's trace and emits Chakra ET
+nodes. The default compute model inserts measured gap COMP_NODEs between
+collectives. The kernels compute model emits non-NCCL GPU kernels as replayed
+COMP_NODEs.
 
 Process group information is extracted from the "Process Group Ranks" field of NCCL
 kernel events and used to:
@@ -74,6 +76,31 @@ KERNEL_NAME_MAP = [
 ]
 
 
+def is_gpu_kernel_event(event: dict) -> bool:
+    return event.get("cat") == "kernel" and event.get("dur", 0) > 0
+
+
+def is_nccl_kernel_name(name: str) -> bool:
+    return "ncclDev" in name or "ncclKernel" in name
+
+
+def is_nccl_collective_event(event: dict) -> bool:
+    return (
+        is_gpu_kernel_event(event)
+        and is_nccl_kernel_name(event.get("name", ""))
+        and "SendRecv" not in event.get("name", "")
+        and event.get("args", {}).get("In msg nelems", 0) > 0
+    )
+
+
+def stream_key(event: dict) -> str:
+    args = event.get("args", {})
+    for key in ("stream", "stream id", "stream_id", "cuda_stream"):
+        if key in args:
+            return f"stream:{args[key]}"
+    return f"pid:{event.get('pid', '')}:tid:{event.get('tid', '')}"
+
+
 def infer_collective_type(kernel_name: str, coll_name: str) -> int | None:
     coll_lower = coll_name.strip().lower().replace(" ", "_")
     if coll_lower in COLL_NAME_MAP:
@@ -134,20 +161,36 @@ def load_trace_partial(path: Path, max_mb: int = 500) -> list:
             return []
 
 
-def extract_nccl_events(events: list) -> list:
-    """Return NCCL collective kernel events with msg size info, sorted by timestamp.
+def extract_nccl_events_by_pg(
+    events: list,
+    group_registry: dict[tuple, int],
+    group_npus: dict[int, list[int]],
+) -> dict[int, list]:
+    """Return NCCL collective events grouped by process group ID, sorted by timestamp.
+
+    AstraSim pairs the N-th collective across all ranks in a group, so the ordering
+    within each group must be globally consistent (timestamp order). Multiple CUDA
+    streams that share the same process group are merged and sorted together.
+
+    Independent process groups become independent ET chains — AstraSim issues their
+    head nodes concurrently, matching real GPU stream parallelism.
 
     SendRecv (P2P pipeline-parallel) events are excluded: they don't fit the flat
     topology model and cause deadlocks in AstraSim's collective simulation.
     """
-    nccl = [
-        e for e in events
-        if e.get("cat") == "kernel"
-        and ("ncclDev" in e.get("name", "") or "ncclKernel" in e.get("name", ""))
-        and "SendRecv" not in e.get("name", "")
-        and e.get("args", {}).get("In msg nelems", 0) > 0
-    ]
-    return sorted(nccl, key=lambda e: e.get("ts", 0))
+    by_pg: dict[int, list] = {}
+    for e in events:
+        if not is_nccl_collective_event(e):
+            continue
+        pg_ranks = parse_pg_ranks(e.get("args", {}).get("Process Group Ranks", ""))
+        if pg_ranks is not None:
+            pg_id = get_or_assign_group_id(pg_ranks, group_registry, group_npus)
+        else:
+            pg_id = 0  # unknown PG: group together in a fallback chain
+        by_pg.setdefault(pg_id, []).append(e)
+    for pg_id in by_pg:
+        by_pg[pg_id].sort(key=lambda e: e.get("ts", 0))
+    return by_pg
 
 
 def get_or_assign_group_id(
@@ -164,84 +207,261 @@ def get_or_assign_group_id(
     return group_registry[key]
 
 
-def generate_et(
-    rank: int,
-    nccl_events: list,
-    output_dir: Path,
+def make_compute_node(node_id: int, event: dict, name_prefix: str = "compute") -> ChakraNode:
+    comp = ChakraNode()
+    comp.id = node_id
+    comp.name = f"{name_prefix}_{event.get('name', 'kernel')}_{node_id}"
+    comp.type = COMP_NODE
+    comp.duration_micros = max(1, int(event.get("dur", 0)))
+    comp.attr.append(ChakraAttr(name="is_cpu_op", bool_val=False))
+    comp.attr.append(ChakraAttr(name="num_ops", int64_val=0))
+    return comp
+
+
+def make_comm_node(
+    node_id: int,
+    event: dict,
     group_registry: dict[tuple, int],
     group_npus: dict[int, list[int]],
-) -> int:
-    """Write one Chakra ET file for the given rank. Returns number of collective nodes."""
-    et_path = output_dir / f"chakra_trace.{rank}.et"
-    node_id = 0
-    nodes = []
+) -> tuple[ChakraNode | None, int | None]:
+    args = event.get("args", {})
+    coll_name = args.get("Collective name", "")
+    kernel_name = event.get("name", "")
 
+    ctype = infer_collective_type(kernel_name, coll_name)
+    if ctype is None:
+        return None, None
+
+    size_bytes = comm_size_bytes(args)
+    if size_bytes == 0:
+        return None, None
+
+    pg_id = None
+    pg_name_str = ""
+    pg_ranks = parse_pg_ranks(args.get("Process Group Ranks", ""))
+    if pg_ranks is not None:
+        pg_id = get_or_assign_group_id(pg_ranks, group_registry, group_npus)
+        pg_name_str = str(pg_id)
+
+    comm = ChakraNode()
+    comm.id = node_id
+    comm.name = f"{coll_name or kernel_name.split('(')[0]}_{node_id}"
+    comm.type = COMM_COLL_NODE
+    comm.attr.append(ChakraAttr(name="is_cpu_op", bool_val=False))
+    comm.attr.append(ChakraAttr(name="comm_type", int64_val=ctype))
+    comm.attr.append(ChakraAttr(name="comm_size", int64_val=size_bytes))
+    if pg_name_str:
+        comm.attr.append(ChakraAttr(name="pg_name", string_val=pg_name_str))
+    return comm, pg_id
+
+
+def _build_pg_chain(
+    pg_events: list,
+    node_id_start: int,
+    group_registry: dict[tuple, int],
+    group_npus: dict[int, list[int]],
+) -> tuple[list, int]:
+    """Build a linear chain of COMP+COMM nodes for one process group's collectives.
+
+    Returns (nodes, next_node_id). Nodes within this chain are linked by ctrl_deps;
+    the chain head has no deps so AstraSim schedules it independently of other PG chains.
+    """
+    nodes = []
+    node_id = node_id_start
     prev_end_ts = None
-    for ev in nccl_events:
+    prev_node_id = None
+
+    for ev in pg_events:
         ts = ev.get("ts", 0)
         dur = ev.get("dur", 0)
-        args = ev.get("args", {})
-        coll_name = args.get("Collective name", "")
-        kernel_name = ev.get("name", "")
-
-        ctype = infer_collective_type(kernel_name, coll_name)
-        if ctype is None:
-            continue
-
-        size_bytes = comm_size_bytes(args)
-        if size_bytes == 0:
-            continue
-
-        # Resolve process group ID from the event's Process Group Ranks field.
-        # ts/dur are in microseconds (Chrome trace format standard, regardless of
-        # displayTimeUnit which only affects viewer display scaling).
-        pg_ranks = parse_pg_ranks(args.get("Process Group Ranks", ""))
-        if pg_ranks is not None:
-            pg_id = get_or_assign_group_id(pg_ranks, group_registry, group_npus)
-            pg_name_str = str(pg_id)
-        else:
-            pg_name_str = ""
-
-        # Compute gap since previous collective ended
+        # Insert a compute gap node for idle time since the last op on this stream.
         if prev_end_ts is not None:
             gap_us = max(0.0, ts - prev_end_ts)
             if gap_us > 0:
-                comp = ChakraNode()
-                comp.id = node_id
-                comp.name = f"compute_gap_{node_id}"
-                comp.type = COMP_NODE
-                comp.duration_micros = int(gap_us)
-                if nodes:
-                    comp.ctrl_deps.append(nodes[-1].id)
-                comp.attr.append(ChakraAttr(name="is_cpu_op", bool_val=False))
-                comp.attr.append(ChakraAttr(name="num_ops", int64_val=0))
+                comp = make_compute_node(
+                    node_id, {"name": "gap", "dur": gap_us}, name_prefix="compute"
+                )
+                if prev_node_id is not None:
+                    comp.ctrl_deps.append(prev_node_id)
                 nodes.append(comp)
+                prev_node_id = node_id
                 node_id += 1
 
-        comm = ChakraNode()
-        comm.id = node_id
-        comm.name = f"{coll_name or kernel_name.split('(')[0]}_{node_id}"
-        comm.type = COMM_COLL_NODE
-        if nodes:
-            comm.ctrl_deps.append(nodes[-1].id)
-        comm.attr.append(ChakraAttr(name="is_cpu_op", bool_val=False))
-        comm.attr.append(ChakraAttr(name="comm_type", int64_val=ctype))
-        comm.attr.append(ChakraAttr(name="comm_size", int64_val=size_bytes))
-        if pg_name_str:
-            comm.attr.append(ChakraAttr(name="pg_name", string_val=pg_name_str))
+        comm, _pg_id = make_comm_node(node_id, ev, group_registry, group_npus)
+        if comm is None:
+            continue
+        if prev_node_id is not None:
+            comm.ctrl_deps.append(prev_node_id)
         nodes.append(comm)
+        prev_node_id = node_id
         node_id += 1
-
         prev_end_ts = ts + dur
+
+    return nodes, node_id
+
+
+def _build_kernel_graph(
+    rank: int,
+    events: list,
+    node_id_start: int,
+    group_registry: dict[tuple, int],
+    group_npus: dict[int, list[int]],
+) -> tuple[list, int, int]:
+    """Build replay COMP nodes for non-NCCL kernels plus NCCL COMM nodes.
+
+    Dependencies preserve CUDA stream order. Collective nodes also depend on the
+    previous collective in the same process group and the previous collective on
+    the same rank. ASTRA's analytical frontend has one GPU comm slot per rank; a
+    rank-local comm order avoids deadlocks where different ranks hold different
+    process-group collectives simultaneously.
+    """
+    nodes = []
+    node_id = node_id_start
+    prev_by_stream: dict[str, int] = {}
+    prev_comm_by_pg: dict[int, int] = {}
+    comm_nodes_by_order: dict[int, ChakraNode] = {}
+    n_comm = 0
+
+    kernel_events = [
+        e for e in events
+        if is_gpu_kernel_event(e)
+        and ("SendRecv" not in e.get("name", ""))
+    ]
+    kernel_events.sort(key=lambda e: (e.get("ts", 0), e.get("dur", 0), e.get("name", "")))
+
+    for ev in kernel_events:
+        skey = stream_key(ev)
+        name = ev.get("name", "")
+
+        if is_nccl_collective_event(ev):
+            node, pg_id = make_comm_node(node_id, ev, group_registry, group_npus)
+            if node is None:
+                continue
+            if skey in prev_by_stream:
+                node.ctrl_deps.append(prev_by_stream[skey])
+            if pg_id is not None and pg_id in prev_comm_by_pg:
+                prev_pg_node = prev_comm_by_pg[pg_id]
+                if prev_pg_node not in node.ctrl_deps:
+                    node.ctrl_deps.append(prev_pg_node)
+            nodes.append(node)
+            prev_by_stream[skey] = node_id
+            if pg_id is not None:
+                prev_comm_by_pg[pg_id] = node_id
+            if "_global_comm_order" in ev:
+                comm_nodes_by_order[int(ev["_global_comm_order"])] = node
+            node_id += 1
+            n_comm += 1
+        elif not is_nccl_kernel_name(name):
+            node = make_compute_node(node_id, ev, name_prefix="kernel")
+            if skey in prev_by_stream:
+                node.ctrl_deps.append(prev_by_stream[skey])
+            nodes.append(node)
+            prev_by_stream[skey] = node_id
+            node_id += 1
+
+    prev_order_node_id = None
+    for order in sorted(comm_nodes_by_order):
+        node = comm_nodes_by_order[order]
+        if prev_order_node_id is not None and prev_order_node_id not in node.ctrl_deps:
+            node.ctrl_deps.append(prev_order_node_id)
+        prev_order_node_id = node.id
+
+    return nodes, node_id, n_comm
+
+
+def annotate_global_comm_order(
+    events_by_rank: dict[int, list],
+    group_registry: dict[tuple, int],
+    group_npus: dict[int, list[int]],
+) -> None:
+    """Annotate NCCL events with a canonical cross-rank collective order.
+
+    Ranks can observe independent process groups in different timestamp order.
+    ASTRA has one GPU comm slot per rank, so entering those groups in inconsistent
+    order can deadlock. We assign each collective instance a global order using
+    (process group, instance index within that group), then sort those instances
+    by their earliest observed timestamp.
+    """
+    occurrences: dict[tuple[int, int], list[dict]] = {}
+
+    for rank in sorted(events_by_rank):
+        by_pg: dict[int, list] = {}
+        for event in events_by_rank[rank]:
+            if not is_nccl_collective_event(event):
+                continue
+            pg_ranks = parse_pg_ranks(
+                event.get("args", {}).get("Process Group Ranks", "")
+            )
+            if pg_ranks is not None:
+                pg_id = get_or_assign_group_id(pg_ranks, group_registry, group_npus)
+            else:
+                pg_id = 0
+            by_pg.setdefault(pg_id, []).append(event)
+
+        for pg_id, pg_events in by_pg.items():
+            pg_events.sort(key=lambda e: (e.get("ts", 0), e.get("dur", 0), e.get("name", "")))
+            for index, event in enumerate(pg_events):
+                occurrences.setdefault((pg_id, index), []).append(event)
+
+    ordered_keys = sorted(
+        occurrences,
+        key=lambda key: (
+            min(event.get("ts", 0) for event in occurrences[key]),
+            key[0],
+            key[1],
+        ),
+    )
+    for order, key in enumerate(ordered_keys):
+        for event in occurrences[key]:
+            event["_global_comm_order"] = order
+
+
+def generate_et(
+    rank: int,
+    events: list,
+    output_dir: Path,
+    group_registry: dict[tuple, int],
+    group_npus: dict[int, list[int]],
+    compute_model: str,
+) -> int:
+    """Write one Chakra ET file for the given rank. Returns number of collective nodes.
+
+    Each process group becomes an independent node chain. Within a chain, collectives
+    are ordered by timestamp; compute gaps capture idle time between consecutive
+    collectives in that group. AstraSim issues all chain heads concurrently, matching
+    real GPU parallelism across independent collective groups (e.g., TP ∥ DP).
+    """
+    et_path = output_dir / f"chakra_trace.{rank}.et"
+    all_nodes = []
+    node_id = 0
+
+    if compute_model == "gap":
+        events_by_pg = extract_nccl_events_by_pg(events, group_registry, group_npus)
+        for pg_id in sorted(events_by_pg):
+            chain, node_id = _build_pg_chain(
+                events_by_pg[pg_id], node_id, group_registry, group_npus
+            )
+            all_nodes.extend(chain)
+        n_pgs = len(events_by_pg)
+    elif compute_model == "kernels":
+        all_nodes, node_id, _n_comm = _build_kernel_graph(
+            rank, events, node_id, group_registry, group_npus
+        )
+        n_pgs = len(group_npus)
+    else:
+        raise ValueError(f"unknown compute model: {compute_model}")
 
     with open(et_path, "wb") as f:
         encode_message(f, GlobalMetadata(version="0.0.4"))
-        for node in nodes:
+        for node in all_nodes:
             encode_message(f, node)
 
-    n_comm = sum(1 for n in nodes if n.type == COMM_COLL_NODE)
+    n_comm = sum(1 for n in all_nodes if n.type == COMM_COLL_NODE)
+    n_comp = len(all_nodes) - n_comm
+    comp_label = "compute gap" if compute_model == "gap" else "kernel compute"
     print(f"  rank {rank}: {n_comm} collective nodes, "
-          f"{len(nodes) - n_comm} compute gap nodes → {et_path.name}")
+          f"{n_comp} {comp_label} nodes, "
+          f"{n_pgs} independent PG chain(s) → {et_path.name}")
     return n_comm
 
 
@@ -262,6 +482,9 @@ def main():
     parser.add_argument("--trace-dir", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--ranks", required=True, help="Comma-separated rank indices")
+    parser.add_argument("--compute-model", choices=["gap", "kernels"], default="gap",
+                        help="gap: insert measured gaps between collectives; "
+                             "kernels: replay non-NCCL GPU kernels as COMP_NODEs")
     args = parser.parse_args()
 
     trace_dir = Path(args.trace_dir)
@@ -276,19 +499,25 @@ def main():
     group_registry: dict[tuple, int] = {}
     group_npus: dict[int, list[int]] = {}
 
-    total_comm_nodes = 0
+    events_by_rank: dict[int, list] = {}
     for rank in ranks:
         trace_file = trace_dir / f"rank{rank}_trace.json"
         if not trace_file.exists():
             print(f"  WARNING: {trace_file} not found, skipping rank {rank}")
             continue
-        events = load_trace_partial(trace_file)
-        nccl_events = extract_nccl_events(events)
-        if not nccl_events:
+        events_by_rank[rank] = load_trace_partial(trace_file)
+
+    if args.compute_model == "kernels":
+        annotate_global_comm_order(events_by_rank, group_registry, group_npus)
+
+    total_comm_nodes = 0
+    for rank in sorted(events_by_rank):
+        events = events_by_rank[rank]
+        if not any(is_nccl_collective_event(e) for e in events):
             print(f"  rank {rank}: no NCCL events found")
             continue
         total_comm_nodes += generate_et(
-            rank, nccl_events, output_dir, group_registry, group_npus
+            rank, events, output_dir, group_registry, group_npus, args.compute_model
         )
 
     if group_npus:
