@@ -1,5 +1,9 @@
 {
+<<<<<<< Updated upstream
   "generated_at": "2026-04-30T18:07:56.193936+00:00",
+=======
+  "generated_at": "2026-04-30T19:19:27.835069+00:00",
+>>>>>>> Stashed changes
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -7,6 +11,7 @@
     "bandwidth_utilization_allreduce_group_6",
     "bandwidth_utilization_alltoall_group_6",
     "bandwidth_utilization_peertopeer_group_6",
+    "bandwidth_utilization_reducescatter_group_6",
     "communication_fraction",
     "dominant_kernel_concentration",
     "mean_sm_coverage",
@@ -260,19 +265,35 @@
       "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
-      "label": "AllToAll BW (%)",
-      "description": "Average NVLink TX throughput utilization during AllToAll operations",
+      "label": "AllToAll BW (GB/s)",
+      "description": "Median effective bandwidth for AllToAll operations",
       "higher_is_better": true,
-      "unit": "%",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 50,
-        "mid": 20
+        "high": 200,
+        "mid": 50
       },
-      "required_update": false
+      "required_update": true
+    },
+    "bandwidth_utilization_reducescatter_group_6": {
+      "label": "ReduceScatter BW (GB/s)",
+      "description": "Median effective bandwidth for ReduceScatter operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu"
+      ],
+      "thresholds": {
+        "high": 200,
+        "mid": 50
+      },
+      "required_update": true
     },
     "bandwidth_utilization_peertopeer_group_6": {
       "label": "P2P BW (%)",
@@ -352,11 +373,20 @@
         "mfu": 8.5922,
         "dominant_kernel_concentration": 81.879,
         "average_memory_bandwidth": 5.16215,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0023,
         "communication_fraction": 1.30337e-06,
         "total_communication_time": 1.49956,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null
+=======
+        "memory_transfer_overhead": 35.4905,
+        "communication_fraction": 1.30337e-06,
+        "total_communication_time": 1.49956,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -418,11 +448,21 @@
         "dominant_kernel_concentration": 29.0087,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 183.813,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.5267,
         "communication_fraction": 55.1681,
         "total_communication_time": 0.476312,
         "bandwidth_utilization_allgather_group_6": 17.7831,
         "bandwidth_utilization_allreduce_group_6": 0.517744
+=======
+        "memory_transfer_overhead": 0.6727,
+        "communication_fraction": 55.1681,
+        "total_communication_time": 0.476312,
+        "bandwidth_utilization_allgather_group_6": 17.7831,
+        "bandwidth_utilization_allreduce_group_6": 0.517744,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 38.6209
+>>>>>>> Stashed changes
       }
     },
     {
@@ -484,11 +524,21 @@
         "dominant_kernel_concentration": 26.1173,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 184.832,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.4998,
         "communication_fraction": 55.4385,
         "total_communication_time": 0.489888,
         "bandwidth_utilization_allgather_group_6": 14.8624,
         "bandwidth_utilization_allreduce_group_6": 0.55966
+=======
+        "memory_transfer_overhead": 0.6861,
+        "communication_fraction": 55.4385,
+        "total_communication_time": 0.489888,
+        "bandwidth_utilization_allgather_group_6": 14.8624,
+        "bandwidth_utilization_allreduce_group_6": 0.55966,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 37.4681
+>>>>>>> Stashed changes
       }
     },
     {
@@ -550,11 +600,21 @@
         "dominant_kernel_concentration": 20.2624,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 394.434,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0492,
         "communication_fraction": 25.9987,
         "total_communication_time": 0.52993,
         "bandwidth_utilization_allgather_group_6": 16.6354,
         "bandwidth_utilization_allreduce_group_6": 1.37616
+=======
+        "memory_transfer_overhead": 0.0499,
+        "communication_fraction": 25.9987,
+        "total_communication_time": 0.52993,
+        "bandwidth_utilization_allgather_group_6": 16.6354,
+        "bandwidth_utilization_allreduce_group_6": 1.37616,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 38.4655
+>>>>>>> Stashed changes
       }
     },
     {
@@ -616,11 +676,21 @@
         "dominant_kernel_concentration": 19.9197,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 385.808,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0482,
         "communication_fraction": 27.8997,
         "total_communication_time": 0.619568,
         "bandwidth_utilization_allgather_group_6": 14.7161,
         "bandwidth_utilization_allreduce_group_6": 1.17159
+=======
+        "memory_transfer_overhead": 0.049,
+        "communication_fraction": 27.8997,
+        "total_communication_time": 0.619568,
+        "bandwidth_utilization_allgather_group_6": 14.7161,
+        "bandwidth_utilization_allreduce_group_6": 1.17159,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 34.6939
+>>>>>>> Stashed changes
       }
     },
     {
@@ -682,11 +752,21 @@
         "dominant_kernel_concentration": 22.2579,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 376.978,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0381,
         "communication_fraction": 23.5252,
         "total_communication_time": 0.47062,
         "bandwidth_utilization_allgather_group_6": 32.2171,
         "bandwidth_utilization_allreduce_group_6": 1.74028
+=======
+        "memory_transfer_overhead": 0.0412,
+        "communication_fraction": 23.5252,
+        "total_communication_time": 0.47062,
+        "bandwidth_utilization_allgather_group_6": 32.2171,
+        "bandwidth_utilization_allreduce_group_6": 1.74028,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 111.616
+>>>>>>> Stashed changes
       }
     },
     {
@@ -748,11 +828,21 @@
         "dominant_kernel_concentration": 18.9915,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 367.414,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0375,
         "communication_fraction": 23.8475,
         "total_communication_time": 0.466497,
         "bandwidth_utilization_allgather_group_6": 28.5834,
         "bandwidth_utilization_allreduce_group_6": 1.39698
+=======
+        "memory_transfer_overhead": 0.0419,
+        "communication_fraction": 23.8475,
+        "total_communication_time": 0.466497,
+        "bandwidth_utilization_allgather_group_6": 28.5834,
+        "bandwidth_utilization_allreduce_group_6": 1.39698,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 105.392
+>>>>>>> Stashed changes
       }
     },
     {
@@ -814,11 +904,21 @@
         "dominant_kernel_concentration": 21.4596,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 15.6064,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 1.1409,
         "communication_fraction": 35.8681,
         "total_communication_time": 0.424001,
         "bandwidth_utilization_allgather_group_6": 33.2346,
         "bandwidth_utilization_allreduce_group_6": 0.000545697
+=======
+        "memory_transfer_overhead": 1.3008,
+        "communication_fraction": 35.8681,
+        "total_communication_time": 0.424001,
+        "bandwidth_utilization_allgather_group_6": 33.2346,
+        "bandwidth_utilization_allreduce_group_6": 0.000545697,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 123.469
+>>>>>>> Stashed changes
       }
     },
     {
@@ -880,11 +980,21 @@
         "dominant_kernel_concentration": 18.8951,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 14.1707,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 1.0375,
         "communication_fraction": 34.2439,
         "total_communication_time": 0.390762,
         "bandwidth_utilization_allgather_group_6": 33.3994,
         "bandwidth_utilization_allreduce_group_6": 1.73152e-05
+=======
+        "memory_transfer_overhead": 1.3444,
+        "communication_fraction": 34.2439,
+        "total_communication_time": 0.390762,
+        "bandwidth_utilization_allgather_group_6": 33.3994,
+        "bandwidth_utilization_allreduce_group_6": 1.73152e-05,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 144.167
+>>>>>>> Stashed changes
       }
     },
     {
@@ -948,11 +1058,20 @@
         "mfu": 10.4141,
         "dominant_kernel_concentration": 53.9645,
         "average_memory_bandwidth": 31.2078,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 16.5455,
         "total_communication_time": 0.0726466,
         "bandwidth_utilization_allgather_group_6": 0.074005,
         "bandwidth_utilization_allreduce_group_6": 151.166
+=======
+        "memory_transfer_overhead": 8.2781,
+        "communication_fraction": 16.5455,
+        "total_communication_time": 0.0726466,
+        "bandwidth_utilization_allgather_group_6": 0.074005,
+        "bandwidth_utilization_allreduce_group_6": 151.166,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1016,11 +1135,20 @@
         "mfu": 16.7047,
         "dominant_kernel_concentration": 45.8373,
         "average_memory_bandwidth": 36.6485,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 19.3455,
         "total_communication_time": 0.11252,
         "bandwidth_utilization_allgather_group_6": 0.0684186,
         "bandwidth_utilization_allreduce_group_6": 311.035
+=======
+        "memory_transfer_overhead": 12.1348,
+        "communication_fraction": 19.3455,
+        "total_communication_time": 0.11252,
+        "bandwidth_utilization_allgather_group_6": 0.0684186,
+        "bandwidth_utilization_allreduce_group_6": 311.035,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1084,11 +1212,20 @@
         "mfu": 20.515,
         "dominant_kernel_concentration": 53.96,
         "average_memory_bandwidth": 12.1563,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 26.9272,
         "total_communication_time": 0.239226,
         "bandwidth_utilization_allgather_group_6": 0.139939,
         "bandwidth_utilization_allreduce_group_6": 326.912
+=======
+        "memory_transfer_overhead": 41.8657,
+        "communication_fraction": 26.9272,
+        "total_communication_time": 0.239226,
+        "bandwidth_utilization_allgather_group_6": 0.139939,
+        "bandwidth_utilization_allreduce_group_6": 326.912,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1152,11 +1289,20 @@
         "mfu": 8.0046,
         "dominant_kernel_concentration": 53.2536,
         "average_memory_bandwidth": 10.6774,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.199,
         "communication_fraction": 3.14031e-06,
         "total_communication_time": 0.427017,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null
+=======
+        "memory_transfer_overhead": 32.6533,
+        "communication_fraction": 3.14031e-06,
+        "total_communication_time": 0.427017,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1220,11 +1366,20 @@
         "mfu": 8.6877,
         "dominant_kernel_concentration": 38.5532,
         "average_memory_bandwidth": 24.4778,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 15.0425,
         "total_communication_time": 0.0523105,
         "bandwidth_utilization_allgather_group_6": 0.075199,
         "bandwidth_utilization_allreduce_group_6": 150.732
+=======
+        "memory_transfer_overhead": 13.6834,
+        "communication_fraction": 15.0425,
+        "total_communication_time": 0.0523105,
+        "bandwidth_utilization_allgather_group_6": 0.075199,
+        "bandwidth_utilization_allreduce_group_6": 150.732,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1288,11 +1443,20 @@
         "mfu": 14.5975,
         "dominant_kernel_concentration": 36.9039,
         "average_memory_bandwidth": 8.90733,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 18.4459,
         "total_communication_time": 0.0759283,
         "bandwidth_utilization_allgather_group_6": 0.119377,
         "bandwidth_utilization_allreduce_group_6": 310.216
+=======
+        "memory_transfer_overhead": 28.6413,
+        "communication_fraction": 18.4459,
+        "total_communication_time": 0.0759283,
+        "bandwidth_utilization_allgather_group_6": 0.119377,
+        "bandwidth_utilization_allreduce_group_6": 310.216,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1356,11 +1520,20 @@
         "mfu": 17.1789,
         "dominant_kernel_concentration": 51.1476,
         "average_memory_bandwidth": 20.6828,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 25.5013,
         "total_communication_time": 0.171671,
         "bandwidth_utilization_allgather_group_6": 0.140253,
         "bandwidth_utilization_allreduce_group_6": 330.799
+=======
+        "memory_transfer_overhead": 26.4861,
+        "communication_fraction": 25.5013,
+        "total_communication_time": 0.171671,
+        "bandwidth_utilization_allgather_group_6": 0.140253,
+        "bandwidth_utilization_allreduce_group_6": 330.799,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1422,11 +1595,21 @@
         "dominant_kernel_concentration": 39.8263,
         "moe_fraction": 0.0095733,
         "average_memory_bandwidth": 588.253,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.6899,
         "communication_fraction": 90.1896,
         "total_communication_time": 3.79839,
         "bandwidth_utilization_allgather_group_6": 0.691226,
         "bandwidth_utilization_allreduce_group_6": 0.000582978
+=======
+        "memory_transfer_overhead": 0.7279,
+        "communication_fraction": 90.1896,
+        "total_communication_time": 3.79839,
+        "bandwidth_utilization_allgather_group_6": 0.691226,
+        "bandwidth_utilization_allreduce_group_6": 0.000582978,
+        "bandwidth_utilization_alltoall_group_6": 1.79401,
+        "bandwidth_utilization_reducescatter_group_6": 5.40424
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1488,11 +1671,21 @@
         "dominant_kernel_concentration": 46.6868,
         "moe_fraction": 0.00568145,
         "average_memory_bandwidth": 391.964,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.1392,
         "communication_fraction": 95.0665,
         "total_communication_time": 12.0873,
         "bandwidth_utilization_allgather_group_6": 0.640605,
         "bandwidth_utilization_allreduce_group_6": 50.4074
+=======
+        "memory_transfer_overhead": 0.1206,
+        "communication_fraction": 95.0665,
+        "total_communication_time": 12.0873,
+        "bandwidth_utilization_allgather_group_6": 0.640605,
+        "bandwidth_utilization_allreduce_group_6": 50.4074,
+        "bandwidth_utilization_alltoall_group_6": 48.3478,
+        "bandwidth_utilization_reducescatter_group_6": 27.4131
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1554,11 +1747,21 @@
         "dominant_kernel_concentration": 45.2445,
         "moe_fraction": 0.00328002,
         "average_memory_bandwidth": 411.306,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.1088,
         "communication_fraction": 95.5984,
         "total_communication_time": 12.9735,
         "bandwidth_utilization_allgather_group_6": 0.679365,
         "bandwidth_utilization_allreduce_group_6": 26.5272
+=======
+        "memory_transfer_overhead": 0.101,
+        "communication_fraction": 95.5984,
+        "total_communication_time": 12.9735,
+        "bandwidth_utilization_allgather_group_6": 0.679365,
+        "bandwidth_utilization_allreduce_group_6": 26.5272,
+        "bandwidth_utilization_alltoall_group_6": 16.5042,
+        "bandwidth_utilization_reducescatter_group_6": 20.9983
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1620,11 +1823,21 @@
         "dominant_kernel_concentration": 38.1559,
         "moe_fraction": 0.0168489,
         "average_memory_bandwidth": 571.844,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.9107,
         "communication_fraction": 89.6675,
         "total_communication_time": 2.89107,
         "bandwidth_utilization_allgather_group_6": 1.37671,
         "bandwidth_utilization_allreduce_group_6": 62.995
+=======
+        "memory_transfer_overhead": 0.8088,
+        "communication_fraction": 89.6675,
+        "total_communication_time": 2.89107,
+        "bandwidth_utilization_allgather_group_6": 1.37671,
+        "bandwidth_utilization_allreduce_group_6": 62.995,
+        "bandwidth_utilization_alltoall_group_6": 2.04143,
+        "bandwidth_utilization_reducescatter_group_6": 93.804
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1686,11 +1899,21 @@
         "dominant_kernel_concentration": 56.4729,
         "moe_fraction": 0.0198112,
         "average_memory_bandwidth": 546.188,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.9458,
         "communication_fraction": 90.6411,
         "total_communication_time": 3.32568,
         "bandwidth_utilization_allgather_group_6": 11.6139,
         "bandwidth_utilization_allreduce_group_6": 81.2942
+=======
+        "memory_transfer_overhead": 0.8965,
+        "communication_fraction": 90.6411,
+        "total_communication_time": 3.32568,
+        "bandwidth_utilization_allgather_group_6": 11.6139,
+        "bandwidth_utilization_allreduce_group_6": 81.2942,
+        "bandwidth_utilization_alltoall_group_6": 1.9454,
+        "bandwidth_utilization_reducescatter_group_6": 105.889
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1752,11 +1975,21 @@
         "dominant_kernel_concentration": 40.0632,
         "moe_fraction": 0.00689339,
         "average_memory_bandwidth": 474.668,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.2853,
         "communication_fraction": 93.8724,
         "total_communication_time": 9.28479,
         "bandwidth_utilization_allgather_group_6": 9.36601,
         "bandwidth_utilization_allreduce_group_6": 73.5363
+=======
+        "memory_transfer_overhead": 0.2736,
+        "communication_fraction": 93.8724,
+        "total_communication_time": 9.28479,
+        "bandwidth_utilization_allgather_group_6": 9.36601,
+        "bandwidth_utilization_allreduce_group_6": 73.5363,
+        "bandwidth_utilization_alltoall_group_6": 58.1729,
+        "bandwidth_utilization_reducescatter_group_6": 88.5209
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1816,11 +2049,21 @@
         "dominant_kernel_concentration": 73.9092,
         "moe_fraction": 0.00637931,
         "average_memory_bandwidth": 632.641,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.1743,
         "communication_fraction": 98.3598,
         "total_communication_time": 11.498,
         "bandwidth_utilization_allgather_group_6": 15.3382,
         "bandwidth_utilization_allreduce_group_6": 84.8103
+=======
+        "memory_transfer_overhead": 0.1638,
+        "communication_fraction": 98.3598,
+        "total_communication_time": 11.498,
+        "bandwidth_utilization_allgather_group_6": 15.3382,
+        "bandwidth_utilization_allreduce_group_6": 84.8103,
+        "bandwidth_utilization_alltoall_group_6": 2.37341,
+        "bandwidth_utilization_reducescatter_group_6": 105.204
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1880,11 +2123,21 @@
         "dominant_kernel_concentration": 55.6554,
         "moe_fraction": 0.00535552,
         "average_memory_bandwidth": 594.832,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.3385,
         "communication_fraction": 96.7923,
         "total_communication_time": 20.0744,
         "bandwidth_utilization_allgather_group_6": 9.28075,
         "bandwidth_utilization_allreduce_group_6": 101.387
+=======
+        "memory_transfer_overhead": 0.2778,
+        "communication_fraction": 96.7923,
+        "total_communication_time": 20.0744,
+        "bandwidth_utilization_allgather_group_6": 9.28075,
+        "bandwidth_utilization_allreduce_group_6": 101.387,
+        "bandwidth_utilization_alltoall_group_6": 2.53256,
+        "bandwidth_utilization_reducescatter_group_6": 45.0173
+>>>>>>> Stashed changes
       }
     },
     {
@@ -1942,10 +2195,16 @@
         "dominant_kernel_concentration": 36.0878,
         "moe_fraction": 36.7006,
         "average_memory_bandwidth": 1.25989,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 16.9059,
         "communication_fraction": 55.6226,
         "total_communication_time": 169.143,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 60.9162,
+        "communication_fraction": 55.6226,
+        "total_communication_time": 169.143,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2004,10 +2263,16 @@
         "dominant_kernel_concentration": 45.2741,
         "moe_fraction": 46.0064,
         "average_memory_bandwidth": 2.09974,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 12.8993,
         "communication_fraction": 44.7695,
         "total_communication_time": 116.164,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 44.628,
+        "communication_fraction": 44.7695,
+        "total_communication_time": 116.164,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2066,10 +2331,16 @@
         "dominant_kernel_concentration": 45.6745,
         "moe_fraction": 46.4038,
         "average_memory_bandwidth": 0.791571,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 23.3699,
         "communication_fraction": 44.283,
         "total_communication_time": 110.983,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 86.5891,
+        "communication_fraction": 44.283,
+        "total_communication_time": 110.983,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2128,10 +2399,16 @@
         "dominant_kernel_concentration": 37.9569,
         "moe_fraction": 38.5986,
         "average_memory_bandwidth": 1.21685,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 18.0467,
         "communication_fraction": 53.2851,
         "total_communication_time": 155.182,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 63.3848,
+        "communication_fraction": 53.2851,
+        "total_communication_time": 155.182,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2193,10 +2470,16 @@
         "dominant_kernel_concentration": 74.4744,
         "moe_fraction": 4.90115,
         "average_memory_bandwidth": 0.876,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 1.36468,
         "communication_fraction": 75.6585,
         "total_communication_time": 84.6033,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 3.83194,
+        "communication_fraction": 75.6585,
+        "total_communication_time": 84.6033,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2258,10 +2541,16 @@
         "dominant_kernel_concentration": 58.4772,
         "moe_fraction": 3.20062,
         "average_memory_bandwidth": 2.29156,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 3.26001,
         "communication_fraction": 87.6409,
         "total_communication_time": 230.225,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 9.76231,
+        "communication_fraction": 87.6409,
+        "total_communication_time": 230.225,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2323,10 +2612,16 @@
         "dominant_kernel_concentration": 51.5044,
         "moe_fraction": 4.38434,
         "average_memory_bandwidth": 0.869578,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 5.9124,
         "communication_fraction": 84.6295,
         "total_communication_time": 178.282,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 17.9366,
+        "communication_fraction": 84.6295,
+        "total_communication_time": 178.282,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2388,10 +2683,16 @@
         "dominant_kernel_concentration": 52.3646,
         "moe_fraction": 3.13456,
         "average_memory_bandwidth": 2.3282,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 3.02412,
         "communication_fraction": 88.9071,
         "total_communication_time": 259.943,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 8.82911,
+        "communication_fraction": 88.9071,
+        "total_communication_time": 259.943,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2453,10 +2754,16 @@
         "dominant_kernel_concentration": 52.2145,
         "moe_fraction": 4.25602,
         "average_memory_bandwidth": 2.3175,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 5.604,
         "communication_fraction": 84.0106,
         "total_communication_time": 162.268,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 15.4846,
+        "communication_fraction": 84.0106,
+        "total_communication_time": 162.268,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2518,10 +2825,16 @@
         "dominant_kernel_concentration": 28.3186,
         "moe_fraction": 6.31748,
         "average_memory_bandwidth": 0.788954,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.41185,
         "communication_fraction": 66.7988,
         "total_communication_time": 19.0716,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 20.3366,
+        "communication_fraction": 66.7988,
+        "total_communication_time": 19.0716,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2583,10 +2896,16 @@
         "dominant_kernel_concentration": 58.7998,
         "moe_fraction": 3.24958,
         "average_memory_bandwidth": 2.21989,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 1.90811,
         "communication_fraction": 87.4407,
         "total_communication_time": 227.798,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 5.41692,
+        "communication_fraction": 87.4407,
+        "total_communication_time": 227.798,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2648,10 +2967,16 @@
         "dominant_kernel_concentration": 40.6355,
         "moe_fraction": 11.308,
         "average_memory_bandwidth": 2.70636,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.12286,
         "communication_fraction": 68.7353,
         "total_communication_time": 11.1467,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 18.2433,
+        "communication_fraction": 68.7353,
+        "total_communication_time": 11.1467,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2713,10 +3038,16 @@
         "dominant_kernel_concentration": 27.7362,
         "moe_fraction": 45.8103,
         "average_memory_bandwidth": 3.56867,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 4.50039,
         "communication_fraction": 11.9033,
         "total_communication_time": 6.6318,
         "bandwidth_utilization_alltoall_group_6": null,
+=======
+        "memory_transfer_overhead": 13.2594,
+        "communication_fraction": 11.9033,
+        "total_communication_time": 6.6318,
+>>>>>>> Stashed changes
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2780,11 +3111,21 @@
         "dominant_kernel_concentration": 50.2328,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 662.909,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.2561,
         "communication_fraction": 83.9077,
         "total_communication_time": 8.09265,
         "bandwidth_utilization_allgather_group_6": 0.297824,
         "bandwidth_utilization_allreduce_group_6": 41.712
+=======
+        "memory_transfer_overhead": 0.269,
+        "communication_fraction": 83.9077,
+        "total_communication_time": 8.09265,
+        "bandwidth_utilization_allgather_group_6": 0.297824,
+        "bandwidth_utilization_allreduce_group_6": 41.712,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 2.38862
+>>>>>>> Stashed changes
       }
     },
     {
@@ -2847,11 +3188,21 @@
         "dominant_kernel_concentration": 36.9198,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": null,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 0.3019,
         "communication_fraction": 78.3779,
         "total_communication_time": 6.94209,
         "bandwidth_utilization_allgather_group_6": 0.292327,
         "bandwidth_utilization_allreduce_group_6": 15.9835
+=======
+        "memory_transfer_overhead": 0.3426,
+        "communication_fraction": 78.3779,
+        "total_communication_time": 6.94209,
+        "bandwidth_utilization_allgather_group_6": 0.292327,
+        "bandwidth_utilization_allreduce_group_6": 15.9835,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 1.15
+>>>>>>> Stashed changes
       }
     },
     {
@@ -2914,7 +3265,12 @@
         "communication_fraction": 2.6606,
         "total_communication_time": 0.0536802,
         "bandwidth_utilization_allgather_group_6": 3.53376,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": 9.00002
+=======
+        "bandwidth_utilization_allreduce_group_6": 9.00002,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -2977,7 +3333,12 @@
         "communication_fraction": 6.37129,
         "total_communication_time": 0.13406,
         "bandwidth_utilization_allgather_group_6": 1.38516,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": 0.981735
+=======
+        "bandwidth_utilization_allreduce_group_6": 0.981735,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3040,7 +3401,12 @@
         "communication_fraction": 28.6379,
         "total_communication_time": 0.801672,
         "bandwidth_utilization_allgather_group_6": 158.45,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": 28.7224
+=======
+        "bandwidth_utilization_allreduce_group_6": 28.7224,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3103,7 +3469,12 @@
         "communication_fraction": 30.0314,
         "total_communication_time": 0.675494,
         "bandwidth_utilization_allgather_group_6": 215.992,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": 19.0352
+=======
+        "bandwidth_utilization_allreduce_group_6": 19.0352,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3166,7 +3537,12 @@
         "communication_fraction": 7.00837,
         "total_communication_time": 0.188792,
         "bandwidth_utilization_allgather_group_6": 196.406,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": 0.145046
+=======
+        "bandwidth_utilization_allreduce_group_6": 0.145046,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3229,7 +3605,12 @@
         "communication_fraction": 8.77354,
         "total_communication_time": 0.278726,
         "bandwidth_utilization_allgather_group_6": 166.398,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": 0.128231
+=======
+        "bandwidth_utilization_allreduce_group_6": 0.128231,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3296,13 +3677,23 @@
         "dominant_kernel_concentration": 64.3701,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.97415,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 17.2589,
+=======
+        "memory_transfer_overhead": 31.5352,
+>>>>>>> Stashed changes
         "communication_fraction": 68.3543,
         "total_communication_time": 18.1261,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3369,13 +3760,23 @@
         "dominant_kernel_concentration": 29.7465,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 14.6275,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.7254,
+=======
+        "memory_transfer_overhead": 21.011,
+>>>>>>> Stashed changes
         "communication_fraction": 37.0062,
         "total_communication_time": 24.4286,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3442,13 +3843,23 @@
         "dominant_kernel_concentration": 78.8449,
         "moe_fraction": 7.31983,
         "average_memory_bandwidth": 3.39306,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.594,
+=======
+        "memory_transfer_overhead": 26.9839,
+>>>>>>> Stashed changes
         "communication_fraction": 82.153,
         "total_communication_time": 53.9327,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3515,13 +3926,23 @@
         "dominant_kernel_concentration": 44.1563,
         "moe_fraction": 19.2047,
         "average_memory_bandwidth": 17.6175,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 14.1011,
+=======
+        "memory_transfer_overhead": 34.4439,
+>>>>>>> Stashed changes
         "communication_fraction": 53.6544,
         "total_communication_time": 49.4995,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3588,13 +4009,23 @@
         "dominant_kernel_concentration": 55.516,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 4.32512,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.3922,
+=======
+        "memory_transfer_overhead": 14.5802,
+>>>>>>> Stashed changes
         "communication_fraction": 58.7092,
         "total_communication_time": 7.97995,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3661,13 +4092,23 @@
         "dominant_kernel_concentration": 30.2123,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 12.7014,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 8.0432,
+=======
+        "memory_transfer_overhead": 10.6499,
+>>>>>>> Stashed changes
         "communication_fraction": 29.5862,
         "total_communication_time": 10.5668,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3734,13 +4175,23 @@
         "dominant_kernel_concentration": 54.8378,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 4.55098,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 12.0071,
+=======
+        "memory_transfer_overhead": 15.6429,
+>>>>>>> Stashed changes
         "communication_fraction": 57.8366,
         "total_communication_time": 7.67666,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3807,13 +4258,23 @@
         "dominant_kernel_concentration": 31.5974,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 12.0468,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 7.92908,
+=======
+        "memory_transfer_overhead": 11.5165,
+>>>>>>> Stashed changes
         "communication_fraction": 29.526,
         "total_communication_time": 10.193,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3880,13 +4341,23 @@
         "dominant_kernel_concentration": 76.5917,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 4.20321,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 8.42514,
+=======
+        "memory_transfer_overhead": 15.795,
+>>>>>>> Stashed changes
         "communication_fraction": 79.0912,
         "total_communication_time": 28.569,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -3953,13 +4424,23 @@
         "dominant_kernel_concentration": 38.5872,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 21.4597,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.41635,
+=======
+        "memory_transfer_overhead": 13.0642,
+>>>>>>> Stashed changes
         "communication_fraction": 49.5372,
         "total_communication_time": 29.5047,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4026,13 +4507,23 @@
         "dominant_kernel_concentration": 67.8899,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 5.10565,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 8.92004,
+=======
+        "memory_transfer_overhead": 17.4351,
+>>>>>>> Stashed changes
         "communication_fraction": 70.6551,
         "total_communication_time": 19.3294,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4099,13 +4590,23 @@
         "dominant_kernel_concentration": 36.4363,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 23.7298,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.91716,
+=======
+        "memory_transfer_overhead": 13.6916,
+>>>>>>> Stashed changes
         "communication_fraction": 46.5107,
         "total_communication_time": 27.6953,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4172,13 +4673,23 @@
         "dominant_kernel_concentration": 65.6462,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 3.09913,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 17.3095,
+=======
+        "memory_transfer_overhead": 31.4149,
+>>>>>>> Stashed changes
         "communication_fraction": 68.4204,
         "total_communication_time": 19.7111,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4245,13 +4756,23 @@
         "dominant_kernel_concentration": 28.4044,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 15.4484,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.3759,
+=======
+        "memory_transfer_overhead": 21.9104,
+>>>>>>> Stashed changes
         "communication_fraction": 38.0532,
         "total_communication_time": 25.7119,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4318,13 +4839,23 @@
         "dominant_kernel_concentration": 61.0212,
         "moe_fraction": 14.8293,
         "average_memory_bandwidth": 3.60321,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 17.0392,
+=======
+        "memory_transfer_overhead": 38.9697,
+>>>>>>> Stashed changes
         "communication_fraction": 63.7279,
         "total_communication_time": 21.2797,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4391,13 +4922,23 @@
         "dominant_kernel_concentration": 36.5842,
         "moe_fraction": 22.2664,
         "average_memory_bandwidth": 18.2522,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 14.6423,
+=======
+        "memory_transfer_overhead": 35.8093,
+>>>>>>> Stashed changes
         "communication_fraction": 46.4142,
         "total_communication_time": 38.1371,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4467,13 +5008,23 @@
         "dominant_kernel_concentration": 31.1306,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.60396,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.94381,
+=======
+        "memory_transfer_overhead": 9.85712,
+>>>>>>> Stashed changes
         "communication_fraction": 25.4693,
         "total_communication_time": 8.94755,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4543,13 +5094,23 @@
         "dominant_kernel_concentration": 36.5637,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.32765,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.91227,
+=======
+        "memory_transfer_overhead": 12.919,
+>>>>>>> Stashed changes
         "communication_fraction": 46.4848,
         "total_communication_time": 27.04,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4619,13 +5180,23 @@
         "dominant_kernel_concentration": 29.5012,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.37286,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 12.1582,
+=======
+        "memory_transfer_overhead": 21.5803,
+>>>>>>> Stashed changes
         "communication_fraction": 34.2631,
         "total_communication_time": 22.729,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4695,13 +5266,23 @@
         "dominant_kernel_concentration": 36.1834,
         "moe_fraction": 23.3514,
         "average_memory_bandwidth": 14.731,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 15.8493,
+=======
+        "memory_transfer_overhead": 37.3122,
+>>>>>>> Stashed changes
         "communication_fraction": 43.9319,
         "total_communication_time": 34.0742,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4767,13 +5348,23 @@
         "dominant_kernel_concentration": 27.5566,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 7.94087,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.52652,
+=======
+        "memory_transfer_overhead": 12.6951,
+>>>>>>> Stashed changes
         "communication_fraction": 39.4348,
         "total_communication_time": 22.6396,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4843,13 +5434,23 @@
         "dominant_kernel_concentration": 25.0941,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.42243,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 7.04401,
+=======
+        "memory_transfer_overhead": 13.5046,
+>>>>>>> Stashed changes
         "communication_fraction": 37.9877,
         "total_communication_time": 21.1078,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4915,13 +5516,23 @@
         "dominant_kernel_concentration": 39.3285,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 6.11342,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.4755,
+=======
+        "memory_transfer_overhead": 21.4035,
+>>>>>>> Stashed changes
         "communication_fraction": 28.8777,
         "total_communication_time": 19.4745,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -4991,13 +5602,23 @@
         "dominant_kernel_concentration": 40.985,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.35158,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 12.0274,
+=======
+        "memory_transfer_overhead": 22.411,
+>>>>>>> Stashed changes
         "communication_fraction": 26.2337,
         "total_communication_time": 16.8723,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5063,13 +5684,23 @@
         "dominant_kernel_concentration": 55.5315,
         "moe_fraction": 14.1758,
         "average_memory_bandwidth": 10.9234,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 18.2677,
+=======
+        "memory_transfer_overhead": 42.582,
+>>>>>>> Stashed changes
         "communication_fraction": 62.3623,
         "total_communication_time": 38.7549,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5139,13 +5770,23 @@
         "dominant_kernel_concentration": 46.4718,
         "moe_fraction": 17.001,
         "average_memory_bandwidth": 10.5998,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 19.1385,
+=======
+        "memory_transfer_overhead": 45.7038,
+>>>>>>> Stashed changes
         "communication_fraction": 54.8229,
         "total_communication_time": 28.108,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5212,13 +5853,23 @@
         "dominant_kernel_concentration": 20.8491,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 17.0472,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 7.75539,
+=======
+        "memory_transfer_overhead": 17.7104,
+>>>>>>> Stashed changes
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5285,13 +5936,23 @@
         "dominant_kernel_concentration": 33.0417,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 30.4378,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 10.9813,
+=======
+        "memory_transfer_overhead": 34.2856,
+>>>>>>> Stashed changes
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5358,13 +6019,23 @@
         "dominant_kernel_concentration": 24.8198,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 14.967,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 12.573,
+=======
+        "memory_transfer_overhead": 27.4771,
+>>>>>>> Stashed changes
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5431,13 +6102,23 @@
         "dominant_kernel_concentration": 46.4914,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 28.1963,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 12.0637,
+=======
+        "memory_transfer_overhead": 39.4205,
+>>>>>>> Stashed changes
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5504,13 +6185,23 @@
         "dominant_kernel_concentration": 37.1536,
         "moe_fraction": 41.2393,
         "average_memory_bandwidth": 6.50339,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 15.7978,
+=======
+        "memory_transfer_overhead": 36.8815,
+>>>>>>> Stashed changes
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5577,13 +6268,23 @@
         "dominant_kernel_concentration": 39.8777,
         "moe_fraction": 41.8388,
         "average_memory_bandwidth": 24.5764,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 13.2057,
+=======
+        "memory_transfer_overhead": 38.1306,
+>>>>>>> Stashed changes
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5651,13 +6352,23 @@
         "dominant_kernel_concentration": 80.518,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 1.13302,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 3.47641,
+=======
+        "memory_transfer_overhead": 7.38775,
+>>>>>>> Stashed changes
         "communication_fraction": 81.1883,
         "total_communication_time": 21.328,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5725,13 +6436,23 @@
         "dominant_kernel_concentration": 52.4103,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.52521,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 3.67579,
+=======
+        "memory_transfer_overhead": 6.89357,
+>>>>>>> Stashed changes
         "communication_fraction": 53.1096,
         "total_communication_time": 20.4357,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5799,13 +6520,23 @@
         "dominant_kernel_concentration": 73.894,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 0.727686,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 15.0077,
+=======
+        "memory_transfer_overhead": 44.5767,
+>>>>>>> Stashed changes
         "communication_fraction": 74.5936,
         "total_communication_time": 16.0797,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5873,13 +6604,23 @@
         "dominant_kernel_concentration": 40.7842,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.40304,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 7.01615,
+=======
+        "memory_transfer_overhead": 13.4879,
+>>>>>>> Stashed changes
         "communication_fraction": 41.3033,
         "total_communication_time": 18.1021,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -5947,13 +6688,23 @@
         "dominant_kernel_concentration": 71.7656,
         "moe_fraction": 14.0497,
         "average_memory_bandwidth": 2.11156,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.011,
+=======
+        "memory_transfer_overhead": 14.9247,
+>>>>>>> Stashed changes
         "communication_fraction": 72.3391,
         "total_communication_time": 18.2427,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6021,13 +6772,23 @@
         "dominant_kernel_concentration": 38.3244,
         "moe_fraction": 30.7877,
         "average_memory_bandwidth": 6.22542,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 6.86491,
+=======
+        "memory_transfer_overhead": 8.37606,
+>>>>>>> Stashed changes
         "communication_fraction": 38.8195,
         "total_communication_time": 16.7447,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6095,13 +6856,23 @@
         "dominant_kernel_concentration": 75.7884,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 1.08774,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 3.85157,
+=======
+        "memory_transfer_overhead": 8.04689,
+>>>>>>> Stashed changes
         "communication_fraction": 77.5606,
         "total_communication_time": 13.2001,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6169,13 +6940,23 @@
         "dominant_kernel_concentration": 37.4248,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.50277,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 3.40006,
+=======
+        "memory_transfer_overhead": 7.15451,
+>>>>>>> Stashed changes
         "communication_fraction": 48.4042,
         "total_communication_time": 16.5186,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6243,13 +7024,23 @@
         "dominant_kernel_concentration": 68.7813,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 0.720189,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 15.7895,
+=======
+        "memory_transfer_overhead": 46.9276,
+>>>>>>> Stashed changes
         "communication_fraction": 71.1534,
         "total_communication_time": 10.859,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6317,13 +7108,23 @@
         "dominant_kernel_concentration": 33.2621,
         "moe_fraction": 0.0,
         "average_memory_bandwidth": 2.43512,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 7.05656,
+=======
+        "memory_transfer_overhead": 13.9487,
+>>>>>>> Stashed changes
         "communication_fraction": 35.1457,
         "total_communication_time": 13.4198,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6391,13 +7192,23 @@
         "dominant_kernel_concentration": 75.9852,
         "moe_fraction": 11.7839,
         "average_memory_bandwidth": 2.02765,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 11.0528,
+=======
+        "memory_transfer_overhead": 14.9524,
+>>>>>>> Stashed changes
         "communication_fraction": 76.815,
         "total_communication_time": 23.7043,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6465,13 +7276,23 @@
         "dominant_kernel_concentration": 29.3596,
         "moe_fraction": 32.4572,
         "average_memory_bandwidth": 5.94482,
+<<<<<<< Updated upstream
         "memory_transfer_overhead": 7.1588,
+=======
+        "memory_transfer_overhead": 8.65763,
+>>>>>>> Stashed changes
         "communication_fraction": 35.706,
         "total_communication_time": 14.8535,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
+=======
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     },
     {
@@ -6536,6 +7357,7 @@
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
+<<<<<<< Updated upstream
         "bandwidth_utilization_allreduce_group_6": null
       }
     },
@@ -7073,6 +7895,11 @@
         "total_communication_time": 3.03348,
         "bandwidth_utilization_allgather_group_6": 3.89827,
         "bandwidth_utilization_allreduce_group_6": 64.6965
+=======
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
+>>>>>>> Stashed changes
       }
     }
   ]

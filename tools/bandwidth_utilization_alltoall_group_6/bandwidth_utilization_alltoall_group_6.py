@@ -1,131 +1,131 @@
-import yaml
+import json
 from pathlib import Path
 import pandas as pd
-import duckdb
 
-def _get_kernels(con, start_time, end_time, pattern):
-    return con.sql(f"""
-        SELECT 
-            k."start", 
-            k."end", 
-            k.deviceId, 
-            s.value as kernel_name
-        FROM sqlite_db.CUPTI_ACTIVITY_KIND_KERNEL k
-        JOIN sqlite_db.StringIds s ON k.shortName = s.id
-        WHERE k."start" >= {start_time} AND k."end" <= {end_time}
-        AND (
-            CAST(s.value AS VARCHAR) LIKE '{pattern}' 
-        )
-    """)
+
+DTYPE_BYTES = {
+    "Float": 4, "Float32": 4,
+    "Double": 8, "Float64": 8,
+    "Half": 2, "Float16": 2,
+    "BFloat16": 2, "BF16": 2,
+    "Int": 4, "Int32": 4,
+    "Int64": 8, "Long": 8,
+    "Int16": 2, "Short": 2,
+    "Int8": 1, "Byte": 1,
+}
+
+
+def _load_events(trace_path: str) -> list:
+    with open(trace_path, "r", encoding="utf-8", errors="replace") as f:
+        data = json.load(f)
+    if isinstance(data, dict) and "traceEvents" in data:
+        return data["traceEvents"]
+    if isinstance(data, list):
+        return data
+    return []
+
+
+def _is_alltoall_kernel(event: dict) -> bool:
+    """Check if an event is an nccl:all_to_all kernel event."""
+    if event.get("ph") != "X" or event.get("cat") != "kernel":
+        return False
+    name = event.get("name", "")
+    collective_name = event.get("args", {}).get("Collective name", "")
+    if name.startswith("ncclDevKernel_SendRecv") or name.startswith("ncclKernel_SendRecv"):
+        return True
+    if collective_name in ["all_to_allv", "all_to_all", "alltoall"]:
+        return True
+    return False
+
+
+def _extract_alltoall_events(trace_path: str) -> pd.DataFrame:
+    """Extract all_to_all kernel events from a trace JSON file."""
+    events = _load_events(trace_path)
+    rows = []
+    for e in events:
+        if not _is_alltoall_kernel(e):
+            continue
+        args = e.get("args", {})
+        in_nelems = args.get("In msg nelems")
+        dtype = args.get("dtype")
+        group_size = args.get("Group size")
+        dur = e.get("dur")  # microseconds
+
+        if in_nelems is None or dtype is None or group_size is None or dur is None:
+            continue
+        if not isinstance(in_nelems, (int, float)) or in_nelems <= 0:
+            continue
+        if dur <= 0:
+            continue
+
+        elem_bytes = DTYPE_BYTES.get(dtype)
+        if elem_bytes is None:
+            continue
+
+        rows.append({
+            "name": e.get("name", ""),
+            "ts": e.get("ts", 0),
+            "dur_us": dur,
+            "in_nelems": int(in_nelems),
+            "dtype": dtype,
+            "elem_bytes": elem_bytes,
+            "bytes": int(in_nelems) * elem_bytes,
+            "group_size": group_size,
+            "pg_desc": args.get("Process Group Description", ""),
+        })
+
+    return pd.DataFrame(rows)
+
+
+def _get_bandwidth_utilization(df: pd.DataFrame, bandwidth: float = 600.0) -> pd.DataFrame:
+    """Calculate bandwidth utilization for all_to_all events.
+
+    For all_to_all, the algorithm factor is (N-1)/N where N is the group size.
+    Effective bandwidth = data_size * algo_factor / duration.
+    Utilization = effective_bandwidth / peak_bandwidth.
+    """
+    df = df.copy()
+    n = df["group_size"]
+    df["duration_s"] = df["dur_us"] / 1e6
+    df["algo_factor"] = (n - 1) / n
+    df["data_size_GB"] = df["bytes"] / (2**30)
+    df["effective bandwidth(GB/s)"] = df["data_size_GB"] * df["algo_factor"] / df["duration_s"]
+    df["bandwidth utilization"] = df["effective bandwidth(GB/s)"] / bandwidth
+    return df
+
+
+def _get_bandwidth_utilization_from_trace(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
+    df = _extract_alltoall_events(trace_path)
+    if df.empty:
+        return df
+    return _get_bandwidth_utilization(df, bandwidth=bandwidth)
 
 
 def metric_cal(directory: str) -> float:
     """
-    Calculate the bandwidth utilization for alltoall from the exported sqlite file from nsys.
+    Calculate the median all_to_all bandwidth (GB/s) from trace JSON files.
 
-    Only applicable for deepseek. not applicable for ep=1
+    Finds all nccl:all_to_all kernel events across rank trace files in the
+    directory and returns the median effective bandwidth in GB/s.
 
     Args:
-        directory (str): The directory path containing the exported sqlite file from nsys.
+        directory (str): The directory path containing the trace JSON files.
 
     Returns:
-        float: The average of non-zero value of NVLink TX Responses User Data [Throughput %], or float("nan") if the metric is not applicable.
+        float: The median all_to_all bandwidth in GB/s, or float("nan") if no
+               all_to_all events are found.
     """
-    dir_name = Path(directory).name
-    db_path = str(Path(directory) / "nsys_0.sqlite")
-    workload_card_path = Path(directory) / (dir_name + ".yaml")
-    output_csv_path = Path(directory) / "bandwidth_utilization_alltoall_0.csv"
+    d = Path(directory)
+    gpu_files = sorted(d.glob("rank*_trace.json")) or sorted(d.glob("kineto_trace_*.json"))
+    for trace_path in gpu_files:
+        try:
+            df = _get_bandwidth_utilization_from_trace(str(trace_path))
+        except Exception as e:
+            print(f"error parsing {trace_path}, trying next rank: {e}")
+            continue
+        if df.empty:
+            continue
+        return float(df["effective bandwidth(GB/s)"].median())
 
-    # Parse workload card to get metadata
-    with open(workload_card_path, 'r') as f:
-        workload_card = yaml.safe_load(f)
-        model_family = workload_card["workload"]["model"]["model_family"]
-        ep = workload_card["Model-executor"]["model_plan_parallelization"].get("ep")
-
-    if model_family != "deepseek-v2-lite":
-        return float("nan")
-
-    if ep == 1:
-        return float("nan")
-
-    con = duckdb.connect()
-    con.execute("INSTALL sqlite; LOAD sqlite;")
-    con.execute(f"ATTACH '{db_path}' AS sqlite_db (TYPE SQLITE, READ_ONLY);")
-
-    # 2. Get NVTX range (DuckDB is much faster at MIN/MAX on large tables)
-    nvtx_range = con.sql("""
-        SELECT MIN("start") as s, MAX("end") as e FROM sqlite_db.NVTX_EVENTS
-    """).fetchone()
-
-    start_time, end_time = nvtx_range
-    splitKReduce = _get_kernels(con, start_time, end_time, "%splitKreduce%")
-    moesumreduce = _get_kernels(con, start_time, end_time, "%moe_sum_reduce_warp%")
-    
-    events_df = con.sql("""
-    SELECT 
-        s."start" AS "start",
-        m."end" AS "end",
-        m.deviceId
-    FROM moesumreduce m
-    ASOF JOIN splitKReduce s
-        ON m.deviceId = s.deviceId
-        AND m."start" >= s."end"
-    """).df()
-
-    # 5. Extract Metric IDs
-    all_metrics = con.sql("""
-        SELECT DISTINCT metricId
-        FROM sqlite_db.TARGET_INFO_GPU_METRICS
-        WHERE metricName LIKE '%NVLink%'
-    """).df()
-    raw_stats = con.sql("""
-    SELECT 
-        m.metricID,
-        MIN(m.value) AS min_val,
-        MAX(m.value) AS max_val,
-        AVG(m.value) AS avg_val,
-        MIN(CASE WHEN m.value != 0 THEN m.value END) AS min_no_zero,
-        AVG(CASE WHEN m.value != 0 THEN m.value END) AS avg_no_zero,
-        COUNT(CASE WHEN m.value != 0 THEN m.value END) as cnt_no_zero,
-        MIN(CASE WHEN m.value > 1 THEN m.value END) AS min_gt_one,
-        AVG(CASE WHEN m.value > 1 THEN m.value END) AS avg_gt_one, 
-        COUNT(CASE WHEN m.value > 1 THEN m.value END) as cnt_gt_one
-    FROM sqlite_db.GPU_METRICS m
-    INNER JOIN events_df e 
-        ON (m.typeId & 255) = e.deviceID
-        AND m.timestamp >= e.start 
-        AND m.timestamp <= e.end
-    INNER JOIN all_metrics f
-        ON m.metricID = f.metricID
-    GROUP BY m.metricID
-    """).df()
-
-    metric_mapping = con.sql("""
-    SELECT DISTINCT 
-        metricId, 
-        metricName 
-    FROM sqlite_db.TARGET_INFO_GPU_METRICS 
-    WHERE metricName LIKE '%NVLink%'
-    """)
-
-    results_df = con.sql("""
-        SELECT 
-            f.metricName,
-            r.*
-        FROM raw_stats r
-        LEFT JOIN metric_mapping f ON r.metricID = f.metricId
-        ORDER BY f.metricName
-    """).df()
-
-    results_df.to_csv(output_csv_path)
-
-    row = results_df.loc[results_df["metricName"] == "NVLink TX Responses User Data [Throughput %]"]
-
-    if row.empty:
-        return float("nan")
-
-    row = row.iloc[0]
-
-    ret = float(row["avg_no_zero"])
-
-    return ret
+    print(f"No alltoall events found in {directory}")
+    return float("nan")
