@@ -133,13 +133,13 @@ def extract_tpu_collective_events(
 
 def add_bandwidth_utilization(
     df: pd.DataFrame,
-    algo_factor_multiplier: float,
+    algo_factor_multiplier: Callable[[float], float],
     bandwidth: float = 600.0,
 ) -> pd.DataFrame:
     df = df.copy()
     n = df["group_size"]
     df["duration_s"] = df["dur_us"] / 1e6
-    df["algo_factor"] = algo_factor_multiplier * (n - 1) / n
+    df["algo_factor"] = algo_factor_multiplier(n)
     df["data_size_GB"] = df["bytes"] / (2**30)
     df["effective bandwidth(GB/s)"] = (
         df["data_size_GB"] * df["algo_factor"] / df["duration_s"]
@@ -151,7 +151,7 @@ def add_bandwidth_utilization(
 def get_bandwidth_utilization_from_trace(
     trace_path: str,
     extractor: Callable[[str], pd.DataFrame],
-    algo_factor_multiplier: float,
+    algo_factor_multiplier: Callable[[float], float],
     bandwidth: float = 600.0,
 ) -> pd.DataFrame:
     df = extractor(trace_path)

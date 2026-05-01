@@ -36,14 +36,14 @@ def _get_bandwidth_utilization(df: pd.DataFrame, bandwidth: float = 600.0) -> pd
     Effective bandwidth = data_size * algo_factor / duration.
     Utilization = effective_bandwidth / peak_bandwidth.
     """
-    return add_bandwidth_utilization(df, algo_factor_multiplier=2, bandwidth=bandwidth)
+    return add_bandwidth_utilization(df, algo_factor_multiplier=lambda n: 2 * (n - 1) / n, bandwidth=bandwidth)
 
 
 def _get_bandwidth_utilization_from_trace(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
     return get_bandwidth_utilization_from_trace(
         trace_path,
         extractor=_extract_allreduce_events,
-        algo_factor_multiplier=2,
+        algo_factor_multiplier=lambda n: 2 * (n - 1) / n,
         bandwidth=bandwidth,
     )
 
@@ -56,11 +56,11 @@ def _extract_allreduce_tpu_events(trace_path: str) -> pd.DataFrame:
     )
 
 
-def _get_bandwidth_utilization_from_trace_tpu(trace_path: str, bandwidth: float = 600.0) -> pd.DataFrame:
+def _get_bandwidth_utilization_from_trace_tpu(trace_path: str, bandwidth: float = 800.0) -> pd.DataFrame:
     return get_bandwidth_utilization_from_trace(
         trace_path,
         extractor=_extract_allreduce_tpu_events,
-        algo_factor_multiplier=2,
+        algo_factor_multiplier=lambda n: 2 * (n - 1) / n,
         bandwidth=bandwidth,
     )
 
