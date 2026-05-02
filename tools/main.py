@@ -333,6 +333,9 @@ if __name__ == "__main__":
     elif metric_name == "bandwidth_utilization":
         from bandwidth_utilization_group_1.bandwidth_utilization_group_1 import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "gpu_step_score":
+        from gpu_step_score.gpu_step_score import metric_cal
+        metric_cal_func = metric_cal
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     metric = metric_cal_func(trace_directory)
