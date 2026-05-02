@@ -84,13 +84,43 @@ def is_nccl_kernel_name(name: str) -> bool:
     return "ncclDev" in name or "ncclKernel" in name
 
 
-def is_nccl_collective_event(event: dict) -> bool:
+def has_message_size_metadata(args: dict) -> bool:
     return (
-        is_gpu_kernel_event(event)
-        and is_nccl_kernel_name(event.get("name", ""))
-        and "SendRecv" not in event.get("name", "")
-        and event.get("args", {}).get("In msg nelems", 0) > 0
+        int(args.get("In msg nelems", 0) or 0) > 0
+        or int(args.get("Out msg nelems", 0) or 0) > 0
     )
+
+
+def normalized_collective_name(args: dict) -> str:
+    return args.get("Collective name", "").strip().lower().replace(" ", "_")
+
+
+def is_tiny_sendrecv_control_event(event: dict) -> bool:
+    args = event.get("args", {})
+    return (
+        "SendRecv" in event.get("name", "")
+        and args.get("dtype") in {"Long", "Int64"}
+        and int(args.get("In msg nelems", 0) or 0) <= 64
+        and int(args.get("Out msg nelems", 0) or 0) <= 64
+    )
+
+
+def is_nccl_collective_event(event: dict) -> bool:
+    if not (is_gpu_kernel_event(event) and is_nccl_kernel_name(event.get("name", ""))):
+        return False
+    args = event.get("args", {})
+    # SendRecv carries all_to_allv payload transfers in MoE traces, but also tiny
+    # control/barrier exchanges. Model only the payload collectives.
+    if "SendRecv" in event.get("name", ""):
+        if normalized_collective_name(args) != "all_to_allv":
+            return False
+        if is_tiny_sendrecv_control_event(event):
+            return False
+    return has_message_size_metadata(args)
+
+
+def is_simulatable_nccl_collective_event(event: dict) -> bool:
+    return is_nccl_collective_event(event) and not event.get("_skip_collective", False)
 
 
 def stream_key(event: dict) -> str:
@@ -122,6 +152,10 @@ def comm_size_bytes(args: dict) -> int:
     if nelems == 0:
         nelems = args.get("Out msg nelems", 0)
     return int(nelems) * elem_bytes
+
+
+def event_comm_size_bytes(event: dict) -> int:
+    return int(event.get("_comm_size_override", comm_size_bytes(event.get("args", {}))))
 
 
 def parse_pg_ranks(pg_ranks_str: str) -> list[int] | None:
@@ -175,12 +209,12 @@ def extract_nccl_events_by_pg(
     Independent process groups become independent ET chains — AstraSim issues their
     head nodes concurrently, matching real GPU stream parallelism.
 
-    SendRecv (P2P pipeline-parallel) events are excluded: they don't fit the flat
-    topology model and cause deadlocks in AstraSim's collective simulation.
+    SendRecv all_to_allv payload kernels are included with per-instance sizes
+    normalized across ranks. Tiny SendRecv control/barrier exchanges are excluded.
     """
     by_pg: dict[int, list] = {}
     for e in events:
-        if not is_nccl_collective_event(e):
+        if not is_simulatable_nccl_collective_event(e):
             continue
         pg_ranks = parse_pg_ranks(e.get("args", {}).get("Process Group Ranks", ""))
         if pg_ranks is not None:
@@ -232,7 +266,7 @@ def make_comm_node(
     if ctype is None:
         return None, None
 
-    size_bytes = comm_size_bytes(args)
+    size_bytes = event_comm_size_bytes(event)
     if size_bytes == 0:
         return None, None
 
@@ -260,16 +294,17 @@ def _build_pg_chain(
     node_id_start: int,
     group_registry: dict[tuple, int],
     group_npus: dict[int, list[int]],
-) -> tuple[list, int]:
+) -> tuple[list, int, dict[int, int]]:
     """Build a linear chain of COMP+COMM nodes for one process group's collectives.
 
-    Returns (nodes, next_node_id). Nodes within this chain are linked by ctrl_deps;
-    the chain head has no deps so AstraSim schedules it independently of other PG chains.
+    Returns (nodes, next_node_id, comm_nodes_by_order) where comm_nodes_by_order maps
+    _global_comm_order → node_id for each comm node that carries the annotation.
     """
     nodes = []
     node_id = node_id_start
     prev_end_ts = None
     prev_node_id = None
+    comm_nodes_by_order: dict[int, int] = {}
 
     for ev in pg_events:
         ts = ev.get("ts", 0)
@@ -293,11 +328,13 @@ def _build_pg_chain(
         if prev_node_id is not None:
             comm.ctrl_deps.append(prev_node_id)
         nodes.append(comm)
+        if "_global_comm_order" in ev:
+            comm_nodes_by_order[int(ev["_global_comm_order"])] = node_id
         prev_node_id = node_id
         node_id += 1
         prev_end_ts = ts + dur
 
-    return nodes, node_id
+    return nodes, node_id, comm_nodes_by_order
 
 
 def _build_kernel_graph(
@@ -325,7 +362,10 @@ def _build_kernel_graph(
     kernel_events = [
         e for e in events
         if is_gpu_kernel_event(e)
-        and ("SendRecv" not in e.get("name", ""))
+        and (
+            not is_nccl_kernel_name(e.get("name", ""))
+            or is_simulatable_nccl_collective_event(e)
+        )
     ]
     kernel_events.sort(key=lambda e: (e.get("ts", 0), e.get("dur", 0), e.get("name", "")))
 
@@ -333,7 +373,7 @@ def _build_kernel_graph(
         skey = stream_key(ev)
         name = ev.get("name", "")
 
-        if is_nccl_collective_event(ev):
+        if is_simulatable_nccl_collective_event(ev):
             node, pg_id = make_comm_node(node_id, ev, group_registry, group_npus)
             if node is None:
                 continue
@@ -382,13 +422,14 @@ def annotate_global_comm_order(
     (process group, instance index within that group), then sort those instances
     by their earliest observed timestamp.
     """
-    occurrences: dict[tuple[int, int], list[dict]] = {}
+    occurrences: dict[tuple, list[dict]] = {}
 
     for rank in sorted(events_by_rank):
         by_pg: dict[int, list] = {}
         for event in events_by_rank[rank]:
             if not is_nccl_collective_event(event):
                 continue
+            event["_trace_rank"] = rank
             pg_ranks = parse_pg_ranks(
                 event.get("args", {}).get("Process Group Ranks", "")
             )
@@ -401,14 +442,63 @@ def annotate_global_comm_order(
         for pg_id, pg_events in by_pg.items():
             pg_events.sort(key=lambda e: (e.get("ts", 0), e.get("dur", 0), e.get("name", "")))
             for index, event in enumerate(pg_events):
-                occurrences.setdefault((pg_id, index), []).append(event)
+                args = event.get("args", {})
+                if "External id" in args:
+                    key = (pg_id, "external", args["External id"])
+                else:
+                    key = (pg_id, "ordinal", index)
+                occurrences.setdefault(key, []).append(event)
+
+    skipped = 0
+    all_ranks = sorted(events_by_rank)
+    for key, events in occurrences.items():
+        pg_id = int(key[0])
+        expected_ranks = group_npus.get(pg_id, all_ranks)
+        present_ranks = sorted({int(event.get("_trace_rank", -1)) for event in events})
+        ctypes = {
+            infer_collective_type(
+                event.get("name", ""),
+                event.get("args", {}).get("Collective name", ""),
+            )
+            for event in events
+        }
+        coll_names = {normalized_collective_name(event.get("args", {})) for event in events}
+        dtypes = {event.get("args", {}).get("dtype", "") for event in events}
+        sizes = {comm_size_bytes(event.get("args", {})) for event in events}
+        if (
+            present_ranks != expected_ranks
+            or len(ctypes) != 1
+            or len(coll_names) != 1
+            or len(dtypes) != 1
+            or ("all_to_allv" not in coll_names and len(sizes) != 1)
+        ):
+            for event in events:
+                event["_skip_collective"] = True
+            skipped += len(events)
+        elif "all_to_allv" in coll_names:
+            # AstraSim's ALL_TO_ALL node expects the same comm_size on every rank.
+            # all_to_allv traces carry per-rank byte counts, so use the largest
+            # observed payload for this logical collective as a conservative model.
+            size_bytes = max(comm_size_bytes(event.get("args", {})) for event in events)
+            for event in events:
+                event["_comm_size_override"] = size_bytes
+
+    if skipped:
+        print(
+            "[gen_chakra_et] Skipping "
+            f"{skipped} incomplete/inconsistent NCCL collective event(s)"
+        )
 
     ordered_keys = sorted(
-        occurrences,
+        [
+            key for key, events in occurrences.items()
+            if not any(event.get("_skip_collective", False) for event in events)
+        ],
         key=lambda key: (
             min(event.get("ts", 0) for event in occurrences[key]),
             key[0],
-            key[1],
+            str(key[1]),
+            key[2],
         ),
     )
     for order, key in enumerate(ordered_keys):
@@ -428,8 +518,9 @@ def generate_et(
 
     Each process group becomes an independent node chain. Within a chain, collectives
     are ordered by timestamp; compute gaps capture idle time between consecutive
-    collectives in that group. AstraSim issues all chain heads concurrently, matching
-    real GPU parallelism across independent collective groups (e.g., TP ∥ DP).
+    collectives in that group. Cross-chain global ordering ctrl_deps are added to
+    ensure all ranks enter each collective in a consistent order, preventing AstraSim
+    deadlocks when a collective spans all ranks (e.g., MoE AllToAll across all GPUs).
     """
     et_path = output_dir / f"chakra_trace.{rank}.et"
     all_nodes = []
@@ -437,12 +528,27 @@ def generate_et(
 
     if compute_model == "gap":
         events_by_pg = extract_nccl_events_by_pg(events, group_registry, group_npus)
+        all_comm_nodes_by_order: dict[int, int] = {}
         for pg_id in sorted(events_by_pg):
-            chain, node_id = _build_pg_chain(
+            chain, node_id, chain_order = _build_pg_chain(
                 events_by_pg[pg_id], node_id, group_registry, group_npus
             )
             all_nodes.extend(chain)
+            all_comm_nodes_by_order.update(chain_order)
         n_pgs = len(events_by_pg)
+
+        # Add cross-chain ctrl_deps to enforce global collective ordering.
+        # AstraSim has one comm slot per rank (LIFO); without this, independent
+        # chains can enter different collectives in different orders across ranks,
+        # deadlocking on collectives that require all-rank synchronization.
+        nodes_by_id = {n.id: n for n in all_nodes}
+        prev_order_node_id = None
+        for order in sorted(all_comm_nodes_by_order):
+            nid = all_comm_nodes_by_order[order]
+            node = nodes_by_id[nid]
+            if prev_order_node_id is not None and prev_order_node_id not in node.ctrl_deps:
+                node.ctrl_deps.append(prev_order_node_id)
+            prev_order_node_id = nid
     elif compute_model == "kernels":
         all_nodes, node_id, _n_comm = _build_kernel_graph(
             rank, events, node_id, group_registry, group_npus
@@ -507,13 +613,12 @@ def main():
             continue
         events_by_rank[rank] = load_trace_partial(trace_file)
 
-    if args.compute_model == "kernels":
-        annotate_global_comm_order(events_by_rank, group_registry, group_npus)
+    annotate_global_comm_order(events_by_rank, group_registry, group_npus)
 
     total_comm_nodes = 0
     for rank in sorted(events_by_rank):
         events = events_by_rank[rank]
-        if not any(is_nccl_collective_event(e) for e in events):
+        if not any(is_simulatable_nccl_collective_event(e) for e in events):
             print(f"  rank {rank}: no NCCL events found")
             continue
         total_comm_nodes += generate_et(

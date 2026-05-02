@@ -163,7 +163,7 @@ The pipeline prints a summary table at the end:
 
 1. **Trace parsing** (`gen_chakra_et.py`, runs inside Docker):
    - Reads each `rankN_trace.json` and extracts NCCL collective kernel events (`ncclDevKernel_AllGather_*`, `ncclDevKernel_ReduceScatter_*`, etc.)
-   - P2P send/recv (`ncclDevKernel_SendRecv`) are excluded — they represent pipeline-parallel point-to-point transfers that don't fit the flat-topology collective model
+   - `ncclDevKernel_SendRecv` `all_to_allv` payload events are simulated as `ALL_TO_ALL` nodes with per-instance sizes normalized across ranks; tiny SendRecv control/barrier exchanges are excluded
    - With `--compute-model gap`, each collective op is preceded by a `COMP_NODE` whose `duration_micros` captures the measured compute gap since the previous collective in that process group
    - With `--compute-model kernels`, non-NCCL GPU kernels are emitted as replayed `COMP_NODE`s with their measured kernel durations. Dependencies preserve CUDA stream order, and NCCL collectives also preserve process-group ordering.
 
@@ -203,6 +203,6 @@ trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter/
 
 ## Known Limitations
 
-- **PP send/recv not simulated**: Pipeline-parallel point-to-point transfers (`ncclDevKernel_SendRecv`) are filtered out. The simulated step time excludes these communication events, so comm fraction will be understated for PP-heavy configurations.
+- **PP/control SendRecv ops not simulated**: `ncclDevKernel_SendRecv` `all_to_allv` payload events are simulated, but tiny PP barrier/control exchanges are excluded. Variable-size `all_to_allv` payloads are normalized to the largest rank-local payload for each logical instance because AstraSim collective nodes require a single shared `comm_size` across participating ranks.
 - **Node-contiguous rank assumption**: Two-tier topology assumes contiguous rank blocks per node. If a trace uses a different rank placement, adjust `--gpus-per-node` or reorder/remap the trace ranks before simulation.
 - **Overlap is approximate**: `--compute-model gap` allows overlap between independent process-group chains but serializes compute gaps with communication inside each chain. `--compute-model kernels` preserves per-stream event ordering and process-group collective ordering, so compute and communication can overlap when they are on independent streams, but it does not reconstruct absolute launch-time gaps or the full PyTorch dependency graph.

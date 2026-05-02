@@ -19,6 +19,7 @@ Usage:
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -172,19 +173,26 @@ echo "[pipeline] Done."
 
 def build_comm_only_docker_script(trace_dir_docker: str, output_dir_docker: str,
                                   scripts_dir_docker: str, ranks: list[int],
-                                  compute_model: str) -> str:
+                                  compute_model: str,
+                                  generate_et: bool = True) -> str:
     ranks_str = ",".join(str(r) for r in ranks)
     # comm_group.json is written by gen_chakra_et.py when process group info is
     # present in the traces; otherwise the file is absent and we skip the flag.
-    return f"""#!/bin/bash
-set -e
-
-echo "[pipeline] Extracting NCCL collectives and generating Chakra ET files..."
+    if generate_et:
+        et_step = f"""echo "[pipeline] Extracting NCCL collectives and generating Chakra ET files..."
 python3 {scripts_dir_docker}/gen_chakra_et.py \\
     --trace-dir {trace_dir_docker} \\
     --output-dir {output_dir_docker} \\
     --ranks {ranks_str} \\
     --compute-model {compute_model}
+"""
+    else:
+        et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
+
+    return f"""#!/bin/bash
+set -e
+
+{et_step}
 
 echo "[pipeline] Running AstraSim..."
 COMM_GROUP_ARG=""
@@ -283,6 +291,26 @@ def show_results(output_dir: Path):
         print(f"\n  Simulated step time: {avg_wall/1e6:.1f} ms  |  Comm fraction: {avg_comm_pct:.1f}%")
 
 
+def copy_comm_only_et_artifacts(src_dir: Path, dst_dir: Path) -> None:
+    """Copy reusable comm-only workload artifacts into a new output directory."""
+    et_files = sorted(src_dir.glob("chakra_trace.*.et"))
+    if not et_files:
+        print(f"ERROR: no chakra_trace.*.et files found in reuse source: {src_dir}")
+        sys.exit(1)
+
+    for path in et_files:
+        shutil.copy2(path, dst_dir / path.name)
+
+    comm_group = src_dir / "comm_group.json"
+    dst_comm_group = dst_dir / "comm_group.json"
+    if comm_group.exists():
+        shutil.copy2(comm_group, dst_comm_group)
+    elif dst_comm_group.exists():
+        dst_comm_group.unlink()
+
+    print(f"[pipeline] Reused {len(et_files)} Chakra ET file(s) from {src_dir}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="What-if hardware simulation for CCL-Bench traces via Astra-sim",
@@ -336,6 +364,9 @@ Examples:
                              "COMP_NODEs (default: gap)")
     parser.add_argument("--output-dir", default=None,
                         help="Output directory (default: /var/tmp/ccl_bench_sim_*)")
+    parser.add_argument("--reuse-et-from", default=None,
+                        help="comm-only: reuse chakra_trace.*.et and comm_group.json "
+                             "from this output directory instead of regenerating ET")
 
     net = parser.add_argument_group("Network what-if parameters")
     net.add_argument("--topology", default="Switch",
@@ -371,6 +402,10 @@ Examples:
 
     args = parser.parse_args()
 
+    if args.reuse_et_from and args.mode != "comm-only":
+        print("ERROR: --reuse-et-from is only supported with --mode comm-only")
+        sys.exit(1)
+
     trace_dir = Path(args.trace_dir).resolve()
     if not trace_dir.exists():
         print(f"ERROR: trace directory not found: {trace_dir}")
@@ -403,6 +438,13 @@ Examples:
         print(f"[pipeline] Tip: use --output-dir to keep outputs between runs")
 
     print(f"[pipeline] Output: {output_dir}")
+
+    reuse_et_from = Path(args.reuse_et_from).resolve() if args.reuse_et_from else None
+    if reuse_et_from is not None:
+        if not reuse_et_from.exists():
+            print(f"ERROR: --reuse-et-from directory not found: {reuse_et_from}")
+            sys.exit(1)
+        copy_comm_only_et_artifacts(reuse_et_from, output_dir)
 
     # Write hardware configs
     # comm-only disables roofline for compute (compute time comes from duration_micros)
@@ -443,7 +485,7 @@ Examples:
     else:
         script = build_comm_only_docker_script(
             "/mnt/traces", "/mnt/output", "/mnt/scripts", ranks,
-            args.compute_model
+            args.compute_model, generate_et=(reuse_et_from is None)
         )
         extra_mounts = [(SIMULATION_DIR, "/mnt/scripts")]
 

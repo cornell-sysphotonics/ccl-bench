@@ -83,3 +83,6 @@ package.json
 node_modules
 perlmutter_llama8b_trace
 chakra_trace*
+ccl_bench_sim_bw*
+01_baseline_output
+05_topology_compare_output*
