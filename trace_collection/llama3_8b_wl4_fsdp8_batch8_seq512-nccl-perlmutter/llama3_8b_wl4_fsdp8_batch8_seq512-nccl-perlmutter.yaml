@@ -1,0 +1,73 @@
+version: 1
+
+description: WL4 Llama-3.1-8B training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan FSDP8 + NCCL, matching the TPU 8-chip FSDP parallelism.
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: /data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp8_batch8_seq512-nccl-perlmutter
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1-8b
+    precision: bf16
+    epochs: 1
+    iteration: 6
+    model_arch:
+      num_params: 8030261248
+      num_params_embedding: 1050673152
+      num_layers: 32
+      num_heads: 32
+      head_dim: 128
+  data:
+    batch_size: 8
+    seq_len: 512
+    dataset: c4_test
+  hardware:
+    network_topo:
+      topology: slingshot
+      bandwidth_gbps:
+        - 200
+        - 2400
+    xpu_spec:
+      type: GPU
+      model: nvidia_a100
+      total_count: 8
+      count_per_node: 4
+    driver_version: cuda_12.8
+
+Model-executor:
+  framework:
+    name: torchtitan-0.1.0
+    compiler_tool_selection: pytorch-2.12.0.dev20260408+cu128, triton
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 8
+    tp: 1
+    pp: 1
+    cp: 1
+    ep: 1
+  communication_library:
+    name: NCCL
+    version: 2.29.7
+    env:
+      NCCL_SOCKET_IFNAME: hsn
+      NCCL_DEBUG: INFO
+  protocol_selection:
+    - tcp
+    - p2p
+
+metric_source:
+  traces:
+    - json
+  metrics_specific_trace:
+    -
+
+collection_notes:
+  workload_id: WL4
+  requested_comparison: match TPU 8-chip parallelism
+  profile_iteration: 4
+  total_steps: 6
+  activation_checkpoint:
+    mode: selective
+    selective_ac_option: "op"
