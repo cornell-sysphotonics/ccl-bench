@@ -495,21 +495,6 @@
       "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp8-batch128-perlmutter",
       "metrics": "auto",
       "required_update": false
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp8_batch8_seq512-nccl-perlmutter",
-      "metrics": "auto",
-      "required_update": false
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp2_tp4_batch4_seq512-nccl-perlmutter",
-      "metrics": "auto",
-      "required_update": false
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_tp8_batch1_seq512-nccl-perlmutter",
-      "metrics": "auto",
-      "required_update": false
     }
   ],
   "metric_categories": [
@@ -767,7 +752,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_reducescatter_group_6": {
       "label": "ReduceScatter BW (GB/s)",
@@ -783,7 +768,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_peertopeer_group_6": {
       "label": "P2P BW (%)",

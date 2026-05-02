@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-01T20:40:33.006977+00:00",
+  "generated_at": "2026-05-02T03:43:00.017831+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -273,7 +273,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_reducescatter_group_6": {
       "label": "ReduceScatter BW (GB/s)",
@@ -289,7 +289,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_peertopeer_group_6": {
       "label": "P2P BW (%)",
@@ -7262,208 +7262,8 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
-      }
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp8_batch8_seq512-nccl-perlmutter",
-      "metadata": {
-        "workload_name": "llama3_8b_wl4_fsdp8_batch8_seq512-nccl-perlmutter",
-        "description": "WL4 Llama-3.1-8B training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan FSDP8 + NCCL, matching the TPU 8-chip FSDP parallelism.",
-        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
-        "trace_url": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp8_batch8_seq512-nccl-perlmutter",
-        "model_family": "llama-3.1-8b",
-        "phase": "training",
-        "precision": "bf16",
-        "moe": false,
-        "granularity": "model_fwd_bwd_pass",
-        "epochs": 1,
-        "iteration": 6,
-        "batch_size": 8,
-        "seq_len": 512,
-        "input_len": "",
-        "output_len": "",
-        "dataset": "c4_test",
-        "hardware_type": "GPU",
-        "hardware_model": "nvidia_a100",
-        "total_count": 8,
-        "count_per_node": 4,
-        "network_topology": "slingshot",
-        "bandwidth_scaleout": 200,
-        "bandwidth_scaleup": 2400,
-        "driver_version": "cuda_12.8",
-        "framework": "torchtitan-0.1.0",
-        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
-        "tp": 1,
-        "pp": 1,
-        "pp_mb": "",
-        "dp_replicate": 1,
-        "dp_shard": 8,
-        "ep": 1,
-        "cp": 1,
-        "comm_library": "NCCL",
-        "comm_library_ver": "2.29.7",
-        "comm_env": {
-          "NCCL_SOCKET_IFNAME": "hsn",
-          "NCCL_DEBUG": "INFO"
-        },
-        "protocol_selection": [
-          "tcp",
-          "p2p"
-        ],
-        "trace_types": [
-          "json"
-        ],
-        "metric_traces": [
-          null
-        ]
-      },
-      "metrics": {
-        "avg_step_time": 10.5744,
-        "mfu": 0.6624,
-        "mean_sm_coverage": 16.9889,
-        "dominant_kernel_concentration": 44.9832,
-        "moe_fraction": 0.0,
-        "average_memory_bandwidth": 15.7281,
-        "memory_transfer_overhead": 0.3277,
-        "communication_fraction": 89.6348,
-        "total_communication_time": 10.2064,
-        "bandwidth_utilization_allgather_group_6": 0.636184,
-        "bandwidth_utilization_allreduce_group_6": 0.000187594
-      }
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp2_tp4_batch4_seq512-nccl-perlmutter",
-      "metadata": {
-        "workload_name": "llama3_8b_wl4_fsdp2_tp4_batch4_seq512-nccl-perlmutter",
-        "description": "WL4 Llama-3.1-8B training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan FSDP2/TP4 + NCCL, matching the TPU 8-chip hybrid FSDP/TP parallelism.",
-        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
-        "trace_url": "/data/ccl-bench_trace_collection/llama3_8b_wl4_fsdp2_tp4_batch4_seq512-nccl-perlmutter",
-        "model_family": "llama-3.1-8b",
-        "phase": "training",
-        "precision": "bf16",
-        "moe": false,
-        "granularity": "model_fwd_bwd_pass",
-        "epochs": 1,
-        "iteration": 6,
-        "batch_size": 4,
-        "seq_len": 512,
-        "input_len": "",
-        "output_len": "",
-        "dataset": "c4_test",
-        "hardware_type": "GPU",
-        "hardware_model": "nvidia_a100",
-        "total_count": 8,
-        "count_per_node": 4,
-        "network_topology": "slingshot",
-        "bandwidth_scaleout": 200,
-        "bandwidth_scaleup": 2400,
-        "driver_version": "cuda_12.8",
-        "framework": "torchtitan-0.1.0",
-        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
-        "tp": 4,
-        "pp": 1,
-        "pp_mb": "",
-        "dp_replicate": 1,
-        "dp_shard": 2,
-        "ep": 1,
-        "cp": 1,
-        "comm_library": "NCCL",
-        "comm_library_ver": "2.29.7",
-        "comm_env": {
-          "NCCL_SOCKET_IFNAME": "hsn",
-          "NCCL_DEBUG": "INFO"
-        },
-        "protocol_selection": [
-          "tcp",
-          "p2p"
-        ],
-        "trace_types": [
-          "json"
-        ],
-        "metric_traces": [
-          null
-        ]
-      },
-      "metrics": {
-        "avg_step_time": 6.34034,
-        "mfu": 0.5524,
-        "mean_sm_coverage": 7.77374,
-        "dominant_kernel_concentration": 55.6286,
-        "moe_fraction": 0.0,
-        "average_memory_bandwidth": 169.45,
-        "memory_transfer_overhead": 0.0445,
-        "communication_fraction": 97.0394,
-        "total_communication_time": 6.16918,
-        "bandwidth_utilization_allgather_group_6": 0.639797,
-        "bandwidth_utilization_allreduce_group_6": 0.470932
-      }
-    },
-    {
-      "trace": "/data/ccl-bench_trace_collection/llama3_8b_wl4_tp8_batch1_seq512-nccl-perlmutter",
-      "metadata": {
-        "workload_name": "llama3_8b_wl4_tp8_batch1_seq512-nccl-perlmutter",
-        "description": "WL4 Llama-3.1-8B training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan TP8 + NCCL, matching the TPU 8-chip tensor-parallel parallelism.",
-        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
-        "trace_url": "/data/ccl-bench_trace_collection/llama3_8b_wl4_tp8_batch1_seq512-nccl-perlmutter",
-        "model_family": "llama-3.1-8b",
-        "phase": "training",
-        "precision": "bf16",
-        "moe": false,
-        "granularity": "model_fwd_bwd_pass",
-        "epochs": 1,
-        "iteration": 6,
-        "batch_size": 1,
-        "seq_len": 512,
-        "input_len": "",
-        "output_len": "",
-        "dataset": "c4_test",
-        "hardware_type": "GPU",
-        "hardware_model": "nvidia_a100",
-        "total_count": 8,
-        "count_per_node": 4,
-        "network_topology": "slingshot",
-        "bandwidth_scaleout": 200,
-        "bandwidth_scaleup": 2400,
-        "driver_version": "cuda_12.8",
-        "framework": "torchtitan-0.1.0",
-        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
-        "tp": 8,
-        "pp": 1,
-        "pp_mb": "",
-        "dp_replicate": 1,
-        "dp_shard": 1,
-        "ep": 1,
-        "cp": 1,
-        "comm_library": "NCCL",
-        "comm_library_ver": "2.29.7",
-        "comm_env": {
-          "NCCL_SOCKET_IFNAME": "hsn",
-          "NCCL_DEBUG": "INFO"
-        },
-        "protocol_selection": [
-          "tcp",
-          "p2p"
-        ],
-        "trace_types": [
-          "json"
-        ],
-        "metric_traces": [
-          null
-        ]
-      },
-      "metrics": {
-        "avg_step_time": 0.82474,
-        "mfu": 1.0616,
-        "mean_sm_coverage": 32.0678,
-        "dominant_kernel_concentration": 35.4975,
-        "moe_fraction": 0.0,
-        "average_memory_bandwidth": 257.819,
-        "memory_transfer_overhead": 0.0132,
-        "communication_fraction": 72.3429,
-        "total_communication_time": 0.590101,
-        "bandwidth_utilization_allgather_group_6": 0.38053,
-        "bandwidth_utilization_allreduce_group_6": 0.336275
       }
     }
   ]
