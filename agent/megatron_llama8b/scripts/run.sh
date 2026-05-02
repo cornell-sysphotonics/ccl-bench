@@ -51,6 +51,13 @@ cd "$REPO_DIR"
 mkdir -p "$TRACE_DIR"
 rm -rf "$TRACE_DIR"/*.json "$TRACE_DIR"/trace_meta.yaml "$TRACE_DIR"/tb_logs "$TRACE_DIR"/torch_profile
 
+echo "$TOTAL_GPUS" > "$TRACE_DIR/gpu_count.txt"
+cat > "$TRACE_DIR/gpu_step_score_config.yaml" << YAML
+G0: 16
+T0: 0.44
+w: 0.5
+YAML
+
 # ---------- build args ----------
 MEGATRON_ARGS="pretrain_gpt.py \
     --use-mcore-models \
@@ -114,7 +121,7 @@ else
             --master_addr $MASTER_ADDR \
             --master_port $MASTER_PORT \
             $MEGATRON_ARGS
-    "
+    " || true
 fi
 
 # ---------- collect traces ----------

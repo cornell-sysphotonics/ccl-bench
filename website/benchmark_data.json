@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-01T04:09:48.134983+00:00",
+  "generated_at": "2026-05-01T20:40:33.006977+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -7,6 +7,7 @@
     "bandwidth_utilization_allreduce_group_6",
     "bandwidth_utilization_alltoall_group_6",
     "bandwidth_utilization_peertopeer_group_6",
+    "bandwidth_utilization_reducescatter_group_6",
     "communication_fraction",
     "dominant_kernel_concentration",
     "mean_sm_coverage",
@@ -260,19 +261,35 @@
       "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
-      "label": "AllToAll BW (%)",
-      "description": "Average NVLink TX throughput utilization during AllToAll operations",
+      "label": "AllToAll BW (GB/s)",
+      "description": "Median effective bandwidth for AllToAll operations",
       "higher_is_better": true,
-      "unit": "%",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 50,
-        "mid": 20
+        "high": 200,
+        "mid": 50
       },
-      "required_update": false
+      "required_update": true
+    },
+    "bandwidth_utilization_reducescatter_group_6": {
+      "label": "ReduceScatter BW (GB/s)",
+      "description": "Median effective bandwidth for ReduceScatter operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu"
+      ],
+      "thresholds": {
+        "high": 200,
+        "mid": 50
+      },
+      "required_update": true
     },
     "bandwidth_utilization_peertopeer_group_6": {
       "label": "P2P BW (%)",
@@ -349,14 +366,15 @@
         "avg_step_time": 0.221814,
         "ttft": 0.0355622,
         "tpot": 0.221814,
-        "mfu": 8.5922,
+        "mfu": 68.7375,
         "dominant_kernel_concentration": 81.879,
         "average_memory_bandwidth": 5.16215,
         "memory_transfer_overhead": 0.0023,
         "communication_fraction": 1.30337e-06,
         "total_communication_time": 1.49956,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -422,7 +440,9 @@
         "communication_fraction": 55.1681,
         "total_communication_time": 0.476312,
         "bandwidth_utilization_allgather_group_6": 17.7831,
-        "bandwidth_utilization_allreduce_group_6": 0.517744
+        "bandwidth_utilization_allreduce_group_6": 0.517744,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 38.6209
       }
     },
     {
@@ -488,7 +508,9 @@
         "communication_fraction": 55.4385,
         "total_communication_time": 0.489888,
         "bandwidth_utilization_allgather_group_6": 14.8624,
-        "bandwidth_utilization_allreduce_group_6": 0.55966
+        "bandwidth_utilization_allreduce_group_6": 0.55966,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 37.4681
       }
     },
     {
@@ -554,7 +576,9 @@
         "communication_fraction": 25.9987,
         "total_communication_time": 0.52993,
         "bandwidth_utilization_allgather_group_6": 16.6354,
-        "bandwidth_utilization_allreduce_group_6": 1.37616
+        "bandwidth_utilization_allreduce_group_6": 1.37616,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 38.4655
       }
     },
     {
@@ -620,7 +644,9 @@
         "communication_fraction": 27.8997,
         "total_communication_time": 0.619568,
         "bandwidth_utilization_allgather_group_6": 14.7161,
-        "bandwidth_utilization_allreduce_group_6": 1.17159
+        "bandwidth_utilization_allreduce_group_6": 1.17159,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 34.6939
       }
     },
     {
@@ -686,7 +712,9 @@
         "communication_fraction": 23.5252,
         "total_communication_time": 0.47062,
         "bandwidth_utilization_allgather_group_6": 32.2171,
-        "bandwidth_utilization_allreduce_group_6": 1.74028
+        "bandwidth_utilization_allreduce_group_6": 1.74028,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 111.616
       }
     },
     {
@@ -752,7 +780,9 @@
         "communication_fraction": 23.8475,
         "total_communication_time": 0.466497,
         "bandwidth_utilization_allgather_group_6": 28.5834,
-        "bandwidth_utilization_allreduce_group_6": 1.39698
+        "bandwidth_utilization_allreduce_group_6": 1.39698,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 105.392
       }
     },
     {
@@ -818,7 +848,9 @@
         "communication_fraction": 35.8681,
         "total_communication_time": 0.424001,
         "bandwidth_utilization_allgather_group_6": 33.2346,
-        "bandwidth_utilization_allreduce_group_6": 0.000545697
+        "bandwidth_utilization_allreduce_group_6": 0.000545697,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 123.469
       }
     },
     {
@@ -884,7 +916,9 @@
         "communication_fraction": 34.2439,
         "total_communication_time": 0.390762,
         "bandwidth_utilization_allgather_group_6": 33.3994,
-        "bandwidth_utilization_allreduce_group_6": 1.73152e-05
+        "bandwidth_utilization_allreduce_group_6": 1.73152e-05,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 144.167
       }
     },
     {
@@ -945,14 +979,15 @@
         "avg_step_time": 0.17781,
         "ttft": 0.0168845,
         "tpot": 0.17781,
-        "mfu": 10.4141,
+        "mfu": 41.6562,
         "dominant_kernel_concentration": 53.9645,
         "average_memory_bandwidth": 31.2078,
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 16.5455,
         "total_communication_time": 0.0726466,
         "bandwidth_utilization_allgather_group_6": 0.074005,
-        "bandwidth_utilization_allreduce_group_6": 151.166
+        "bandwidth_utilization_allreduce_group_6": 151.166,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1013,14 +1048,15 @@
         "avg_step_time": 0.085051,
         "ttft": 0.0127897,
         "tpot": 0.085051,
-        "mfu": 16.7047,
+        "mfu": 33.4094,
         "dominant_kernel_concentration": 45.8373,
         "average_memory_bandwidth": 36.6485,
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 19.3455,
         "total_communication_time": 0.11252,
         "bandwidth_utilization_allgather_group_6": 0.0684186,
-        "bandwidth_utilization_allreduce_group_6": 311.035
+        "bandwidth_utilization_allreduce_group_6": 311.035,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1088,7 +1124,8 @@
         "communication_fraction": 26.9272,
         "total_communication_time": 0.239226,
         "bandwidth_utilization_allgather_group_6": 0.139939,
-        "bandwidth_utilization_allreduce_group_6": 326.912
+        "bandwidth_utilization_allreduce_group_6": 326.912,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1149,14 +1186,15 @@
         "avg_step_time": 0.194447,
         "ttft": 0.0307186,
         "tpot": 0.194447,
-        "mfu": 8.0046,
+        "mfu": 64.0365,
         "dominant_kernel_concentration": 53.2536,
         "average_memory_bandwidth": 10.6774,
         "memory_transfer_overhead": 0.199,
         "communication_fraction": 3.14031e-06,
         "total_communication_time": 0.427017,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1217,14 +1255,15 @@
         "avg_step_time": 0.145632,
         "ttft": 0.0204064,
         "tpot": 0.145632,
-        "mfu": 8.6877,
+        "mfu": 34.7506,
         "dominant_kernel_concentration": 38.5532,
         "average_memory_bandwidth": 24.4778,
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 15.0425,
         "total_communication_time": 0.0523105,
         "bandwidth_utilization_allgather_group_6": 0.075199,
-        "bandwidth_utilization_allreduce_group_6": 150.732
+        "bandwidth_utilization_allreduce_group_6": 150.732,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1285,14 +1324,15 @@
         "avg_step_time": 0.0973176,
         "ttft": 0.0158465,
         "tpot": 0.0973176,
-        "mfu": 14.5975,
+        "mfu": 29.1951,
         "dominant_kernel_concentration": 36.9039,
         "average_memory_bandwidth": 8.90733,
         "memory_transfer_overhead": 0.0,
         "communication_fraction": 18.4459,
         "total_communication_time": 0.0759283,
         "bandwidth_utilization_allgather_group_6": 0.119377,
-        "bandwidth_utilization_allreduce_group_6": 310.216
+        "bandwidth_utilization_allreduce_group_6": 310.216,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1360,7 +1400,8 @@
         "communication_fraction": 25.5013,
         "total_communication_time": 0.171671,
         "bandwidth_utilization_allgather_group_6": 0.140253,
-        "bandwidth_utilization_allreduce_group_6": 330.799
+        "bandwidth_utilization_allreduce_group_6": 330.799,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -1426,7 +1467,9 @@
         "communication_fraction": 90.1896,
         "total_communication_time": 3.79839,
         "bandwidth_utilization_allgather_group_6": 0.691226,
-        "bandwidth_utilization_allreduce_group_6": 0.000582978
+        "bandwidth_utilization_allreduce_group_6": 0.000582978,
+        "bandwidth_utilization_alltoall_group_6": 1.79401,
+        "bandwidth_utilization_reducescatter_group_6": 5.40424
       }
     },
     {
@@ -1492,7 +1535,9 @@
         "communication_fraction": 95.0665,
         "total_communication_time": 12.0873,
         "bandwidth_utilization_allgather_group_6": 0.640605,
-        "bandwidth_utilization_allreduce_group_6": 50.4074
+        "bandwidth_utilization_allreduce_group_6": 50.4074,
+        "bandwidth_utilization_alltoall_group_6": 48.3478,
+        "bandwidth_utilization_reducescatter_group_6": 27.4131
       }
     },
     {
@@ -1558,7 +1603,9 @@
         "communication_fraction": 95.5984,
         "total_communication_time": 12.9735,
         "bandwidth_utilization_allgather_group_6": 0.679365,
-        "bandwidth_utilization_allreduce_group_6": 26.5272
+        "bandwidth_utilization_allreduce_group_6": 26.5272,
+        "bandwidth_utilization_alltoall_group_6": 16.5042,
+        "bandwidth_utilization_reducescatter_group_6": 20.9983
       }
     },
     {
@@ -1624,7 +1671,9 @@
         "communication_fraction": 89.6675,
         "total_communication_time": 2.89107,
         "bandwidth_utilization_allgather_group_6": 1.37671,
-        "bandwidth_utilization_allreduce_group_6": 62.995
+        "bandwidth_utilization_allreduce_group_6": 62.995,
+        "bandwidth_utilization_alltoall_group_6": 2.04143,
+        "bandwidth_utilization_reducescatter_group_6": 93.804
       }
     },
     {
@@ -1690,7 +1739,9 @@
         "communication_fraction": 90.6411,
         "total_communication_time": 3.32568,
         "bandwidth_utilization_allgather_group_6": 11.6139,
-        "bandwidth_utilization_allreduce_group_6": 81.2942
+        "bandwidth_utilization_allreduce_group_6": 81.2942,
+        "bandwidth_utilization_alltoall_group_6": 1.9454,
+        "bandwidth_utilization_reducescatter_group_6": 105.889
       }
     },
     {
@@ -1756,7 +1807,9 @@
         "communication_fraction": 93.8724,
         "total_communication_time": 9.28479,
         "bandwidth_utilization_allgather_group_6": 9.36601,
-        "bandwidth_utilization_allreduce_group_6": 73.5363
+        "bandwidth_utilization_allreduce_group_6": 73.5363,
+        "bandwidth_utilization_alltoall_group_6": 58.1729,
+        "bandwidth_utilization_reducescatter_group_6": 88.5209
       }
     },
     {
@@ -1820,7 +1873,9 @@
         "communication_fraction": 98.3598,
         "total_communication_time": 11.498,
         "bandwidth_utilization_allgather_group_6": 15.3382,
-        "bandwidth_utilization_allreduce_group_6": 84.8103
+        "bandwidth_utilization_allreduce_group_6": 84.8103,
+        "bandwidth_utilization_alltoall_group_6": 2.37341,
+        "bandwidth_utilization_reducescatter_group_6": 105.204
       }
     },
     {
@@ -1884,7 +1939,9 @@
         "communication_fraction": 96.7923,
         "total_communication_time": 20.0744,
         "bandwidth_utilization_allgather_group_6": 9.28075,
-        "bandwidth_utilization_allreduce_group_6": 101.387
+        "bandwidth_utilization_allreduce_group_6": 101.387,
+        "bandwidth_utilization_alltoall_group_6": 2.53256,
+        "bandwidth_utilization_reducescatter_group_6": 45.0173
       }
     },
     {
@@ -1945,7 +2002,6 @@
         "memory_transfer_overhead": 16.9059,
         "communication_fraction": 55.6226,
         "total_communication_time": 169.143,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2007,7 +2063,6 @@
         "memory_transfer_overhead": 12.8993,
         "communication_fraction": 44.7695,
         "total_communication_time": 116.164,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2069,7 +2124,6 @@
         "memory_transfer_overhead": 23.3699,
         "communication_fraction": 44.283,
         "total_communication_time": 110.983,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2131,7 +2185,6 @@
         "memory_transfer_overhead": 18.0467,
         "communication_fraction": 53.2851,
         "total_communication_time": 155.182,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2196,7 +2249,6 @@
         "memory_transfer_overhead": 1.36468,
         "communication_fraction": 75.6585,
         "total_communication_time": 84.6033,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2261,7 +2313,6 @@
         "memory_transfer_overhead": 3.26001,
         "communication_fraction": 87.6409,
         "total_communication_time": 230.225,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2326,7 +2377,6 @@
         "memory_transfer_overhead": 5.9124,
         "communication_fraction": 84.6295,
         "total_communication_time": 178.282,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2391,7 +2441,6 @@
         "memory_transfer_overhead": 3.02412,
         "communication_fraction": 88.9071,
         "total_communication_time": 259.943,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2456,7 +2505,6 @@
         "memory_transfer_overhead": 5.604,
         "communication_fraction": 84.0106,
         "total_communication_time": 162.268,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2521,7 +2569,6 @@
         "memory_transfer_overhead": 6.41185,
         "communication_fraction": 66.7988,
         "total_communication_time": 19.0716,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2586,7 +2633,6 @@
         "memory_transfer_overhead": 1.90811,
         "communication_fraction": 87.4407,
         "total_communication_time": 227.798,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2651,7 +2697,6 @@
         "memory_transfer_overhead": 6.12286,
         "communication_fraction": 68.7353,
         "total_communication_time": 11.1467,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2716,7 +2761,6 @@
         "memory_transfer_overhead": 4.50039,
         "communication_fraction": 11.9033,
         "total_communication_time": 6.6318,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -2784,7 +2828,9 @@
         "communication_fraction": 83.9077,
         "total_communication_time": 8.09265,
         "bandwidth_utilization_allgather_group_6": 0.297824,
-        "bandwidth_utilization_allreduce_group_6": 41.712
+        "bandwidth_utilization_allreduce_group_6": 41.712,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 2.38862
       }
     },
     {
@@ -2851,7 +2897,9 @@
         "communication_fraction": 78.3779,
         "total_communication_time": 6.94209,
         "bandwidth_utilization_allgather_group_6": 0.292327,
-        "bandwidth_utilization_allreduce_group_6": 15.9835
+        "bandwidth_utilization_allreduce_group_6": 15.9835,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 1.15
       }
     },
     {
@@ -2914,7 +2962,8 @@
         "communication_fraction": 2.6606,
         "total_communication_time": 0.0536802,
         "bandwidth_utilization_allgather_group_6": 3.53376,
-        "bandwidth_utilization_allreduce_group_6": 9.00002
+        "bandwidth_utilization_allreduce_group_6": 9.00002,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -2977,7 +3026,8 @@
         "communication_fraction": 6.37129,
         "total_communication_time": 0.13406,
         "bandwidth_utilization_allgather_group_6": 1.38516,
-        "bandwidth_utilization_allreduce_group_6": 0.981735
+        "bandwidth_utilization_allreduce_group_6": 0.981735,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -3040,7 +3090,8 @@
         "communication_fraction": 28.6379,
         "total_communication_time": 0.801672,
         "bandwidth_utilization_allgather_group_6": 158.45,
-        "bandwidth_utilization_allreduce_group_6": 28.7224
+        "bandwidth_utilization_allreduce_group_6": 28.7224,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -3103,7 +3154,8 @@
         "communication_fraction": 30.0314,
         "total_communication_time": 0.675494,
         "bandwidth_utilization_allgather_group_6": 215.992,
-        "bandwidth_utilization_allreduce_group_6": 19.0352
+        "bandwidth_utilization_allreduce_group_6": 19.0352,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -3166,7 +3218,8 @@
         "communication_fraction": 7.00837,
         "total_communication_time": 0.188792,
         "bandwidth_utilization_allgather_group_6": 196.406,
-        "bandwidth_utilization_allreduce_group_6": 0.145046
+        "bandwidth_utilization_allreduce_group_6": 0.145046,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -3229,7 +3282,8 @@
         "communication_fraction": 8.77354,
         "total_communication_time": 0.278726,
         "bandwidth_utilization_allgather_group_6": 166.398,
-        "bandwidth_utilization_allreduce_group_6": 0.128231
+        "bandwidth_utilization_allreduce_group_6": 0.128231,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -3302,6 +3356,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3375,6 +3430,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3448,6 +3504,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3521,6 +3578,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3594,6 +3652,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3667,6 +3726,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3740,6 +3800,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3813,6 +3874,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3886,6 +3948,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -3959,6 +4022,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4032,6 +4096,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4105,6 +4170,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4178,6 +4244,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4251,6 +4318,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4324,6 +4392,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4397,6 +4466,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4473,6 +4543,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4549,6 +4620,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4625,6 +4697,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4701,6 +4774,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4773,6 +4847,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4849,6 +4924,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4921,6 +4997,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -4997,6 +5074,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5069,6 +5147,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5145,6 +5224,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5218,6 +5298,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5291,6 +5372,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5364,6 +5446,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5437,6 +5520,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5510,6 +5594,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5583,6 +5668,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5657,6 +5743,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5731,6 +5818,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5805,6 +5893,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5879,6 +5968,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -5953,6 +6043,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6027,6 +6118,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6101,6 +6193,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6175,6 +6268,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6249,6 +6343,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6323,6 +6418,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6397,6 +6493,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6471,6 +6568,7 @@
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
         "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null
       }
     },
@@ -6536,7 +6634,9 @@
         "communication_fraction": null,
         "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
-        "bandwidth_utilization_allreduce_group_6": null
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null
       }
     },
     {
@@ -6603,7 +6703,9 @@
         "communication_fraction": 89.8025,
         "total_communication_time": 10.451,
         "bandwidth_utilization_allgather_group_6": 0.618114,
-        "bandwidth_utilization_allreduce_group_6": 8.97463e-05
+        "bandwidth_utilization_allreduce_group_6": 8.97463e-05,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 4.996
       }
     },
     {
@@ -6670,7 +6772,9 @@
         "communication_fraction": 89.5223,
         "total_communication_time": 10.1407,
         "bandwidth_utilization_allgather_group_6": 0.630872,
-        "bandwidth_utilization_allreduce_group_6": 0.000178708
+        "bandwidth_utilization_allreduce_group_6": 0.000178708,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 5.08792
       }
     },
     {
@@ -6737,7 +6841,9 @@
         "communication_fraction": 95.1725,
         "total_communication_time": 12.2554,
         "bandwidth_utilization_allgather_group_6": 4.9098,
-        "bandwidth_utilization_allreduce_group_6": 26.5259
+        "bandwidth_utilization_allreduce_group_6": 26.5259,
+        "bandwidth_utilization_alltoall_group_6": 14.0626,
+        "bandwidth_utilization_reducescatter_group_6": 2.60329
       }
     },
     {
@@ -6804,7 +6910,9 @@
         "communication_fraction": 95.2895,
         "total_communication_time": 12.7051,
         "bandwidth_utilization_allgather_group_6": 0.77874,
-        "bandwidth_utilization_allreduce_group_6": 25.6882
+        "bandwidth_utilization_allreduce_group_6": 25.6882,
+        "bandwidth_utilization_alltoall_group_6": 19.4023,
+        "bandwidth_utilization_reducescatter_group_6": 4.29507
       }
     },
     {
@@ -6871,7 +6979,9 @@
         "communication_fraction": 95.2327,
         "total_communication_time": 11.6966,
         "bandwidth_utilization_allgather_group_6": 0.625296,
-        "bandwidth_utilization_allreduce_group_6": 58.1246
+        "bandwidth_utilization_allreduce_group_6": 58.1246,
+        "bandwidth_utilization_alltoall_group_6": 21.475,
+        "bandwidth_utilization_reducescatter_group_6": 6.80934
       }
     },
     {
@@ -6938,7 +7048,9 @@
         "communication_fraction": 95.5356,
         "total_communication_time": 12.0011,
         "bandwidth_utilization_allgather_group_6": 0.592587,
-        "bandwidth_utilization_allreduce_group_6": 60.2321
+        "bandwidth_utilization_allreduce_group_6": 60.2321,
+        "bandwidth_utilization_alltoall_group_6": 18.11,
+        "bandwidth_utilization_reducescatter_group_6": 10.5579
       }
     },
     {
@@ -7005,7 +7117,9 @@
         "communication_fraction": 89.8156,
         "total_communication_time": 3.08812,
         "bandwidth_utilization_allgather_group_6": 6.13854,
-        "bandwidth_utilization_allreduce_group_6": 63.7369
+        "bandwidth_utilization_allreduce_group_6": 63.7369,
+        "bandwidth_utilization_alltoall_group_6": 1.48056,
+        "bandwidth_utilization_reducescatter_group_6": 77.7193
       }
     },
     {
@@ -7072,7 +7186,9 @@
         "communication_fraction": 89.4823,
         "total_communication_time": 3.03348,
         "bandwidth_utilization_allgather_group_6": 3.89827,
-        "bandwidth_utilization_allreduce_group_6": 64.6965
+        "bandwidth_utilization_allreduce_group_6": 64.6965,
+        "bandwidth_utilization_alltoall_group_6": 1.58349,
+        "bandwidth_utilization_reducescatter_group_6": 77.4394
       }
     },
     {

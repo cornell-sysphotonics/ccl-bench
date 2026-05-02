@@ -755,19 +755,35 @@
       "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
-      "label": "AllToAll BW (%)",
-      "description": "Average NVLink TX throughput utilization during AllToAll operations",
+      "label": "AllToAll BW (GB/s)",
+      "description": "Median effective bandwidth for AllToAll operations",
       "higher_is_better": true,
-      "unit": "%",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 50,
-        "mid": 20
+        "high": 200,
+        "mid": 50
       },
-      "required_update": false
+      "required_update": true
+    },
+    "bandwidth_utilization_reducescatter_group_6": {
+      "label": "ReduceScatter BW (GB/s)",
+      "description": "Median effective bandwidth for ReduceScatter operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu"
+      ],
+      "thresholds": {
+        "high": 200,
+        "mid": 50
+      },
+      "required_update": true
     },
     "bandwidth_utilization_peertopeer_group_6": {
       "label": "P2P BW (%)",

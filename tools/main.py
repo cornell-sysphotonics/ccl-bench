@@ -300,6 +300,9 @@ if __name__ == "__main__":
     elif metric_name == "bandwidth_utilization_alltoall_group_6":
         from bandwidth_utilization_alltoall_group_6.bandwidth_utilization_alltoall_group_6 import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "bandwidth_utilization_reducescatter_group_6":
+        from bandwidth_utilization_reducescatter_group_6.bandwidth_utilization_reducescatter_group_6 import metric_cal
+        metric_cal_func = metric_cal
     elif metric_name == "bandwidth_utilization_peertopeer_group_6":
         from bandwidth_utilization_peertopeer_group_6.bandwidth_utilization_peertopeer_group_6 import metric_cal
         metric_cal_func = metric_cal
@@ -329,6 +332,9 @@ if __name__ == "__main__":
         metric_cal_func = metric_cal
     elif metric_name == "bandwidth_utilization":
         from bandwidth_utilization_group_1.bandwidth_utilization_group_1 import metric_cal
+        metric_cal_func = metric_cal
+    elif metric_name == "gpu_step_score":
+        from gpu_step_score.gpu_step_score import metric_cal
         metric_cal_func = metric_cal
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
