@@ -1,0 +1,36 @@
+config_space:
+  - key: tp
+    type: int
+    description: Tensor parallelism degree
+    choices: [1, 2, 4]
+
+  - key: pp
+    type: int
+    description: Pipeline parallelism degree
+    choices: [1, 2, 4]
+
+  - key: dp
+    type: int
+    description: Data parallelism degree. NOTE - tp*dp*pp is the number of GPUs used and does NOT need to equal 16. Using fewer GPUs improves the score.
+    choices: [1, 2, 4]
+
+  - key: micro_batch_size
+    type: int
+    description: Micro-batch size per data-parallel rank
+    choices: [1, 2, 4]
+
+  - key: activation_checkpointing
+    type: bool
+    description: Recompute activations to save memory
+    choices: [true, false]
+
+# SCORING: Score = 0.5 * (16 / num_gpus_used) + 0.5 * (0.44 / avg_step_time)
+# where num_gpus_used = tp * dp * pp
+# Using FEWER GPUs with fast step time gives the HIGHEST score.
+# Example: 4 GPUs with 0.88s step time scores 2.25, while 16 GPUs with 0.44s scores 1.0
+
+optimization_goal:
+  direction: maximize
+  metrics:
+    - name: gpu_step_score
+      weight: 1.0
