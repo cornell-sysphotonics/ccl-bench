@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-01T23:30:43.849662+00:00",
+  "generated_at": "2026-05-02T03:57:20.510059+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -7,6 +7,7 @@
     "bandwidth_utilization_allreduce_group_6",
     "bandwidth_utilization_alltoall_group_6",
     "bandwidth_utilization_peertopeer_group_6",
+    "bandwidth_utilization_reducescatter_group_6",
     "communication_fraction",
     "compute_comm_overlap",
     "dominant_kernel_concentration",
@@ -242,7 +243,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_allreduce_group_6": {
       "label": "AllReduce BW (GB/s)",
@@ -258,20 +259,36 @@
         "high": 200,
         "mid": 0.1
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
-      "label": "AllToAll BW (%)",
-      "description": "Average NVLink TX throughput utilization during AllToAll operations",
+      "label": "AllToAll BW (GB/s)",
+      "description": "Median effective bandwidth for AllToAll operations",
       "higher_is_better": true,
-      "unit": "%",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 50,
-        "mid": 20
+        "high": 200,
+        "mid": 50
+      },
+      "required_update": false
+    },
+    "bandwidth_utilization_reducescatter_group_6": {
+      "label": "ReduceScatter BW (GB/s)",
+      "description": "Median effective bandwidth for ReduceScatter operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu"
+      ],
+      "thresholds": {
+        "high": 200,
+        "mid": 50
       },
       "required_update": false
     },
@@ -305,7 +322,7 @@
         "high": 50,
         "mid": 20
       },
-      "required_update": true
+      "required_update": false
     }
   },
   "rows": [
@@ -367,7 +384,7 @@
         "avg_step_time": 0.221814,
         "ttft": 0.0355622,
         "tpot": 0.221814,
-        "mfu": 8.5922,
+        "mfu": 68.7375,
         "dominant_kernel_concentration": 81.879,
         "average_memory_bandwidth": 5.16215,
         "memory_transfer_overhead": 0.0023,
@@ -375,6 +392,7 @@
         "total_communication_time": 1.49956,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 82.4935
       }
     },
@@ -442,6 +460,8 @@
         "total_communication_time": 0.476312,
         "bandwidth_utilization_allgather_group_6": 17.7831,
         "bandwidth_utilization_allreduce_group_6": 0.517744,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 38.6209,
         "compute_comm_overlap": 48.0783
       }
     },
@@ -509,6 +529,8 @@
         "total_communication_time": 0.489888,
         "bandwidth_utilization_allgather_group_6": 14.8624,
         "bandwidth_utilization_allreduce_group_6": 0.55966,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 37.4681,
         "compute_comm_overlap": 45.2674
       }
     },
@@ -576,6 +598,8 @@
         "total_communication_time": 0.52993,
         "bandwidth_utilization_allgather_group_6": 16.6354,
         "bandwidth_utilization_allreduce_group_6": 1.37616,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 38.4655,
         "compute_comm_overlap": 0.00325058
       }
     },
@@ -643,6 +667,8 @@
         "total_communication_time": 0.619568,
         "bandwidth_utilization_allgather_group_6": 14.7161,
         "bandwidth_utilization_allreduce_group_6": 1.17159,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 34.6939,
         "compute_comm_overlap": 0.00421244
       }
     },
@@ -710,6 +736,8 @@
         "total_communication_time": 0.47062,
         "bandwidth_utilization_allgather_group_6": 32.2171,
         "bandwidth_utilization_allreduce_group_6": 1.74028,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 111.616,
         "compute_comm_overlap": 0.0
       }
     },
@@ -777,6 +805,8 @@
         "total_communication_time": 0.466497,
         "bandwidth_utilization_allgather_group_6": 28.5834,
         "bandwidth_utilization_allreduce_group_6": 1.39698,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 105.392,
         "compute_comm_overlap": 0.0
       }
     },
@@ -844,6 +874,8 @@
         "total_communication_time": 0.424001,
         "bandwidth_utilization_allgather_group_6": 33.2346,
         "bandwidth_utilization_allreduce_group_6": 0.000545697,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 123.469,
         "compute_comm_overlap": 76.7495
       }
     },
@@ -911,6 +943,8 @@
         "total_communication_time": 0.390762,
         "bandwidth_utilization_allgather_group_6": 33.3994,
         "bandwidth_utilization_allreduce_group_6": 1.73152e-05,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 144.167,
         "compute_comm_overlap": 80.2494
       }
     },
@@ -972,7 +1006,7 @@
         "avg_step_time": 0.17781,
         "ttft": 0.0168845,
         "tpot": 0.17781,
-        "mfu": 10.4141,
+        "mfu": 41.6562,
         "dominant_kernel_concentration": 53.9645,
         "average_memory_bandwidth": 31.2078,
         "memory_transfer_overhead": 0.0,
@@ -980,6 +1014,7 @@
         "total_communication_time": 0.0726466,
         "bandwidth_utilization_allgather_group_6": 0.074005,
         "bandwidth_utilization_allreduce_group_6": 151.166,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 55.512
       }
     },
@@ -1041,7 +1076,7 @@
         "avg_step_time": 0.085051,
         "ttft": 0.0127897,
         "tpot": 0.085051,
-        "mfu": 16.7047,
+        "mfu": 33.4094,
         "dominant_kernel_concentration": 45.8373,
         "average_memory_bandwidth": 36.6485,
         "memory_transfer_overhead": 0.0,
@@ -1049,6 +1084,7 @@
         "total_communication_time": 0.11252,
         "bandwidth_utilization_allgather_group_6": 0.0684186,
         "bandwidth_utilization_allreduce_group_6": 311.035,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 48.0609
       }
     },
@@ -1118,6 +1154,7 @@
         "total_communication_time": 0.239226,
         "bandwidth_utilization_allgather_group_6": 0.139939,
         "bandwidth_utilization_allreduce_group_6": 326.912,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 37.2474
       }
     },
@@ -1179,7 +1216,7 @@
         "avg_step_time": 0.194447,
         "ttft": 0.0307186,
         "tpot": 0.194447,
-        "mfu": 8.0046,
+        "mfu": 64.0365,
         "dominant_kernel_concentration": 53.2536,
         "average_memory_bandwidth": 10.6774,
         "memory_transfer_overhead": 0.199,
@@ -1187,6 +1224,7 @@
         "total_communication_time": 0.427017,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 55.2837
       }
     },
@@ -1248,7 +1286,7 @@
         "avg_step_time": 0.145632,
         "ttft": 0.0204064,
         "tpot": 0.145632,
-        "mfu": 8.6877,
+        "mfu": 34.7506,
         "dominant_kernel_concentration": 38.5532,
         "average_memory_bandwidth": 24.4778,
         "memory_transfer_overhead": 0.0,
@@ -1256,6 +1294,7 @@
         "total_communication_time": 0.0523105,
         "bandwidth_utilization_allgather_group_6": 0.075199,
         "bandwidth_utilization_allreduce_group_6": 150.732,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 40.6958
       }
     },
@@ -1317,7 +1356,7 @@
         "avg_step_time": 0.0973176,
         "ttft": 0.0158465,
         "tpot": 0.0973176,
-        "mfu": 14.5975,
+        "mfu": 29.1951,
         "dominant_kernel_concentration": 36.9039,
         "average_memory_bandwidth": 8.90733,
         "memory_transfer_overhead": 0.0,
@@ -1325,6 +1364,7 @@
         "total_communication_time": 0.0759283,
         "bandwidth_utilization_allgather_group_6": 0.119377,
         "bandwidth_utilization_allreduce_group_6": 310.216,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 32.2813
       }
     },
@@ -1394,6 +1434,7 @@
         "total_communication_time": 0.171671,
         "bandwidth_utilization_allgather_group_6": 0.140253,
         "bandwidth_utilization_allreduce_group_6": 330.799,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 27.1695
       }
     },
@@ -1461,6 +1502,8 @@
         "total_communication_time": 3.79839,
         "bandwidth_utilization_allgather_group_6": 0.691226,
         "bandwidth_utilization_allreduce_group_6": 0.000582978,
+        "bandwidth_utilization_alltoall_group_6": 1.79401,
+        "bandwidth_utilization_reducescatter_group_6": 5.40424,
         "compute_comm_overlap": 2.78071
       }
     },
@@ -1528,6 +1571,8 @@
         "total_communication_time": 12.0873,
         "bandwidth_utilization_allgather_group_6": 0.640605,
         "bandwidth_utilization_allreduce_group_6": 50.4074,
+        "bandwidth_utilization_alltoall_group_6": 48.3478,
+        "bandwidth_utilization_reducescatter_group_6": 27.4131,
         "compute_comm_overlap": 5.27335
       }
     },
@@ -1595,6 +1640,8 @@
         "total_communication_time": 12.9735,
         "bandwidth_utilization_allgather_group_6": 0.679365,
         "bandwidth_utilization_allreduce_group_6": 26.5272,
+        "bandwidth_utilization_alltoall_group_6": 16.5042,
+        "bandwidth_utilization_reducescatter_group_6": 20.9983,
         "compute_comm_overlap": 3.4265
       }
     },
@@ -1662,6 +1709,8 @@
         "total_communication_time": 2.89107,
         "bandwidth_utilization_allgather_group_6": 1.37671,
         "bandwidth_utilization_allreduce_group_6": 62.995,
+        "bandwidth_utilization_alltoall_group_6": 2.04143,
+        "bandwidth_utilization_reducescatter_group_6": 93.804,
         "compute_comm_overlap": 6.3137
       }
     },
@@ -1729,6 +1778,8 @@
         "total_communication_time": 3.32568,
         "bandwidth_utilization_allgather_group_6": 11.6139,
         "bandwidth_utilization_allreduce_group_6": 81.2942,
+        "bandwidth_utilization_alltoall_group_6": 1.9454,
+        "bandwidth_utilization_reducescatter_group_6": 105.889,
         "compute_comm_overlap": 1.68029
       }
     },
@@ -1796,6 +1847,8 @@
         "total_communication_time": 9.28479,
         "bandwidth_utilization_allgather_group_6": 9.36601,
         "bandwidth_utilization_allreduce_group_6": 73.5363,
+        "bandwidth_utilization_alltoall_group_6": 58.1729,
+        "bandwidth_utilization_reducescatter_group_6": 88.5209,
         "compute_comm_overlap": 4.54054
       }
     },
@@ -1861,6 +1914,8 @@
         "total_communication_time": 11.498,
         "bandwidth_utilization_allgather_group_6": 15.3382,
         "bandwidth_utilization_allreduce_group_6": 84.8103,
+        "bandwidth_utilization_alltoall_group_6": 2.37341,
+        "bandwidth_utilization_reducescatter_group_6": 105.204,
         "compute_comm_overlap": 0.348396
       }
     },
@@ -1926,6 +1981,8 @@
         "total_communication_time": 20.0744,
         "bandwidth_utilization_allgather_group_6": 9.28075,
         "bandwidth_utilization_allreduce_group_6": 101.387,
+        "bandwidth_utilization_alltoall_group_6": 2.53256,
+        "bandwidth_utilization_reducescatter_group_6": 45.0173,
         "compute_comm_overlap": 1.76157
       }
     },
@@ -1987,7 +2044,6 @@
         "memory_transfer_overhead": 16.9059,
         "communication_fraction": 55.6226,
         "total_communication_time": 169.143,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 53.8985
       }
@@ -2050,7 +2106,6 @@
         "memory_transfer_overhead": 12.8993,
         "communication_fraction": 44.7695,
         "total_communication_time": 116.164,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 87.4019
       }
@@ -2113,7 +2168,6 @@
         "memory_transfer_overhead": 23.3699,
         "communication_fraction": 44.283,
         "total_communication_time": 110.983,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 88.5467
       }
@@ -2176,7 +2230,6 @@
         "memory_transfer_overhead": 18.0467,
         "communication_fraction": 53.2851,
         "total_communication_time": 155.182,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 57.2582
       }
@@ -2242,7 +2295,6 @@
         "memory_transfer_overhead": 1.36468,
         "communication_fraction": 75.6585,
         "total_communication_time": 84.6033,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
@@ -2308,7 +2360,6 @@
         "memory_transfer_overhead": 3.26001,
         "communication_fraction": 87.6409,
         "total_communication_time": 230.225,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 14.0654
       }
@@ -2374,7 +2425,6 @@
         "memory_transfer_overhead": 5.9124,
         "communication_fraction": 84.6295,
         "total_communication_time": 178.282,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 11.8193
       }
@@ -2440,7 +2490,6 @@
         "memory_transfer_overhead": 3.02412,
         "communication_fraction": 88.9071,
         "total_communication_time": 259.943,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 9.48077
       }
@@ -2506,7 +2555,6 @@
         "memory_transfer_overhead": 5.604,
         "communication_fraction": 84.0106,
         "total_communication_time": 162.268,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 17.8791
       }
@@ -2572,7 +2620,6 @@
         "memory_transfer_overhead": 6.41185,
         "communication_fraction": 66.7988,
         "total_communication_time": 19.0716,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 20.9829
       }
@@ -2638,7 +2685,6 @@
         "memory_transfer_overhead": 1.90811,
         "communication_fraction": 87.4407,
         "total_communication_time": 227.798,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 14.2488
       }
@@ -2704,7 +2750,6 @@
         "memory_transfer_overhead": 6.12286,
         "communication_fraction": 68.7353,
         "total_communication_time": 11.1467,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 25.1346
       }
@@ -2770,7 +2815,6 @@
         "memory_transfer_overhead": 4.50039,
         "communication_fraction": 11.9033,
         "total_communication_time": 6.6318,
-        "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 16.3577
       }
@@ -2840,6 +2884,8 @@
         "total_communication_time": 8.09265,
         "bandwidth_utilization_allgather_group_6": 0.297824,
         "bandwidth_utilization_allreduce_group_6": 41.712,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 2.38862,
         "compute_comm_overlap": 1.48905
       }
     },
@@ -2908,6 +2954,8 @@
         "total_communication_time": 6.94209,
         "bandwidth_utilization_allgather_group_6": 0.292327,
         "bandwidth_utilization_allreduce_group_6": 15.9835,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 1.15,
         "compute_comm_overlap": 3.34086
       }
     },
@@ -2972,6 +3020,7 @@
         "total_communication_time": 0.0536802,
         "bandwidth_utilization_allgather_group_6": 3.53376,
         "bandwidth_utilization_allreduce_group_6": 9.00002,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 20.3386
       }
     },
@@ -3036,6 +3085,7 @@
         "total_communication_time": 0.13406,
         "bandwidth_utilization_allgather_group_6": 1.38516,
         "bandwidth_utilization_allreduce_group_6": 0.981735,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 36.4811
       }
     },
@@ -3100,6 +3150,7 @@
         "total_communication_time": 0.801672,
         "bandwidth_utilization_allgather_group_6": 158.45,
         "bandwidth_utilization_allreduce_group_6": 28.7224,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 4.16895
       }
     },
@@ -3164,6 +3215,7 @@
         "total_communication_time": 0.675494,
         "bandwidth_utilization_allgather_group_6": 215.992,
         "bandwidth_utilization_allreduce_group_6": 19.0352,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 9.43563
       }
     },
@@ -3228,6 +3280,7 @@
         "total_communication_time": 0.188792,
         "bandwidth_utilization_allgather_group_6": 196.406,
         "bandwidth_utilization_allreduce_group_6": 0.145046,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 3.33554
       }
     },
@@ -3292,6 +3345,7 @@
         "total_communication_time": 0.278726,
         "bandwidth_utilization_allgather_group_6": 166.398,
         "bandwidth_utilization_allreduce_group_6": 0.128231,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": 13.4116
       }
     },
@@ -3362,10 +3416,11 @@
         "memory_transfer_overhead": 17.2589,
         "communication_fraction": 68.3543,
         "total_communication_time": 18.1261,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3436,10 +3491,11 @@
         "memory_transfer_overhead": 11.7254,
         "communication_fraction": 37.0062,
         "total_communication_time": 24.4286,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3510,10 +3566,11 @@
         "memory_transfer_overhead": 11.594,
         "communication_fraction": 82.153,
         "total_communication_time": 53.9327,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3584,10 +3641,11 @@
         "memory_transfer_overhead": 14.1011,
         "communication_fraction": 53.6544,
         "total_communication_time": 49.4995,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3658,10 +3716,11 @@
         "memory_transfer_overhead": 11.3922,
         "communication_fraction": 58.7092,
         "total_communication_time": 7.97995,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3732,10 +3791,11 @@
         "memory_transfer_overhead": 8.0432,
         "communication_fraction": 29.5862,
         "total_communication_time": 10.5668,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3806,10 +3866,11 @@
         "memory_transfer_overhead": 12.0071,
         "communication_fraction": 57.8366,
         "total_communication_time": 7.67666,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3880,10 +3941,11 @@
         "memory_transfer_overhead": 7.92908,
         "communication_fraction": 29.526,
         "total_communication_time": 10.193,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -3954,10 +4016,11 @@
         "memory_transfer_overhead": 8.42514,
         "communication_fraction": 79.0912,
         "total_communication_time": 28.569,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4028,10 +4091,11 @@
         "memory_transfer_overhead": 6.41635,
         "communication_fraction": 49.5372,
         "total_communication_time": 29.5047,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4102,10 +4166,11 @@
         "memory_transfer_overhead": 8.92004,
         "communication_fraction": 70.6551,
         "total_communication_time": 19.3294,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4176,10 +4241,11 @@
         "memory_transfer_overhead": 6.91716,
         "communication_fraction": 46.5107,
         "total_communication_time": 27.6953,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4250,10 +4316,11 @@
         "memory_transfer_overhead": 17.3095,
         "communication_fraction": 68.4204,
         "total_communication_time": 19.7111,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4324,10 +4391,11 @@
         "memory_transfer_overhead": 11.3759,
         "communication_fraction": 38.0532,
         "total_communication_time": 25.7119,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4398,10 +4466,11 @@
         "memory_transfer_overhead": 17.0392,
         "communication_fraction": 63.7279,
         "total_communication_time": 21.2797,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4472,10 +4541,11 @@
         "memory_transfer_overhead": 14.6423,
         "communication_fraction": 46.4142,
         "total_communication_time": 38.1371,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4549,10 +4619,11 @@
         "memory_transfer_overhead": 6.94381,
         "communication_fraction": 25.4693,
         "total_communication_time": 8.94755,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4626,10 +4697,11 @@
         "memory_transfer_overhead": 6.91227,
         "communication_fraction": 46.4848,
         "total_communication_time": 27.04,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4703,10 +4775,11 @@
         "memory_transfer_overhead": 12.1582,
         "communication_fraction": 34.2631,
         "total_communication_time": 22.729,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4780,10 +4853,11 @@
         "memory_transfer_overhead": 15.8493,
         "communication_fraction": 43.9319,
         "total_communication_time": 34.0742,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4853,10 +4927,11 @@
         "memory_transfer_overhead": 6.52652,
         "communication_fraction": 39.4348,
         "total_communication_time": 22.6396,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -4930,10 +5005,11 @@
         "memory_transfer_overhead": 7.04401,
         "communication_fraction": 37.9877,
         "total_communication_time": 21.1078,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -5003,10 +5079,11 @@
         "memory_transfer_overhead": 11.4755,
         "communication_fraction": 28.8777,
         "total_communication_time": 19.4745,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -5080,10 +5157,11 @@
         "memory_transfer_overhead": 12.0274,
         "communication_fraction": 26.2337,
         "total_communication_time": 16.8723,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -5153,10 +5231,11 @@
         "memory_transfer_overhead": 18.2677,
         "communication_fraction": 62.3623,
         "total_communication_time": 38.7549,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -5230,10 +5309,11 @@
         "memory_transfer_overhead": 19.1385,
         "communication_fraction": 54.8229,
         "total_communication_time": 28.108,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -5304,10 +5384,11 @@
         "memory_transfer_overhead": 7.75539,
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": null
       }
     },
@@ -5378,10 +5459,11 @@
         "memory_transfer_overhead": 10.9813,
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": null
       }
     },
@@ -5452,10 +5534,11 @@
         "memory_transfer_overhead": 12.573,
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": null
       }
     },
@@ -5526,10 +5609,11 @@
         "memory_transfer_overhead": 12.0637,
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": null
       }
     },
@@ -5600,10 +5684,11 @@
         "memory_transfer_overhead": 15.7978,
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": null
       }
     },
@@ -5674,10 +5759,11 @@
         "memory_transfer_overhead": 13.2057,
         "communication_fraction": 0.0,
         "total_communication_time": 0.0,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": null
       }
     },
@@ -5749,10 +5835,11 @@
         "memory_transfer_overhead": 3.47641,
         "communication_fraction": 81.1883,
         "total_communication_time": 21.328,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0195752
       }
     },
@@ -5824,10 +5911,11 @@
         "memory_transfer_overhead": 3.67579,
         "communication_fraction": 53.1096,
         "total_communication_time": 20.4357,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.137059
       }
     },
@@ -5899,10 +5987,11 @@
         "memory_transfer_overhead": 15.0077,
         "communication_fraction": 74.5936,
         "total_communication_time": 16.0797,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0293409
       }
     },
@@ -5974,10 +6063,11 @@
         "memory_transfer_overhead": 7.01615,
         "communication_fraction": 41.3033,
         "total_communication_time": 18.1021,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.178739
       }
     },
@@ -6049,10 +6139,11 @@
         "memory_transfer_overhead": 11.011,
         "communication_fraction": 72.3391,
         "total_communication_time": 18.2427,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0180058
       }
     },
@@ -6124,10 +6215,11 @@
         "memory_transfer_overhead": 6.86491,
         "communication_fraction": 38.8195,
         "total_communication_time": 16.7447,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.152143
       }
     },
@@ -6199,10 +6291,11 @@
         "memory_transfer_overhead": 3.85157,
         "communication_fraction": 77.5606,
         "total_communication_time": 13.2001,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.000157575
       }
     },
@@ -6274,10 +6367,11 @@
         "memory_transfer_overhead": 3.40006,
         "communication_fraction": 48.4042,
         "total_communication_time": 16.5186,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.000154395
       }
     },
@@ -6349,10 +6443,11 @@
         "memory_transfer_overhead": 15.7895,
         "communication_fraction": 71.1534,
         "total_communication_time": 10.859,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.00278125
       }
     },
@@ -6424,10 +6519,11 @@
         "memory_transfer_overhead": 7.05656,
         "communication_fraction": 35.1457,
         "total_communication_time": 13.4198,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.174451
       }
     },
@@ -6499,10 +6595,11 @@
         "memory_transfer_overhead": 11.0528,
         "communication_fraction": 76.815,
         "total_communication_time": 23.7043,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0
       }
     },
@@ -6574,10 +6671,11 @@
         "memory_transfer_overhead": 7.1588,
         "communication_fraction": 35.706,
         "total_communication_time": 14.8535,
-        "bandwidth_utilization_alltoall_group_6": null,
-        "bandwidth_utilization_peertopeer_group_6": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 4.86889e-05
       }
     },
@@ -6644,7 +6742,645 @@
         "total_communication_time": null,
         "bandwidth_utilization_allgather_group_6": null,
         "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
         "compute_comm_overlap": null
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+        "description": "llama-3.1-8b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 32, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 32,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 8,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 10.8207,
+        "mfu": 5.2762,
+        "mean_sm_coverage": 16.838,
+        "dominant_kernel_concentration": 45.4016,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 15.8929,
+        "memory_transfer_overhead": 0.3244,
+        "communication_fraction": 89.8025,
+        "total_communication_time": 10.451,
+        "bandwidth_utilization_allgather_group_6": 0.618114,
+        "bandwidth_utilization_allreduce_group_6": 8.97463e-05,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 4.996,
+        "compute_comm_overlap": 7.91066
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+        "description": "llama-3.1-8b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 32, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node FSDP workload, indicating fallback.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 32,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 1,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 8,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 10.508,
+        "mfu": 5.4332,
+        "mean_sm_coverage": 17.0965,
+        "dominant_kernel_concentration": 45.2832,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 15.514,
+        "memory_transfer_overhead": 0.3318,
+        "communication_fraction": 89.5223,
+        "total_communication_time": 10.1407,
+        "bandwidth_utilization_allgather_group_6": 0.630872,
+        "bandwidth_utilization_allreduce_group_6": 0.000178708,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": 5.08792,
+        "compute_comm_overlap": 8.15231
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.4364,
+        "mfu": 2.5799,
+        "mean_sm_coverage": 7.62777,
+        "dominant_kernel_concentration": 53.923,
+        "moe_fraction": 0.00387095,
+        "average_memory_bandwidth": 398.792,
+        "memory_transfer_overhead": 0.0973,
+        "communication_fraction": 95.1725,
+        "total_communication_time": 12.2554,
+        "bandwidth_utilization_allgather_group_6": 4.9098,
+        "bandwidth_utilization_allreduce_group_6": 26.5259,
+        "bandwidth_utilization_alltoall_group_6": 14.0626,
+        "bandwidth_utilization_reducescatter_group_6": 2.60329,
+        "compute_comm_overlap": 4.93864
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node MoE workload, indicating fallback.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 2,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 4,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.9431,
+        "mfu": 2.4789,
+        "mean_sm_coverage": 7.45141,
+        "dominant_kernel_concentration": 52.676,
+        "moe_fraction": 0.00385149,
+        "average_memory_bandwidth": 411.299,
+        "memory_transfer_overhead": 0.0932,
+        "communication_fraction": 95.2895,
+        "total_communication_time": 12.7051,
+        "bandwidth_utilization_allgather_group_6": 0.77874,
+        "bandwidth_utilization_allreduce_group_6": 25.6882,
+        "bandwidth_utilization_alltoall_group_6": 19.4023,
+        "bandwidth_utilization_reducescatter_group_6": 4.29507,
+        "compute_comm_overlap": 4.30647
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=4.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 11.9832,
+        "mfu": 2.6775,
+        "mean_sm_coverage": 10.3779,
+        "dominant_kernel_concentration": 56.371,
+        "moe_fraction": 0.00594862,
+        "average_memory_bandwidth": 422.685,
+        "memory_transfer_overhead": 0.1042,
+        "communication_fraction": 95.2327,
+        "total_communication_time": 11.6966,
+        "bandwidth_utilization_allgather_group_6": 0.625296,
+        "bandwidth_utilization_allreduce_group_6": 58.1246,
+        "bandwidth_utilization_alltoall_group_6": 21.475,
+        "bandwidth_utilization_reducescatter_group_6": 6.80934,
+        "compute_comm_overlap": 4.55871
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node MoE workload, indicating fallback. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=4.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 4,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 12.367,
+        "mfu": 2.5944,
+        "mean_sm_coverage": 10.845,
+        "dominant_kernel_concentration": 58.6992,
+        "moe_fraction": 0.00556129,
+        "average_memory_bandwidth": 435.536,
+        "memory_transfer_overhead": 0.0997,
+        "communication_fraction": 95.5356,
+        "total_communication_time": 12.0011,
+        "bandwidth_utilization_allgather_group_6": 0.592587,
+        "bandwidth_utilization_allreduce_group_6": 60.2321,
+        "bandwidth_utilization_alltoall_group_6": 18.11,
+        "bandwidth_utilization_reducescatter_group_6": 10.5579,
+        "compute_comm_overlap": 3.80108
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. Bare-metal NCCL used Socket/TCP for scale-out in this environment. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=8.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.29.7",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 3.67276,
+        "mfu": 8.7359,
+        "mean_sm_coverage": 14.3896,
+        "dominant_kernel_concentration": 42.978,
+        "moe_fraction": 0.0239354,
+        "average_memory_bandwidth": 604.516,
+        "memory_transfer_overhead": 0.7877,
+        "communication_fraction": 89.8156,
+        "total_communication_time": 3.08812,
+        "bandwidth_utilization_allgather_group_6": 6.13854,
+        "bandwidth_utilization_allreduce_group_6": 63.7369,
+        "bandwidth_utilization_alltoall_group_6": 1.48056,
+        "bandwidth_utilization_reducescatter_group_6": 77.7193,
+        "compute_comm_overlap": 2.76243
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metadata": {
+        "workload_name": "deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "description": "deepseek-v3-16b training on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using TorchTitan. Standard workload: global batch size 8, sequence length 1024. LD_AUDIT loaded the MSCCL++ NCCL audit shim; Kineto still showed NCCL kernels for this multi-node MoE workload, indicating fallback. This variant keeps the #10 workload shape and changes DP/TP/EP to dp_shard=2,tp=4,ep=8.",
+        "hf_url": "https://huggingface.co/deepseek-ai/deepseek-moe-16b-base",
+        "trace_url": "/pscratch/sd/k/kg597/ccl-bench-traces/torchtitan-multinode/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+        "model_family": "deepseek-v3-16b",
+        "phase": "training",
+        "precision": "bf16",
+        "moe": true,
+        "granularity": "model_fwd_bwd_pass",
+        "epochs": 1,
+        "iteration": 6,
+        "batch_size": 8,
+        "seq_len": 1024,
+        "input_len": "",
+        "output_len": "",
+        "dataset": "c4_test",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "torchtitan",
+        "compiler": "pytorch-2.12.0.dev20260408+cu128, triton",
+        "tp": 4,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 2,
+        "ep": 8,
+        "cp": 1,
+        "comm_library": "MSCCL++ audit shim",
+        "comm_library_ver": "0.9.0",
+        "comm_env": {
+          "NCCL_DEBUG": "INFO",
+          "NCCL_SOCKET_IFNAME": "hsn"
+        },
+        "protocol_selection": [
+          "tcp",
+          "p2p"
+        ],
+        "trace_types": [
+          "json"
+        ],
+        "metric_traces": [
+          null
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 3.59666,
+        "mfu": 8.9208,
+        "mean_sm_coverage": 14.3965,
+        "dominant_kernel_concentration": 44.4348,
+        "moe_fraction": 0.0254934,
+        "average_memory_bandwidth": 600.976,
+        "memory_transfer_overhead": 0.8121,
+        "communication_fraction": 89.4823,
+        "total_communication_time": 3.03348,
+        "bandwidth_utilization_allgather_group_6": 3.89827,
+        "bandwidth_utilization_allreduce_group_6": 64.6965,
+        "bandwidth_utilization_alltoall_group_6": 1.58349,
+        "bandwidth_utilization_reducescatter_group_6": 77.4394,
+        "compute_comm_overlap": 2.84199
+      }
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp8-batch128-perlmutter",
+      "metadata": {
+        "workload_name": "llama-3.1-8b-vllm-tp8-batch128-perlmutter",
+        "description": "WL2 Llama-3.1-8B inference on 8 NVIDIA A100 GPUs across 2 Perlmutter nodes using vLLM TP8 + NCCL. This matches the TPU 8-chip tensor-parallel comparison point requested for cross-architecture analysis. Global batch size is 128 requests; input length is 1024 and output length is 128.",
+        "hf_url": "https://huggingface.co/meta-llama/Llama-3.1-8B",
+        "trace_url": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp8-batch128-perlmutter",
+        "model_family": "llama-3.1-8b",
+        "phase": "inference",
+        "precision": "bf16",
+        "moe": false,
+        "granularity": "model_fwd",
+        "epochs": 1,
+        "iteration": 1,
+        "batch_size": 128,
+        "seq_len": 1152,
+        "input_len": 1024,
+        "output_len": 128,
+        "dataset": "random_1024_input_128_output",
+        "hardware_type": "GPU",
+        "hardware_model": "nvidia_a100",
+        "total_count": 8,
+        "count_per_node": 4,
+        "network_topology": "slingshot",
+        "bandwidth_scaleout": 200,
+        "bandwidth_scaleup": 2400,
+        "driver_version": "cuda_12.8",
+        "framework": "vllm",
+        "compiler": "plain_pytorch",
+        "tp": 8,
+        "pp": 1,
+        "pp_mb": 1,
+        "dp_replicate": 1,
+        "dp_shard": 1,
+        "ep": 1,
+        "cp": 1,
+        "comm_library": "NCCL",
+        "comm_library_ver": "2.27.5",
+        "comm_env": {
+          "NCCL_SOCKET_IFNAME": "hsn",
+          "NCCL_DEBUG": "INFO",
+          "distributed_executor_backend": "external_launcher"
+        },
+        "protocol_selection": [
+          "slingshot",
+          "nvlink"
+        ],
+        "trace_types": [
+          "json",
+          "nsys"
+        ],
+        "metric_traces": [
+          "nsys",
+          "vllm_bench_latency"
+        ]
+      },
+      "metrics": {
+        "avg_step_time": 0.0398154,
+        "ttft": 0.0440934,
+        "tpot": 0.0398154,
+        "mfu": 2.9191,
+        "mean_sm_coverage": null,
+        "dominant_kernel_concentration": 79.004,
+        "moe_fraction": 0.0,
+        "average_memory_bandwidth": 3.79976,
+        "memory_transfer_overhead": 2.8085,
+        "communication_fraction": 93.2224,
+        "total_communication_time": 235.368,
+        "bandwidth_utilization_allgather_group_6": null,
+        "bandwidth_utilization_allreduce_group_6": null,
+        "bandwidth_utilization_alltoall_group_6": null,
+        "bandwidth_utilization_reducescatter_group_6": null,
+        "bandwidth_utilization_peertopeer_group_6": null,
+        "compute_comm_overlap": 0.0
       }
     }
   ]

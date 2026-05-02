@@ -8,7 +8,7 @@ Interface:
     result = compute_metric(run_result, optimization_goal)
     result["status"]   → "success" | "error" | "timeout" | "metric_error"
     result["metrics"]  → {metric_name: float, ...}
-    result["score"]    → float  (inf on failure; negated when direction=maximize)
+    result["score"]    → float
     result["error_msg"]→ str | None
 """
 
@@ -26,11 +26,13 @@ TOOLS_MAIN = _REPO_ROOT / "tools" / "main.py"
 
 def compute_metric(run_result: RunResult, optimization_goal: dict) -> dict:
     """Apply CCL-Bench tool scripts to collected traces → objective score."""
+    direction   = optimization_goal.get("direction", "minimize")
+    bad_score   = float("inf") if direction == "minimize" else float("-inf")
+
     if run_result.status != "success":
         return {"status": run_result.status, "error_msg": run_result.error_msg,
-                "metrics": {}, "score": float("inf")}
+                "metrics": {}, "score": bad_score}
 
-    direction   = optimization_goal.get("direction", "minimize")
     metric_cfgs = optimization_goal.get("metrics", [])
     values: dict[str, float] = {}
 
@@ -49,10 +51,8 @@ def compute_metric(run_result: RunResult, optimization_goal: dict) -> dict:
         except Exception as e:
             return {"status": "metric_error",
                     "error_msg": f"metric '{name}' failed: {e}",
-                    "metrics": values, "score": float("inf")}
+                    "metrics": values, "score": bad_score}
 
     score = sum(mc.get("weight", 1.0) * values[mc["name"]] for mc in metric_cfgs)
-    if direction == "maximize":
-        score = -score
 
     return {"status": "success", "metrics": values, "score": score, "error_msg": None}

@@ -450,6 +450,51 @@
       "trace": "/data/ccl-bench_trace_collection/nanochat-8b-pytorch-dp-2-dgx_spark",
       "metrics": "auto",
       "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama3_8b_w8_batch32_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep4_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-mscclpp-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp8-batch128-perlmutter",
+      "metrics": "auto",
+      "required_update": false
     }
   ],
   "metric_categories": [
@@ -676,7 +721,7 @@
         "high": 200,
         "mid": 50
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_allreduce_group_6": {
       "label": "AllReduce BW (GB/s)",
@@ -692,20 +737,36 @@
         "high": 200,
         "mid": 0.1
       },
-      "required_update": true
+      "required_update": false
     },
     "bandwidth_utilization_alltoall_group_6": {
-      "label": "AllToAll BW (%)",
-      "description": "Average NVLink TX throughput utilization during AllToAll operations",
+      "label": "AllToAll BW (GB/s)",
+      "description": "Median effective bandwidth for AllToAll operations",
       "higher_is_better": true,
-      "unit": "%",
+      "unit": "GB/s",
       "category": "communication",
       "trace_types": [
-        "nsys"
+        "json"
       ],
       "thresholds": {
-        "high": 50,
-        "mid": 20
+        "high": 200,
+        "mid": 50
+      },
+      "required_update": false
+    },
+    "bandwidth_utilization_reducescatter_group_6": {
+      "label": "ReduceScatter BW (GB/s)",
+      "description": "Median effective bandwidth for ReduceScatter operations",
+      "higher_is_better": true,
+      "unit": "GB/s",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "json_tpu"
+      ],
+      "thresholds": {
+        "high": 200,
+        "mid": 50
       },
       "required_update": false
     },
