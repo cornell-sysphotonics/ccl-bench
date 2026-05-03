@@ -92,3 +92,5 @@ bw_sweep_old
 scaleup_domain_sweep*
 scaleup_bw_sweep*
 combo_sweep_deepseek236b_kernels
+tpu_bw_sweep_deepseekv2_maxtext
+utility_calculation

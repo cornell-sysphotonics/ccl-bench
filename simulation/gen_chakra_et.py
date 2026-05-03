@@ -95,6 +95,21 @@ def is_nccl_kernel_name(name: str) -> bool:
     return "ncclDev" in name or "ncclKernel" in name
 
 
+def is_vllm_collective_event(event: dict) -> bool:
+    """Return true for vLLM trace annotations that represent collectives.
+
+    vLLM's custom all-reduce path does not emit NCCL GPU kernels, so comm-only
+    simulation needs to model the scoped CPU/user annotations instead.
+    """
+    if event.get("dur", 0) <= 0:
+        return False
+    name = event.get("name", "")
+    return name in {
+        "_C_custom_ar::all_reduce",
+        "nccl:_all_gather_base",
+    }
+
+
 def has_message_size_metadata(args: dict) -> bool:
     return (
         int(args.get("In msg nelems", 0) or 0) > 0
@@ -104,6 +119,20 @@ def has_message_size_metadata(args: dict) -> bool:
 
 def normalized_collective_name(args: dict) -> str:
     return args.get("Collective name", "").strip().lower().replace(" ", "_")
+
+
+def vllm_collective_name(event: dict) -> str:
+    name = event.get("name", "")
+    if "all_reduce" in name:
+        return "all_reduce"
+    if "all_gather" in name or "allgather" in name:
+        return "all_gather"
+    return ""
+
+
+def collective_name(event: dict) -> str:
+    args = event.get("args", {})
+    return normalized_collective_name(args) or vllm_collective_name(event)
 
 
 def is_tiny_sendrecv_control_event(event: dict) -> bool:
@@ -130,8 +159,16 @@ def is_nccl_collective_event(event: dict) -> bool:
     return has_message_size_metadata(args)
 
 
+def is_collective_event(event: dict) -> bool:
+    return is_nccl_collective_event(event) or is_vllm_collective_event(event)
+
+
+def is_simulatable_collective_event(event: dict) -> bool:
+    return is_collective_event(event) and not event.get("_skip_collective", False)
+
+
 def is_simulatable_nccl_collective_event(event: dict) -> bool:
-    return is_nccl_collective_event(event) and not event.get("_skip_collective", False)
+    return is_simulatable_collective_event(event)
 
 
 def stream_key(event: dict) -> str:
@@ -165,7 +202,31 @@ def comm_size_bytes(args: dict) -> int:
     return int(nelems) * elem_bytes
 
 
+def tensor_nbytes_from_kineto_args(args: dict, tensor_index: int = 0) -> int:
+    input_types = args.get("Input type", [])
+    input_dims = args.get("Input Dims", [])
+    if not isinstance(input_types, list) or not isinstance(input_dims, list):
+        return 0
+    if tensor_index >= len(input_types) or tensor_index >= len(input_dims):
+        return 0
+    dims = input_dims[tensor_index]
+    if not isinstance(dims, list) or not dims:
+        return 0
+    nelems = 1
+    for dim in dims:
+        try:
+            nelems *= int(dim)
+        except (TypeError, ValueError):
+            return 0
+    dtype = str(input_types[tensor_index]).split("::")[-1]
+    return nelems * dtype_to_bytes(dtype)
+
+
 def event_comm_size_bytes(event: dict) -> int:
+    if "_comm_size_override" in event:
+        return int(event["_comm_size_override"])
+    if is_vllm_collective_event(event):
+        return tensor_nbytes_from_kineto_args(event.get("args", {}), 1) or tensor_nbytes_from_kineto_args(event.get("args", {}), 0)
     return int(event.get("_comm_size_override", comm_size_bytes(event.get("args", {}))))
 
 
@@ -221,7 +282,7 @@ def load_trace_partial(path: Path, max_mb: int = 500) -> list:
             return []
 
 
-def nccl_event_key(event: dict) -> tuple:
+def collective_event_key(event: dict) -> tuple:
     args = event.get("args", {})
     return (
         event.get("ts", 0),
@@ -235,13 +296,19 @@ def nccl_event_key(event: dict) -> tuple:
         args.get("dtype", ""),
         args.get("In msg nelems", ""),
         args.get("Out msg nelems", ""),
+        str(args.get("Input type", "")),
+        str(args.get("Input Dims", "")),
     )
+
+
+def nccl_event_key(event: dict) -> tuple:
+    return collective_event_key(event)
 
 
 def load_nccl_events_partial(path: Path) -> list:
     return [
         event for event in load_trace_partial(path)
-        if is_nccl_collective_event(event)
+        if is_collective_event(event)
     ]
 
 
@@ -257,7 +324,7 @@ def collect_nccl_annotations(events_by_rank: dict[int, list]) -> dict[int, dict[
                 if key in event
             }
             if annotations:
-                rank_annotations[nccl_event_key(event)] = annotations
+                rank_annotations[collective_event_key(event)] = annotations
         annotations_by_rank[rank] = rank_annotations
     return annotations_by_rank
 
@@ -266,8 +333,8 @@ def apply_nccl_annotations(events: list, annotations: dict[tuple, dict]) -> None
     if not annotations:
         return
     for event in events:
-        if is_nccl_collective_event(event):
-            event.update(annotations.get(nccl_event_key(event), {}))
+        if is_collective_event(event):
+            event.update(annotations.get(collective_event_key(event), {}))
 
 
 def extract_nccl_events_by_pg(
@@ -289,7 +356,7 @@ def extract_nccl_events_by_pg(
     """
     by_pg: dict[int, list] = {}
     for e in events:
-        if not is_simulatable_nccl_collective_event(e):
+        if not is_simulatable_collective_event(e):
             continue
         pg_ranks = parse_pg_ranks(e.get("args", {}).get("Process Group Ranks", ""))
         if pg_ranks is not None:
@@ -349,7 +416,7 @@ def make_comm_node(
     group_npus: dict[int, list[int]],
 ) -> tuple[ChakraNode | None, int | None]:
     args = event.get("args", {})
-    coll_name = args.get("Collective name", "")
+    coll_name = args.get("Collective name", "") or vllm_collective_name(event)
     kernel_name = event.get("name", "")
 
     ctype = infer_collective_type(kernel_name, coll_name)
@@ -443,7 +510,7 @@ def _build_ordered_gap_graph(
     """
     ordered_events = [
         event for event in events
-        if is_simulatable_nccl_collective_event(event)
+        if is_simulatable_collective_event(event)
     ]
     ordered_events.sort(
         key=lambda event: (
@@ -523,10 +590,10 @@ def _build_kernel_graph(
 
     kernel_events = [
         e for e in events
-        if is_gpu_kernel_event(e)
+        if (is_gpu_kernel_event(e) or is_vllm_collective_event(e))
         and (
             not is_nccl_kernel_name(e.get("name", ""))
-            or is_simulatable_nccl_collective_event(e)
+            or is_simulatable_collective_event(e)
         )
     ]
     kernel_events.sort(key=lambda e: (e.get("ts", 0), e.get("dur", 0), e.get("name", "")))
@@ -552,7 +619,7 @@ def _build_kernel_graph(
         stream_dep = prev_by_stream.get(skey)
         rank_dep = prev_by_rank
 
-        if is_simulatable_nccl_collective_event(ev):
+        if is_simulatable_collective_event(ev):
             comm_order = (
                 int(ev["_global_comm_order"])
                 if "_global_comm_order" in ev else None
@@ -656,7 +723,7 @@ def annotate_global_comm_order(
     for rank in sorted(events_by_rank):
         by_pg: dict[int, list] = {}
         for event in events_by_rank[rank]:
-            if not is_nccl_collective_event(event):
+            if not is_collective_event(event):
                 continue
             event["_trace_rank"] = rank
             pg_ranks = parse_pg_ranks(
@@ -687,13 +754,17 @@ def annotate_global_comm_order(
         ctypes = {
             infer_collective_type(
                 event.get("name", ""),
-                event.get("args", {}).get("Collective name", ""),
+                event.get("args", {}).get("Collective name", "") or vllm_collective_name(event),
             )
             for event in events
         }
-        coll_names = {normalized_collective_name(event.get("args", {})) for event in events}
-        dtypes = {event.get("args", {}).get("dtype", "") for event in events}
-        sizes = {comm_size_bytes(event.get("args", {})) for event in events}
+        coll_names = {collective_name(event) for event in events}
+        dtypes = {
+            event.get("args", {}).get("dtype", "")
+            or str(event.get("args", {}).get("Input type", ""))
+            for event in events
+        }
+        sizes = {event_comm_size_bytes(event) for event in events}
         if (
             present_ranks != expected_ranks
             or len(ctypes) != 1
@@ -708,7 +779,7 @@ def annotate_global_comm_order(
             # AstraSim's ALL_TO_ALL node expects the same comm_size on every rank.
             # all_to_allv traces carry per-rank byte counts, so use the largest
             # observed payload for this logical collective as a conservative model.
-            size_bytes = max(comm_size_bytes(event.get("args", {})) for event in events)
+            size_bytes = max(event_comm_size_bytes(event) for event in events)
             for event in events:
                 event["_comm_size_override"] = size_bytes
 
@@ -891,8 +962,8 @@ def main():
     et_ranks = []
     for rank in sorted(nccl_events_by_rank):
         events = nccl_events_by_rank[rank]
-        if not any(is_simulatable_nccl_collective_event(e) for e in events):
-            print(f"  rank {rank}: no NCCL events found")
+        if not any(is_simulatable_collective_event(e) for e in events):
+            print(f"  rank {rank}: no supported collective events found")
             continue
         et_ranks.append(rank)
 
