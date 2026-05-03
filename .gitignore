@@ -8,6 +8,21 @@ dist/*
 .vscode
 .vs
 
+# Python environments and dependency caches
+.venv/
+venv/
+env/
+**/.venv/
+**/venv/
+**/env/
+**/*_env/
+**/site-packages/
+pyvenv.cfg
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # data
 data
 out
@@ -25,8 +40,6 @@ torchtitan/experiments/flux/assets/*
 *.log
 error.json
 _remote_module_non_scriptable.py
-
-env
 
 nsys-res/*
 topology.xml
@@ -57,11 +70,14 @@ trace_collection_bad/*/*/*.json
 trace_collection_bad/*/*/*
 .json
 *.nsys-rep
+*.qdrep
+*.qdstrm
 *.sqlite
 *.zip
 tmp* 
 *.json.gz
 *.trace.json
+*.pt.trace.json
 
 API_KEY
 
