@@ -1332,10 +1332,14 @@ const S = {
   data:     null,
   cols:     [],
   rows:     [],      // all rows, augmented with __idx
+  rowByIdx: new Map(),
   visible:  [],      // after filter + sort
   sort:     { col: null, dir: 1 },
   filter:   '',
   selected: new Set(),  // up to 2 row __idx values for compare
+  backend:  'static',
+  querySeq: 0,
+  totalRows: 0,
 };
 
 // ── Metadata columns shown left of the metric columns ────────────────────────
@@ -1375,6 +1379,14 @@ function fmtDate(iso) {
   try {
     return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   } catch { return iso; }
+}
+
+function rememberRows(rows) {
+  rows.forEach(row => S.rowByIdx.set(row.__idx, row));
+}
+
+function getRow(idx) {
+  return S.rowByIdx.get(idx) || S.rows[idx];
 }
 
 function isInferenceMeta(m) {
@@ -1532,11 +1544,51 @@ function applyFilterSort() {
   }
 
   S.visible = rows;
+  S.totalRows = S.rows.length;
+}
+
+async function loadSqlBootstrap() {
+  try {
+    const response = await fetch('/api/bootstrap', { cache: 'no-store' });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function fetchSqlRows() {
+  const params = new URLSearchParams();
+  if (S.filter) params.set('search', S.filter);
+  if (S.sort.col) {
+    params.set('sort_key', S.sort.col.key);
+    params.set('sort_dir', String(S.sort.dir));
+  }
+  params.set('limit', '5000');
+
+  const response = await fetch('/api/rows?' + params.toString(), { cache: 'no-store' });
+  if (!response.ok) throw new Error('SQL row query failed');
+  return await response.json();
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() {
-  applyFilterSort();
+async function renderAll() {
+  if (S.backend === 'sql') {
+    const seq = ++S.querySeq;
+    try {
+      const payload = await fetchSqlRows();
+      if (seq !== S.querySeq) return;
+      S.visible = (payload.rows || []).map(r => ({ ...r, __idx: r.__idx ?? 0 }));
+      rememberRows(S.visible);
+      S.totalRows = payload.total ?? S.rows.length;
+    } catch (err) {
+      console.warn('Falling back to static data after SQL query failure:', err);
+      S.backend = 'static';
+      applyFilterSort();
+    }
+  } else {
+    applyFilterSort();
+  }
   renderHead();
   renderBody();
   updateCount();
@@ -1670,10 +1722,11 @@ function renderBody() {
 }
 
 function updateCount() {
-  const total = S.rows.length;
+  const total = S.totalRows || S.rows.length;
   const shown = S.visible.length;
+  const backend = S.backend === 'sql' ? 'SQL' : 'static';
   document.getElementById('filter-count').textContent =
-    S.filter ? `Showing ${shown} of ${total} workloads` : '';
+    S.filter ? `Showing ${shown} of ${total} workloads (${backend})` : `${backend} backend`;
 }
 
 // ── Sort ──────────────────────────────────────────────────────────────────────
@@ -1697,7 +1750,7 @@ document.getElementById('search').addEventListener('input', e => {
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 function showModal(idx) {
-  const row = S.rows[idx];
+  const row = getRow(idx);
   if (!row) return;
   const m  = row.metadata;
   const mi = S.data.metric_info || {};
@@ -1973,7 +2026,7 @@ function updateCompareBar() {
   bar.classList.add('visible');
 
   const names = [...S.selected].map(i => {
-    const r = S.rows[i];
+    const r = getRow(i);
     return r ? (r.metadata.workload_name || `#${i}`) : `#${i}`;
   });
   document.getElementById('compare-bar-names').textContent = names.join('  vs.  ');
@@ -1988,7 +2041,8 @@ function updateCompareBar() {
 function showCompare() {
   const idxs = [...S.selected];
   if (idxs.length < 2) return;
-  const rows = idxs.map(i => S.rows[i]);
+  const rows = idxs.map(i => getRow(i)).filter(Boolean);
+  if (rows.length < 2) return;
   const n    = rows.length;
   const mi   = (S.data && S.data.metric_info) || {};
 
@@ -2119,17 +2173,23 @@ open website/index.html</pre>
     </div>`;
 }
 
-function init() {
-  if (typeof BENCHMARK_DATA === 'undefined' || BENCHMARK_DATA === null) {
+async function init() {
+  const sqlData = await loadSqlBootstrap();
+  if (sqlData && Array.isArray(sqlData.rows)) {
+    S.backend = 'sql';
+    S.data = sqlData;
+  } else if (typeof BENCHMARK_DATA !== 'undefined' && BENCHMARK_DATA !== null) {
+    S.backend = 'static';
+    S.data = BENCHMARK_DATA;
+  } else {
     showNoData();
     return;
   }
 
-  S.data = BENCHMARK_DATA;
-
   // Header timestamp
   document.getElementById('gen-ts').textContent =
-    'Generated ' + fmtDate(S.data.generated_at);
+    'Generated ' + fmtDate(S.data.generated_at) +
+    (S.backend === 'sql' ? ' · SQLite backend' : ' · static data.js');
 
   // Stats strip
   const nRows    = S.data.rows.length;
@@ -2168,7 +2228,10 @@ function init() {
     <div class="stats-chips">${chipGroups.join(' ')}</div>`;
 
   // Rows
-  S.rows = S.data.rows.map((r, i) => ({ ...r, __idx: i }));
+  S.rows = S.data.rows.map((r, i) => ({ ...r, __idx: r.__idx ?? i }));
+  S.rowByIdx = new Map();
+  rememberRows(S.rows);
+  S.totalRows = S.rows.length;
 
   // Columns
   S.cols = buildCols(S.data.all_metrics, mi, S.data.metric_categories || []);

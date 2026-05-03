@@ -11,9 +11,9 @@ Input:
 Output:
     website/benchmark_data.sqlite
 
-This is intentionally additive. The current production website still loads
-website/data.js, while website/sql_demo.html can load the SQLite file and use
-real SQL queries for filtering and sorting.
+This is intentionally compatible with the static path. index.html uses the
+SQLite API when served by website/local_server.py and falls back to data.js
+when opened statically.
 """
 
 from __future__ import annotations

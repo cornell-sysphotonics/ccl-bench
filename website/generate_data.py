@@ -22,9 +22,11 @@ Incremental updates (via benchmark_config.json flags):
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
+from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -34,6 +36,33 @@ try:
 except ImportError:
     print("Error: PyYAML not found. Install with: pip install pyyaml")
     sys.exit(1)
+
+
+# ── Path helpers ──────────────────────────────────────────────────────────────
+
+DEFAULT_TRACE_ROOT = "/data/ccl-bench_trace_collection"
+
+
+def resolve_trace_dir(config_trace: str, trace_root: str | None) -> str:
+    """
+    Resolve a configured trace path to a local path.
+
+    Existing absolute/relative paths are used as-is. If a path from the shared
+    /data trace store is not present locally, --trace-root or CCLBENCH_TRACE_ROOT
+    can remap it by basename:
+
+        /data/ccl-bench_trace_collection/foo -> $CCLBENCH_TRACE_ROOT/foo
+    """
+    configured = Path(config_trace)
+    if configured.exists() or not trace_root:
+        return config_trace
+
+    trace_base = Path(trace_root).expanduser()
+    if config_trace.startswith(DEFAULT_TRACE_ROOT + "/"):
+        return str(trace_base / Path(config_trace).name)
+    if configured.is_absolute():
+        return str(trace_base / configured.name)
+    return str(trace_base / config_trace)
 
 
 # ── YAML helpers ──────────────────────────────────────────────────────────────
@@ -197,12 +226,32 @@ def load_cache(json_path: Path) -> dict[str, dict]:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+def parse_args() -> object:
+    parser = ArgumentParser(description="Generate CCL-Bench website data.")
+    parser.add_argument(
+        "--config",
+        default="website/benchmark_config.json",
+        help="Benchmark config JSON path. Default: website/benchmark_config.json",
+    )
+    parser.add_argument(
+        "--trace-root",
+        default=os.environ.get("CCLBENCH_TRACE_ROOT"),
+        help=(
+            "Local trace root used to remap configured /data trace paths. "
+            "Can also be set with CCLBENCH_TRACE_ROOT."
+        ),
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
+
     if not Path("tools/main.py").exists():
         print("Error: Run this script from the repository root (where tools/main.py lives).")
         sys.exit(1)
 
-    config_path = Path("website/benchmark_config.json")
+    config_path = Path(args.config)
     if not config_path.exists():
         print(f"Error: {config_path} not found.")
         sys.exit(1)
@@ -233,7 +282,8 @@ def main() -> None:
     work_items  = []   # (trace_dir, metric) pairs that need fresh computation
 
     for i, entry in enumerate(pairs):
-        trace_dir        = entry["trace"]
+        config_trace     = entry["trace"]
+        trace_dir        = resolve_trace_dir(config_trace, args.trace_root)
         metrics_spec     = entry.get("metrics", "auto")
         trace_needs_full = entry.get("required_update", True)
         name             = Path(trace_dir).name
@@ -263,7 +313,7 @@ def main() -> None:
         else:
             metrics = metrics_spec
 
-        cached_metrics = cache.get(trace_dir, {})
+        cached_metrics = cache.get(trace_dir, cache.get(config_trace, {}))
         to_compute = []
         to_cache   = []
 
