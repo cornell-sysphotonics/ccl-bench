@@ -20,15 +20,17 @@ echo "Mode: comm-only, compute-model=gap"
 echo "Fixed scale-up: Ring, ${INTRA_BW} GB/s, ${INTRA_LAT} ns"
 echo
 
-SUMMARY="$REPO/simulation/examples/bw_sweep/bandwidth_sweep_summary.tsv"
+SUMMARY="$REPO/simulation/examples/bw_sweep_kernels/bandwidth_sweep_summary.tsv"
 mkdir -p "$(dirname "$SUMMARY")"
 printf "bandwidth_GBps\tstep_ms\tcomm_fraction_pct\n" > "$SUMMARY"
 
-PREV_OUTDIR=""
+PREV_OUTDIR="scaleup_bw_sweep_kernels/su_ep32_32_bw112.5_FullyConnected_interSwitch"
+# PREV_OUTDIR="scaleup_bw_sweep_kernels/su_ep8_8_bw112.5_FullyConnected_interSwitch"
 for BW in 1.25 5 12.5 25 50 100 200; do
     # OUTDIR="$REPO/simulation/examples/ccl_bench_sim_bw${BW}_ep8"
     # OUTDIR="$REPO/simulation/examples/ccl_bench_sim_bw${BW}_ep4_kernels"
-    OUTDIR="$REPO/simulation/examples/bw_sweep/bw_sweep_ep32_${BW}"
+    OUTDIR="$REPO/simulation/examples/bw_sweep_kernels/bw_sweep_ep32_${BW}"
+    # OUTDIR="$REPO/simulation/examples/bw_sweep_kernels/bw_sweep_ep8_${BW}"
     REUSE_ARGS=()
     if [ -n "$PREV_OUTDIR" ]; then
         REUSE_ARGS=(--reuse-et-from "$PREV_OUTDIR")
@@ -50,7 +52,8 @@ for BW in 1.25 5 12.5 25 50 100 200; do
         --bandwidth "$BW" \
         --latency 50000 \
         --collective-algo ring \
-        --compute-model gap \
+        --compute-model kernels \
+        --kernel-dependency-mode rank \
         2>&1 | tee "$LOG"
     grep -E "Simulated step|[Cc]omm fraction|ERROR|Reused .*Chakra ET|Generating Chakra ET" "$LOG" || true
 
@@ -86,13 +89,13 @@ NR >= 2 {
     last_step = $2
     last_improve = improve
 }
-END {
-    if (NR >= 2) {
-        total_delta = base_step - last_step
-        printf "\n"
-        printf "Main readout: %.2fx inter-node bandwidth (%s -> %s GB/s) changes simulated step by %.1f ms (%.2f%%).\n", last_bw / base_bw, base_bw, last_bw, total_delta, last_improve
-        printf "Interpretation: comm-only gap replay is fixed; only exposed COMM_COLL_NODE time is bandwidth-sensitive.\n"
-        printf "Summary TSV: %s\n", summary_path
-    }
-}
+	END {
+	    if (NR >= 2) {
+	        total_delta = base_step - last_step
+	        printf "\n"
+	        printf "Main readout: %.2fx inter-node bandwidth (%s -> %s GB/s) changes simulated step by %.1f ms (%.2f%%).\n", last_bw / base_bw, base_bw, last_bw, total_delta, last_improve
+	        printf "Interpretation: kernels+rank replay keeps measured kernel/gap timing fixed while re-simulating COMM_COLL_NODE time under each bandwidth.\n"
+	        printf "Summary TSV: %s\n", summary_path
+	    }
+	}
 ' summary_path="$SUMMARY" "$SUMMARY"

@@ -272,6 +272,16 @@ def add_ctrl_dep(node: ChakraNode, dep_id: int | None) -> None:
         node.ctrl_deps.append(dep_id)
 
 
+def validate_ctrl_deps(nodes: list[ChakraNode], rank: int) -> None:
+    node_ids = {node.id for node in nodes}
+    for node in nodes:
+        for dep_id in node.ctrl_deps:
+            if dep_id not in node_ids:
+                raise ValueError(
+                    f"rank {rank}: node {node.id} has missing ctrl_dep {dep_id}"
+                )
+
+
 def make_comm_node(
     node_id: int,
     event: dict,
@@ -432,6 +442,9 @@ def _build_kernel_graph(
     Dependencies always preserve CUDA stream order. In rank dependency mode,
     nodes also depend on the previously emitted kernel on the same rank, which
     constructs explicit compute↔communication ordering from trace timestamps.
+    Positive idle intervals between emitted kernels are replayed as gap COMP_NODEs:
+    rank mode inserts one rank-local gap chain, while stream mode inserts gaps
+    on each CUDA stream independently.
     Collective nodes also depend on the previous collective in the same process
     group. ASTRA's analytical frontend has one GPU comm slot per rank; a
     rank-local comm order avoids deadlocks where different ranks hold different
@@ -440,7 +453,9 @@ def _build_kernel_graph(
     nodes = []
     node_id = node_id_start
     prev_by_stream: dict[str, int] = {}
+    prev_end_by_stream: dict[str, float] = {}
     prev_by_rank: int | None = None
+    prev_rank_end_ts: float | None = None
     prev_rank_comm_order: int | None = None
     prev_comm_by_pg: dict[int, int] = {}
     comm_nodes_by_order: dict[int, ChakraNode] = {}
@@ -456,48 +471,102 @@ def _build_kernel_graph(
     ]
     kernel_events.sort(key=lambda e: (e.get("ts", 0), e.get("dur", 0), e.get("name", "")))
 
+    def insert_gap(dep_id: int | None, gap_us: float) -> int | None:
+        nonlocal node_id
+        if dep_id is None or gap_us <= 0:
+            return dep_id
+        gap = make_compute_node(
+            node_id, {"name": "gap", "dur": gap_us}, name_prefix="compute"
+        )
+        add_ctrl_dep(gap, dep_id)
+        nodes.append(gap)
+        gap_id = node_id
+        node_id += 1
+        return gap_id
+
     for ev in kernel_events:
         skey = stream_key(ev)
         name = ev.get("name", "")
+        ts = ev.get("ts", 0)
+        dur = ev.get("dur", 0)
+        stream_dep = prev_by_stream.get(skey)
+        rank_dep = prev_by_rank
 
         if is_simulatable_nccl_collective_event(ev):
-            node, pg_id = make_comm_node(node_id, ev, group_registry, group_npus)
-            if node is None:
-                continue
             comm_order = (
                 int(ev["_global_comm_order"])
                 if "_global_comm_order" in ev else None
             )
-            add_ctrl_dep(node, prev_by_stream.get(skey))
-            if (
+            rank_dep_allowed = (
                 kernel_dependency_mode == "rank"
                 and (
                     comm_order is None
                     or prev_rank_comm_order is None
                     or prev_rank_comm_order <= comm_order
                 )
-            ):
-                add_ctrl_dep(node, prev_by_rank)
+            )
+            if kernel_dependency_mode == "stream":
+                stream_dep = insert_gap(
+                    stream_dep, ts - prev_end_by_stream.get(skey, ts)
+                )
+            elif rank_dep_allowed:
+                rank_dep = insert_gap(
+                    rank_dep, ts - prev_rank_end_ts
+                    if prev_rank_end_ts is not None else 0
+                )
+
+            node, pg_id = make_comm_node(node_id, ev, group_registry, group_npus)
+            if node is None:
+                continue
+            add_ctrl_dep(node, stream_dep)
+            if rank_dep_allowed:
+                add_ctrl_dep(node, rank_dep)
             if pg_id is not None and pg_id in prev_comm_by_pg:
                 add_ctrl_dep(node, prev_comm_by_pg[pg_id])
             nodes.append(node)
-            prev_by_stream[skey] = node_id
-            prev_by_rank = node_id
+            current_node_id = node.id
+            prev_by_stream[skey] = current_node_id
+            prev_by_rank = current_node_id
+            prev_end_by_stream[skey] = max(
+                prev_end_by_stream.get(skey, ts), ts + dur
+            )
+            prev_rank_end_ts = max(
+                prev_rank_end_ts if prev_rank_end_ts is not None else ts,
+                ts + dur,
+            )
             prev_rank_comm_order = comm_order
             if pg_id is not None:
-                prev_comm_by_pg[pg_id] = node_id
+                prev_comm_by_pg[pg_id] = current_node_id
             if "_global_comm_order" in ev:
                 comm_nodes_by_order[int(ev["_global_comm_order"])] = node
             node_id += 1
             n_comm += 1
         elif not is_nccl_kernel_name(name):
+            if kernel_dependency_mode == "stream":
+                stream_dep = insert_gap(
+                    stream_dep, ts - prev_end_by_stream.get(skey, ts)
+                )
+            elif kernel_dependency_mode == "rank":
+                rank_dep = insert_gap(
+                    rank_dep, ts - prev_rank_end_ts
+                    if prev_rank_end_ts is not None else 0
+                )
+
             node = make_compute_node(node_id, ev, name_prefix="kernel")
-            add_ctrl_dep(node, prev_by_stream.get(skey))
+            add_ctrl_dep(node, stream_dep)
             if kernel_dependency_mode == "rank":
-                add_ctrl_dep(node, prev_by_rank)
+                add_ctrl_dep(node, rank_dep)
             nodes.append(node)
-            prev_by_stream[skey] = node_id
-            prev_by_rank = node_id
+            current_node_id = node.id
+            prev_by_stream[skey] = current_node_id
+            prev_by_rank = current_node_id
+            prev_end_by_stream[skey] = max(
+                prev_end_by_stream.get(skey, ts), ts + dur
+            )
+            prev_rank_end_ts = max(
+                prev_rank_end_ts if prev_rank_end_ts is not None else ts,
+                ts + dur,
+            )
             node_id += 1
 
     prev_order_node_id = None
@@ -661,6 +730,8 @@ def generate_et(
         n_pgs = len(group_npus)
     else:
         raise ValueError(f"unknown compute model: {compute_model}")
+
+    validate_ctrl_deps(all_nodes, rank)
 
     with open(et_path, "wb") as f:
         encode_message(f, GlobalMetadata(version="0.0.4"))
