@@ -4,9 +4,9 @@ Generate Chakra Execution Trace (.et) files from kineto-only rankN_trace.json fi
 
 Runs inside the astra-sim Docker container where the chakra package is installed.
 Extracts NCCL collective operations from each rank's trace and emits Chakra ET
-nodes. The default compute model inserts measured gap COMP_NODEs between
-collectives. The kernels compute model emits non-NCCL GPU kernels as replayed
-COMP_NODEs.
+nodes. The default compute model inserts measured rank-local gap COMP_NODEs
+between globally ordered collectives. The kernels compute model emits non-NCCL
+GPU kernels as replayed COMP_NODEs.
 
 Process group information is extracted from the "Process Group Ranks" field of NCCL
 kernel events and used to:
@@ -357,6 +357,68 @@ def _build_pg_chain(
     return nodes, node_id, comm_nodes_by_order
 
 
+def _build_ordered_gap_graph(
+    events: list,
+    node_id_start: int,
+    group_registry: dict[tuple, int],
+    group_npus: dict[int, list[int]],
+) -> tuple[list, int, int]:
+    """Build one rank-local COMP+COMM chain sorted by canonical collective order.
+
+    Older gap-mode ETs built one independent timeline per process group, then
+    added cross-PG ordering dependencies. That can count the same wall-clock
+    idle interval once per PG and create a large bandwidth-insensitive replay
+    floor. This graph has a single gap timeline per rank, so measured gaps are
+    replayed once while COMM_COLL_NODEs still carry their process-group IDs.
+    """
+    ordered_events = [
+        event for event in events
+        if is_simulatable_nccl_collective_event(event)
+    ]
+    ordered_events.sort(
+        key=lambda event: (
+            int(event.get("_global_comm_order", 10**18)),
+            event.get("ts", 0),
+            event.get("dur", 0),
+            event.get("name", ""),
+        )
+    )
+
+    nodes = []
+    node_id = node_id_start
+    prev_end_ts = None
+    prev_node_id = None
+    seen_pgs: set[int] = set()
+
+    for event in ordered_events:
+        ts = event.get("ts", 0)
+        dur = event.get("dur", 0)
+
+        if prev_end_ts is not None:
+            gap_us = max(0.0, ts - prev_end_ts)
+            if gap_us > 0:
+                comp = make_compute_node(
+                    node_id, {"name": "gap", "dur": gap_us}, name_prefix="compute"
+                )
+                add_ctrl_dep(comp, prev_node_id)
+                nodes.append(comp)
+                prev_node_id = node_id
+                node_id += 1
+
+        comm, pg_id = make_comm_node(node_id, event, group_registry, group_npus)
+        if comm is None:
+            continue
+        add_ctrl_dep(comm, prev_node_id)
+        nodes.append(comm)
+        prev_node_id = node_id
+        node_id += 1
+        prev_end_ts = ts + dur
+        if pg_id is not None:
+            seen_pgs.add(pg_id)
+
+    return nodes, node_id, len(seen_pgs)
+
+
 def _build_kernel_graph(
     rank: int,
     events: list,
@@ -555,17 +617,20 @@ def generate_et(
 ) -> int:
     """Write one Chakra ET file for the given rank. Returns number of collective nodes.
 
-    Each process group becomes an independent node chain. Within a chain, collectives
-    are ordered by timestamp; compute gaps capture idle time between consecutive
-    collectives in that group. Cross-chain global ordering ctrl_deps are added to
-    ensure all ranks enter each collective in a consistent order, preventing AstraSim
-    deadlocks when a collective spans all ranks (e.g., MoE AllToAll across all GPUs).
+    In gap mode, collectives become one rank-local ordered chain. Compute gaps
+    capture idle time between consecutive NCCL collectives once per rank, and
+    COMM_COLL_NODEs carry process-group IDs for AstraSim. The legacy pg-gap mode
+    keeps the older independent-PG-chain behavior for comparison.
     """
     et_path = output_dir / f"chakra_trace.{rank}.et"
     all_nodes = []
     node_id = 0
 
     if compute_model == "gap":
+        all_nodes, node_id, n_pgs = _build_ordered_gap_graph(
+            events, node_id, group_registry, group_npus
+        )
+    elif compute_model == "pg-gap":
         events_by_pg = extract_nccl_events_by_pg(events, group_registry, group_npus)
         all_comm_nodes_by_order: dict[int, int] = {}
         for pg_id in sorted(events_by_pg):
@@ -604,10 +669,19 @@ def generate_et(
 
     n_comm = sum(1 for n in all_nodes if n.type == COMM_COLL_NODE)
     n_comp = len(all_nodes) - n_comm
-    comp_label = "compute gap" if compute_model == "gap" else "kernel compute"
+    comp_label = (
+        "compute gap"
+        if compute_model in {"gap", "pg-gap"}
+        else "kernel compute"
+    )
+    graph_label = (
+        f"{n_pgs} process group(s), ordered rank gap chain"
+        if compute_model == "gap"
+        else f"{n_pgs} independent PG chain(s)"
+    )
     print(f"  rank {rank}: {n_comm} collective nodes, "
           f"{n_comp} {comp_label} nodes, "
-          f"{n_pgs} independent PG chain(s) → {et_path.name}")
+          f"{graph_label} → {et_path.name}")
     return n_comm
 
 
@@ -628,8 +702,10 @@ def main():
     parser.add_argument("--trace-dir", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--ranks", required=True, help="Comma-separated rank indices")
-    parser.add_argument("--compute-model", choices=["gap", "kernels"], default="gap",
-                        help="gap: insert measured gaps between collectives; "
+    parser.add_argument("--compute-model", choices=["gap", "pg-gap", "kernels"], default="gap",
+                        help="gap: insert measured rank-local gaps between globally "
+                             "ordered collectives; pg-gap: legacy per-process-group "
+                             "gap chains; "
                              "kernels: replay non-NCCL GPU kernels as COMP_NODEs")
     parser.add_argument("--kernel-dependency-mode", choices=["rank", "stream"], default="rank",
                         help="kernels mode only: rank serializes emitted compute and "

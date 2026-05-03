@@ -371,10 +371,11 @@ Examples:
                         help="Trace directory path")
     parser.add_argument("--mode", default="full", choices=["full", "comm-only"],
                         help="full: needs pytorch_et+kineto; comm-only: needs rankN_trace.json only")
-    parser.add_argument("--compute-model", default="gap", choices=["gap", "kernels"],
-                        help="comm-only compute model: gap inserts measured gaps between "
-                             "collectives; kernels replays non-NCCL GPU kernels as "
-                             "COMP_NODEs (default: gap)")
+    parser.add_argument("--compute-model", default="gap", choices=["gap", "pg-gap", "kernels"],
+                        help="comm-only compute model: gap inserts measured rank-local "
+                             "gaps between globally ordered collectives; pg-gap keeps "
+                             "legacy per-process-group gap chains; kernels replays "
+                             "non-NCCL GPU kernels as COMP_NODEs (default: gap)")
     parser.add_argument("--kernel-dependency-mode", default="rank",
                         choices=["rank", "stream"],
                         help="comm-only kernels model dependency mode: rank adds "
