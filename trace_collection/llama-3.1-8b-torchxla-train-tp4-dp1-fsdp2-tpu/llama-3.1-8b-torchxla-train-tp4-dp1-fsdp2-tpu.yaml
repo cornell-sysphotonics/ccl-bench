@@ -1,0 +1,63 @@
+# workload_template.yaml
+version: 1
+
+description: >
+  Llama-3.1-8B model training on TPU using TorchXLA framework.
+  Configuration: Tensor Parallelism TP=4, Data Parallelism DP=1, FSDP (dp_shard)=2.
+  Total 8 TPU chips (tp=4 * dp_replicate=1 * dp_shard=2).
+  The trace contains one training iteration (forward + backward pass).
+
+hf_url: https://huggingface.co/meta-llama/Llama-3.1-8B
+trace_url: /data/ccl-bench_trace_collection/llama-3.1-8b-torchxla-train-tp4-dp1-fsdp2-tpu/t1v-n-de1aacd6-w-0.trace.json
+
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1-8b
+    precision: bf16
+    epochs: 1
+    iteration: 1
+  data:
+    batch_size: 32
+    seq_len: 1024
+    dataset: c4
+  hardware:
+    network_topo:
+      topology: torus
+      bandwidth_gbps:
+        - N/A
+        - 800
+    xpu_spec:
+      type: TPU
+      model: tpu_v6e
+      total_count: 8
+      count_per_node: 8
+    driver_version: v2-alpha-tpuv6e
+
+Model-executor:
+  framework:
+    name: torchxla
+    compiler_tool_selection: xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 2
+    tp: 4
+    pp: 1
+    cp: 1
+  communication_library:
+    name: xla
+    version:
+    env:
+      JAX_PLATFORMS: ""
+      PJRT_DEVICE: "TPU"
+  protocol_selection:
+    - xla_collectives
+    - ici
+
+metric_source:
+  traces:
+    - json_tpu
+  metrics_specific_trace:
+    -

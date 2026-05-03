@@ -123,3 +123,5 @@ Performance metric extraction and plotting scripts are available in the `tools/`
 6. `llama_31_8b-megatron_lm-dp_4-tp_2-perlmutter-group_1`
 7. `mistral_7b_instruct_v02-megatron_lm-dp_2-tp_2-pp_2-perlmutter-group_1`
 8. `mistral_7b_instruct_v02-megatron_lm-dp_2-tp_4-perlmutter-group_1`
+19. `[llama-3.1-8b-torchxla-train-tp4-dp1-fsdp2-tpu](./llama-3.1-8b-torchxla-train-tp4-dp1-fsdp2-tpu)`: Training of Llama-3.1-8B on 8 TPU chips with TP=4, DP=1, FSDP (dp_shard)=2.
+20. `[deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu](./deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu)`: Training of DeepSeek-V2 16B MoE on 8 TPU v6e chips with TP=2, EP=4, DP=1 using MaxText.

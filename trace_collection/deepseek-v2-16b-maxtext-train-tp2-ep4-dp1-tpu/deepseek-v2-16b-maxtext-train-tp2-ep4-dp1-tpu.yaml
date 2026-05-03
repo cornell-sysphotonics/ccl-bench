@@ -1,0 +1,63 @@
+version: 1
+
+description: >
+  DeepSeek-V2 16B MoE model training on TPU v6e-8 using MaxText framework.
+  Configuration: Tensor Parallelism TP=2, Expert Parallelism EP=4, Data Parallelism DP=1, FSDP=1.
+  Total 8 TPU chips. Profiled with JAX XPlane profiler via MaxText.
+  The trace contains 13 training iterations (forward + backward pass each).
+
+hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2
+trace_url: /data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu/t1v-n-975c9bdd-w-0.trace.json
+
+workload:
+  model:
+    phase: training
+    moe: true
+    granularity: model_fwd_bwd_pass
+    model_family: deepseek-v2-16b
+    precision: bf16
+    epochs: 1
+    iteration: 13
+  data:
+    batch_size: 8        # per_device_batch_size=1 * 8 chips
+    seq_len: 1024
+    dataset: c4
+  hardware:
+    network_topo:
+      topology: torus
+      bandwidth_gbps:
+        - N/A
+        - 3200
+    xpu_spec:
+      type: TPU
+      model: tpu_v6e
+      total_count: 8
+      count_per_node: 8
+    driver_version: v2-alpha-tpuv6e
+
+Model-executor:
+  framework:
+    name: maxtext
+    compiler_tool_selection: jax_xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 2
+    pp: 1
+    ep: 4
+    cp: 1
+  communication_library:
+    name: xla
+    version:
+    env:
+      JAX_PLATFORMS: ""
+      PJRT_DEVICE: "TPU"
+  protocol_selection:
+    - xla_collectives
+    - ici
+
+metric_source:
+  traces:
+    - json_tpu
+  metrics_specific_trace:
+    -

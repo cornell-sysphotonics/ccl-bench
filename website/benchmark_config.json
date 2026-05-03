@@ -82,6 +82,11 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla-train-tp4-dp1-fsdp2-tpu",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter",
       "metrics": "auto",
       "required_update": false
@@ -493,6 +498,11 @@
     },
     {
       "trace": "/data/ccl-bench_trace_collection/llama-3.1-8b-vllm-tp8-batch128-perlmutter",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu",
       "metrics": "auto",
       "required_update": false
     }
