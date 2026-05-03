@@ -58,6 +58,7 @@ trace_collection_bad/*/*/*
 .json
 *.nsys-rep
 *.sqlite
+!website/benchmark_data.sqlite
 *.zip
 tmp* 
 *.json.gz

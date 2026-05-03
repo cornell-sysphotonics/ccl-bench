@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCL-Bench SQL Demo</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #fff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #1e293b;
+      --accent: #2563eb;
+      --accent-dim: #eff6ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 18px 28px;
+    }
+    header h1 { margin: 0; font-size: 18px; }
+    header p { margin: 4px 0 0; color: #94a3b8; font-size: 12px; }
+    main { padding: 18px 28px 28px; }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    input, select {
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+    input { min-width: 280px; flex: 1; }
+    .status {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .table-wrap { overflow: auto; max-height: calc(100vh - 170px); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #1e293b;
+      color: #cbd5e1;
+      text-align: left;
+      padding: 8px 10px;
+      white-space: nowrap;
+      border-right: 1px solid #334155;
+    }
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      border-right: 1px solid #f8fafc;
+      white-space: nowrap;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .wl {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--accent);
+      max-width: 420px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .muted { color: var(--muted); }
+    .metric { font-weight: 700; text-align: right; }
+    .note {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    code {
+      background: #e2e8f0;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>CCL-Bench SQL Demo</h1>
+  <p>Static SQLite-backed filtering and sorting prototype. The production page still uses data.js.</p>
+</header>
+<main>
+  <p class="note">
+    This page loads <code>benchmark_data.sqlite</code> in the browser through sql.js and runs SQL queries for search, filter, metric selection, and sorting.
+    Serve the repo with <code>python -m http.server</code>, then open <code>/website/sql_demo.html</code>.
+  </p>
+  <section class="panel">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search workload, model, framework, hardware, comm library">
+      <select id="phase">
+        <option value="">All phases</option>
+        <option value="training">Training</option>
+        <option value="inference">Inference</option>
+        <option value="serving">Serving</option>
+      </select>
+      <select id="metric"></select>
+      <select id="sort">
+        <option value="workload_name">Sort: workload</option>
+        <option value="model_family">Sort: model</option>
+        <option value="phase">Sort: phase</option>
+        <option value="framework">Sort: framework</option>
+        <option value="comm_library">Sort: comm</option>
+        <option value="metric_desc">Sort: metric desc</option>
+        <option value="metric_asc">Sort: metric asc</option>
+      </select>
+      <span class="status" id="status">Loading database...</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Workload</th>
+            <th>Model</th>
+            <th>Phase</th>
+            <th>HW</th>
+            <th>Devices</th>
+            <th>Framework</th>
+            <th>Comm</th>
+            <th>Batch</th>
+            <th>Seq</th>
+            <th id="metric-head">Metric</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+'use strict';
+
+let db = null;
+
+const els = {
+  search: document.getElementById('search'),
+  phase: document.getElementById('phase'),
+  metric: document.getElementById('metric'),
+  sort: document.getElementById('sort'),
+  status: document.getElementById('status'),
+  rows: document.getElementById('rows'),
+  metricHead: document.getElementById('metric-head'),
+};
+
+function esc(value) {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fmt(value) {
+  if (value === null || value === undefined || value === '') return '<span class="muted">-</span>';
+  if (typeof value === 'number') return Number.isInteger(value) ? String(value) : value.toPrecision(5);
+  return esc(value);
+}
+
+function firstResult(stmt) {
+  if (!stmt.length) return [];
+  const cols = stmt[0].columns;
+  return stmt[0].values.map(row => Object.fromEntries(row.map((v, i) => [cols[i], v])));
+}
+
+function runQuery(sql, params = {}) {
+  const stmt = db.prepare(sql);
+  stmt.bind(params);
+  const rows = [];
+  while (stmt.step()) rows.push(stmt.getAsObject());
+  stmt.free();
+  return rows;
+}
+
+function orderClause(sortKey) {
+  switch (sortKey) {
+    case 'model_family': return 'm.model_family COLLATE NOCASE ASC, m.workload_name COLLATE NOCASE ASC';
+    case 'phase': return 'm.phase COLLATE NOCASE ASC, m.workload_name COLLATE NOCASE ASC';
+    case 'framework': return 'm.framework COLLATE NOCASE ASC, m.workload_name COLLATE NOCASE ASC';
+    case 'comm_library': return 'm.comm_library COLLATE NOCASE ASC, m.workload_name COLLATE NOCASE ASC';
+    case 'metric_desc': return 'metric_value IS NULL ASC, metric_value DESC, m.workload_name COLLATE NOCASE ASC';
+    case 'metric_asc': return 'metric_value IS NULL ASC, metric_value ASC, m.workload_name COLLATE NOCASE ASC';
+    default: return 'm.workload_name COLLATE NOCASE ASC';
+  }
+}
+
+function refresh() {
+  if (!db) return;
+
+  const metric = els.metric.value;
+  const search = `%${els.search.value.trim().toLowerCase()}%`;
+  const phase = els.phase.value;
+  const sql = `
+    SELECT
+      m.workload_name,
+      m.model_family,
+      m.phase,
+      m.hardware_type,
+      m.hardware_model,
+      m.total_count,
+      m.framework,
+      m.comm_library,
+      m.batch_size,
+      m.seq_len,
+      x.metric_value_num AS metric_value
+    FROM metadata m
+    LEFT JOIN metrics x
+      ON x.row_id = m.row_id
+     AND x.metric_name = :metric
+    WHERE (:phase = '' OR m.phase = :phase)
+      AND (
+        :search = '%%'
+        OR lower(coalesce(m.workload_name, '')) LIKE :search
+        OR lower(coalesce(m.model_family, '')) LIKE :search
+        OR lower(coalesce(m.framework, '')) LIKE :search
+        OR lower(coalesce(m.hardware_model, '')) LIKE :search
+        OR lower(coalesce(m.comm_library, '')) LIKE :search
+      )
+    ORDER BY ${orderClause(els.sort.value)}
+    LIMIT 500
+  `;
+  const rows = runQuery(sql, { ':metric': metric, ':search': search, ':phase': phase });
+  const metricLabel = els.metric.options[els.metric.selectedIndex]?.textContent || metric;
+  els.metricHead.textContent = metricLabel;
+  els.status.textContent = `${rows.length} row${rows.length === 1 ? '' : 's'}`;
+  els.rows.innerHTML = rows.map(r => `
+    <tr>
+      <td class="wl" title="${esc(r.workload_name)}">${esc(r.workload_name)}</td>
+      <td>${fmt(r.model_family)}</td>
+      <td>${fmt(r.phase)}</td>
+      <td>${fmt([r.hardware_type, r.hardware_model].filter(Boolean).join(' / '))}</td>
+      <td>${fmt(r.total_count)}</td>
+      <td>${fmt(r.framework)}</td>
+      <td>${fmt(r.comm_library)}</td>
+      <td>${fmt(r.batch_size)}</td>
+      <td>${fmt(r.seq_len)}</td>
+      <td class="metric">${fmt(r.metric_value)}</td>
+    </tr>
+  `).join('');
+}
+
+async function init() {
+  try {
+    const SQL = await initSqlJs({
+      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`,
+    });
+    const response = await fetch('benchmark_data.sqlite');
+    if (!response.ok) throw new Error(`Could not fetch benchmark_data.sqlite: ${response.status}`);
+    const buffer = await response.arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buffer));
+
+    const metrics = firstResult(db.exec(`
+      SELECT metric_name, coalesce(label, metric_name) AS label
+      FROM metric_info
+      ORDER BY label COLLATE NOCASE ASC
+    `));
+    els.metric.innerHTML = metrics.map(m =>
+      `<option value="${esc(m.metric_name)}">${esc(m.label)}</option>`
+    ).join('');
+    if (metrics.some(m => m.metric_name === 'avg_step_time')) {
+      els.metric.value = 'avg_step_time';
+    }
+
+    [els.search, els.phase, els.metric, els.sort].forEach(el => {
+      el.addEventListener('input', refresh);
+      el.addEventListener('change', refresh);
+    });
+    refresh();
+  } catch (err) {
+    els.status.textContent = 'Failed to load SQL demo';
+    els.rows.innerHTML = `<tr><td colspan="10" style="color:#dc2626;padding:18px">${esc(err.message || err)}</td></tr>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
