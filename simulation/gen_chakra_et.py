@@ -159,12 +159,27 @@ def event_comm_size_bytes(event: dict) -> int:
 
 
 def parse_pg_ranks(pg_ranks_str: str) -> list[int] | None:
-    """Parse 'Process Group Ranks' field (a string like '[0, 1, 2, 3]') into a list."""
+    """Parse 'Process Group Ranks' field into a sorted int list.
+
+    Handles both dense '[0, 1, 2, 3]' and Python ellipsis notation
+    '[0, 1, ..., 31]' that torchtitan emits for large process groups.
+    """
     if not pg_ranks_str:
         return None
     try:
         result = ast.literal_eval(pg_ranks_str)
         if isinstance(result, list):
+            if any(item is ... for item in result):
+                # Expand ellipsis: [a, b, ..., c] fills integers (b+1)..(c-1)
+                expanded: list[int] = []
+                for i, item in enumerate(result):
+                    if item is ...:
+                        if expanded and i + 1 < len(result):
+                            for r in range(expanded[-1] + 1, int(result[i + 1])):
+                                expanded.append(r)
+                    else:
+                        expanded.append(int(item))
+                return sorted(expanded)
             return sorted(int(r) for r in result)
     except Exception:
         pass
@@ -250,6 +265,11 @@ def make_compute_node(node_id: int, event: dict, name_prefix: str = "compute") -
     comp.attr.append(ChakraAttr(name="is_cpu_op", bool_val=False))
     comp.attr.append(ChakraAttr(name="num_ops", int64_val=0))
     return comp
+
+
+def add_ctrl_dep(node: ChakraNode, dep_id: int | None) -> None:
+    if dep_id is not None and dep_id not in node.ctrl_deps:
+        node.ctrl_deps.append(dep_id)
 
 
 def make_comm_node(
@@ -343,18 +363,23 @@ def _build_kernel_graph(
     node_id_start: int,
     group_registry: dict[tuple, int],
     group_npus: dict[int, list[int]],
+    kernel_dependency_mode: str,
 ) -> tuple[list, int, int]:
     """Build replay COMP nodes for non-NCCL kernels plus NCCL COMM nodes.
 
-    Dependencies preserve CUDA stream order. Collective nodes also depend on the
-    previous collective in the same process group and the previous collective on
-    the same rank. ASTRA's analytical frontend has one GPU comm slot per rank; a
+    Dependencies always preserve CUDA stream order. In rank dependency mode,
+    nodes also depend on the previously emitted kernel on the same rank, which
+    constructs explicit compute↔communication ordering from trace timestamps.
+    Collective nodes also depend on the previous collective in the same process
+    group. ASTRA's analytical frontend has one GPU comm slot per rank; a
     rank-local comm order avoids deadlocks where different ranks hold different
     process-group collectives simultaneously.
     """
     nodes = []
     node_id = node_id_start
     prev_by_stream: dict[str, int] = {}
+    prev_by_rank: int | None = None
+    prev_rank_comm_order: int | None = None
     prev_comm_by_pg: dict[int, int] = {}
     comm_nodes_by_order: dict[int, ChakraNode] = {}
     n_comm = 0
@@ -377,14 +402,26 @@ def _build_kernel_graph(
             node, pg_id = make_comm_node(node_id, ev, group_registry, group_npus)
             if node is None:
                 continue
-            if skey in prev_by_stream:
-                node.ctrl_deps.append(prev_by_stream[skey])
+            comm_order = (
+                int(ev["_global_comm_order"])
+                if "_global_comm_order" in ev else None
+            )
+            add_ctrl_dep(node, prev_by_stream.get(skey))
+            if (
+                kernel_dependency_mode == "rank"
+                and (
+                    comm_order is None
+                    or prev_rank_comm_order is None
+                    or prev_rank_comm_order <= comm_order
+                )
+            ):
+                add_ctrl_dep(node, prev_by_rank)
             if pg_id is not None and pg_id in prev_comm_by_pg:
-                prev_pg_node = prev_comm_by_pg[pg_id]
-                if prev_pg_node not in node.ctrl_deps:
-                    node.ctrl_deps.append(prev_pg_node)
+                add_ctrl_dep(node, prev_comm_by_pg[pg_id])
             nodes.append(node)
             prev_by_stream[skey] = node_id
+            prev_by_rank = node_id
+            prev_rank_comm_order = comm_order
             if pg_id is not None:
                 prev_comm_by_pg[pg_id] = node_id
             if "_global_comm_order" in ev:
@@ -393,17 +430,18 @@ def _build_kernel_graph(
             n_comm += 1
         elif not is_nccl_kernel_name(name):
             node = make_compute_node(node_id, ev, name_prefix="kernel")
-            if skey in prev_by_stream:
-                node.ctrl_deps.append(prev_by_stream[skey])
+            add_ctrl_dep(node, prev_by_stream.get(skey))
+            if kernel_dependency_mode == "rank":
+                add_ctrl_dep(node, prev_by_rank)
             nodes.append(node)
             prev_by_stream[skey] = node_id
+            prev_by_rank = node_id
             node_id += 1
 
     prev_order_node_id = None
     for order in sorted(comm_nodes_by_order):
         node = comm_nodes_by_order[order]
-        if prev_order_node_id is not None and prev_order_node_id not in node.ctrl_deps:
-            node.ctrl_deps.append(prev_order_node_id)
+        add_ctrl_dep(node, prev_order_node_id)
         prev_order_node_id = node.id
 
     return nodes, node_id, n_comm
@@ -513,6 +551,7 @@ def generate_et(
     group_registry: dict[tuple, int],
     group_npus: dict[int, list[int]],
     compute_model: str,
+    kernel_dependency_mode: str,
 ) -> int:
     """Write one Chakra ET file for the given rank. Returns number of collective nodes.
 
@@ -551,7 +590,8 @@ def generate_et(
             prev_order_node_id = nid
     elif compute_model == "kernels":
         all_nodes, node_id, _n_comm = _build_kernel_graph(
-            rank, events, node_id, group_registry, group_npus
+            rank, events, node_id, group_registry, group_npus,
+            kernel_dependency_mode
         )
         n_pgs = len(group_npus)
     else:
@@ -591,6 +631,10 @@ def main():
     parser.add_argument("--compute-model", choices=["gap", "kernels"], default="gap",
                         help="gap: insert measured gaps between collectives; "
                              "kernels: replay non-NCCL GPU kernels as COMP_NODEs")
+    parser.add_argument("--kernel-dependency-mode", choices=["rank", "stream"], default="rank",
+                        help="kernels mode only: rank serializes emitted compute and "
+                             "communication kernels by rank-local timestamp; stream "
+                             "preserves only CUDA stream ordering")
     args = parser.parse_args()
 
     trace_dir = Path(args.trace_dir)
@@ -622,7 +666,8 @@ def main():
             print(f"  rank {rank}: no NCCL events found")
             continue
         total_comm_nodes += generate_et(
-            rank, events, output_dir, group_registry, group_npus, args.compute_model
+            rank, events, output_dir, group_registry, group_npus,
+            args.compute_model, args.kernel_dependency_mode
         )
 
     if group_npus:

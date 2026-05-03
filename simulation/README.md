@@ -124,6 +124,7 @@ topology and keep a one-dimensional network because there is no inter-node tier.
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--compute-model` | `gap` | `gap` inserts replayed compute gaps between collectives; `kernels` emits non-NCCL GPU kernels as replayed `COMP_NODE`s |
+| `--kernel-dependency-mode` | `rank` | `kernels` mode only: `rank` adds rank-local chronological dependencies between compute and communication kernels when they do not invert global collective order; `stream` preserves only CUDA stream ordering |
 | `--collective-algo` | `ring` | `ring`, `halving_doubling`, `direct_point2point`, `doubleBinaryTree` |
 | `--peak-perf` | `312.0` | Peak compute TFLOPS (A100 BF16) |
 | `--mem-bw` | `2000.0` | HBM bandwidth GB/s (A100) |
@@ -165,7 +166,7 @@ The pipeline prints a summary table at the end:
    - Reads each `rankN_trace.json` and extracts NCCL collective kernel events (`ncclDevKernel_AllGather_*`, `ncclDevKernel_ReduceScatter_*`, etc.)
    - `ncclDevKernel_SendRecv` `all_to_allv` payload events are simulated as `ALL_TO_ALL` nodes with per-instance sizes normalized across ranks; tiny SendRecv control/barrier exchanges are excluded
    - With `--compute-model gap`, each collective op is preceded by a `COMP_NODE` whose `duration_micros` captures the measured compute gap since the previous collective in that process group
-   - With `--compute-model kernels`, non-NCCL GPU kernels are emitted as replayed `COMP_NODE`s with their measured kernel durations. Dependencies preserve CUDA stream order, and NCCL collectives also preserve process-group ordering.
+   - With `--compute-model kernels`, non-NCCL GPU kernels are emitted as replayed `COMP_NODE`s with their measured kernel durations. Dependencies preserve CUDA stream order and NCCL process-group ordering. By default, `--kernel-dependency-mode rank` also adds rank-local compute↔communication dependencies when they do not invert the global collective order; use `--kernel-dependency-mode stream` to allow cross-stream overlap.
 
 2. **Process group extraction** (automatic for torchtitan traces):
    - NCCL kernel events in torchtitan traces carry `"Process Group Ranks"` in their args (e.g., `[0, 1, 2, 3]` for a TP group)
@@ -205,4 +206,4 @@ trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter/
 
 - **PP/control SendRecv ops not simulated**: `ncclDevKernel_SendRecv` `all_to_allv` payload events are simulated, but tiny PP barrier/control exchanges are excluded. Variable-size `all_to_allv` payloads are normalized to the largest rank-local payload for each logical instance because AstraSim collective nodes require a single shared `comm_size` across participating ranks.
 - **Node-contiguous rank assumption**: Two-tier topology assumes contiguous rank blocks per node. If a trace uses a different rank placement, adjust `--gpus-per-node` or reorder/remap the trace ranks before simulation.
-- **Overlap is approximate**: `--compute-model gap` allows overlap between independent process-group chains but serializes compute gaps with communication inside each chain. `--compute-model kernels` preserves per-stream event ordering and process-group collective ordering, so compute and communication can overlap when they are on independent streams, but it does not reconstruct absolute launch-time gaps or the full PyTorch dependency graph.
+- **Overlap is approximate**: `--compute-model gap` allows overlap between independent process-group chains but serializes compute gaps with communication inside each chain. `--compute-model kernels --kernel-dependency-mode rank` adds rank-local compute↔communication edges unless doing so would invert the global collective order, but it still does not reconstruct absolute launch-time gaps or the full PyTorch dependency graph. `--kernel-dependency-mode stream` preserves per-stream event ordering and process-group collective ordering, so compute and communication can overlap when they are on independent streams.

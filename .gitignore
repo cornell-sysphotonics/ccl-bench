@@ -86,3 +86,8 @@ chakra_trace*
 ccl_bench_sim_bw*
 01_baseline_output
 05_topology_compare_output*
+topo_sweep_su32_intra
+bw_sweep
+bw_sweep_old
+scaleup_domain_sweep
+scaleup_bw_sweep

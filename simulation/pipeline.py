@@ -113,15 +113,19 @@ def write_system_config(path: Path, collective_algo: str, peak_perf_tflops: floa
                         mem_bw_gbps: float, scheduling_policy: str,
                         active_chunks: int, dataset_splits: int,
                         roofline_enabled: int = 1):
+    astra_collective_algo = {
+        "halving_doubling": "halvingDoubling",
+        "direct_point2point": "direct",
+    }.get(collective_algo, collective_algo)
     config = {
         "scheduling-policy": scheduling_policy,
         "endpoint-delay": 10,
         "active-chunks-per-dimension": active_chunks,
         "preferred-dataset-splits": dataset_splits,
-        "all-reduce-implementation": [collective_algo],
-        "all-gather-implementation": [collective_algo],
-        "reduce-scatter-implementation": [collective_algo],
-        "all-to-all-implementation": [collective_algo],
+        "all-reduce-implementation": [astra_collective_algo],
+        "all-gather-implementation": [astra_collective_algo],
+        "reduce-scatter-implementation": [astra_collective_algo],
+        "all-to-all-implementation": [astra_collective_algo],
         "collective-optimization": "localBWAware",
         "local-mem-bw": mem_bw_gbps,
         "boost-mode": 0,
@@ -136,7 +140,8 @@ def write_remote_memory_config(path: Path):
 
 
 def build_full_docker_script(trace_dir_docker: str, output_dir_docker: str,
-                             ranks: list[int]) -> str:
+                             ranks: list[int],
+                             generate_et: bool = True) -> str:
     link_cmds = "\n".join(
         f"  chakra_trace_link"
         f" --chakra-host-trace {trace_dir_docker}/pytorch_et_{r}.json"
@@ -151,14 +156,20 @@ def build_full_docker_script(trace_dir_docker: str, output_dir_docker: str,
         f" --output {output_dir_docker}/chakra_trace.{r}"
         for r in ranks
     )
-    return f"""#!/bin/bash
-set -e
-
-echo "[pipeline] Linking host + device traces..."
+    if generate_et:
+        et_step = f"""echo "[pipeline] Linking host + device traces..."
 {link_cmds}
 
 echo "[pipeline] Converting to Chakra ET format..."
 {convert_cmds}
+"""
+    else:
+        et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
+
+    return f"""#!/bin/bash
+set -e
+
+{et_step}
 
 echo "[pipeline] Running AstraSim..."
 {DOCKER_BIN} \\
@@ -174,6 +185,7 @@ echo "[pipeline] Done."
 def build_comm_only_docker_script(trace_dir_docker: str, output_dir_docker: str,
                                   scripts_dir_docker: str, ranks: list[int],
                                   compute_model: str,
+                                  kernel_dependency_mode: str,
                                   generate_et: bool = True) -> str:
     ranks_str = ",".join(str(r) for r in ranks)
     # comm_group.json is written by gen_chakra_et.py when process group info is
@@ -184,7 +196,8 @@ python3 {scripts_dir_docker}/gen_chakra_et.py \\
     --trace-dir {trace_dir_docker} \\
     --output-dir {output_dir_docker} \\
     --ranks {ranks_str} \\
-    --compute-model {compute_model}
+    --compute-model {compute_model} \\
+    --kernel-dependency-mode {kernel_dependency_mode}
 """
     else:
         et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
@@ -291,8 +304,8 @@ def show_results(output_dir: Path):
         print(f"\n  Simulated step time: {avg_wall/1e6:.1f} ms  |  Comm fraction: {avg_comm_pct:.1f}%")
 
 
-def copy_comm_only_et_artifacts(src_dir: Path, dst_dir: Path) -> None:
-    """Copy reusable comm-only workload artifacts into a new output directory."""
+def copy_et_artifacts(src_dir: Path, dst_dir: Path) -> None:
+    """Copy reusable Chakra ET workload artifacts into a new output directory."""
     et_files = sorted(src_dir.glob("chakra_trace.*.et"))
     if not et_files:
         print(f"ERROR: no chakra_trace.*.et files found in reuse source: {src_dir}")
@@ -362,10 +375,16 @@ Examples:
                         help="comm-only compute model: gap inserts measured gaps between "
                              "collectives; kernels replays non-NCCL GPU kernels as "
                              "COMP_NODEs (default: gap)")
+    parser.add_argument("--kernel-dependency-mode", default="rank",
+                        choices=["rank", "stream"],
+                        help="comm-only kernels model dependency mode: rank adds "
+                             "rank-local chronological dependencies between compute "
+                             "and communication kernels; stream preserves only CUDA "
+                             "stream ordering (default: rank)")
     parser.add_argument("--output-dir", default=None,
                         help="Output directory (default: /var/tmp/ccl_bench_sim_*)")
     parser.add_argument("--reuse-et-from", default=None,
-                        help="comm-only: reuse chakra_trace.*.et and comm_group.json "
+                        help="reuse chakra_trace.*.et and optional comm_group.json "
                              "from this output directory instead of regenerating ET")
 
     net = parser.add_argument_group("Network what-if parameters")
@@ -401,10 +420,6 @@ Examples:
     sys_grp.add_argument("--dataset-splits", type=int, default=4)
 
     args = parser.parse_args()
-
-    if args.reuse_et_from and args.mode != "comm-only":
-        print("ERROR: --reuse-et-from is only supported with --mode comm-only")
-        sys.exit(1)
 
     trace_dir = Path(args.trace_dir).resolve()
     if not trace_dir.exists():
@@ -444,7 +459,7 @@ Examples:
         if not reuse_et_from.exists():
             print(f"ERROR: --reuse-et-from directory not found: {reuse_et_from}")
             sys.exit(1)
-        copy_comm_only_et_artifacts(reuse_et_from, output_dir)
+        copy_et_artifacts(reuse_et_from, output_dir)
 
     # Write hardware configs
     # comm-only disables roofline for compute (compute time comes from duration_micros)
@@ -480,12 +495,16 @@ Examples:
 
     # Build Docker run
     if args.mode == "full":
-        script = build_full_docker_script("/mnt/traces", "/mnt/output", ranks)
+        script = build_full_docker_script(
+            "/mnt/traces", "/mnt/output", ranks,
+            generate_et=(reuse_et_from is None)
+        )
         extra_mounts = None
     else:
         script = build_comm_only_docker_script(
             "/mnt/traces", "/mnt/output", "/mnt/scripts", ranks,
-            args.compute_model, generate_et=(reuse_et_from is None)
+            args.compute_model, args.kernel_dependency_mode,
+            generate_et=(reuse_et_from is None)
         )
         extra_mounts = [(SIMULATION_DIR, "/mnt/scripts")]
 
