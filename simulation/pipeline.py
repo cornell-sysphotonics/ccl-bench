@@ -186,6 +186,7 @@ def build_comm_only_docker_script(trace_dir_docker: str, output_dir_docker: str,
                                   scripts_dir_docker: str, ranks: list[int],
                                   compute_model: str,
                                   kernel_dependency_mode: str,
+                                  et_workers: int | None,
                                   generate_et: bool = True) -> str:
     ranks_str = ",".join(str(r) for r in ranks)
     # comm_group.json is written by gen_chakra_et.py when process group info is
@@ -197,7 +198,8 @@ python3 {scripts_dir_docker}/gen_chakra_et.py \\
     --output-dir {output_dir_docker} \\
     --ranks {ranks_str} \\
     --compute-model {compute_model} \\
-    --kernel-dependency-mode {kernel_dependency_mode}
+    --kernel-dependency-mode {kernel_dependency_mode} \\
+    {f"--et-workers {et_workers}" if et_workers is not None else ""}
 """
     else:
         et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
@@ -382,6 +384,9 @@ Examples:
                              "rank-local chronological dependencies between compute "
                              "and communication kernels; stream preserves only CUDA "
                              "stream ordering (default: rank)")
+    parser.add_argument("--et-workers", type=int, default=None,
+                        help="comm-only ET generation workers inside Docker "
+                             "(default: min(8, ranks, CPU count))")
     parser.add_argument("--output-dir", default=None,
                         help="Output directory (default: /var/tmp/ccl_bench_sim_*)")
     parser.add_argument("--reuse-et-from", default=None,
@@ -504,7 +509,7 @@ Examples:
     else:
         script = build_comm_only_docker_script(
             "/mnt/traces", "/mnt/output", "/mnt/scripts", ranks,
-            args.compute_model, args.kernel_dependency_mode,
+            args.compute_model, args.kernel_dependency_mode, args.et_workers,
             generate_et=(reuse_et_from is None)
         )
         extra_mounts = [(SIMULATION_DIR, "/mnt/scripts")]

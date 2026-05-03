@@ -20,6 +20,8 @@ Usage (inside Docker):
 import argparse
 import ast
 import json
+import multiprocessing
+import os
 from pathlib import Path
 
 # Chakra is installed in the Docker venv at /opt/venv/astra-sim
@@ -44,6 +46,15 @@ DTYPE_BYTES = {
     "Float64": 8, "Double": 8,
     "Int8": 1, "Int16": 2, "Int32": 4, "Int64": 8,
 }
+
+_ET_WORKER_EVENTS_BY_RANK: dict[int, list] = {}
+_ET_WORKER_TRACE_DIR: Path | None = None
+_ET_WORKER_OUTPUT_DIR: Path | None = None
+_ET_WORKER_GROUP_REGISTRY: dict[tuple, int] = {}
+_ET_WORKER_GROUP_NPUS: dict[int, list[int]] = {}
+_ET_WORKER_ANNOTATIONS_BY_RANK: dict[int, dict[tuple, dict]] = {}
+_ET_WORKER_COMPUTE_MODEL = "gap"
+_ET_WORKER_KERNEL_DEPENDENCY_MODE = "rank"
 
 # Maps NCCL 'Collective name' field → Chakra collective type
 COLL_NAME_MAP = {
@@ -208,6 +219,55 @@ def load_trace_partial(path: Path, max_mb: int = 500) -> list:
             return json.loads(wrapped).get("traceEvents", [])
         except Exception:
             return []
+
+
+def nccl_event_key(event: dict) -> tuple:
+    args = event.get("args", {})
+    return (
+        event.get("ts", 0),
+        event.get("dur", 0),
+        event.get("name", ""),
+        event.get("pid", ""),
+        event.get("tid", ""),
+        args.get("External id", ""),
+        args.get("Process Group Ranks", ""),
+        args.get("Collective name", ""),
+        args.get("dtype", ""),
+        args.get("In msg nelems", ""),
+        args.get("Out msg nelems", ""),
+    )
+
+
+def load_nccl_events_partial(path: Path) -> list:
+    return [
+        event for event in load_trace_partial(path)
+        if is_nccl_collective_event(event)
+    ]
+
+
+def collect_nccl_annotations(events_by_rank: dict[int, list]) -> dict[int, dict[tuple, dict]]:
+    annotations_by_rank: dict[int, dict[tuple, dict]] = {}
+    annotation_keys = ("_global_comm_order", "_skip_collective", "_comm_size_override")
+    for rank, events in events_by_rank.items():
+        rank_annotations: dict[tuple, dict] = {}
+        for event in events:
+            annotations = {
+                key: event[key]
+                for key in annotation_keys
+                if key in event
+            }
+            if annotations:
+                rank_annotations[nccl_event_key(event)] = annotations
+        annotations_by_rank[rank] = rank_annotations
+    return annotations_by_rank
+
+
+def apply_nccl_annotations(events: list, annotations: dict[tuple, dict]) -> None:
+    if not annotations:
+        return
+    for event in events:
+        if is_nccl_collective_event(event):
+            event.update(annotations.get(nccl_event_key(event), {}))
 
 
 def extract_nccl_events_by_pg(
@@ -768,6 +828,24 @@ def write_comm_group(output_dir: Path, group_npus: dict[int, list[int]]) -> bool
     return True
 
 
+def generate_et_worker(rank: int) -> int:
+    if _ET_WORKER_TRACE_DIR is None:
+        raise RuntimeError("ET worker trace directory was not initialized")
+    if _ET_WORKER_OUTPUT_DIR is None:
+        raise RuntimeError("ET worker output directory was not initialized")
+    events = load_trace_partial(_ET_WORKER_TRACE_DIR / f"rank{rank}_trace.json")
+    apply_nccl_annotations(events, _ET_WORKER_ANNOTATIONS_BY_RANK.get(rank, {}))
+    return generate_et(
+        rank,
+        events,
+        _ET_WORKER_OUTPUT_DIR,
+        dict(_ET_WORKER_GROUP_REGISTRY),
+        {gid: list(npus) for gid, npus in _ET_WORKER_GROUP_NPUS.items()},
+        _ET_WORKER_COMPUTE_MODEL,
+        _ET_WORKER_KERNEL_DEPENDENCY_MODE,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--trace-dir", required=True)
@@ -782,6 +860,9 @@ def main():
                         help="kernels mode only: rank serializes emitted compute and "
                              "communication kernels by rank-local timestamp; stream "
                              "preserves only CUDA stream ordering")
+    parser.add_argument("--et-workers", type=int, default=None,
+                        help="parallel workers for Chakra ET file generation "
+                             "(default: min(8, ranks, CPU count))")
     args = parser.parse_args()
 
     trace_dir = Path(args.trace_dir)
@@ -796,26 +877,68 @@ def main():
     group_registry: dict[tuple, int] = {}
     group_npus: dict[int, list[int]] = {}
 
-    events_by_rank: dict[int, list] = {}
+    nccl_events_by_rank: dict[int, list] = {}
     for rank in ranks:
         trace_file = trace_dir / f"rank{rank}_trace.json"
         if not trace_file.exists():
             print(f"  WARNING: {trace_file} not found, skipping rank {rank}")
             continue
-        events_by_rank[rank] = load_trace_partial(trace_file)
+        nccl_events_by_rank[rank] = load_nccl_events_partial(trace_file)
 
-    annotate_global_comm_order(events_by_rank, group_registry, group_npus)
+    annotate_global_comm_order(nccl_events_by_rank, group_registry, group_npus)
+    annotations_by_rank = collect_nccl_annotations(nccl_events_by_rank)
 
-    total_comm_nodes = 0
-    for rank in sorted(events_by_rank):
-        events = events_by_rank[rank]
+    et_ranks = []
+    for rank in sorted(nccl_events_by_rank):
+        events = nccl_events_by_rank[rank]
         if not any(is_simulatable_nccl_collective_event(e) for e in events):
             print(f"  rank {rank}: no NCCL events found")
             continue
-        total_comm_nodes += generate_et(
-            rank, events, output_dir, group_registry, group_npus,
-            args.compute_model, args.kernel_dependency_mode
-        )
+        et_ranks.append(rank)
+
+    total_comm_nodes = 0
+    max_workers = args.et_workers
+    if max_workers is None:
+        max_workers = min(8, len(et_ranks), os.cpu_count() or 1)
+    max_workers = max(1, min(max_workers, len(et_ranks) or 1))
+    print(f"[gen_chakra_et] Writing Chakra ET files with {max_workers} worker(s)")
+
+    if max_workers == 1:
+        for rank in et_ranks:
+            events = load_trace_partial(trace_dir / f"rank{rank}_trace.json")
+            apply_nccl_annotations(events, annotations_by_rank.get(rank, {}))
+            total_comm_nodes += generate_et(
+                rank,
+                events,
+                output_dir,
+                dict(group_registry),
+                {gid: list(npus) for gid, npus in group_npus.items()},
+                args.compute_model,
+                args.kernel_dependency_mode,
+            )
+    else:
+        global _ET_WORKER_EVENTS_BY_RANK
+        global _ET_WORKER_TRACE_DIR
+        global _ET_WORKER_OUTPUT_DIR
+        global _ET_WORKER_GROUP_REGISTRY
+        global _ET_WORKER_GROUP_NPUS
+        global _ET_WORKER_ANNOTATIONS_BY_RANK
+        global _ET_WORKER_COMPUTE_MODEL
+        global _ET_WORKER_KERNEL_DEPENDENCY_MODE
+
+        _ET_WORKER_EVENTS_BY_RANK = nccl_events_by_rank
+        _ET_WORKER_TRACE_DIR = trace_dir
+        _ET_WORKER_OUTPUT_DIR = output_dir
+        _ET_WORKER_GROUP_REGISTRY = group_registry
+        _ET_WORKER_GROUP_NPUS = group_npus
+        _ET_WORKER_ANNOTATIONS_BY_RANK = annotations_by_rank
+        _ET_WORKER_COMPUTE_MODEL = args.compute_model
+        _ET_WORKER_KERNEL_DEPENDENCY_MODE = args.kernel_dependency_mode
+
+        ctx = multiprocessing.get_context("fork")
+        with ctx.Pool(processes=max_workers) as pool:
+            for n_comm in pool.imap_unordered(generate_et_worker, et_ranks):
+                total_comm_nodes += n_comm
 
     if group_npus:
         write_comm_group(output_dir, group_npus)
