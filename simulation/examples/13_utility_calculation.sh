@@ -19,8 +19,8 @@ REPO=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 OUT_ROOT="$REPO/simulation/examples/utility_calculation"
 SUMMARY="$OUT_ROOT/utility_summary.tsv"
 
-INTRA_TOPOLOGY=FullyConnected
-INTER_TOPOLOGY=Ring
+INTRA_TOPOLOGY=Ring
+INTER_TOPOLOGY=Switch
 INTRA_LAT=50
 INTER_LAT=50000
 COLLECTIVE_ALGO=ring
