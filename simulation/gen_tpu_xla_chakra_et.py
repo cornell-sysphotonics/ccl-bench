@@ -12,6 +12,7 @@ communication byte counts, --fallback-comm-size is used.
 import argparse
 import json
 import re
+import math
 from pathlib import Path
 
 from chakra.schema.protobuf.et_def_pb2 import (
@@ -45,6 +46,24 @@ COMM_TYPES = [
     ("ragged-all-to-all", ALL_TO_ALL),
 ]
 RANK_PREFIX_RE = re.compile(r"^\[(\d+)\]\s+")
+HLO_TENSOR_RE = re.compile(
+    r"\b(pred|bf16|f16|f32|f64|s8|s16|s32|s64|u8|u16|u32|u64)\[([0-9,]+)\]"
+)
+DTYPE_BYTES = {
+    "pred": 1,
+    "bf16": 2,
+    "f16": 2,
+    "f32": 4,
+    "f64": 8,
+    "s8": 1,
+    "u8": 1,
+    "s16": 2,
+    "u16": 2,
+    "s32": 4,
+    "u32": 4,
+    "s64": 8,
+    "u64": 8,
+}
 
 
 def load_events(path: Path) -> list[dict]:
@@ -67,20 +86,29 @@ def event_end_us(event: dict) -> float:
 
 def comm_type(event: dict) -> int | None:
     args = event.get("args", {})
-    haystack = " ".join(
-        str(value).lower()
-        for value in (
-            event.get("name", ""),
-            event.get("cat", ""),
-            args.get("hlo_category", ""),
-            args.get("hlo_op", ""),
-            args.get("long_name", ""),
-        )
-    )
+    category = str(args.get("hlo_category", "")).lower()
+    name = str(event.get("name", "")).lower()
+    op = str(args.get("hlo_op", "")).lower()
+    # Do not inspect long_name here: compute fusions often reference collective
+    # operands in their HLO text and would be misclassified as communication.
+    haystack = " ".join(value for value in (category, name, op) if value)
+    if category.endswith("-done") or name.endswith("-done"):
+        return None
     for needle, ctype in COMM_TYPES:
         if needle in haystack:
             return ctype
     return None
+
+
+def hlo_tensor_nbytes(text: str) -> int:
+    matches = HLO_TENSOR_RE.findall(text)
+    if not matches:
+        return 0
+    dtype, shape = matches[0]
+    dims = [int(dim) for dim in shape.split(",") if dim]
+    if not dims:
+        return 0
+    return math.prod(dims) * DTYPE_BYTES.get(dtype, 2)
 
 
 def comm_size_bytes(event: dict, fallback: int) -> int:
@@ -101,6 +129,11 @@ def comm_size_bytes(event: dict, fallback: int) -> int:
                     return value
             except (TypeError, ValueError):
                 pass
+    for key in ("long_name", "hlo_op"):
+        if key in args:
+            value = hlo_tensor_nbytes(str(args[key]))
+            if value > 0:
+                return value
     return fallback
 
 

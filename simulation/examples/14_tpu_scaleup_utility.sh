@@ -140,25 +140,25 @@ echo "Topology: Ring, scale-up domain: $TPU_CHIPS TPU chips"
 echo "Score: percent step-time improvement per 2x scale-up bandwidth"
 echo
 
-# run_workload "WL1" "Qwen3-4B" "Inference" "batch=128 input=1024" \
-#     "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4" \
-#     "Qwen3-4B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
-#     800 "jit_run_model" 0 0
+run_workload "WL1" "Qwen3-4B" "Inference" "batch=128 input=1024" \
+    "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4" \
+    "Qwen3-4B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
+    400 "jit_run_model" 0 0
 
-# run_workload "WL2" "Llama-3.1-8B" "Inference" "batch=128 input=1024" \
-#     "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4" \
-#     "Llama-3.1-8B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
-#     800 "jit_run_model" 0 0
+run_workload "WL2" "Llama-3.1-8B" "Inference" "batch=128 input=1024" \
+    "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4" \
+    "Llama-3.1-8B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
+    400 "jit_run_model" 0 0
 
-# run_workload "WL4" "Llama-3.1-8B" "Training" "batch=8 sequence=512" \
-#     "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21" \
-#     "llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21.trace.json" \
-#     6400 "SyncTensorsGraph" 1 1000000
+run_workload "WL4" "Llama-3.1-8B" "Training" "batch=8 sequence=512" \
+    "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21" \
+    "llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21.trace.json" \
+    400 "SyncTensorsGraph" 1 1000000
 
 run_workload "WL5" "DeepSeek-V2-16B" "Training" "batch=8 sequence=1024" \
     "/data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu" \
     "t1v-n-975c9bdd-w-0.trace.json" \
-    3200 "jit_train_step" 0 100000
+    400 "jit_train_step" 0 100000
 
 echo "=== TPU Scale-up Utility Summary ==="
 awk '
