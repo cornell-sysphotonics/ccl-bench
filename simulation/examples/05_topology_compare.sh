@@ -14,34 +14,38 @@
 
 set -e
 REPO=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
-TRACE=/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp8-perlmutter
+# TRACE=/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter
+TRACE=/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep8-dp2-tp4-perlmutter
 GPUS_PER_NODE=4
-INTRA_BW=400
+INTRA_BW=300
 INTRA_LAT=50
-INTER_BW=200
+INTER_BW=25
 INTER_LAT=500
 
-echo "=== Topology Comparison: deepseek-v3-16b ep8-dp8 (8 GPUs) ==="
-echo "Fixed scale-up: FullyConnected, ${INTRA_BW} GB/s, ${INTRA_LAT} ns"
+echo "=== Topology Comparison==="
+echo "${INTRA_BW} GB/s, ${INTRA_LAT} ns"
 echo "Scale-out BW: ${INTER_BW} GB/s per link, Latency: ${INTER_LAT} ns, algo: ring"
 echo
 
-for TOPO in Switch Ring FullyConnected; do
-    OUTDIR=/var/tmp/ccl_bench_sim_topo_${TOPO}
+for INTRATOPO in Switch Ring FullyConnected; do
+    for TOPO in Switch Ring FullyConnected; do
+        OUTDIR="$REPO/simulation/examples/${INTRATOPO}_${TOPO}"
 
-    echo "--- $TOPO ---"
-    python "$REPO/simulation/pipeline.py" \
-        --mode comm-only \
-        --trace-dir "$TRACE" \
-        --output-dir "$OUTDIR" \
-        --gpus-per-node "$GPUS_PER_NODE" \
-        --intra-topology FullyConnected \
-        --intra-bandwidth "$INTRA_BW" \
-        --intra-latency "$INTRA_LAT" \
-        --topology "$TOPO" \
-        --bandwidth "$INTER_BW" \
-        --latency "$INTER_LAT" \
-        --collective-algo ring \
-        2>&1 | grep -E "Simulated step|comm fraction|ERROR"
-    echo
+        echo "--- $TOPO ---"
+        python "$REPO/simulation/pipeline.py" \
+            --mode comm-only \
+            --trace-dir "$TRACE" \
+            --output-dir "$OUTDIR" \
+            --gpus-per-node "$GPUS_PER_NODE" \
+            --intra-topology "$INTRATOPO" \
+            --intra-bandwidth "$INTRA_BW" \
+            --intra-latency "$INTRA_LAT" \
+            --topology "$TOPO" \
+            --bandwidth "$INTER_BW" \
+            --latency "$INTER_LAT" \
+            --collective-algo ring \
+            --compute-model gap \
+            2>&1 | grep -E "Simulated step|Comm fraction|ERROR" || true
+        echo
+    done
 done

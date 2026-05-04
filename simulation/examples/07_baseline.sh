@@ -5,8 +5,8 @@
 
 set -e
 REPO=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
-TRACE=/data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-ep4-dp2-tp4-perlmutter
-OUTDIR="$REPO/simulation/examples/01_baseline_output"
+TRACE=/data/ccl-bench_trace_collection/deepseek-v3-236b-torchtitan-ep32-dp8-pp8-tp4-perlmutter/
+OUTDIR="$REPO/simulation/examples/07_baseline_output"
 
 GPUS_PER_NODE=4
 INTRA_BW=300
@@ -19,7 +19,7 @@ python "$REPO/simulation/pipeline.py" \
     --trace-dir "$TRACE" \
     --output-dir "$OUTDIR" \
     --gpus-per-node "$GPUS_PER_NODE" \
-    --intra-topology FullyConnected \
+    --intra-topology Ring \
     --intra-bandwidth "$INTRA_BW" \
     --intra-latency "$INTRA_LAT" \
     --topology Switch \

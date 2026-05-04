@@ -19,6 +19,7 @@ Usage:
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -47,6 +48,14 @@ def detect_ranks_comm_only(trace_dir: Path) -> list[int]:
         if m:
             ranks.append(int(m.group(1)))
     return sorted(ranks)
+
+
+def detect_tpu_trace_json(trace_dir: Path) -> Path | None:
+    candidates = sorted(trace_dir.glob("*.trace.json"))
+    if candidates:
+        return candidates[0]
+    candidates = sorted(trace_dir.glob("**/*.trace.json"))
+    return candidates[0] if candidates else None
 
 
 def validate_full_mode(trace_dir: Path, ranks: list[int]):
@@ -108,19 +117,53 @@ def write_network_config(path: Path, topology: str, npus_count: int,
     }
 
 
+def write_torus_network_config(path: Path, torus_dims: list[int],
+                               bandwidth_gbps: float,
+                               latency_ns: float) -> dict[str, list]:
+    if not torus_dims or any(dim <= 0 for dim in torus_dims):
+        raise ValueError("--tpu-torus-dims must contain positive integers")
+    topologies = ["Ring" for _ in torus_dims]
+    bandwidths = [bandwidth_gbps for _ in torus_dims]
+    latencies = [latency_ns for _ in torus_dims]
+
+    def _fmt(values):
+        return ", ".join(str(v) for v in values)
+
+    def _fmt_float(values):
+        return ", ".join(f"{v:.2f}" for v in values)
+
+    path.write_text(
+        f"# TPU torus network configuration for Astra-sim what-if analysis\n"
+        f"topology: [ {_fmt(topologies)} ]\n"
+        f"npus_count: [ {_fmt(torus_dims)} ]\n"
+        f"bandwidth: [ {_fmt_float(bandwidths)} ]  # GB/s\n"
+        f"latency: [ {_fmt_float(latencies)} ]  # ns\n"
+    )
+    return {
+        "topologies": topologies,
+        "npus_counts": torus_dims,
+        "bandwidths": bandwidths,
+        "latencies": latencies,
+    }
+
+
 def write_system_config(path: Path, collective_algo: str, peak_perf_tflops: float,
                         mem_bw_gbps: float, scheduling_policy: str,
                         active_chunks: int, dataset_splits: int,
                         roofline_enabled: int = 1):
+    astra_collective_algo = {
+        "halving_doubling": "halvingDoubling",
+        "direct_point2point": "direct",
+    }.get(collective_algo, collective_algo)
     config = {
         "scheduling-policy": scheduling_policy,
         "endpoint-delay": 10,
         "active-chunks-per-dimension": active_chunks,
         "preferred-dataset-splits": dataset_splits,
-        "all-reduce-implementation": [collective_algo],
-        "all-gather-implementation": [collective_algo],
-        "reduce-scatter-implementation": [collective_algo],
-        "all-to-all-implementation": [collective_algo],
+        "all-reduce-implementation": [astra_collective_algo],
+        "all-gather-implementation": [astra_collective_algo],
+        "reduce-scatter-implementation": [astra_collective_algo],
+        "all-to-all-implementation": [astra_collective_algo],
         "collective-optimization": "localBWAware",
         "local-mem-bw": mem_bw_gbps,
         "boost-mode": 0,
@@ -135,7 +178,8 @@ def write_remote_memory_config(path: Path):
 
 
 def build_full_docker_script(trace_dir_docker: str, output_dir_docker: str,
-                             ranks: list[int]) -> str:
+                             ranks: list[int],
+                             generate_et: bool = True) -> str:
     link_cmds = "\n".join(
         f"  chakra_trace_link"
         f" --chakra-host-trace {trace_dir_docker}/pytorch_et_{r}.json"
@@ -150,14 +194,20 @@ def build_full_docker_script(trace_dir_docker: str, output_dir_docker: str,
         f" --output {output_dir_docker}/chakra_trace.{r}"
         for r in ranks
     )
-    return f"""#!/bin/bash
-set -e
-
-echo "[pipeline] Linking host + device traces..."
+    if generate_et:
+        et_step = f"""echo "[pipeline] Linking host + device traces..."
 {link_cmds}
 
 echo "[pipeline] Converting to Chakra ET format..."
 {convert_cmds}
+"""
+    else:
+        et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
+
+    return f"""#!/bin/bash
+set -e
+
+{et_step}
 
 echo "[pipeline] Running AstraSim..."
 {DOCKER_BIN} \\
@@ -172,19 +222,30 @@ echo "[pipeline] Done."
 
 def build_comm_only_docker_script(trace_dir_docker: str, output_dir_docker: str,
                                   scripts_dir_docker: str, ranks: list[int],
-                                  compute_model: str) -> str:
+                                  compute_model: str,
+                                  kernel_dependency_mode: str,
+                                  et_workers: int | None,
+                                  generate_et: bool = True) -> str:
     ranks_str = ",".join(str(r) for r in ranks)
     # comm_group.json is written by gen_chakra_et.py when process group info is
     # present in the traces; otherwise the file is absent and we skip the flag.
-    return f"""#!/bin/bash
-set -e
-
-echo "[pipeline] Extracting NCCL collectives and generating Chakra ET files..."
+    if generate_et:
+        et_step = f"""echo "[pipeline] Extracting supported collectives and generating Chakra ET files..."
 python3 {scripts_dir_docker}/gen_chakra_et.py \\
     --trace-dir {trace_dir_docker} \\
     --output-dir {output_dir_docker} \\
     --ranks {ranks_str} \\
-    --compute-model {compute_model}
+    --compute-model {compute_model} \\
+    --kernel-dependency-mode {kernel_dependency_mode} \\
+    {f"--et-workers {et_workers}" if et_workers is not None else ""}
+"""
+    else:
+        et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
+
+    return f"""#!/bin/bash
+set -e
+
+{et_step}
 
 echo "[pipeline] Running AstraSim..."
 COMM_GROUP_ARG=""
@@ -199,6 +260,44 @@ fi
     --remote-memory-configuration={output_dir_docker}/remote_memory.json \\
     --network-configuration={output_dir_docker}/network.yml \\
     $COMM_GROUP_ARG
+
+echo "[pipeline] Done."
+"""
+
+
+def build_tpu_xla_docker_script(trace_json_docker: str, output_dir_docker: str,
+                                scripts_dir_docker: str, ranks: int,
+                                iteration_index: int, compute_model: str,
+                                iteration_marker: str,
+                                min_iteration_duration_us: float,
+                                fallback_comm_size: int,
+                                generate_et: bool = True) -> str:
+    if generate_et:
+        et_step = f"""echo "[pipeline] Converting TPU XLA trace to Chakra ET files..."
+python3 {scripts_dir_docker}/gen_tpu_xla_chakra_et.py \\
+    --trace-json {trace_json_docker} \\
+    --output-dir {output_dir_docker} \\
+    --ranks {ranks} \\
+    --iteration-index {iteration_index} \\
+    --iteration-marker {iteration_marker} \\
+    --min-iteration-duration-us {min_iteration_duration_us} \\
+    --compute-model {compute_model} \\
+    --fallback-comm-size {fallback_comm_size}
+"""
+    else:
+        et_step = 'echo "[pipeline] Reusing existing Chakra ET files..."\n'
+
+    return f"""#!/bin/bash
+set -e
+
+{et_step}
+
+echo "[pipeline] Running AstraSim..."
+{DOCKER_BIN} \\
+    --workload-configuration={output_dir_docker}/chakra_trace \\
+    --system-configuration={output_dir_docker}/system.json \\
+    --remote-memory-configuration={output_dir_docker}/remote_memory.json \\
+    --network-configuration={output_dir_docker}/network.yml
 
 echo "[pipeline] Done."
 """
@@ -283,6 +382,26 @@ def show_results(output_dir: Path):
         print(f"\n  Simulated step time: {avg_wall/1e6:.1f} ms  |  Comm fraction: {avg_comm_pct:.1f}%")
 
 
+def copy_et_artifacts(src_dir: Path, dst_dir: Path) -> None:
+    """Copy reusable Chakra ET workload artifacts into a new output directory."""
+    et_files = sorted(src_dir.glob("chakra_trace.*.et"))
+    if not et_files:
+        print(f"ERROR: no chakra_trace.*.et files found in reuse source: {src_dir}")
+        sys.exit(1)
+
+    for path in et_files:
+        shutil.copy2(path, dst_dir / path.name)
+
+    comm_group = src_dir / "comm_group.json"
+    dst_comm_group = dst_dir / "comm_group.json"
+    if comm_group.exists():
+        shutil.copy2(comm_group, dst_comm_group)
+    elif dst_comm_group.exists():
+        dst_comm_group.unlink()
+
+    print(f"[pipeline] Reused {len(et_files)} Chakra ET file(s) from {src_dir}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="What-if hardware simulation for CCL-Bench traces via Astra-sim",
@@ -298,6 +417,9 @@ Modes:
              Torchtitan traces (deepseek-v3, etc.) include process group info and
              automatically enable hybrid-parallelism-aware simulation via comm_group.json.
              → /data/ccl-bench_trace_collection/deepseek-v3-16b-torchtitan-*/
+  tpu-xla    Requires a single JAX/XLA TPU Chrome trace (*.trace.json).
+             Selects one jit_train_step iteration and converts XLA HLO/device
+             events to Chakra ET for an AstraSim torus bandwidth what-if.
 
 Examples:
   # Full mode, baseline A100 Slingshot
@@ -324,18 +446,57 @@ Examples:
       --trace-dir trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter \\
       --peak-perf 989 --mem-bw 3350 --gpus-per-node 8 \\
       --intra-bandwidth 900 --bandwidth 50
+
+  # TPU/XLA: DeepSeek-V2 MaxText on 8-chip TPU torus, ICI bandwidth what-if
+  python simulation/pipeline.py --mode tpu-xla \\
+      --trace-dir /data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu \\
+      --tpu-ranks 8 --tpu-torus-dims 2,4 --bandwidth 3200 --latency 100
 """,
     )
     parser.add_argument("--trace-dir", required=True,
                         help="Trace directory path")
-    parser.add_argument("--mode", default="full", choices=["full", "comm-only"],
-                        help="full: needs pytorch_et+kineto; comm-only: needs rankN_trace.json only")
-    parser.add_argument("--compute-model", default="gap", choices=["gap", "kernels"],
-                        help="comm-only compute model: gap inserts measured gaps between "
-                             "collectives; kernels replays non-NCCL GPU kernels as "
+    parser.add_argument("--mode", default="full", choices=["full", "comm-only", "tpu-xla"],
+                        help="full: needs pytorch_et+kineto; comm-only: needs "
+                             "rankN_trace.json; tpu-xla: needs one TPU *.trace.json")
+    parser.add_argument("--compute-model", default="gap", choices=["gap", "pg-gap", "kernels"],
+                        help="comm-only/TPU compute model: gap inserts measured "
+                             "rank-local gaps between collectives; pg-gap keeps "
+                             "legacy GPU per-process-group gap chains; kernels "
+                             "replays non-collective GPU or TPU device events as "
                              "COMP_NODEs (default: gap)")
+    parser.add_argument("--kernel-dependency-mode", default="rank",
+                        choices=["rank", "stream"],
+                        help="comm-only kernels model dependency mode: rank adds "
+                             "rank-local chronological dependencies between compute "
+                             "and communication kernels; stream preserves only CUDA "
+                             "stream ordering (default: rank)")
+    parser.add_argument("--et-workers", type=int, default=None,
+                        help="comm-only ET generation workers inside Docker "
+                             "(default: min(8, ranks, CPU count))")
     parser.add_argument("--output-dir", default=None,
                         help="Output directory (default: /var/tmp/ccl_bench_sim_*)")
+    parser.add_argument("--reuse-et-from", default=None,
+                        help="reuse chakra_trace.*.et and optional comm_group.json "
+                             "from this output directory instead of regenerating ET")
+    parser.add_argument("--tpu-trace-json", default=None,
+                        help="TPU/XLA mode: trace JSON filename/path inside --trace-dir "
+                             "(default: first *.trace.json)")
+    parser.add_argument("--tpu-ranks", type=int, default=8,
+                        help="TPU/XLA mode: number of TPU chips/ranks (default: 8)")
+    parser.add_argument("--tpu-torus-dims", default="2,4",
+                        help="TPU/XLA mode: comma-separated torus dimensions "
+                             "(default: 2,4)")
+    parser.add_argument("--tpu-iteration-index", type=int, default=1,
+                        help="TPU/XLA mode: 0-based clustered jit_train_step "
+                             "iteration index (default: 1)")
+    parser.add_argument("--tpu-iteration-marker", default="jit_train_step",
+                        help="TPU/XLA mode: event-name substring used to identify "
+                             "iteration windows (default: jit_train_step)")
+    parser.add_argument("--tpu-min-iteration-duration-us", type=float, default=0.0,
+                        help="TPU/XLA mode: minimum marker event duration in us")
+    parser.add_argument("--fallback-comm-size", type=int, default=256 * 1024 * 1024,
+                        help="TPU/XLA mode: bytes to use when collective payload "
+                             "size is absent from the trace")
 
     net = parser.add_argument_group("Network what-if parameters")
     net.add_argument("--topology", default="Switch",
@@ -376,21 +537,63 @@ Examples:
         print(f"ERROR: trace directory not found: {trace_dir}")
         sys.exit(1)
 
+    tpu_trace_json = None
+    tpu_torus_dims: list[int] | None = None
+
     # Detect ranks and validate inputs
     if args.mode == "full":
         ranks = detect_ranks_full(trace_dir)
         if not ranks:
             print(f"ERROR: No pytorch_et_N.json found in {trace_dir}")
-            print("Use --mode comm-only for traces with only rankN_trace.json")
+            print("Use --mode comm-only for traces with rankN_trace.json, "
+                  "or --mode tpu-xla for TPU *.trace.json traces")
             sys.exit(1)
         validate_full_mode(trace_dir, ranks)
-    else:
+    elif args.mode == "comm-only":
         ranks = detect_ranks_comm_only(trace_dir)
         if not ranks:
             print(f"ERROR: No rankN_trace.json files found in {trace_dir}")
             sys.exit(1)
         print(f"[pipeline] comm-only mode: compute gaps replayed as measured; "
               f"only communication time varies with hardware parameters")
+    else:
+        if args.compute_model not in {"gap", "kernels"}:
+            print("ERROR: --mode tpu-xla supports --compute-model gap or kernels")
+            sys.exit(1)
+        tpu_trace_json = (
+            (trace_dir / args.tpu_trace_json).resolve()
+            if args.tpu_trace_json is not None
+            else detect_tpu_trace_json(trace_dir)
+        )
+        if tpu_trace_json is None or not tpu_trace_json.exists():
+            print(f"ERROR: No TPU *.trace.json file found in {trace_dir}")
+            sys.exit(1)
+        if not str(tpu_trace_json).startswith(str(trace_dir)):
+            print("ERROR: --tpu-trace-json must be inside --trace-dir")
+            sys.exit(1)
+        try:
+            tpu_torus_dims = [
+                int(value) for value in args.tpu_torus_dims.split(",")
+                if value.strip()
+            ]
+        except ValueError:
+            print(f"ERROR: invalid --tpu-torus-dims: {args.tpu_torus_dims}")
+            sys.exit(1)
+        if not tpu_torus_dims:
+            print("ERROR: --tpu-torus-dims must contain at least one dimension")
+            sys.exit(1)
+        torus_npus = 1
+        for dim in tpu_torus_dims:
+            torus_npus *= dim
+        if torus_npus != args.tpu_ranks:
+            print(
+                f"ERROR: --tpu-torus-dims product ({torus_npus}) must equal "
+                f"--tpu-ranks ({args.tpu_ranks})"
+            )
+            sys.exit(1)
+        ranks = list(range(args.tpu_ranks))
+        print(f"[pipeline] tpu-xla mode: one XLA iteration replayed as Chakra; "
+              f"communication time varies with TPU torus hardware parameters")
 
     print(f"[pipeline] Mode: {args.mode}, {len(ranks)} ranks")
 
@@ -404,15 +607,29 @@ Examples:
 
     print(f"[pipeline] Output: {output_dir}")
 
-    # Write hardware configs
-    # comm-only disables roofline for compute (compute time comes from duration_micros)
-    roofline = 0 if args.mode == "comm-only" else 1
+    reuse_et_from = Path(args.reuse_et_from).resolve() if args.reuse_et_from else None
+    if reuse_et_from is not None:
+        if not reuse_et_from.exists():
+            print(f"ERROR: --reuse-et-from directory not found: {reuse_et_from}")
+            sys.exit(1)
+        copy_et_artifacts(reuse_et_from, output_dir)
+
+    # Write hardware configs. comm-only and tpu-xla disable roofline because
+    # compute time comes directly from Chakra duration_micros.
+    roofline = 0 if args.mode in {"comm-only", "tpu-xla"} else 1
     try:
-        network_shape = write_network_config(
-            output_dir / "network.yml", args.topology, len(ranks),
-            args.bandwidth, args.latency, args.gpus_per_node,
-            args.intra_topology, args.intra_bandwidth, args.intra_latency
-        )
+        if args.mode == "tpu-xla":
+            assert tpu_torus_dims is not None
+            network_shape = write_torus_network_config(
+                output_dir / "network.yml", tpu_torus_dims,
+                args.bandwidth, args.latency
+            )
+        else:
+            network_shape = write_network_config(
+                output_dir / "network.yml", args.topology, len(ranks),
+                args.bandwidth, args.latency, args.gpus_per_node,
+                args.intra_topology, args.intra_bandwidth, args.intra_latency
+            )
     except ValueError as e:
         print(f"ERROR: {e}")
         sys.exit(1)
@@ -422,7 +639,13 @@ Examples:
                         roofline_enabled=roofline)
     write_remote_memory_config(output_dir / "remote_memory.json")
 
-    if len(network_shape["npus_counts"]) == 1:
+    if args.mode == "tpu-xla":
+        print(f"[pipeline] Hardware: TPU torus topology={network_shape['topologies']}, "
+              f"npus={network_shape['npus_counts']}, "
+              f"bw={network_shape['bandwidths']}GB/s, "
+              f"latency={network_shape['latencies']}ns, "
+              f"algo={args.collective_algo}")
+    elif len(network_shape["npus_counts"]) == 1:
         print(f"[pipeline] Hardware: topology={network_shape['topologies'][0]}, "
               f"npus={len(ranks)}, "
               f"bw={network_shape['bandwidths'][0]}GB/s, "
@@ -438,12 +661,27 @@ Examples:
 
     # Build Docker run
     if args.mode == "full":
-        script = build_full_docker_script("/mnt/traces", "/mnt/output", ranks)
+        script = build_full_docker_script(
+            "/mnt/traces", "/mnt/output", ranks,
+            generate_et=(reuse_et_from is None)
+        )
         extra_mounts = None
-    else:
+    elif args.mode == "comm-only":
         script = build_comm_only_docker_script(
             "/mnt/traces", "/mnt/output", "/mnt/scripts", ranks,
-            args.compute_model
+            args.compute_model, args.kernel_dependency_mode, args.et_workers,
+            generate_et=(reuse_et_from is None)
+        )
+        extra_mounts = [(SIMULATION_DIR, "/mnt/scripts")]
+    else:
+        assert tpu_trace_json is not None
+        trace_json_docker = f"/mnt/traces/{tpu_trace_json.relative_to(trace_dir)}"
+        script = build_tpu_xla_docker_script(
+            trace_json_docker, "/mnt/output", "/mnt/scripts",
+            args.tpu_ranks, args.tpu_iteration_index,
+            args.compute_model, args.tpu_iteration_marker,
+            args.tpu_min_iteration_duration_us, args.fallback_comm_size,
+            generate_et=(reuse_et_from is None)
         )
         extra_mounts = [(SIMULATION_DIR, "/mnt/scripts")]
 
