@@ -810,6 +810,21 @@
         "high": 50,
         "mid": 20
       },
+      "required_update": false
+    },
+    "straggler_pct": {
+      "label": "Average Straggler Wait (%)",
+      "description": "Average percentage of total communication time that is spent waiting for slower participants to reach the synchronization barrier.",
+      "higher_is_better": false,
+      "unit": "%",
+      "category": "communication",
+      "trace_types": [
+        "json"
+      ],
+      "thresholds": {
+        "high": 50,
+        "mid": 20
+      },
       "required_update": true
     }
   }
