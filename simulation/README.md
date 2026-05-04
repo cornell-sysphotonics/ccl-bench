@@ -25,6 +25,7 @@ rankN_trace.json  ──►  gen_chakra_et.py  ──►  chakra_trace.*.et
 |------|-------|----------|
 | `comm-only` | `rankN_trace.json` (kineto Chrome JSON) | Compute time replayed as measured; comm time simulated |
 | `full` | `pytorch_et_N.json` + `kineto_trace_N.json` | Full op-graph fidelity via `chakra_trace_link` |
+| `tpu-xla` | single TPU `*.trace.json` (JAX/XLA Chrome JSON) | One XLA iteration replayed as HLO/device kernels plus XLA collectives |
 
 ## Prerequisites
 
@@ -61,6 +62,12 @@ python simulation/pipeline.py --mode full \
     --trace-dir trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter \
     --peak-perf 900 --mem-bw 3350 --gpus-per-node 8 \
     --intra-bandwidth 900 --bandwidth 50
+
+# TPU/XLA: 8-chip TPU torus bandwidth what-if
+python simulation/pipeline.py --mode tpu-xla \
+    --trace-dir /data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu \
+    --compute-model kernels --tpu-ranks 8 --tpu-torus-dims 2,4 \
+    --tpu-iteration-index 1 --bandwidth 3200 --latency 100
 ```
 
 Run from the repo root (`/home/dd687/ccl-bench/`).
@@ -77,6 +84,7 @@ Ready-to-run scripts are in `simulation/examples/`:
 | `04_parallelism_compare.sh` | ep4-dp2-tp4 vs ep4-dp4-tp2 vs ep8-dp2-tp4 vs ep8-dp8 |
 | `05_topology_compare.sh` | Scale-out Switch vs Ring vs FullyConnected with fixed scale-up |
 | `06_hardware_generations.sh` | Two-tier A100 → H100 → next-gen network presets |
+| `12_tpu_bandwidth_sweep_deepseekv2_maxtext.sh` | TPU v6e torus bandwidth sweep from a MaxText/XLA trace |
 
 Run any example from the repo root:
 
@@ -88,7 +96,8 @@ bash simulation/examples/02_bandwidth_sweep.sh
 
 ```
 --trace-dir PATH        Trace directory (required)
---mode {full,comm-only} Simulation mode (default: full)
+--mode {full,comm-only,tpu-xla}
+                        Simulation mode (default: full)
 --compute-model {gap,kernels}
                         comm-only compute model (default: gap)
 --output-dir PATH       Output directory (default: /var/tmp/ccl_bench_sim_*)
@@ -183,6 +192,30 @@ The pipeline prints a summary table at the end:
 
 Uses the official Chakra toolchain (`chakra_trace_link` + `chakra_converter`) to merge PyTorch execution traces with kineto device traces, producing fully attributed Chakra ET files with compute roofline enabled.
 
+### TPU MaxText/XLA example
+
+`simulation/examples/12_tpu_bandwidth_sweep_deepseekv2_maxtext.sh` uses `pipeline.py --mode tpu-xla` for:
+
+```
+/data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu/
+```
+
+That trace is a single JAX/XLA TPU Chrome trace (`*.trace.json`), not the `rankN_trace.json` format consumed by `pipeline.py --mode comm-only`. TPU/XLA mode calls `gen_tpu_xla_chakra_et.py` inside the AstraSim Docker image, selects one clustered `jit_train_step` iteration, emits `chakra_trace.0.et` ... `chakra_trace.7.et`, and runs AstraSim with an 8-chip TPU torus represented as:
+
+```yaml
+topology: [ Ring, Ring ]
+npus_count: [ 2, 4 ]
+```
+
+In TPU `--compute-model kernels`, non-collective HLO/device events with TPU device timing (`device_duration_ps`, `hlo_category`) are emitted as Chakra `COMP_NODE`s, while XLA collective HLO events such as `all-reduce`, `all-gather`, `reduce-scatter`, `all-to-all`, and `collective-permute` are emitted as `COMM_COLL_NODE`s. Positive idle intervals between rank-local emitted events are represented as gap `COMP_NODE`s, so the generated trace is closer to the GPU `--compute-model kernels --kernel-dependency-mode rank` path than the older collective-gap-only path.
+
+This TPU path is still approximate:
+
+- The MaxText trace may not expose exact collective payload sizes, so the example uses `FALLBACK_COMM_SIZE` when no byte count is present.
+- If a collective event is not associated with a specific TPU rank, the generator mirrors it to all ranks so AstraSim can model synchronization.
+- The model serializes emitted events per TPU rank; it does not reconstruct full XLA dependency DAG overlap or TPU compiler scheduling.
+- XLA `broadcast` is treated as local compute, not a distributed collective.
+
 ## Available Traces
 
 Torchtitan traces (support process-group-aware simulation):
@@ -207,3 +240,4 @@ trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter/
 - **PP/control SendRecv ops not simulated**: `ncclDevKernel_SendRecv` `all_to_allv` payload events are simulated, but tiny PP barrier/control exchanges are excluded. Variable-size `all_to_allv` payloads are normalized to the largest rank-local payload for each logical instance because AstraSim collective nodes require a single shared `comm_size` across participating ranks.
 - **Node-contiguous rank assumption**: Two-tier topology assumes contiguous rank blocks per node. If a trace uses a different rank placement, adjust `--gpus-per-node` or reorder/remap the trace ranks before simulation.
 - **Overlap is approximate**: `--compute-model gap` serializes compute gaps with communication inside one rank-local collective chain. `--compute-model kernels --kernel-dependency-mode rank` adds rank-local compute↔communication edges and positive rank-local idle gaps unless doing so would invert the global collective order, but it still does not reconstruct the full PyTorch dependency graph. `--kernel-dependency-mode stream` preserves per-stream event ordering and per-stream idle gaps, so compute and communication can overlap when they are on independent streams.
+- **TPU/XLA simulation is experimental**: The TPU MaxText example converts one XLA step to Chakra directly and models non-collective HLO/device events as compute kernels, but payload sizes, rank mapping, and overlap are limited by what the TPU Chrome trace exposes.

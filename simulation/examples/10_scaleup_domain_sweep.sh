@@ -16,7 +16,7 @@ INTRA_LAT=50
 INTER_BW=50
 INTER_LAT=50000
 COLLECTIVE_ALGO=ring
-COMPUTE_MODEL=gap
+COMPUTE_MODEL=kernels
 
 SCALEUP_DOMAIN_SIZES=(4 8 16 32)
 
@@ -32,9 +32,9 @@ SUMMARY="$REPO/simulation/examples/scaleup_domain_sweep/scaleup_domain_sweep_sum
 mkdir -p "$(dirname "$SUMMARY")"
 printf "gpus_per_node\tstep_ms\tcomm_fraction_pct\n" > "$SUMMARY"
 
-PREV_OUTDIR="bw_sweep/bw_sweep_ep32_5"
+PREV_OUTDIR="bw_sweep_kernels/bw_sweep_ep32_5"
 for GPUS_PER_NODE in "${SCALEUP_DOMAIN_SIZES[@]}"; do
-    OUTDIR="$REPO/simulation/examples/scaleup_domain_sweep/su${GPUS_PER_NODE}_${INTRA_TOPOLOGY}_inter${INTER_TOPOLOGY}"
+    OUTDIR="$REPO/simulation/examples/scaleup_domain_sweep_kernels/su${GPUS_PER_NODE}_${INTRA_TOPOLOGY}_inter${INTER_TOPOLOGY}"
     LOG="$OUTDIR/sweep_stdout.log"
     REUSE_ARGS=()
     if [ -n "$PREV_OUTDIR" ]; then
@@ -57,6 +57,7 @@ for GPUS_PER_NODE in "${SCALEUP_DOMAIN_SIZES[@]}"; do
         --latency "$INTER_LAT" \
         --collective-algo "$COLLECTIVE_ALGO" \
         --compute-model "$COMPUTE_MODEL" \
+        --kernel-dependency-mode rank \
         2>&1 | tee "$LOG"
     grep -E "Simulated step|[Cc]omm fraction|ERROR|Reused .*Chakra ET|Generating Chakra ET|Hardware:" "$LOG" || true
 
@@ -66,7 +67,7 @@ for GPUS_PER_NODE in "${SCALEUP_DOMAIN_SIZES[@]}"; do
         COMM_PCT=$(awk -F'Comm fraction: ' '{print $2}' <<< "$RESULT_LINE" | awk '{gsub("%", "", $1); print $1}')
         printf "%s\t%s\t%s\n" "$GPUS_PER_NODE" "$STEP_MS" "$COMM_PCT" >> "$SUMMARY"
     fi
-    
+
     PREV_OUTDIR="$OUTDIR"
     echo
 done
