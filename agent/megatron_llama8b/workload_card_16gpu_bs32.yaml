@@ -44,1224 +44,479 @@ runs:
     micro_batch_size: 2
     activation_checkpointing: false
   metrics:
-    avg_step_time: 8.3581441925
-  score: 8.3581441925
+    gpu_step_score: 0.5257689404253799
+  score: 0.5257689404253799
   status: success
   error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter0
-  policy: "\"\"\"Naive seed policy: pure data parallelism.\n\nNo model parallelism\
-    \ at all — just replicate the model on every GPU\nand do data-parallel training.\
-    \ This is the simplest possible config\nand a common starting point for someone\
-    \ who hasn't tuned parallelism.\n\"\"\"\n\n\ndef generate_config(workload: dict,\
-    \ environment: dict) -> dict:\n    total_gpus = environment.get(\"total_gpus\"\
-    , 16)\n\n    return {\n        \"tp\": 4,\n        \"dp\": 4,\n        \"pp\"\
-    : 1,\n        \"micro_batch_size\": 2,\n        \"activation_checkpointing\":\
-    \ False,\n    }"
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260504_034910/traces/20260504_034910_iter0
+  policy: "\"\"\"Seed: TP=4, PP=1, DP=4 (16 GPUs) with mbs=2.\nKnown-working config.\
+    \ Composite score rewards fewer GPUs:\nScore = 0.5 * (16/G) + 0.5 * (0.44/T)\n\
+    \"\"\"\n\ndef generate_config(workload: dict, environment: dict) -> dict:\n  \
+    \  return {\n        \"tp\": 4,\n        \"dp\": 4,\n        \"pp\": 1,\n    \
+    \    \"micro_batch_size\": 2,\n        \"activation_checkpointing\": False,\n\
+    \    }\n"
 - config:
-    tp: 4
+    tp: 1
+    dp: 1
     pp: 1
-    dp: 4
-    micro_batch_size: 4
-    activation_checkpointing: false
+    micro_batch_size: 1
+    activation_checkpointing: true
   metrics: {}
-  score: .inf
+  score: -.inf
   status: error
-  error_msg: "exit 1: ------------------------------------\nRoot Cause (first observed\
-    \ failure):\n[0]:\n  time      : 2026-04-29_11:57:38\n  host      : nid001240-hsn0\n\
-    \  rank      : 5 (local_rank: 1)\n  exitcode  : -11 (pid: 717670)\n  error_file:\
-    \ <N/A>\n  traceback : Signal 11 (SIGSEGV) received by PID 717670\n========================================================\n\
-    srun: error: nid001244: task 3: Exited with exit code 1\nsrun: Terminating StepId=52225631.1\n\
-    srun: error: nid001237: task 0: Exited with exit code 1\nsrun: error: nid001240:\
-    \ task 1: Exited with exit code 1\nsrun: error: nid001241: task 2: Exited with\
-    \ exit code 1\n"
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:52:21\n\
+    \  host      : nid001192-hsn0\n  rank      : 0 (local_rank: 0)\n  exitcode  :\
+    \ 1 (pid: 661255)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
   trace_dir: null
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Optimized config for LLM training on multi-node GPU clusters.\n\
-    \    \n    Key principles:\n    1. Keep tensor parallelism (TP) within a node\
-    \ to leverage high intra-node bandwidth\n    2. Minimize pipeline parallelism\
-    \ to avoid bubble overhead\n    3. Maximize data parallelism for throughput\n\
-    \    4. Choose micro_batch_size to minimize gradient accumulation steps\n    \"\
-    \"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n    gpus_per_node\
-    \ = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"\
-    gpu_memory_gb\", 40)\n    inter_bw = environment.get(\"inter_node_bandwidth_gbps\"\
-    , 25)\n    intra_bw = environment.get(\"intra_node_bandwidth_gbps\", 600)\n  \
-    \  \n    # Extract config space to know valid choices\n    config_space = workload.get(\"\
-    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
-    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    batch_size =\
-    \ workload.get(\"batch_size\", 32)\n    \n    # Model size heuristic based on\
-    \ model family\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
-    \    \n    # Estimate model size for memory planning\n    # Llama-3.1-8B ~ 8B\
-    \ params, ~16GB in bf16, ~32GB with optimizer states\n    # With TP=2, each GPU\
-    \ holds ~8GB model + ~16GB optimizer = ~24GB, fits in 40GB\n    \n    # Strategy:\
-    \ Keep TP intra-node, minimize PP, maximize DP\n    # TP=2 is a good sweet spot\
-    \ - reduces memory per GPU while keeping comm fast\n    \n    tp_choices = sorted(valid_choices.get(\"\
-    tp\", [1, 2, 4, 8]))\n    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2,\
-    \ 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n\
-    \    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\", [1, 2, 4]))\n\
-    \    ac_choices = valid_choices.get(\"activation_checkpointing\", [True, False])\n\
-    \    \n    best_config = None\n    best_score = float('inf')\n    \n    for tp\
-    \ in tp_choices:\n        # Keep TP within a node\n        if tp > gpus_per_node:\n\
-    \            continue\n        \n        for pp in pp_choices:\n            dp\
-    \ = total_gpus // (tp * pp)\n            \n            # dp must be valid\n  \
-    \          if dp not in dp_choices:\n                continue\n            if\
-    \ dp < 1:\n                continue\n            if tp * pp * dp != total_gpus:\n\
-    \                continue\n            \n            for mbs in mbs_choices:\n\
-    \                # Global batch = dp * mbs * num_accumulation_steps\n        \
-    \        # We need dp * mbs * acc = batch_size\n                if batch_size\
-    \ % (dp * mbs) != 0:\n                    continue\n                acc_steps\
-    \ = batch_size // (dp * mbs)\n                if acc_steps < 1:\n            \
-    \        continue\n                \n                for ac in ac_choices:\n \
-    \                   # Score this config with heuristics\n                    score\
-    \ = 0.0\n                    \n                    # TP communication cost - scales\
-    \ with model size and inversely with bandwidth\n                    if tp > 1:\n\
-    \                        # Intra-node TP is fast, inter-node TP is slow\n    \
-    \                    nodes_in_tp = max(1, tp // gpus_per_node)\n             \
-    \           if nodes_in_tp > 1:\n                            tp_cost = tp * 2.0\
-    \  # Heavy penalty for cross-node TP\n                        else:\n        \
-    \                    tp_cost = tp * 0.3  # Intra-node TP is relatively cheap\n\
-    \                    else:\n                        tp_cost = 0.0\n          \
-    \          \n                    # PP bubble overhead\n                    if\
-    \ pp > 1:\n                        pp_cost = (pp - 1) / pp * 2.0  # Pipeline bubble\
-    \ fraction\n                    else:\n                        pp_cost = 0.0\n\
-    \                    \n                    # DP all-reduce cost - depends on model\
-    \ size and inter-node comm\n                    if dp > 1:\n                 \
-    \       # Some DP ranks are cross-node\n                        dp_cost = 0.5\
-    \ * (dp / total_gpus)  # Normalized\n                    else:\n             \
-    \           dp_cost = 0.0\n                    \n                    # Gradient\
-    \ accumulation overhead\n                    acc_cost = acc_steps * 0.3  # Each\
-    \ acc step adds overhead\n                    \n                    # Computation\
-    \ time (inversely proportional to parallelism, but with overhead)\n          \
-    \          compute_cost = 5.0 / (tp * pp)  # Base compute per GPU\n          \
-    \          \n                    # Memory pressure - activation checkpointing\
-    \ slows things down\n                    if ac:\n                        compute_cost\
-    \ *= 1.3  # ~30% recompute overhead\n                    \n                  \
-    \  # Micro-batch size efficiency - larger is generally better for GPU utilization\n\
-    \                    mbs_efficiency = 1.0 / (mbs ** 0.3)\n                   \
-    \ \n                    total_score = tp_cost + pp_cost + dp_cost + acc_cost +\
-    \ compute_cost * mbs_efficiency\n                    \n                    if\
-    \ total_score < best_score:\n                        best_score = total_score\n\
-    \                        best_config = {\n                            \"tp\":\
-    \ tp,\n                            \"pp\": pp,\n                            \"\
-    dp\": dp,\n                            \"micro_batch_size\": mbs,\n          \
-    \                  \"activation_checkpointing\": ac,\n                       \
-    \ }\n    \n    # Fallback\n    if best_config is None:\n        best_config =\
-    \ {\n            \"tp\": 2,\n            \"pp\": 1,\n            \"dp\": 8,\n\
-    \            \"micro_batch_size\": 4,\n            \"activation_checkpointing\"\
-    : False,\n        }\n    \n    return best_config\n"
+    \ \"\"\"\n    Strategy: Use as few GPUs as possible since the score rewards fewer\
+    \ GPUs.\n    Try tp=1, dp=1, pp=1 (1 GPU total) with activation_checkpointing=True\n\
+    \    and micro_batch_size=1 to minimize memory usage.\n    \n    Llama-3.1-8B\
+    \ is ~16GB in bf16 weights. With activation checkpointing,\n    we might fit on\
+    \ a single 40GB A100.\n    \"\"\"\n    # Build config from config_space\n    config\
+    \ = {}\n    \n    # Parse config space to understand valid choices\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    # Try minimal GPU count: tp=1, dp=1, pp=1 = 1 GPU\n    config[\"tp\"] = 1\n\
+    \    config[\"dp\"] = 1\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"\
+    ] = 1\n    config[\"activation_checkpointing\"] = True\n    \n    return config\n"
 - config:
     tp: 2
+    dp: 2
     pp: 1
-    dp: 8
     micro_batch_size: 4
     activation_checkpointing: true
   metrics: {}
-  score: .inf
+  score: -.inf
   status: error
-  error_msg: "exit 143: cal_rank: 3)\n  exitcode  : 1 (pid: 815472)\n  error_file:\
-    \ <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n\
-    ============================================================\nsrun: error: nid001244:\
-    \ task 3: Exited with exit code 1\nsrun: Terminating StepId=52225631.2\n[2026-04-29T19:00:08.660]\
-    \ error: *** STEP 52225631.2 ON nid001237 CANCELLED AT 2026-04-29T19:00:08 DUE\
-    \ TO TASK FAILURE ***\nsrun: error: nid001241: task 2: Terminated\nsrun: error:\
-    \ nid001237: task 0: Terminated\nsrun: error: nid001240: task 1: Terminated\n\
-    srun: Force Terminated StepId=52225631.2\n"
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:53:21\n\
+    \  host      : nid001192-hsn0\n  rank      : 3 (local_rank: 3)\n  exitcode  :\
+    \ 1 (pid: 663030)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
   trace_dir: null
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Optimized config for LLM training on multi-node GPU clusters.\n\
-    \    \n    Lessons learned:\n    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\
-    \ (success)\n    - tp=4, dp=4, pp=1, mbs=4, ac=False -> SIGSEGV (OOM likely)\n\
-    \    \n    Strategy for this iteration:\n    - Try tp=2 to reduce TP communication\
-    \ overhead (tp=4 uses all intra-node GPUs for TP)\n    - With tp=2, dp=8 maximizes\
-    \ data parallelism across all 16 GPUs\n    - mbs=2 to balance memory and computation\
-    \ efficiency\n    - ac=False to avoid recompute overhead (model fits in memory\
-    \ with tp=2)\n    \"\"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n\
-    \    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb\
-    \ = environment.get(\"gpu_memory_gb\", 40)\n    \n    # Extract config space to\
-    \ know valid choices\n    config_space = workload.get(\"config_space\", [])\n\
-    \    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
-    key\"]] = dim[\"choices\"]\n    \n    batch_size = workload.get(\"batch_size\"\
-    , 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"\
-    model_family\", \"\").lower()\n    precision = workload.get(\"precision\", \"\
-    bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n\
-    \    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices\
-    \ = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"\
-    micro_batch_size\", [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # Estimate model size in billions of parameters\n\
-    \    model_size_b = 8.0  # default\n    if \"8b\" in model_family:\n        model_size_b\
-    \ = 8.0\n    elif \"70b\" in model_family:\n        model_size_b = 70.0\n    elif\
-    \ \"13b\" in model_family:\n        model_size_b = 13.0\n    elif \"7b\" in model_family:\n\
-    \        model_size_b = 7.0\n    \n    # Bytes per parameter: bf16 = 2 bytes for\
-    \ weights, ~10 bytes total with optimizer\n    bytes_per_param = 10 if precision\
-    \ == \"bf16\" else 12\n    model_memory_gb = model_size_b * bytes_per_param  #\
-    \ Total memory needed\n    \n    best_config = None\n    best_score = float('inf')\n\
-    \    \n    for tp in tp_choices:\n        # Keep TP within a node for fast communication\n\
-    \        if tp > gpus_per_node:\n            continue\n        \n        for pp\
-    \ in pp_choices:\n            dp = total_gpus // (tp * pp)\n            \n   \
-    \         if dp not in dp_choices:\n                continue\n            if dp\
-    \ < 1:\n                continue\n            if tp * pp * dp != total_gpus:\n\
-    \                continue\n            \n            # Memory check: model memory\
-    \ per GPU after TP and PP splitting\n            mem_per_gpu = model_memory_gb\
-    \ / (tp * pp)\n            \n            for mbs in mbs_choices:\n           \
-    \     # Check batch size divisibility\n                if batch_size % (dp * mbs)\
-    \ != 0:\n                    continue\n                acc_steps = batch_size\
-    \ // (dp * mbs)\n                if acc_steps < 1:\n                    continue\n\
-    \                \n                # Activation memory estimate (rough): proportional\
-    \ to mbs * seq_len / tp\n                act_mem = mbs * seq_len * model_size_b\
-    \ * 0.001 / tp  # rough GB estimate\n                \n                for ac\
-    \ in ac_choices:\n                    act_mem_effective = act_mem * 0.3 if ac\
-    \ else act_mem\n                    total_mem = mem_per_gpu + act_mem_effective\n\
-    \                    \n                    # Skip if likely OOM (leave some headroom)\n\
-    \                    if total_mem > gpu_memory_gb * 0.85 and not ac:\n       \
-    \                 continue\n                    \n                    # Heuristic\
-    \ scoring (lower is better)\n                    score = 0.0\n               \
-    \     \n                    # TP communication cost\n                    # Each\
-    \ TP step requires 2 all-reduces per layer\n                    # Cost depends\
-    \ on message size and bandwidth\n                    if tp > 1:\n            \
-    \            # TP comm is proportional to hidden_size / tp * 2 * num_layers\n\
-    \                        # Within node: use intra_bw, fast\n                 \
-    \       tp_comm_cost = 0.15 * (tp - 1)  # Roughly linear in TP degree\n      \
-    \              else:\n                        tp_comm_cost = 0.0\n           \
-    \         \n                    # PP bubble cost: (pp-1)/pp fraction of time wasted\
-    \ in bubbles\n                    if pp > 1:\n                        pp_bubble_cost\
-    \ = 3.0 * (pp - 1) / pp  # Significant overhead\n                    else:\n \
-    \                       pp_bubble_cost = 0.0\n                    \n         \
-    \           # DP all-reduce cost\n                    # With more DP, the all-reduce\
-    \ is over more GPUs (potentially cross-node)\n                    # But the gradient\
-    \ size per GPU is smaller with TP\n                    if dp > 1:\n          \
-    \              num_nodes_dp = max(1, dp * tp * pp // (gpus_per_node * tp * pp))\n\
-    \                        # Actually: nodes = total_gpus / gpus_per_node\n    \
-    \                    # Cross-node DP adds latency\n                        cross_node\
-    \ = dp > (gpus_per_node // tp)\n                        if cross_node:\n     \
-    \                       dp_cost = 0.3 + 0.05 * dp  # Cross-node penalty\n    \
-    \                    else:\n                            dp_cost = 0.05 * dp  #\
-    \ Intra-node only\n                    else:\n                        dp_cost\
-    \ = 0.0\n                    \n                    # Compute cost per step: base\
-    \ compute / (tp * pp), times acc_steps\n                    # Larger mbs = better\
-    \ GPU utilization (less kernel launch overhead)\n                    compute_per_microbatch\
-    \ = 1.0 / (tp * pp) * (1.0 / (mbs ** 0.2))\n                    total_compute\
-    \ = compute_per_microbatch * acc_steps\n                    \n               \
-    \     # Activation checkpointing overhead: ~33% more compute\n               \
-    \     if ac:\n                        total_compute *= 1.33\n                \
-    \    \n                    total_score = tp_comm_cost * acc_steps + pp_bubble_cost\
-    \ + dp_cost + total_compute\n                    \n                    if total_score\
-    \ < best_score:\n                        best_score = total_score\n          \
-    \              best_config = {\n                            \"tp\": tp,\n    \
-    \                        \"pp\": pp,\n                            \"dp\": dp,\n\
-    \                            \"micro_batch_size\": mbs,\n                    \
-    \        \"activation_checkpointing\": ac,\n                        }\n    \n\
-    \    # Fallback\n    if best_config is None:\n        best_config = {\n      \
-    \      \"tp\": 2,\n            \"pp\": 1,\n            \"dp\": 8,\n          \
-    \  \"micro_batch_size\": 2,\n            \"activation_checkpointing\": True,\n\
-    \        }\n    \n    return best_config\n"
+    \ \"\"\"\n    Strategy: Use fewer GPUs to maximize gpu_step_score.\n    \n   \
+    \ Previous results:\n    - 16 GPUs (tp=4, dp=4, pp=1): score 0.5258\n    - 1 GPU\
+    \ (tp=1, dp=1, pp=1): FAILED (likely OOM)\n    \n    Try 4 GPUs: tp=2, dp=2, pp=1\n\
+    \    - tp=2 splits model across 2 GPUs (within node, fast NVLink)\n    - dp=2\
+    \ for data parallelism\n    - activation_checkpointing=True to save memory\n \
+    \   - micro_batch_size=4 (batch_size=32, dp=2 → 16 per rank, 4 accumulation steps)\n\
+    \    \n    All 4 GPUs fit within a single node (gpus_per_node=4), so all communication\n\
+    \    is intra-node at 600 Gbps.\n    \"\"\"\n    config = {}\n    \n    # Parse\
+    \ config space\n    config_space = workload.get(\"config_space\", [])\n    valid_choices\
+    \ = {}\n    for dim in config_space:\n        valid_choices[dim[\"key\"]] = dim[\"\
+    choices\"]\n    \n    config[\"tp\"] = 2\n    config[\"dp\"] = 2\n    config[\"\
+    pp\"] = 1\n    config[\"micro_batch_size\"] = 4\n    config[\"activation_checkpointing\"\
+    ] = True\n    \n    return config\n"
 - config:
-    tp: 2
+    tp: 4
+    dp: 2
     pp: 1
-    dp: 8
     micro_batch_size: 2
-    activation_checkpointing: false
-  metrics: {}
-  score: .inf
+    activation_checkpointing: true
+  metrics:
+    gpu_step_score: 1.0389363906521536
+  score: 1.0389363906521536
+  status: success
+  error_msg: null
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260504_034910/traces/20260504_034910_iter3
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Strategy: Use 8 GPUs instead of 16 to improve gpu_step_score.\n\
+    \    \n    Previous results:\n    - 16 GPUs (tp=4, dp=4, pp=1, mbs=2, ckpt=False):\
+    \ score 0.5258 ✓\n    - 1 GPU (tp=1, dp=1, pp=1, mbs=1, ckpt=True): FAILED (OOM)\n\
+    \    - 4 GPUs (tp=2, dp=2, pp=1, mbs=4, ckpt=True): FAILED (likely OOM - mbs=4\
+    \ too large)\n    \n    Try 8 GPUs: tp=4, dp=2, pp=1\n    - tp=4 splits model\
+    \ across 4 GPUs (same as run 1, known to work for memory)\n    - dp=2 halves the\
+    \ GPU count vs run 1\n    - activation_checkpointing=True to be safe on memory\n\
+    \    - micro_batch_size=2 (same as run 1, known to work)\n    - 8 GPUs = 2 nodes\
+    \ × 4 GPUs, inter-node comm only for dp allreduce\n    \n    If score rewards\
+    \ fewer GPUs, using 8 instead of 16 should roughly double the score.\n    \"\"\
+    \"\n    config = {}\n    \n    # Parse config space\n    config_space = workload.get(\"\
+    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
+    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"\
+    ] = 4\n    config[\"dp\"] = 2\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"\
+    ] = 2\n    config[\"activation_checkpointing\"] = True\n    \n    return config\n"
+- config:
+    tp: 4
+    dp: 1
+    pp: 1
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics:
+    gpu_step_score: 2.6965612935008023
+  score: 2.6965612935008023
+  status: success
+  error_msg: null
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260504_034910/traces/20260504_034910_iter4
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Strategy: Minimize GPU count to maximize gpu_step_score.\n    \n\
+    \    Results so far:\n    - 16 GPUs (tp=4, dp=4, pp=1, mbs=2, ckpt=False): score\
+    \ 0.5258\n    - 8 GPUs (tp=4, dp=2, pp=1, mbs=2, ckpt=True): score 1.039\n   \
+    \ - 1 GPU: FAILED (OOM)\n    - 4 GPUs (tp=2, dp=2, mbs=4, ckpt=True): FAILED (OOM)\n\
+    \    \n    Pattern: Score roughly doubles when halving GPU count.\n    \n    Try\
+    \ 4 GPUs: tp=4, dp=1, pp=1\n    - tp=4 splits model across 4 GPUs (proven to work\
+    \ for memory)\n    - dp=1 means no data parallelism (fewer GPUs)\n    - All 4\
+    \ GPUs within one node → fast NVLink communication\n    - mbs=2, ckpt=True (known\
+    \ working combo)\n    - batch=32 with dp=1 → 32/2=16 gradient accumulation steps\n\
+    \    \"\"\"\n    config = {}\n    \n    # Parse config space\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    config[\"tp\"] = 4\n    config[\"dp\"] = 1\n    config[\"pp\"] = 1\n    config[\"\
+    micro_batch_size\"] = 2\n    config[\"activation_checkpointing\"] = True\n   \
+    \ \n    return config\n"
+- config: &id005
+    tp: 2
+    dp: 1
+    pp: 1
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics: &id006 {}
+  score: -.inf
   status: error
-  error_msg: "exit 1: \nRoot Cause (first observed failure):\n[0]:\n  time      :\
-    \ 2026-04-29_12:02:38\n  host      : nid001241-hsn0\n  rank      : 9 (local_rank:\
-    \ 1)\n  exitcode  : 1 (pid: 426097)\n  error_file: <N/A>\n  traceback : To enable\
-    \ traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n\
-    srun: error: nid001237: task 0: Exited with exit code 1\nsrun: Terminating StepId=52225631.3\n\
-    srun: error: nid001244: task 3: Exited with exit code 1\nsrun: error: nid001240:\
-    \ task 1: Exited with exit code 1\nsrun: error: nid001241: task 2: Exited with\
-    \ exit code 1\n"
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:56:49\n\
+    \  host      : nid001192-hsn0\n  rank      : 1 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 667389)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
   trace_dir: null
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 3: Try tp=2, pp=1, dp=8, mbs=2, ac=False\n    \n    History:\n\
-    \    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358 (success)\n    - tp=4, dp=4,\
-    \ pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True\
-    \ -> exit 143 (timeout/killed)\n    \n    Hypothesis: tp=2 reduces TP comm overhead.\
-    \ Previous tp=2 failure had ac=True\n    which adds 33% recompute - may have caused\
-    \ timeout. Try without AC.\n    If dp=8 cross-node is too slow, we'll fall back\
-    \ to dp=4 variants.\n    \n    Alternative: try tp=2, pp=2, dp=4 to keep dp=4\
-    \ (proven) while reducing TP.\n    Going with tp=2, pp=2, dp=4, mbs=4, ac=False\
-    \ - this keeps dp=4 and reduces \n    memory per GPU via pp=2, potentially allowing\
-    \ mbs=4.\n    \n    Actually, let's be safe and try tp=2, pp=2, dp=4, mbs=2, ac=False.\n\
-    \    \"\"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n    gpus_per_node\
-    \ = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"\
-    gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"config_space\",\
-    \ [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
-    key\"]] = dim[\"choices\"]\n    \n    batch_size = workload.get(\"batch_size\"\
-    , 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"\
-    model_family\", \"\").lower()\n    precision = workload.get(\"precision\", \"\
-    bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n\
-    \    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices\
-    \ = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"\
-    micro_batch_size\", [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # Estimate model size\n    model_size_b = 8.0\n  \
-    \  if \"70b\" in model_family:\n        model_size_b = 70.0\n    elif \"13b\"\
-    \ in model_family:\n        model_size_b = 13.0\n    elif \"8b\" in model_family:\n\
-    \        model_size_b = 8.0\n    elif \"7b\" in model_family:\n        model_size_b\
-    \ = 7.0\n    \n    # For Llama-3.1-8B on A100-40GB:\n    # Model params: 8B, bf16\
-    \ weights = 16GB, optimizer states ~32GB total\n    # With tp=2, pp=2: each GPU\
-    \ holds 1/(2*2)=1/4 of model = ~8GB optimizer states\n    # Plus activations for\
-    \ mbs=2, seq=1024 with tp=2: manageable\n    \n    # Try tp=2, pp=2, dp=4, mbs=2,\
-    \ ac=False\n    # This keeps dp=4 (which worked before) and uses pp=2 to reduce\
-    \ memory\n    # tp=2 means less TP all-reduce overhead than tp=4\n    # pp=2 adds\
-    \ some bubble overhead but for 8 acc_steps (32/(4*2)=4 acc steps) \n    # the\
-    \ bubble fraction is (2-1)/(4+2-1) = 1/5 = 20%\n    \n    # Actually, let me reconsider.\
-    \ With pp=2, the bubble overhead might hurt.\n    # Let me try tp=2, pp=1, dp=8,\
-    \ mbs=2, ac=False instead.\n    # The previous tp=2 dp=8 run failed with ac=True.\
-    \ Without AC should be faster.\n    \n    # Decision: try tp=2, pp=1, dp=8, mbs=2,\
-    \ ac=False\n    # dp=8 means 2 DP ranks per node, which requires inter-node communication\n\
-    \    # but with tp=2, each DP rank has half the gradients -> smaller all-reduce\n\
-    \    \n    tp = 2\n    pp = 1\n    dp = total_gpus // (tp * pp)  # 16/2 = 8\n\
-    \    mbs = 2\n    ac = False\n    \n    # Validate\n    if dp not in dp_choices:\n\
-    \        # Fallback to proven config\n        tp, pp, dp, mbs, ac = 4, 1, 4, 2,\
-    \ False\n    \n    # Check batch divisibility\n    if batch_size % (dp * mbs)\
-    \ != 0:\n        mbs = 1\n        if batch_size % (dp * mbs) != 0:\n         \
-    \   tp, pp, dp, mbs, ac = 4, 1, 4, 2, False\n    \n    return {\n        \"tp\"\
-    : tp,\n        \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\"\
-    : mbs,\n        \"activation_checkpointing\": ac,\n    }\n"
-- config:
-    tp: 2
-    pp: 2
-    dp: 4
-    micro_batch_size: 2
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 6.06780345434375
-  score: 6.06780345434375
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter4
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 4: Try tp=2, pp=2, dp=4, mbs=2, ac=False\n    \n    History:\n\
-    \    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358 (success, best)\n    - tp=4,\
-    \ dp=4, pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2,\
-    \ ac=True -> exit 143 (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False\
-    \ -> exit 1 (OOM likely)\n    \n    Insights:\n    - tp=4, pp=1 works but tp=2,\
-    \ pp=1 OOMs (not enough model splitting)\n    - dp=8 cross-node fails (too much\
-    \ inter-node comm or OOM)\n    - dp=4 is reliable\n    \n    Strategy: tp=2, pp=2,\
-    \ dp=4 keeps dp=4 (proven), splits model across tp*pp=4\n    (same total as tp=4,\
-    \ pp=1), but tp=2 has less all-reduce overhead.\n    pp=2 adds bubble but with\
-    \ 4 acc steps, bubble is manageable (~20%).\n    The net effect of less TP comm\
-    \ might outweigh pp bubble.\n    \"\"\"\n    total_gpus = environment.get(\"total_gpus\"\
-    , 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb\
-    \ = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"\
-    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
-    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    batch_size =\
-    \ workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
-    \    model_family = workload.get(\"model_family\", \"\").lower()\n    precision\
-    \ = workload.get(\"precision\", \"bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"\
-    tp\", [1, 2, 4, 8]))\n    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2,\
-    \ 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n\
-    \    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\", [1, 2, 4]))\n\
-    \    ac_choices = valid_choices.get(\"activation_checkpointing\", [True, False])\n\
-    \    \n    # Estimate model size\n    model_size_b = 8.0\n    if \"70b\" in model_family:\n\
-    \        model_size_b = 70.0\n    elif \"13b\" in model_family:\n        model_size_b\
-    \ = 13.0\n    elif \"8b\" in model_family:\n        model_size_b = 8.0\n    elif\
-    \ \"7b\" in model_family:\n        model_size_b = 7.0\n    \n    # For this workload\
-    \ (Llama-3.1-8B, 16 GPUs, A100-40GB):\n    # Try tp=2, pp=2, dp=4, mbs=2, ac=False\n\
-    \    # Each GPU holds 1/4 of model (same as tp=4,pp=1) but with less TP overhead\n\
-    \    # dp=4 keeps proven data parallelism degree\n    \n    tp = 2\n    pp = 2\n\
-    \    dp = total_gpus // (tp * pp)  # 16 / (2*2) = 4\n    mbs = 2\n    ac = False\n\
-    \    \n    # Validate constraints\n    if dp not in dp_choices:\n        tp, pp,\
-    \ dp, mbs, ac = 4, 1, 4, 2, False\n    \n    if tp * pp * dp != total_gpus:\n\
-    \        tp, pp, dp, mbs, ac = 4, 1, 4, 2, False\n    \n    # Check batch divisibility\n\
-    \    if batch_size % (dp * mbs) != 0:\n        mbs = 1\n        if batch_size\
-    \ % (dp * mbs) != 0:\n            tp, pp, dp, mbs, ac = 4, 1, 4, 2, False\n  \
-    \  \n    # General fallback logic for other workloads\n    if total_gpus != 16\
-    \ or gpu_memory_gb != 40:\n        # Use a general strategy\n        tp = min(gpus_per_node,\
-    \ max(t for t in tp_choices if t <= gpus_per_node))\n        pp = 1\n        dp\
-    \ = total_gpus // (tp * pp)\n        \n        if dp not in dp_choices:\n    \
-    \        for p in pp_choices:\n                d = total_gpus // (tp * p)\n  \
-    \              if d in dp_choices and d >= 1:\n                    pp = p\n  \
-    \                  dp = d\n                    break\n        \n        # Pick\
-    \ largest mbs that divides batch\n        mbs = 1\n        for m in reversed(mbs_choices):\n\
-    \            if batch_size % (dp * m) == 0:\n                mbs = m\n       \
-    \         break\n        \n        ac = False\n    \n    return {\n        \"\
-    tp\": tp,\n        \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\"\
-    : mbs,\n        \"activation_checkpointing\": ac,\n    }\n"
-- config:
-    tp: 2
-    pp: 2
-    dp: 4
-    micro_batch_size: 4
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 6.2309969240625
-  score: 6.2309969240625
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter5
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 5: Try tp=2, pp=2, dp=4, mbs=4, ac=False\n    \n    History:\n\
-    \    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358 (success)\n    - tp=4, dp=4,\
-    \ pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True\
-    \ -> exit 143 (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False -> exit\
-    \ 1 (OOM)\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068 (BEST)\n    \n   \
-    \ Strategy: Keep the best parallelism config (tp=2, pp=2, dp=4) but try mbs=4.\n\
-    \    With pp=2, each pipeline stage holds half the layers, so less activation\
-    \ memory.\n    mbs=4 would give acc_steps=32/(4*4)=2, reducing gradient accumulation\
-    \ overhead.\n    If OOM, we'll know mbs=4 doesn't work even with pp=2.\n    \"\
-    \"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n    gpus_per_node\
-    \ = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"\
-    gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"config_space\",\
-    \ [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
-    key\"]] = dim[\"choices\"]\n    \n    batch_size = workload.get(\"batch_size\"\
-    , 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"\
-    model_family\", \"\").lower()\n    precision = workload.get(\"precision\", \"\
-    bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n\
-    \    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices\
-    \ = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"\
-    micro_batch_size\", [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload, try mbs=4 with the best\
-    \ parallelism config\n    tp = 2\n    pp = 2\n    dp = total_gpus // (tp * pp)\
-    \  # 16 / (2*2) = 4\n    mbs = 4\n    ac = False\n    \n    # Validate constraints\n\
-    \    if dp not in dp_choices:\n        tp, pp, dp, mbs, ac = 2, 2, 4, 2, False\n\
-    \    \n    if tp * pp * dp != total_gpus:\n        tp, pp, dp, mbs, ac = 2, 2,\
-    \ 4, 2, False\n    \n    # Check batch divisibility\n    if batch_size % (dp *\
-    \ mbs) != 0:\n        mbs = 2\n        if batch_size % (dp * mbs) != 0:\n    \
-    \        mbs = 1\n    \n    # General fallback logic for other workloads\n   \
-    \ if total_gpus != 16 or gpu_memory_gb != 40:\n        # General strategy: TP\
-    \ within node, add PP if needed, rest is DP\n        # Start with tp=2 which has\
-    \ good balance of memory reduction vs comm\n        tp = min(2, gpus_per_node)\n\
-    \        if tp not in tp_choices:\n            tp = min(gpus_per_node, max(t for\
-    \ t in tp_choices if t <= gpus_per_node))\n        \n        # Try pp=2 first\
-    \ since it helped in our benchmarks\n        pp = 2 if 2 in pp_choices else 1\n\
-    \        dp = total_gpus // (tp * pp)\n        \n        if dp not in dp_choices\
-    \ or dp < 1:\n            pp = 1\n            dp = total_gpus // (tp * pp)\n \
-    \       \n        if dp not in dp_choices:\n            for p in pp_choices:\n\
-    \                d = total_gpus // (tp * p)\n                if d in dp_choices\
-    \ and d >= 1:\n                    pp = p\n                    dp = d\n      \
-    \              break\n        \n        # Pick largest mbs that divides batch\n\
-    \        mbs = 1\n        for m in reversed(mbs_choices):\n            if batch_size\
-    \ % (dp * m) == 0:\n                mbs = m\n                break\n        \n\
-    \        ac = False\n    \n    return {\n        \"tp\": tp,\n        \"pp\":\
-    \ pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n        \"activation_checkpointing\"\
-    : ac,\n    }\n"
-- config:
-    tp: 2
-    pp: 4
-    dp: 2
-    micro_batch_size: 2
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 0.8841301715
-  score: 0.8841301715
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter6
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 6: Explore tp=2, pp=4, dp=2, mbs=2, ac=False\n    \n \
-    \   History:\n    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n    - tp=4, dp=4,\
-    \ pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True\
-    \ -> exit 143 (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False -> exit\
-    \ 1 (OOM)\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068 (BEST)\n    - tp=2,\
-    \ pp=2, dp=4, mbs=4, ac=False -> 6.231\n    \n    Strategy: Try more pipeline\
-    \ parallelism (pp=4) with same tp=2.\n    pp=4 means each stage has only 8 layers\
-    \ (32/4), significantly less memory.\n    dp=2 means acc_steps = 32/(2*2) = 8.\n\
-    \    More PP stages = more pipeline bubble, but each stage is lighter.\n    This\
-    \ tests whether the reduced memory/computation per stage can offset\n    the pipeline\
-    \ bubble overhead.\n    \"\"\"\n    total_gpus = environment.get(\"total_gpus\"\
-    , 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb\
-    \ = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"\
-    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
-    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    batch_size =\
-    \ workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
-    \    model_family = workload.get(\"model_family\", \"\").lower()\n    precision\
-    \ = workload.get(\"precision\", \"bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"\
-    tp\", [1, 2, 4, 8]))\n    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2,\
-    \ 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n\
-    \    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\", [1, 2, 4]))\n\
-    \    ac_choices = valid_choices.get(\"activation_checkpointing\", [True, False])\n\
-    \    \n    # For this specific workload (Llama-3.1-8B, 16 GPUs, A100 40GB), explore\
-    \ pp=4\n    tp = 2\n    pp = 4\n    dp = total_gpus // (tp * pp)  # 16 / (2*4)\
-    \ = 2\n    mbs = 2\n    ac = False\n    \n    # Validate constraints\n    if dp\
-    \ not in dp_choices or tp * pp * dp != total_gpus:\n        # Fallback to best\
-    \ known config\n        tp, pp, dp, mbs, ac = 2, 2, 4, 2, False\n    \n    # Check\
-    \ batch divisibility\n    if batch_size % (dp * mbs) != 0:\n        mbs = 2\n\
-    \        if batch_size % (dp * mbs) != 0:\n            mbs = 1\n    \n    # ----\
-    \ General fallback logic for other workloads ----\n    if total_gpus != 16 or\
-    \ gpu_memory_gb != 40:\n        # General strategy based on learnings:\n     \
-    \   # tp=2 within node is optimal, pp=2 helps with memory, maximize dp\n     \
-    \   tp = min(2, gpus_per_node)\n        if tp not in tp_choices:\n           \
-    \ tp = min(gpus_per_node, max(t for t in tp_choices if t <= gpus_per_node))\n\
-    \        \n        # pp=2 was beneficial - try it first\n        pp = 2 if 2 in\
-    \ pp_choices else 1\n        dp = total_gpus // (tp * pp)\n        \n        if\
-    \ dp not in dp_choices or dp < 1:\n            pp = 1\n            dp = total_gpus\
-    \ // (tp * pp)\n        \n        if dp not in dp_choices:\n            for p\
-    \ in pp_choices:\n                d = total_gpus // (tp * p)\n               \
-    \ if d in dp_choices and d >= 1:\n                    pp = p\n               \
-    \     dp = d\n                    break\n        \n        # Pick mbs=2 as sweet\
-    \ spot (mbs=4 was slightly worse, mbs=1 more accumulation)\n        mbs = 2\n\
-    \        if batch_size % (dp * mbs) != 0:\n            for m in sorted(mbs_choices):\n\
-    \                if batch_size % (dp * m) == 0:\n                    mbs = m\n\
-    \                    break\n        \n        ac = False\n    \n    return {\n\
-    \        \"tp\": tp,\n        \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\"\
-    : mbs,\n        \"activation_checkpointing\": ac,\n    }\n"
-- config:
-    tp: 2
-    pp: 4
-    dp: 2
-    micro_batch_size: 4
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 1.0265980448125
-  score: 1.0265980448125
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter7
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 7: Explore tp=2, pp=4, dp=2, mbs=4, ac=False\n    \n \
-    \   History:\n    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n    - tp=4, dp=4,\
-    \ pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True\
-    \ -> exit 143 (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False -> exit\
-    \ 1 (OOM)\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068\n    - tp=2, pp=2,\
-    \ dp=4, mbs=4, ac=False -> 6.231\n    - tp=2, pp=4, dp=2, mbs=2, ac=False -> 0.8841\
-    \ (BEST!!)\n    \n    Strategy: The pp=4 config was a massive win. Now try mbs=4\
-    \ with the same\n    tp=2, pp=4, dp=2 to see if larger micro-batches reduce pipeline\
-    \ bubbles.\n    With mbs=4: acc_steps = 32/(2*4) = 4 (fewer pipeline flushes).\n\
-    \    With mbs=2: acc_steps = 32/(2*2) = 8 (current best).\n    \"\"\"\n    total_gpus\
-    \ = environment.get(\"total_gpus\", 16)\n    gpus_per_node = environment.get(\"\
-    gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n\
-    \    \n    config_space = workload.get(\"config_space\", [])\n    valid_choices\
-    \ = {}\n    for dim in config_space:\n        valid_choices[dim[\"key\"]] = dim[\"\
-    choices\"]\n    \n    batch_size = workload.get(\"batch_size\", 32)\n    seq_len\
-    \ = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"model_family\"\
-    , \"\").lower()\n    precision = workload.get(\"precision\", \"bf16\")\n    \n\
-    \    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload (Llama-3.1-8B, 16 GPUs,\
-    \ A100 40GB)\n    # Try tp=2, pp=4, dp=2, mbs=4 (larger mbs, fewer accumulation\
-    \ steps)\n    tp = 2\n    pp = 4\n    dp = total_gpus // (tp * pp)  # 16 / (2*4)\
-    \ = 2\n    mbs = 4  # Try larger micro-batch: acc_steps = 32/(2*4) = 4\n    ac\
-    \ = False\n    \n    # Validate constraints\n    if dp not in dp_choices or tp\
-    \ * pp * dp != total_gpus:\n        # Fallback to best known config\n        tp,\
-    \ pp, dp, mbs, ac = 2, 4, 2, 2, False\n    \n    # Check batch divisibility\n\
-    \    if batch_size % (dp * mbs) != 0:\n        mbs = 2\n        if batch_size\
-    \ % (dp * mbs) != 0:\n            mbs = 1\n    \n    # ---- General fallback logic\
-    \ for other workloads ----\n    if total_gpus != 16 or gpu_memory_gb != 40:\n\
-    \        # General strategy based on learnings:\n        # Higher PP is very beneficial\
-    \ (pp=4 >> pp=2 >> pp=1)\n        # tp=2 within node is optimal for communication\n\
-    \        # Keep dp moderate\n        \n        tp = min(2, gpus_per_node)\n  \
-    \      if tp not in tp_choices:\n            tp = min(gpus_per_node, max(t for\
-    \ t in tp_choices if t <= gpus_per_node))\n        \n        # Try pp=4 first\
-    \ (was best), then pp=2, then pp=1\n        best_pp = 1\n        best_dp = total_gpus\
-    \ // tp\n        for p in sorted(pp_choices, reverse=True):\n            d = total_gpus\
-    \ // (tp * p)\n            if d in dp_choices and d >= 1 and tp * p * d == total_gpus:\n\
-    \                best_pp = p\n                best_dp = d\n                break\n\
-    \        \n        pp = best_pp\n        dp = best_dp\n        \n        # Pick\
-    \ mbs=2 as default sweet spot\n        mbs = 2\n        if batch_size % (dp *\
-    \ mbs) != 0:\n            for m in sorted(mbs_choices):\n                if batch_size\
-    \ % (dp * m) == 0:\n                    mbs = m\n                    break\n \
-    \       \n        ac = False\n    \n    return {\n        \"tp\": tp,\n      \
-    \  \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n    \
-    \    \"activation_checkpointing\": ac,\n    }\n"
-- config:
-    tp: 1
-    pp: 4
-    dp: 4
-    micro_batch_size: 2
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 1.33202886603125
-  score: 1.33202886603125
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter8
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 8: Explore tp=1, pp=4, dp=4, mbs=2, ac=False\n    \n \
-    \   History:\n    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n    - tp=4, dp=4,\
-    \ pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True\
-    \ -> exit 143 (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False -> exit\
-    \ 1 (OOM)\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068\n    - tp=2, pp=2,\
-    \ dp=4, mbs=4, ac=False -> 6.231\n    - tp=2, pp=4, dp=2, mbs=2, ac=False -> 0.8841\
-    \ (BEST!!)\n    - tp=2, pp=4, dp=2, mbs=4, ac=False -> 1.027\n    \n    Key learnings:\n\
-    \    - pp=4 is hugely beneficial (0.88 vs 6.07 vs 8.36)\n    - mbs=2 beats mbs=4\
-    \ at dp=2,pp=4\n    - tp=2 works well, but tp=1 with pp=4 might be even better\
-    \ (no TP comm)\n    - With pp=4, model split into 4 stages, ~2B params per stage\
-    \ = ~4GB bf16\n      Plus optimizer ~12GB + activations should fit 40GB even with\
-    \ tp=1\n    \n    Try: tp=1, pp=4, dp=4, mbs=2 -> acc_steps = 32/(4*2) = 4\n \
-    \   This halves accumulation steps vs best config (was 8), and eliminates TP overhead.\n\
-    \    \"\"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n    gpus_per_node\
-    \ = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"\
-    gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"config_space\",\
-    \ [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
-    key\"]] = dim[\"choices\"]\n    \n    batch_size = workload.get(\"batch_size\"\
-    , 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"\
-    model_family\", \"\").lower()\n    precision = workload.get(\"precision\", \"\
-    bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n\
-    \    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices\
-    \ = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"\
-    micro_batch_size\", [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # Primary exploration: tp=1, pp=4, dp=4, mbs=2\n \
-    \   tp = 1\n    pp = 4\n    dp = total_gpus // (tp * pp)  # 16 / (1*4) = 4\n \
-    \   mbs = 2\n    ac = False\n    \n    # Validate constraints\n    if dp not in\
-    \ dp_choices or tp * pp * dp != total_gpus:\n        # Fallback to best known\
-    \ config\n        tp, pp, dp, mbs, ac = 2, 4, 2, 2, False\n    \n    # Check batch\
-    \ divisibility\n    if batch_size % (dp * mbs) != 0:\n        mbs = 2\n      \
-    \  if batch_size % (dp * mbs) != 0:\n            mbs = 1\n            if batch_size\
-    \ % (dp * mbs) != 0:\n                # Final fallback\n                tp, pp,\
-    \ dp, mbs, ac = 2, 4, 2, 2, False\n    \n    # ---- General fallback logic for\
-    \ other workloads ----\n    if total_gpus != 16 or gpu_memory_gb != 40:\n    \
-    \    # General strategy based on learnings:\n        # Higher PP is very beneficial\
-    \ (pp=4 >> pp=2 >> pp=1)\n        # Lower tp preferred if memory allows (reduces\
-    \ communication)\n        # Balance dp for good accumulation step count\n    \
-    \    \n        # Start with tp=1 or tp=2 depending on model size\n        num_layers\
-    \ = workload.get(\"num_layers\", 32)\n        num_heads = workload.get(\"num_heads\"\
-    , 32)\n        \n        # Estimate model params roughly\n        hidden_dim =\
-    \ num_heads * 128  # rough estimate\n        est_params_b = num_layers * 12 *\
-    \ (hidden_dim ** 2) / 1e9\n        \n        # Try to maximize pp first, then\
-    \ dp, minimize tp\n        best_config = None\n        best_heuristic = float('inf')\n\
-    \        \n        for tp in tp_choices:\n            if tp > gpus_per_node:\n\
-    \                continue\n            for pp in sorted(pp_choices, reverse=True):\n\
-    \                dp = total_gpus // (tp * pp)\n                if dp not in dp_choices\
-    \ or dp < 1 or tp * pp * dp != total_gpus:\n                    continue\n   \
-    \             \n                # Memory check: params per stage per tp shard\n\
-    \                params_per_gpu_gb = (est_params_b * 2) / (pp * tp)  # bf16\n\
-    \                optimizer_per_gpu_gb = params_per_gpu_gb * 4  # Adam states\n\
-    \                total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n      \
-    \          \n                if total_mem > gpu_memory_gb * 0.7 and not ac:\n\
-    \                    continue\n                \n                for mbs in sorted(mbs_choices,\
-    \ reverse=True):\n                    if batch_size % (dp * mbs) != 0:\n     \
-    \                   continue\n                    acc_steps = batch_size // (dp\
-    \ * mbs)\n                    if acc_steps < pp:  # Need enough micro-batches\
-    \ for pipeline\n                        continue\n                    \n     \
-    \               # Heuristic: prefer high pp, low tp, moderate dp\n           \
-    \         # Lower score = better\n                    h = tp * 2.0 + (1.0 / pp)\
-    \ * 10.0 + acc_steps * 0.5\n                    \n                    if h < best_heuristic:\n\
-    \                        best_heuristic = h\n                        best_config\
-    \ = (tp, pp, dp, mbs, False)\n        \n        if best_config:\n            tp,\
-    \ pp, dp, mbs, ac = best_config\n        else:\n            tp, pp, dp, mbs, ac\
-    \ = 2, 4, 2, 2, False\n    \n    return {\n        \"tp\": tp,\n        \"pp\"\
-    : pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n        \"activation_checkpointing\"\
-    : ac,\n    }\n"
-- config:
-    tp: 2
-    pp: 4
-    dp: 2
-    micro_batch_size: 1
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 0.6739495083125
-  score: 0.6739495083125
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter9
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 9: Explore tp=2, pp=4, dp=2, mbs=1, ac=False\n    \n \
-    \   History:\n    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n    - tp=4, dp=4,\
-    \ pp=1, mbs=4, ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True\
-    \ -> exit 143 (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False -> exit\
-    \ 1 (OOM)\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068\n    - tp=2, pp=2,\
-    \ dp=4, mbs=4, ac=False -> 6.231\n    - tp=2, pp=4, dp=2, mbs=2, ac=False -> 0.8841\
-    \ (BEST!!)\n    - tp=2, pp=4, dp=2, mbs=4, ac=False -> 1.027\n    - tp=1, pp=4,\
-    \ dp=4, mbs=2, ac=False -> 1.332\n    \n    Key learnings:\n    - pp=4 is hugely\
-    \ beneficial\n    - tp=2 with pp=4 beats tp=1 with pp=4 (0.88 vs 1.33)\n    -\
-    \ mbs=2 beats mbs=4 at dp=2,pp=4\n    - Now try mbs=1 to see if even smaller micro-batch\
-    \ helps\n    \"\"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n  \
-    \  gpus_per_node = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb =\
-    \ environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"\
-    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
-    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    batch_size =\
-    \ workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
-    \    model_family = workload.get(\"model_family\", \"\").lower()\n    precision\
-    \ = workload.get(\"precision\", \"bf16\")\n    \n    tp_choices = sorted(valid_choices.get(\"\
-    tp\", [1, 2, 4, 8]))\n    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2,\
-    \ 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n\
-    \    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\", [1, 2, 4]))\n\
-    \    ac_choices = valid_choices.get(\"activation_checkpointing\", [True, False])\n\
-    \    \n    # Target config: tp=2, pp=4, dp=2, mbs=1, ac=False\n    tp = 2\n  \
-    \  pp = 4\n    dp = total_gpus // (tp * pp)  # 16 / (2*4) = 2\n    mbs = 1\n \
-    \   ac = False\n    \n    # Validate constraints\n    if dp not in dp_choices\
-    \ or tp * pp * dp != total_gpus:\n        tp, pp, dp, mbs, ac = 2, 4, 2, 2, False\n\
-    \    \n    # Check batch divisibility: 32 / (2*1) = 16 acc_steps - OK\n    if\
-    \ batch_size % (dp * mbs) != 0:\n        mbs = 2\n        if batch_size % (dp\
-    \ * mbs) != 0:\n            tp, pp, dp, mbs, ac = 2, 4, 2, 2, False\n    \n  \
-    \  # ---- General logic for other workloads ----\n    if total_gpus != 16 or gpu_memory_gb\
-    \ != 40:\n        num_layers = workload.get(\"num_layers\", 32)\n        num_heads\
-    \ = workload.get(\"num_heads\", 32)\n        hidden_dim = num_heads * 128\n  \
-    \      est_params_b = num_layers * 12 * (hidden_dim ** 2) / 1e9\n        \n  \
-    \      best_config = None\n        best_heuristic = float('inf')\n        \n \
-    \       for tp_c in tp_choices:\n            if tp_c > gpus_per_node:\n      \
-    \          continue\n            for pp_c in sorted(pp_choices, reverse=True):\n\
-    \                dp_c = total_gpus // (tp_c * pp_c)\n                if dp_c not\
-    \ in dp_choices or dp_c < 1 or tp_c * pp_c * dp_c != total_gpus:\n           \
-    \         continue\n                \n                params_per_gpu_gb = (est_params_b\
-    \ * 2) / (pp_c * tp_c)\n                optimizer_per_gpu_gb = params_per_gpu_gb\
-    \ * 4\n                total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n\
-    \                \n                if total_mem > gpu_memory_gb * 0.7:\n     \
-    \               continue\n                \n                for mbs_c in sorted(mbs_choices,\
-    \ reverse=True):\n                    if batch_size % (dp_c * mbs_c) != 0:\n \
-    \                       continue\n                    acc_steps = batch_size //\
-    \ (dp_c * mbs_c)\n                    if acc_steps < pp_c:\n                 \
-    \       continue\n                    \n                    # Favor high pp, moderate\
-    \ tp (tp=2 sweet spot), low dp comm\n                    h = (1.0 / pp_c) * 10.0\
-    \ + abs(tp_c - 2) * 1.0 + dp_c * 0.3 + acc_steps * 0.1\n                    \n\
-    \                    if h < best_heuristic:\n                        best_heuristic\
-    \ = h\n                        best_config = (tp_c, pp_c, dp_c, mbs_c, False)\n\
-    \        \n        if best_config:\n            tp, pp, dp, mbs, ac = best_config\n\
-    \        else:\n            tp, pp, dp, mbs, ac = 2, 4, 2, 2, False\n    \n  \
-    \  return {\n        \"tp\": tp,\n        \"pp\": pp,\n        \"dp\": dp,\n \
-    \       \"micro_batch_size\": mbs,\n        \"activation_checkpointing\": ac,\n\
-    \    }\n"
-- config:
-    tp: 2
-    pp: 8
-    dp: 1
-    micro_batch_size: 1
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 0.6068023986250001
-  score: 0.6068023986250001
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter10
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 11: Try tp=2, pp=8, dp=1, mbs=1, ac=False\n    \n    History:\n\
-    \    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n    - tp=4, dp=4, pp=1, mbs=4,\
-    \ ac=False -> SIGSEGV (OOM)\n    - tp=2, dp=8, pp=1, mbs=2, ac=True -> exit 143\
-    \ (timeout/killed)\n    - tp=2, dp=8, pp=1, mbs=2, ac=False -> exit 1 (OOM)\n\
-    \    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068\n    - tp=2, pp=2, dp=4, mbs=4,\
-    \ ac=False -> 6.231\n    - tp=2, pp=4, dp=2, mbs=2, ac=False -> 0.8841\n    -\
-    \ tp=2, pp=4, dp=2, mbs=4, ac=False -> 1.027\n    - tp=1, pp=4, dp=4, mbs=2, ac=False\
-    \ -> 1.332\n    - tp=2, pp=4, dp=2, mbs=1, ac=False -> 0.6739 (BEST!)\n    \n\
-    \    Key trends:\n    - Higher pp dramatically reduces step time\n    - Lower\
-    \ dp reduces communication overhead\n    - mbs=1 is optimal\n    - tp=2 > tp=1\
-    \ (with pp=4)\n    - Try pp=8 to see if the trend continues\n    \"\"\"\n    total_gpus\
-    \ = environment.get(\"total_gpus\", 16)\n    gpus_per_node = environment.get(\"\
-    gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n\
-    \    \n    config_space = workload.get(\"config_space\", [])\n    valid_choices\
-    \ = {}\n    for dim in config_space:\n        valid_choices[dim[\"key\"]] = dim[\"\
-    choices\"]\n    \n    batch_size = workload.get(\"batch_size\", 32)\n    seq_len\
-    \ = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"model_family\"\
-    , \"\").lower()\n    precision = workload.get(\"precision\", \"bf16\")\n    \n\
-    \    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # Primary target: tp=2, pp=8, dp=1, mbs=1, ac=False\n\
-    \    tp = 2\n    pp = 8\n    dp = total_gpus // (tp * pp)  # 16 / (2*8) = 1\n\
-    \    mbs = 1\n    ac = False\n    \n    # Validate\n    if dp not in dp_choices\
-    \ or tp * pp * dp != total_gpus:\n        # Fallback to known best\n        tp,\
-    \ pp, dp, mbs, ac = 2, 4, 2, 1, False\n    \n    if batch_size % (dp * mbs) !=\
-    \ 0:\n        mbs = 2\n        if batch_size % (dp * mbs) != 0:\n            tp,\
-    \ pp, dp, mbs, ac = 2, 4, 2, 1, False\n    \n    # For pp=8, need acc_steps >=\
-    \ pp for good pipeline utilization\n    acc_steps = batch_size // (dp * mbs)\n\
-    \    if acc_steps < pp:\n        # Not enough accumulation steps for pipeline,\
-    \ fallback\n        tp, pp, dp, mbs, ac = 2, 4, 2, 1, False\n    \n    # ----\
-    \ General logic for other workloads ----\n    if total_gpus != 16 or gpu_memory_gb\
-    \ != 40:\n        num_layers = workload.get(\"num_layers\", 32)\n        num_heads\
-    \ = workload.get(\"num_heads\", 32)\n        hidden_dim = num_heads * 128\n  \
-    \      est_params_b = num_layers * 12 * (hidden_dim ** 2) / 1e9\n        \n  \
-    \      best_config = None\n        best_heuristic = float('inf')\n        \n \
-    \       for tp_c in tp_choices:\n            if tp_c > gpus_per_node:\n      \
-    \          continue\n            for pp_c in sorted(pp_choices, reverse=True):\n\
-    \                dp_c = total_gpus // (tp_c * pp_c)\n                if dp_c not\
-    \ in dp_choices or dp_c < 1 or tp_c * pp_c * dp_c != total_gpus:\n           \
-    \         continue\n                \n                params_per_gpu_gb = (est_params_b\
-    \ * 2) / (pp_c * tp_c)\n                optimizer_per_gpu_gb = params_per_gpu_gb\
-    \ * 4\n                total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n\
-    \                \n                if total_mem > gpu_memory_gb * 0.7:\n     \
-    \               continue\n                \n                for mbs_c in sorted(mbs_choices):\
-    \  # prefer smaller mbs\n                    if batch_size % (dp_c * mbs_c) !=\
-    \ 0:\n                        continue\n                    acc_steps_c = batch_size\
-    \ // (dp_c * mbs_c)\n                    if acc_steps_c < pp_c:\n            \
-    \            continue\n                    \n                    # Favor high\
-    \ pp, tp=2 sweet spot, low dp, small mbs\n                    h = (1.0 / pp_c)\
-    \ * 10.0 + abs(tp_c - 2) * 1.0 + dp_c * 0.5 + mbs_c * 0.3\n                  \
-    \  \n                    if h < best_heuristic:\n                        best_heuristic\
-    \ = h\n                        best_config = (tp_c, pp_c, dp_c, mbs_c, False)\n\
-    \        \n        if best_config:\n            tp, pp, dp, mbs, ac = best_config\n\
-    \        else:\n            tp, pp, dp, mbs, ac = 2, 4, 2, 1, False\n    \n  \
-    \  return {\n        \"tp\": tp,\n        \"pp\": pp,\n        \"dp\": dp,\n \
-    \       \"micro_batch_size\": mbs,\n        \"activation_checkpointing\": ac,\n\
-    \    }\n"
-- config:
-    tp: 1
-    pp: 8
-    dp: 2
-    micro_batch_size: 1
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 1.0882901713125
-  score: 1.0882901713125
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter11
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 12: Try tp=1, pp=8, dp=2, mbs=1, ac=False\n    \n    History:\n\
-    \    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n    - tp=2, pp=2, dp=4, mbs=2,\
-    \ ac=False -> 6.068\n    - tp=2, pp=2, dp=4, mbs=4, ac=False -> 6.231\n    - tp=2,\
-    \ pp=4, dp=2, mbs=2, ac=False -> 0.8841\n    - tp=2, pp=4, dp=2, mbs=4, ac=False\
-    \ -> 1.027\n    - tp=1, pp=4, dp=4, mbs=2, ac=False -> 1.332\n    - tp=2, pp=4,\
-    \ dp=2, mbs=1, ac=False -> 0.6739\n    - tp=2, pp=8, dp=1, mbs=1, ac=False ->\
-    \ 0.6068 (BEST!)\n    \n    Key observations:\n    - Higher pp dramatically reduces\
-    \ step time\n    - mbs=1 is optimal\n    - tp=2 with pp=4 beat tp=1 with pp=4\
-    \ (0.6739 vs 1.332)\n    - pp=8 with tp=2 is current best\n    \n    Now trying\
-    \ tp=1, pp=8, dp=2, mbs=1 to test if we can beat current best\n    by reducing\
-    \ TP overhead while maintaining high pp.\n    acc_steps = 32/(2*1) = 16 >= pp=8,\
-    \ good pipeline utilization.\n    \"\"\"\n    total_gpus = environment.get(\"\
-    total_gpus\", 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
-    \    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space\
-    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
-    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
-    \    batch_size = workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"\
-    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
-    \    precision = workload.get(\"precision\", \"bf16\")\n    num_layers = workload.get(\"\
-    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n    \n   \
-    \ tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload (16 GPUs, A100 40GB,\
-    \ Llama-8B):\n    # Try tp=1, pp=8, dp=2, mbs=1\n    tp = 1\n    pp = 8\n    dp\
-    \ = total_gpus // (tp * pp)  # 16 / (1*8) = 2\n    mbs = 1\n    ac = False\n \
-    \   \n    # Validate\n    if dp not in dp_choices or tp * pp * dp != total_gpus:\n\
-    \        tp, pp, dp, mbs, ac = 2, 8, 1, 1, False\n    \n    if batch_size % (dp\
-    \ * mbs) != 0:\n        mbs = 2\n        if batch_size % (dp * mbs) != 0:\n  \
-    \          tp, pp, dp, mbs, ac = 2, 8, 1, 1, False\n    \n    acc_steps = batch_size\
-    \ // (dp * mbs)\n    if acc_steps < pp:\n        tp, pp, dp, mbs, ac = 2, 8, 1,\
-    \ 1, False\n    \n    # ---- General logic for other workloads ----\n    if total_gpus\
-    \ != 16 or gpu_memory_gb != 40:\n        hidden_dim = num_heads * 128\n      \
-    \  est_params_b = num_layers * 12 * (hidden_dim ** 2) / 1e9\n        \n      \
-    \  best_config = None\n        best_heuristic = float('inf')\n        \n     \
-    \   for tp_c in tp_choices:\n            if tp_c > gpus_per_node:\n          \
-    \      continue\n            for pp_c in sorted(pp_choices, reverse=True):\n \
-    \               dp_c = total_gpus // (tp_c * pp_c)\n                if dp_c not\
-    \ in dp_choices or dp_c < 1 or tp_c * pp_c * dp_c != total_gpus:\n           \
-    \         continue\n                \n                params_per_gpu_gb = (est_params_b\
-    \ * 2) / (pp_c * tp_c)\n                optimizer_per_gpu_gb = params_per_gpu_gb\
-    \ * 4\n                total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n\
-    \                \n                if total_mem > gpu_memory_gb * 0.7:\n     \
-    \               continue\n                \n                for mbs_c in sorted(mbs_choices):\n\
-    \                    if batch_size % (dp_c * mbs_c) != 0:\n                  \
-    \      continue\n                    acc_steps_c = batch_size // (dp_c * mbs_c)\n\
-    \                    if acc_steps_c < pp_c:\n                        continue\n\
-    \                    \n                    # Favor high pp, tp=2 sweet spot, low\
-    \ dp, small mbs\n                    h = (1.0 / pp_c) * 10.0 + abs(tp_c - 2) *\
-    \ 1.0 + dp_c * 0.5 + mbs_c * 0.3\n                    \n                    if\
-    \ h < best_heuristic:\n                        best_heuristic = h\n          \
-    \              best_config = (tp_c, pp_c, dp_c, mbs_c, False)\n        \n    \
-    \    if best_config:\n            tp, pp, dp, mbs, ac = best_config\n        else:\n\
-    \            tp, pp, dp, mbs, ac = 2, 4, 2, 1, False\n    \n    return {\n   \
-    \     \"tp\": tp,\n        \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\"\
-    : mbs,\n        \"activation_checkpointing\": ac,\n    }\n"
+    \ \"\"\"\n    Strategy: Minimize GPU count to maximize gpu_step_score.\n    \n\
+    \    Results so far:\n    - 16 GPUs (tp=4, dp=4, pp=1, mbs=2, ckpt=False): score\
+    \ 0.5258\n    - 8 GPUs (tp=4, dp=2, pp=1, mbs=2, ckpt=True): score 1.039\n   \
+    \ - 4 GPUs (tp=4, dp=1, pp=1, mbs=2, ckpt=True): score 2.697\n    - 1 GPU (tp=1,\
+    \ dp=1, pp=1, mbs=1, ckpt=True): FAILED (OOM)\n    - 4 GPUs (tp=2, dp=2, pp=1,\
+    \ mbs=4, ckpt=True): FAILED (OOM)\n    \n    Score scales roughly inversely with\
+    \ GPU count.\n    Try 2 GPUs: tp=2, dp=1, pp=1\n    - tp=2 splits 8B model across\
+    \ 2 GPUs (~4B params each, ~8GB bf16)\n    - mbs=1 to minimize activation memory\n\
+    \    - activation_checkpointing=True\n    - batch=32 with dp=1 → 32 gradient accumulation\
+    \ steps\n    - Both GPUs within one node → fast NVLink\n    \"\"\"\n    config\
+    \ = {}\n    \n    # Parse config space\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"] = 2\n    config[\"dp\"] =\
+    \ 1\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"] = 1\n    config[\"\
+    activation_checkpointing\"] = True\n    \n    return config\n"
 - config: &id001
-    tp: 4
-    pp: 4
+    tp: 1
     dp: 1
-    micro_batch_size: 1
-    activation_checkpointing: false
-  metrics: &id002
-    avg_step_time: 0.4427202638125
-  score: 0.4427202638125
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter12
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 13: Try tp=4, pp=4, dp=1, mbs=1, ac=False\n    \n    History\
-    \ (sorted by score):\n    - tp=2, pp=8, dp=1, mbs=1, ac=False -> 0.6068 (BEST)\n\
-    \    - tp=2, pp=4, dp=2, mbs=1, ac=False -> 0.6739\n    - tp=2, pp=4, dp=2, mbs=2,\
-    \ ac=False -> 0.8841\n    - tp=2, pp=4, dp=2, mbs=4, ac=False -> 1.027\n    -\
-    \ tp=1, pp=8, dp=2, mbs=1, ac=False -> 1.088\n    - tp=1, pp=4, dp=4, mbs=2, ac=False\
-    \ -> 1.332\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068\n    - tp=2, pp=2,\
-    \ dp=4, mbs=4, ac=False -> 6.231\n    - tp=4, dp=4, pp=1, mbs=2, ac=False -> 8.358\n\
-    \    \n    Now trying tp=4, pp=4, dp=1, mbs=1 to explore if higher TP (fully intra-node)\n\
-    \    with moderate PP can beat current best.\n    acc_steps = 32/(1*1) = 32 >=\
-    \ pp=4, excellent pipeline utilization.\n    \"\"\"\n    total_gpus = environment.get(\"\
-    total_gpus\", 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
-    \    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space\
-    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
-    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
-    \    batch_size = workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"\
-    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
-    \    precision = workload.get(\"precision\", \"bf16\")\n    num_layers = workload.get(\"\
-    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n    \n   \
-    \ tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload (16 GPUs, A100 40GB,\
-    \ Llama-8B):\n    # Try tp=4, pp=4, dp=1, mbs=1\n    tp = 4\n    pp = 4\n    dp\
-    \ = total_gpus // (tp * pp)  # 16 / (4*4) = 1\n    mbs = 1\n    ac = False\n \
-    \   \n    # Validate\n    if dp not in dp_choices or tp * pp * dp != total_gpus:\n\
-    \        # Fallback to known best\n        tp, pp, dp, mbs, ac = 2, 8, 1, 1, False\n\
-    \    \n    if batch_size % (dp * mbs) != 0:\n        tp, pp, dp, mbs, ac = 2,\
-    \ 8, 1, 1, False\n    \n    acc_steps = batch_size // (dp * mbs)\n    if acc_steps\
-    \ < pp:\n        tp, pp, dp, mbs, ac = 2, 8, 1, 1, False\n    \n    # ---- General\
-    \ logic for other workloads ----\n    if total_gpus != 16 or gpu_memory_gb !=\
-    \ 40:\n        hidden_dim = num_heads * 128\n        est_params_b = num_layers\
-    \ * 12 * (hidden_dim ** 2) / 1e9\n        \n        best_config = None\n     \
-    \   best_heuristic = float('inf')\n        \n        for tp_c in tp_choices:\n\
-    \            if tp_c > gpus_per_node:\n                continue\n            for\
-    \ pp_c in sorted(pp_choices, reverse=True):\n                dp_c = total_gpus\
-    \ // (tp_c * pp_c)\n                if dp_c not in dp_choices or dp_c < 1 or tp_c\
-    \ * pp_c * dp_c != total_gpus:\n                    continue\n               \
-    \ \n                params_per_gpu_gb = (est_params_b * 2) / (pp_c * tp_c)\n \
-    \               optimizer_per_gpu_gb = params_per_gpu_gb * 4\n               \
-    \ total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n                \n   \
-    \             if total_mem > gpu_memory_gb * 0.7:\n                    continue\n\
-    \                \n                for mbs_c in sorted(mbs_choices):\n       \
-    \             if batch_size % (dp_c * mbs_c) != 0:\n                        continue\n\
-    \                    acc_steps_c = batch_size // (dp_c * mbs_c)\n            \
-    \        if acc_steps_c < pp_c:\n                        continue\n          \
-    \          \n                    # Favor high pp, tp=2 sweet spot, low dp, small\
-    \ mbs\n                    h = (1.0 / pp_c) * 10.0 + abs(tp_c - 2) * 1.0 + dp_c\
-    \ * 0.5 + mbs_c * 0.3\n                    \n                    if h < best_heuristic:\n\
-    \                        best_heuristic = h\n                        best_config\
-    \ = (tp_c, pp_c, dp_c, mbs_c, False)\n        \n        if best_config:\n    \
-    \        tp, pp, dp, mbs, ac = best_config\n        else:\n            tp, pp,\
-    \ dp, mbs, ac = 2, 4, 2, 1, False\n    \n    return {\n        \"tp\": tp,\n \
-    \       \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n\
-    \        \"activation_checkpointing\": ac,\n    }\n"
-- config:
-    tp: 8
     pp: 2
-    dp: 1
     micro_batch_size: 1
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 1.0314657380625
-  score: 1.0314657380625
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter13
+    activation_checkpointing: true
+  metrics: &id002 {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:58:20\n\
+    \  host      : nid001192-hsn0\n  rank      : 1 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 668194)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  trace_dir: null
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 14: Explore tp=8, pp=2, dp=1, mbs=1 to see if higher TP\
-    \ with less PP helps.\n    \n    History (sorted by score):\n    - tp=4, pp=4,\
-    \ dp=1, mbs=1, ac=False -> 0.4427 (BEST)\n    - tp=2, pp=8, dp=1, mbs=1, ac=False\
-    \ -> 0.6068\n    - tp=2, pp=4, dp=2, mbs=1, ac=False -> 0.6739\n    - tp=2, pp=4,\
-    \ dp=2, mbs=2, ac=False -> 0.8841\n    - tp=2, pp=4, dp=2, mbs=4, ac=False ->\
-    \ 1.027\n    - tp=1, pp=8, dp=2, mbs=1, ac=False -> 1.088\n    - tp=1, pp=4, dp=4,\
-    \ mbs=2, ac=False -> 1.332\n    - tp=2, pp=2, dp=4, mbs=2, ac=False -> 6.068\n\
-    \    - tp=2, pp=2, dp=4, mbs=4, ac=False -> 6.231\n    - tp=4, dp=4, pp=1, mbs=2,\
-    \ ac=False -> 8.358\n    \n    Pattern: dp=1 is best, high pp helps, tp=4 is sweet\
-    \ spot.\n    Now try tp=8, pp=2, dp=1, mbs=1. Even though tp=8 crosses node boundary\n\
-    \    (gpus_per_node=4), the reduced pipeline bubbles from pp=2 might compensate.\n\
-    \    acc_steps = 32/(1*1) = 32 >= pp=2.\n    \"\"\"\n    total_gpus = environment.get(\"\
-    total_gpus\", 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
-    \    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space\
+    \ \"\"\"\n    Strategy: Minimize GPU count to maximize gpu_step_score.\n    \n\
+    \    Results so far:\n    - 16 GPUs (tp=4, dp=4, pp=1, mbs=2, ckpt=False): score\
+    \ 0.5258\n    - 8 GPUs (tp=4, dp=2, pp=1, mbs=2, ckpt=True): score 1.039\n   \
+    \ - 4 GPUs (tp=4, dp=1, pp=1, mbs=2, ckpt=True): score 2.697\n    - 2 GPUs (tp=2,\
+    \ dp=1, pp=1, mbs=1, ckpt=True): FAILED\n    - 1 GPU (tp=1, dp=1, pp=1, mbs=1,\
+    \ ckpt=True): FAILED (OOM)\n    - 4 GPUs (tp=2, dp=2, pp=1, mbs=4, ckpt=True):\
+    \ FAILED (OOM)\n    \n    Score scales roughly inversely with GPU count.\n   \
+    \ \n    tp=2, dp=1, pp=1 (2 GPUs) failed - likely OOM since tp=2 still needs\n\
+    \    full model activations on each GPU.\n    \n    Try pp=2, tp=1, dp=1 (2 GPUs):\n\
+    \    - PP=2 splits 32 layers into 2 stages of 16 layers each\n    - Each GPU holds\
+    \ only half the model weights (~8GB bf16)\n    - With activation_checkpointing=True\
+    \ and mbs=1, activation memory is minimal\n    - Both GPUs on same node → fast\
+    \ intra-node communication\n    - batch=32 with dp=1 → 32 micro-batches in pipeline\n\
+    \    \"\"\"\n    config = {}\n    \n    # Parse config space\n    config_space\
     \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
     \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
-    \    batch_size = workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"\
-    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
-    \    precision = workload.get(\"precision\", \"bf16\")\n    num_layers = workload.get(\"\
-    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n    \n   \
-    \ tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload (16 GPUs, A100 40GB,\
-    \ Llama-8B):\n    # Try tp=8, pp=2, dp=1, mbs=1\n    tp = 8\n    pp = 2\n    dp\
-    \ = total_gpus // (tp * pp)  # 16 / (8*2) = 1\n    mbs = 1\n    ac = False\n \
-    \   \n    # Validate\n    if dp not in dp_choices or tp * pp * dp != total_gpus:\n\
-    \        tp, pp, dp, mbs, ac = 4, 4, 1, 1, False\n    \n    if batch_size % (dp\
-    \ * mbs) != 0:\n        tp, pp, dp, mbs, ac = 4, 4, 1, 1, False\n    \n    acc_steps\
-    \ = batch_size // (dp * mbs)\n    if acc_steps < pp:\n        tp, pp, dp, mbs,\
-    \ ac = 4, 4, 1, 1, False\n    \n    # ---- General logic for other workloads ----\n\
-    \    if total_gpus != 16 or gpu_memory_gb != 40:\n        hidden_dim = num_heads\
-    \ * 128\n        est_params_b = num_layers * 12 * (hidden_dim ** 2) / 1e9\n  \
-    \      \n        best_config = None\n        best_heuristic = float('inf')\n \
-    \       \n        for tp_c in tp_choices:\n            if tp_c > gpus_per_node:\n\
-    \                continue\n            for pp_c in sorted(pp_choices, reverse=True):\n\
-    \                dp_c = total_gpus // (tp_c * pp_c)\n                if dp_c not\
-    \ in dp_choices or dp_c < 1 or tp_c * pp_c * dp_c != total_gpus:\n           \
-    \         continue\n                \n                params_per_gpu_gb = (est_params_b\
-    \ * 2) / (pp_c * tp_c)\n                optimizer_per_gpu_gb = params_per_gpu_gb\
-    \ * 4\n                total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n\
-    \                \n                if total_mem > gpu_memory_gb * 0.7:\n     \
-    \               continue\n                \n                for mbs_c in sorted(mbs_choices):\n\
-    \                    if batch_size % (dp_c * mbs_c) != 0:\n                  \
-    \      continue\n                    acc_steps_c = batch_size // (dp_c * mbs_c)\n\
-    \                    if acc_steps_c < pp_c:\n                        continue\n\
-    \                    \n                    # Learned: dp=1 is best, high pp helps,\
-    \ tp=4 sweet spot, mbs=1 best\n                    # Minimize dp, maximize pp,\
-    \ prefer tp near gpus_per_node, minimize mbs\n                    h = dp_c * 5.0\
-    \ + (1.0 / pp_c) * 10.0 + abs(tp_c - gpus_per_node) * 0.5 + mbs_c * 0.3\n    \
-    \                \n                    if h < best_heuristic:\n              \
-    \          best_heuristic = h\n                        best_config = (tp_c, pp_c,\
-    \ dp_c, mbs_c, False)\n        \n        if best_config:\n            tp, pp,\
-    \ dp, mbs, ac = best_config\n        else:\n            tp, pp, dp, mbs, ac =\
-    \ 2, 4, 2, 1, False\n    \n    return {\n        \"tp\": tp,\n        \"pp\":\
-    \ pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n        \"activation_checkpointing\"\
-    : ac,\n    }\n"
-- config:
+    \    config[\"tp\"] = 1\n    config[\"dp\"] = 1\n    config[\"pp\"] = 2\n    config[\"\
+    micro_batch_size\"] = 1\n    config[\"activation_checkpointing\"] = True\n   \
+    \ \n    return config\n"
+- config: &id003
     tp: 4
-    pp: 4
     dp: 1
-    micro_batch_size: 2
-    activation_checkpointing: false
-  metrics:
-    avg_step_time: 0.47071762990625
-  score: 0.47071762990625
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter14
+    pp: 1
+    micro_batch_size: 4
+    activation_checkpointing: true
+  metrics: &id004 {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: --------------------\nFailures:\n[1]:\n  time      : 2026-05-04_03:59:23\n\
+    \  host      : nid001192-hsn0\n  rank      : 3 (local_rank: 3)\n  exitcode  :\
+    \ -11 (pid: 669069)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 669069\n--------------------------------------------------------\nRoot\
+    \ Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:59:23\n \
+    \ host      : nid001192-hsn0\n  rank      : 2 (local_rank: 2)\n  exitcode  : -11\
+    \ (pid: 669068)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 669068\n========================================================\n"
+  trace_dir: null
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 15: Try tp=4, pp=4, dp=1, mbs=2, ac=False.\n    \n   \
-    \ Best so far: tp=4, pp=4, dp=1, mbs=1, ac=False -> 0.4427\n    \n    Testing\
-    \ if mbs=2 (16 acc steps instead of 32) is faster despite \n    slightly worse\
-    \ bubble ratio (18.75% vs 9.375%).\n    Fewer total micro-batches = less scheduling\
-    \ overhead.\n    \"\"\"\n    total_gpus = environment.get(\"total_gpus\", 16)\n\
-    \    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n    gpu_memory_gb\
-    \ = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space = workload.get(\"\
-    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
-    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    batch_size =\
-    \ workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
-    \    model_family = workload.get(\"model_family\", \"\").lower()\n    precision\
-    \ = workload.get(\"precision\", \"bf16\")\n    num_layers = workload.get(\"num_layers\"\
-    , 32)\n    num_heads = workload.get(\"num_heads\", 32)\n    \n    tp_choices =\
-    \ sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices = sorted(valid_choices.get(\"\
-    pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"dp\", [1, 2,\
-    \ 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload (16 GPUs, A100 40GB,\
-    \ Llama-8B):\n    # Try tp=4, pp=4, dp=1, mbs=2, ac=False\n    tp = 4\n    pp\
-    \ = 4\n    dp = total_gpus // (tp * pp)  # 16 / (4*4) = 1\n    mbs = 2\n    ac\
-    \ = False\n    \n    # Validate\n    if dp not in dp_choices or tp * pp * dp !=\
-    \ total_gpus:\n        tp, pp, dp, mbs, ac = 4, 4, 1, 1, False\n    \n    if batch_size\
-    \ % (dp * mbs) != 0:\n        tp, pp, dp, mbs, ac = 4, 4, 1, 1, False\n    \n\
-    \    acc_steps = batch_size // (dp * mbs)\n    if acc_steps < pp:\n        tp,\
-    \ pp, dp, mbs, ac = 4, 4, 1, 1, False\n    \n    # ---- General logic for other\
-    \ workloads ----\n    if total_gpus != 16 or gpu_memory_gb != 40 or batch_size\
-    \ != 32:\n        hidden_dim = num_heads * 128\n        est_params_b = num_layers\
-    \ * 12 * (hidden_dim ** 2) / 1e9\n        \n        best_config = None\n     \
-    \   best_heuristic = float('inf')\n        \n        for tp_c in tp_choices:\n\
-    \            # Strongly prefer TP within a node\n            if tp_c > gpus_per_node:\n\
-    \                continue\n            for pp_c in sorted(pp_choices, reverse=True):\n\
-    \                dp_c = total_gpus // (tp_c * pp_c)\n                if dp_c not\
-    \ in dp_choices or dp_c < 1 or tp_c * pp_c * dp_c != total_gpus:\n           \
-    \         continue\n                \n                # Memory check\n       \
-    \         params_per_gpu_gb = (est_params_b * 2) / (pp_c * tp_c)\n           \
-    \     optimizer_per_gpu_gb = params_per_gpu_gb * 4\n                total_mem\
-    \ = params_per_gpu_gb + optimizer_per_gpu_gb\n                \n             \
-    \   if total_mem > gpu_memory_gb * 0.7:\n                    continue\n      \
-    \          \n                for mbs_c in sorted(mbs_choices):\n             \
-    \       if batch_size % (dp_c * mbs_c) != 0:\n                        continue\n\
-    \                    acc_steps_c = batch_size // (dp_c * mbs_c)\n            \
-    \        if acc_steps_c < pp_c:\n                        continue\n          \
-    \          \n                    # Learned heuristic: minimize dp, prefer tp=gpus_per_node,\
-    \ \n                    # prefer high pp, minimize mbs\n                    #\
-    \ dp cost is dominant\n                    h = dp_c * 10.0\n                 \
-    \   # Pipeline bubble cost\n                    bubble_frac = (pp_c - 1) / acc_steps_c\
-    \ if acc_steps_c > 0 else 1.0\n                    h += bubble_frac * 5.0\n  \
-    \                  # TP within node is good, crossing node is terrible\n     \
-    \               if tp_c <= gpus_per_node:\n                        h += abs(tp_c\
-    \ - gpus_per_node) * 0.5\n                    else:\n                        h\
-    \ += 50.0\n                    # Smaller mbs generally better\n              \
-    \      h += mbs_c * 0.2\n                    \n                    if h < best_heuristic:\n\
-    \                        best_heuristic = h\n                        best_config\
-    \ = (tp_c, pp_c, dp_c, mbs_c, False)\n        \n        if best_config:\n    \
-    \        tp, pp, dp, mbs, ac = best_config\n        else:\n            tp, pp,\
-    \ dp, mbs, ac = 2, 4, 2, 1, False\n    \n    return {\n        \"tp\": tp,\n \
-    \       \"pp\": pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n\
-    \        \"activation_checkpointing\": ac,\n    }\n"
+    \ \"\"\"\n    Best so far: tp=4, dp=1, pp=1, mbs=2, ckpt=True → 4 GPUs, score=2.697\n\
+    \    \n    Try: tp=4, dp=1, pp=1, mbs=4, ckpt=True → 4 GPUs\n    - Larger micro-batch\
+    \ might improve GPU utilization/throughput\n    - With dp=1, global_batch=32 →\
+    \ 32/4=8 accumulation steps (vs 16 with mbs=2)\n    - Fewer gradient accumulation\
+    \ steps = less overhead\n    - tp=4 within single node = fast NVLink communication\n\
+    \    - activation_checkpointing=True to manage memory\n    \n    If mbs=4 causes\
+    \ OOM, we'll fall back to exploring other 4-GPU configs.\n    \"\"\"\n    config\
+    \ = {}\n    \n    # Parse config space\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"] = 4\n    config[\"dp\"] =\
+    \ 1\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"] = 4\n    config[\"\
+    activation_checkpointing\"] = True\n    \n    return config\n"
 - config: *id001
   metrics: *id002
-  score: 0.4427202638125
+  score: -.inf
+  status: error
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:58:20\n\
+    \  host      : nid001192-hsn0\n  rank      : 1 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 668194)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Analysis of history:\n    - Fewer GPUs = higher score (16→0.53,\
+    \ 8→1.04, 4→2.70)\n    - tp=4 works, tp=2 alone fails, tp=1 alone fails (OOM)\n\
+    \    - Best: tp=4, dp=1, pp=1, mbs=2, ckpt=True → 4 GPUs, score=2.697\n    - tp=4,\
+    \ mbs=4 failed (OOM)\n    \n    Try: tp=1, dp=1, pp=2, mbs=1, ckpt=True → 2 GPUs\n\
+    \    - pp=2 splits model layers across 2 GPUs (each has ~half the 8B params)\n\
+    \    - ~4B params per GPU in bf16 = ~8GB weights\n    - With ckpt=True and mbs=1,\
+    \ should fit in 40GB A100\n    - If works, score could be ~5.4 (2x the 4-GPU score)\n\
+    \    - No tensor parallelism overhead\n    \"\"\"\n    config = {}\n    \n   \
+    \ # Parse config space\n    config_space = workload.get(\"config_space\", [])\n\
+    \    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"] = 1\n    config[\"dp\"] =\
+    \ 1\n    config[\"pp\"] = 2\n    config[\"micro_batch_size\"] = 1\n    config[\"\
+    activation_checkpointing\"] = True\n    \n    return config\n"
+- config:
+    tp: 4
+    dp: 1
+    pp: 1
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics:
+    gpu_step_score: 2.7356439071662484
+  score: 2.7356439071662484
   status: success
   error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter12
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260504_034910/traces/20260504_034910_iter9
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 15 -> 16: Stick with best known config (tp=4, pp=4, dp=1,\
-    \ mbs=1, ac=False = 0.4427).\n    \n    Key learnings from 15 iterations:\n  \
-    \  - dp=1 is strongly preferred (minimizes all-reduce communication)\n    - tp=4\
-    \ (within node, gpus_per_node=4) is optimal\n    - pp=4 to use remaining GPUs\n\
-    \    - mbs=1 slightly beats mbs=2 (lower bubble ratio: 9.375% vs 18.75%)\n   \
-    \ - ac=False is better (no recompute overhead)\n    \n    Attempting to reproduce/confirm\
-    \ best score.\n    General heuristic updated with all learnings.\n    \"\"\"\n\
-    \    total_gpus = environment.get(\"total_gpus\", 16)\n    gpus_per_node = environment.get(\"\
-    gpus_per_node\", 4)\n    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n\
-    \    \n    config_space = workload.get(\"config_space\", [])\n    valid_choices\
+    \ \"\"\"\n    Analysis:\n    - Best: tp=4, dp=1, pp=1, mbs=2, ckpt=True → 4 GPUs,\
+    \ score=2.697\n    - All 2-GPU configs failed (tp=2/pp=2 both OOM)\n    - All\
+    \ 1-GPU configs failed (OOM)\n    - tp=4 is the minimum working TP that fits 8B\
+    \ model\n    \n    Try: tp=4, dp=1, pp=1, mbs=1, ckpt=True → 4 GPUs\n    - Same\
+    \ as best config but with mbs=1 instead of mbs=2\n    - Smaller micro-batch might\
+    \ reduce memory pressure and could change step timing\n    - With global batch=32,\
+    \ dp=1, mbs=1: 32 gradient accumulation steps\n    - More accumulation steps but\
+    \ each step is smaller/faster\n    - Worth testing to see if gpu_step_score improves\n\
+    \    \"\"\"\n    config = {}\n    \n    # Parse config space\n    config_space\
+    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
+    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
+    \    config[\"tp\"] = 4\n    config[\"dp\"] = 1\n    config[\"pp\"] = 1\n    config[\"\
+    micro_batch_size\"] = 1\n    config[\"activation_checkpointing\"] = True\n   \
+    \ \n    return config\n"
+- config: *id003
+  metrics: *id004
+  score: -.inf
+  status: error
+  error_msg: "exit 1: --------------------\nFailures:\n[1]:\n  time      : 2026-05-04_03:59:23\n\
+    \  host      : nid001192-hsn0\n  rank      : 3 (local_rank: 3)\n  exitcode  :\
+    \ -11 (pid: 669069)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 669069\n--------------------------------------------------------\nRoot\
+    \ Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:59:23\n \
+    \ host      : nid001192-hsn0\n  rank      : 2 (local_rank: 2)\n  exitcode  : -11\
+    \ (pid: 669068)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 669068\n========================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Analysis:\n    - Best: tp=4, dp=1, pp=1, mbs=1, ckpt=True → 4 GPUs,\
+    \ score=2.736\n    - Second: tp=4, dp=1, pp=1, mbs=2, ckpt=True → 4 GPUs, score=2.697\n\
+    \    - Fewer GPUs = much better score\n    - tp=4 minimum needed for 8B model\
+    \ on 40GB A100s\n    \n    Try: tp=4, dp=1, pp=1, mbs=4, ckpt=True → 4 GPUs\n\
+    \    - Larger micro-batch = fewer gradient accumulation steps (8 vs 32)\n    -\
+    \ Should improve throughput significantly\n    - With activation checkpointing,\
+    \ memory should be manageable\n    \"\"\"\n    config = {}\n    \n    # Parse\
+    \ config space\n    config_space = workload.get(\"config_space\", [])\n    valid_choices\
     \ = {}\n    for dim in config_space:\n        valid_choices[dim[\"key\"]] = dim[\"\
-    choices\"]\n    \n    batch_size = workload.get(\"batch_size\", 32)\n    seq_len\
-    \ = workload.get(\"seq_len\", 1024)\n    model_family = workload.get(\"model_family\"\
-    , \"\").lower()\n    precision = workload.get(\"precision\", \"bf16\")\n    num_layers\
-    \ = workload.get(\"num_layers\", 32)\n    num_heads = workload.get(\"num_heads\"\
-    , 32)\n    \n    tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n\
-    \    pp_choices = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices\
-    \ = sorted(valid_choices.get(\"dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"\
-    micro_batch_size\", [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # Estimate model parameters\n    hidden_dim = num_heads\
-    \ * 128  # head_dim=128 for most modern models\n    est_params_b = num_layers\
-    \ * 12 * (hidden_dim ** 2) / 1e9\n    bytes_per_param = 2 if precision in [\"\
-    bf16\", \"fp16\"] else 4\n    \n    # General optimization: find best config using\
-    \ learned heuristic\n    best_config = None\n    best_heuristic = float('inf')\n\
-    \    \n    for tp_c in tp_choices:\n        # TP must stay within a node for good\
-    \ performance\n        if tp_c > gpus_per_node:\n            continue\n      \
-    \  \n        for pp_c in pp_choices:\n            dp_c = total_gpus // (tp_c *\
-    \ pp_c)\n            if dp_c not in dp_choices or dp_c < 1 or tp_c * pp_c * dp_c\
-    \ != total_gpus:\n                continue\n            \n            # Memory\
-    \ estimation (rough)\n            # Model params per GPU in GB\n            params_per_gpu_gb\
-    \ = (est_params_b * bytes_per_param) / (pp_c * tp_c)\n            # Optimizer\
-    \ states (~12 bytes per param for Adam with bf16 mixed precision)\n          \
-    \  optimizer_per_gpu_gb = (est_params_b * 12) / (pp_c * tp_c * 1e9) * 1e9 / 1e9\n\
-    \            # Activation memory (rough)\n            act_per_gpu_gb = (batch_size\
-    \ / max(dp_c, 1)) * seq_len * hidden_dim * bytes_per_param * (num_layers / pp_c)\
-    \ / (tp_c * 1e9)\n            \n            total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n\
-    \            \n            # Skip if clearly OOM (leaving room for activations)\n\
-    \            if total_mem > gpu_memory_gb * 0.8:\n                continue\n \
-    \           \n            for mbs_c in mbs_choices:\n                if batch_size\
-    \ % (dp_c * mbs_c) != 0:\n                    continue\n                acc_steps_c\
-    \ = batch_size // (dp_c * mbs_c)\n                if acc_steps_c < 1:\n      \
-    \              continue\n                # Pipeline needs at least pp stages worth\
-    \ of micro-batches\n                if pp_c > 1 and acc_steps_c < pp_c:\n    \
-    \                continue\n                \n                # Heuristic cost\
-    \ model learned from experiments:\n                # \n                # Key finding:\
-    \ dp cost dominates everything.\n                # dp=1 >> dp=2 >> dp=4 in terms\
-    \ of performance.\n                # Within dp=1: tp=gpus_per_node, pp=total_gpus/tp\
-    \ is best.\n                # mbs=1 (lowest bubble) is best when dp=1.\n     \
-    \           \n                h = 0.0\n                \n                # Data\
-    \ parallelism cost (all-reduce over inter-node links)\n                # This\
-    \ is the DOMINANT factor. Each additional dp rank adds\n                # massive\
-    \ communication overhead, especially inter-node.\n                num_nodes =\
-    \ total_gpus // gpus_per_node\n                # dp across nodes is very expensive\n\
-    \                dp_across_nodes = max(1, dp_c // (total_gpus // (tp_c * gpus_per_node\
-    \ * pp_c) if tp_c * pp_c <= gpus_per_node else 1))\n                h += dp_c\
-    \ * 100.0  # Heavily penalize dp > 1\n                \n                # Pipeline\
-    \ bubble cost\n                if pp_c > 1 and acc_steps_c > 0:\n            \
-    \        bubble_frac = (pp_c - 1) / acc_steps_c\n                    h += bubble_frac\
-    \ * 20.0\n                \n                # TP cost (within node is cheap)\n\
-    \                if tp_c <= gpus_per_node:\n                    h += tp_c * 1.0\
-    \  # Small cost for TP communication\n                else:\n                \
-    \    h += tp_c * 50.0  # Inter-node TP is terrible\n                \n       \
-    \         # Prefer tp = gpus_per_node (use full node bandwidth)\n            \
-    \    h += abs(tp_c - gpus_per_node) * 2.0\n                \n                #\
-    \ mbs cost: smaller mbs = more acc steps = less bubble\n                # But\
-    \ also more kernel launches. For pp>1, smaller mbs is better.\n              \
-    \  if pp_c > 1:\n                    h += mbs_c * 1.0\n                else:\n\
-    \                    # For pp=1, larger mbs is slightly better (fewer steps)\n\
-    \                    h += (1.0 / mbs_c) * 0.5\n                \n            \
-    \    if h < best_heuristic:\n                    best_heuristic = h\n        \
-    \            best_config = (tp_c, pp_c, dp_c, mbs_c, False)\n    \n    if best_config:\n\
-    \        tp, pp, dp, mbs, ac = best_config\n    else:\n        # Fallback: simple\
-    \ config\n        tp = min(gpus_per_node, max(tp_choices))\n        pp = 1\n \
-    \       dp = total_gpus // tp\n        if dp not in dp_choices:\n            dp\
-    \ = max(d for d in dp_choices if d <= total_gpus // tp)\n        mbs = mbs_choices[0]\n\
-    \        ac = False\n    \n    return {\n        \"tp\": tp,\n        \"pp\":\
-    \ pp,\n        \"dp\": dp,\n        \"micro_batch_size\": mbs,\n        \"activation_checkpointing\"\
-    : ac,\n    }\n"
-- config: *id001
-  metrics: *id002
-  score: 0.4427202638125
-  status: success
-  error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter12
-  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 16 -> 17: Try tp=4, pp=2, dp=2, mbs=1, ac=False.\n   \
-    \ \n    Best known: tp=4, pp=4, dp=1, mbs=1, ac=False = 0.4427\n    \n    Now\
-    \ trying dp=2, pp=2 to see if lower pipeline bubble compensates for dp cost.\n\
-    \    With pp=2, dp=2, mbs=1: acc_steps = 32/(2*1) = 16, bubble = 1/16 = 6.25%\n\
-    \    vs pp=4, dp=1, mbs=1: acc_steps = 32/(1*1) = 32, bubble = 3/32 = 9.375%\n\
-    \    \n    The question is whether reduced bubble (6.25% vs 9.375%) can offset\
-    \ dp=2 all-reduce cost.\n    \n    History summary (dp=1 configs):\n    - tp=4,\
-    \ pp=4, dp=1, mbs=1, ac=False → 0.4427 (best)\n    - tp=4, pp=4, dp=1, mbs=2,\
-    \ ac=False → 0.4707\n    - tp=8, pp=2, dp=1, mbs=1, ac=False → 0.6068\n    - tp=2,\
-    \ pp=8, dp=1, mbs=1, ac=False → 1.031\n    \"\"\"\n    total_gpus = environment.get(\"\
-    total_gpus\", 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
-    \    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space\
-    \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
-    \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
-    \    batch_size = workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"\
-    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
-    \    precision = workload.get(\"precision\", \"bf16\")\n    num_layers = workload.get(\"\
-    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n    \n   \
-    \ tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # Estimate model parameters\n    hidden_dim = num_heads\
-    \ * 128  # head_dim=128 for most modern models\n    est_params_b = num_layers\
-    \ * 12 * (hidden_dim ** 2) / 1e9\n    bytes_per_param = 2 if precision in [\"\
-    bf16\", \"fp16\"] else 4\n    \n    # Try the unexplored config: tp=4, pp=2, dp=2,\
-    \ mbs=1\n    # If this doesn't beat 0.4427, we'll go back to best known\n    \n\
-    \    # General optimization logic\n    best_config = None\n    best_heuristic\
-    \ = float('inf')\n    \n    for tp_c in tp_choices:\n        if tp_c > gpus_per_node:\n\
-    \            continue\n        \n        for pp_c in pp_choices:\n           \
-    \ dp_c = total_gpus // (tp_c * pp_c)\n            if dp_c not in dp_choices or\
-    \ dp_c < 1 or tp_c * pp_c * dp_c != total_gpus:\n                continue\n  \
-    \          \n            # Memory check\n            params_per_gpu_gb = (est_params_b\
-    \ * bytes_per_param) / (pp_c * tp_c)\n            optimizer_per_gpu_gb = (est_params_b\
-    \ * 12) / (pp_c * tp_c)\n            total_mem = params_per_gpu_gb + optimizer_per_gpu_gb\n\
-    \            if total_mem > gpu_memory_gb * 0.8:\n                continue\n \
-    \           \n            for mbs_c in mbs_choices:\n                if batch_size\
-    \ % (dp_c * mbs_c) != 0:\n                    continue\n                acc_steps_c\
-    \ = batch_size // (dp_c * mbs_c)\n                if acc_steps_c < 1:\n      \
-    \              continue\n                if pp_c > 1 and acc_steps_c < pp_c:\n\
-    \                    continue\n                \n                # Refined heuristic\
-    \ based on all 16 runs\n                # Calibrated costs:\n                #\
-    \   dp=1 → 0.4427 (tp=4,pp=4,mbs=1)\n                #   dp=2 → 0.6739 (tp=4,pp=2,mbs=2)\
-    \ best dp=2\n                #   dp=4 → 1.332 (tp=4,pp=1,mbs=2) best dp=4\n  \
-    \              \n                h = 0.0\n                \n                #\
-    \ DP cost: dominant factor, especially inter-node\n                # Empirically:\
-    \ dp=1 saves ~0.23 over dp=2 best case\n                if dp_c > 1:\n       \
-    \             # Check if dp is within node or across nodes\n                 \
-    \   nodes_for_tp_pp = max(1, (tp_c * pp_c) // gpus_per_node)\n               \
-    \     # dp communication is all-reduce, scales with model size\n             \
-    \       h += dp_c * 0.15  # calibrated from data\n                \n         \
-    \       # Pipeline bubble cost\n                if pp_c > 1:\n               \
-    \     bubble_frac = (pp_c - 1) / acc_steps_c\n                    h += bubble_frac\
-    \ * 0.5\n                \n                # TP cost within node\n           \
-    \     if tp_c <= gpus_per_node:\n                    h += tp_c * 0.02\n      \
-    \          else:\n                    h += tp_c * 0.5  # inter-node TP very expensive\n\
-    \                \n                # Prefer tp = gpus_per_node\n             \
-    \   h += abs(tp_c - gpus_per_node) * 0.05\n                \n                #\
-    \ PP inter-node communication (point-to-point, cheaper than all-reduce)\n    \
-    \            pp_nodes = pp_c  # rough: each pp stage on different node\n     \
-    \           if pp_c > 1:\n                    h += pp_c * 0.01  # small cost per\
-    \ pp stage\n                \n                # MBS effect: smaller is better\
-    \ for pp>1 (less bubble)\n                # Already captured in bubble_frac\n\
-    \                \n                if h < best_heuristic:\n                  \
-    \  best_heuristic = h\n                    best_config = (tp_c, pp_c, dp_c, mbs_c,\
-    \ False)\n    \n    if best_config:\n        tp, pp, dp, mbs, ac = best_config\n\
-    \    else:\n        tp = min(gpus_per_node, max(tp_choices))\n        pp = total_gpus\
-    \ // tp\n        dp = 1\n        mbs = mbs_choices[0]\n        ac = False\n  \
-    \  \n    return {\n        \"tp\": tp,\n        \"pp\": pp,\n        \"dp\": dp,\n\
-    \        \"micro_batch_size\": mbs,\n        \"activation_checkpointing\": ac,\n\
-    \    }\n"
+    choices\"]\n    \n    config[\"tp\"] = 4\n    config[\"dp\"] = 1\n    config[\"\
+    pp\"] = 1\n    config[\"micro_batch_size\"] = 4\n    config[\"activation_checkpointing\"\
+    ] = True\n    \n    return config\n"
 - config:
     tp: 4
-    pp: 2
-    dp: 2
+    dp: 1
+    pp: 1
     micro_batch_size: 1
     activation_checkpointing: false
   metrics:
-    avg_step_time: 3.33906201475
-  score: 3.33906201475
+    gpu_step_score: 2.759507647268889
+  score: 2.759507647268889
   status: success
   error_msg: null
-  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260429_115146/traces/20260429_115146_iter17
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260504_034910/traces/20260504_034910_iter11
   policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
-    \ \"\"\"\n    Iteration 17 -> 18: Try tp=4, pp=2, dp=2, mbs=1, ac=False.\n   \
-    \ \n    Best known: tp=4, pp=4, dp=1, mbs=1, ac=False = 0.4427 (confirmed 3x)\n\
-    \    \n    Unexplored config: tp=4, pp=2, dp=2, mbs=1\n    - acc_steps = 32/(2*1)\
-    \ = 16\n    - bubble = 1/16 = 6.25% (vs 9.375% for pp=4,dp=1)\n    - But adds\
-    \ dp=2 all-reduce cost\n    \n    Previous dp=2 results:\n    - tp=4, pp=2, dp=2,\
-    \ mbs=2 → 0.6739\n    - tp=2, pp=4, dp=2, mbs=2 → 0.8841\n    - tp=2, pp=4, dp=2,\
-    \ mbs=1 → 1.027\n    - tp=4, pp=2, dp=2, mbs=4 → 1.088\n    \n    The dp=2 overhead\
-    \ seems significant (~0.23+). This is unlikely to beat 0.4427\n    but worth exploring\
-    \ as the last unexplored promising config.\n    \n    If this doesn't work, we'll\
-    \ stick with the best known config.\n    \"\"\"\n    total_gpus = environment.get(\"\
-    total_gpus\", 16)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
-    \    gpu_memory_gb = environment.get(\"gpu_memory_gb\", 40)\n    \n    config_space\
+    \ \"\"\"\n    Analysis of history:\n    - Best: tp=4, dp=1, pp=1, mbs=1, ckpt=True\
+    \ → 4 GPUs, score=2.736\n    - tp=4, dp=1, pp=1, mbs=2, ckpt=True → 4 GPUs, score=2.697\n\
+    \    - tp=4, dp=1, pp=1, mbs=4, ckpt=True → FAILED (OOM)\n    - tp=4 is required;\
+    \ fewer GPUs = better score\n    \n    Try: tp=4, dp=1, pp=1, mbs=1, ckpt=False\n\
+    \    - Without activation checkpointing, forward pass is faster (no recomputation)\n\
+    \    - mbs=1 keeps activation memory small\n    - With tp=4 sharding the model,\
+    \ memory per GPU should be manageable:\n      ~4GB weights + ~12GB optimizer states\
+    \ + small activations for mbs=1\n    - If it fits in memory, should get better\
+    \ throughput → higher score\n    \"\"\"\n    config = {}\n    \n    # Parse config\
+    \ space\n    config_space = workload.get(\"config_space\", [])\n    valid_choices\
+    \ = {}\n    for dim in config_space:\n        valid_choices[dim[\"key\"]] = dim[\"\
+    choices\"]\n    \n    config[\"tp\"] = 4\n    config[\"dp\"] = 1\n    config[\"\
+    pp\"] = 1\n    config[\"micro_batch_size\"] = 1\n    config[\"activation_checkpointing\"\
+    ] = False\n    \n    return config\n"
+- config: *id005
+  metrics: *id006
+  score: -.inf
+  status: error
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:56:49\n\
+    \  host      : nid001192-hsn0\n  rank      : 1 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 667389)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Try tp=2, dp=1, pp=1 (2 GPUs) with mbs=1 and activation_checkpointing=True.\n\
+    \    \n    If this works, 2 GPUs should give a much higher score than 4 GPUs.\n\
+    \    - Llama-3.1-8B bf16 weights: ~16GB, split by tp=2 → ~8GB/GPU\n    - Optimizer\
+    \ states (Adam): ~3x weights in mixed precision → ~24GB total, ~12GB/GPU\n   \
+    \ - Activations with mbs=1, seq=1024, checkpointing: relatively small\n    - Total\
+    \ estimate: ~22-28GB per GPU, should fit in 40GB A100\n    \n    Previous tp=2\
+    \ failure was with dp=2, mbs=4 (much more memory pressure).\n    \"\"\"\n    config\
+    \ = {}\n    \n    # Parse config space\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"] = 2\n    config[\"dp\"] =\
+    \ 1\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"] = 1\n    config[\"\
+    activation_checkpointing\"] = True\n    \n    return config\n"
+- config: &id007
+    tp: 4
+    dp: 1
+    pp: 1
+    micro_batch_size: 4
+    activation_checkpointing: false
+  metrics: &id008 {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: --------------------\nFailures:\n[1]:\n  time      : 2026-05-04_04:03:40\n\
+    \  host      : nid001192-hsn0\n  rank      : 3 (local_rank: 3)\n  exitcode  :\
+    \ -11 (pid: 674822)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 674822\n--------------------------------------------------------\nRoot\
+    \ Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_04:03:40\n \
+    \ host      : nid001192-hsn0\n  rank      : 2 (local_rank: 2)\n  exitcode  : -11\
+    \ (pid: 674821)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 674821\n========================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Best config so far: tp=4, dp=1, pp=1, mbs=2, activation_checkpointing=False\
+    \ → 2.76\n    \n    Try mbs=4 without activation checkpointing to potentially\
+    \ improve throughput.\n    Larger micro-batch can improve GPU compute utilization.\n\
+    \    \n    Memory estimate with tp=4, dp=1, pp=1, mbs=4, no checkpointing:\n \
+    \   - Model weights (bf16): ~16GB / 4 = ~4GB per GPU\n    - Optimizer states:\
+    \ ~24GB / 4 = ~6GB per GPU  \n    - Activations for mbs=4, seq=1024: moderate,\
+    \ but no checkpointing means full storage\n    - Gradients: ~4GB per GPU\n   \
+    \ - Total estimate: ~20-30GB, should fit in 40GB\n    \"\"\"\n    config = {}\n\
+    \    \n    # Parse config space\n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"] = 4\n    config[\"dp\"] =\
+    \ 1\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"] = 4\n    config[\"\
+    activation_checkpointing\"] = False\n    \n    return config\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 1
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_04:04:42\n\
+    \  host      : nid001192-hsn0\n  rank      : 1 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 676127)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Best config: tp=4, dp=1, pp=1, mbs=2, checkpointing=False → 2.76\n\
+    \    \n    Try tp=2, dp=2, pp=1, mbs=2, checkpointing=True (4 GPUs, all intra-node)\n\
+    \    Previous tp=2,dp=2 with mbs=4 failed. mbs=2 uses less memory, may work.\n\
+    \    If it works with 4 GPUs like tp=4,dp=1, the score could be similar or better.\n\
+    \    \"\"\"\n    config = {}\n    \n    # Parse config space\n    config_space\
     \ = workload.get(\"config_space\", [])\n    valid_choices = {}\n    for dim in\
     \ config_space:\n        valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n\
-    \    batch_size = workload.get(\"batch_size\", 32)\n    seq_len = workload.get(\"\
-    seq_len\", 1024)\n    model_family = workload.get(\"model_family\", \"\").lower()\n\
-    \    precision = workload.get(\"precision\", \"bf16\")\n    num_layers = workload.get(\"\
-    num_layers\", 32)\n    num_heads = workload.get(\"num_heads\", 32)\n    \n   \
-    \ tp_choices = sorted(valid_choices.get(\"tp\", [1, 2, 4, 8]))\n    pp_choices\
-    \ = sorted(valid_choices.get(\"pp\", [1, 2, 4, 8]))\n    dp_choices = sorted(valid_choices.get(\"\
-    dp\", [1, 2, 4, 8, 16]))\n    mbs_choices = sorted(valid_choices.get(\"micro_batch_size\"\
-    , [1, 2, 4]))\n    ac_choices = valid_choices.get(\"activation_checkpointing\"\
-    , [True, False])\n    \n    # For this specific workload (Llama-3.1-8B, 16 GPUs,\
-    \ A100-40GB), try the unexplored config\n    # tp=4, pp=2, dp=2, mbs=1\n    tp\
-    \ = 4\n    pp = 2\n    dp = 2\n    mbs = 1\n    ac = False\n    \n    # Validate\n\
-    \    if (tp in tp_choices and pp in pp_choices and dp in dp_choices and \n   \
-    \     mbs in mbs_choices and tp * pp * dp == total_gpus and\n        batch_size\
-    \ % (dp * mbs) == 0):\n        return {\n            \"tp\": tp,\n           \
-    \ \"pp\": pp,\n            \"dp\": dp,\n            \"micro_batch_size\": mbs,\n\
-    \            \"activation_checkpointing\": ac,\n        }\n    \n    # Fallback:\
-    \ best known config\n    return {\n        \"tp\": 4,\n        \"pp\": 4,\n  \
-    \      \"dp\": 1,\n        \"micro_batch_size\": 1,\n        \"activation_checkpointing\"\
-    : False,\n    }\n"
+    \    config[\"tp\"] = 2\n    config[\"dp\"] = 2\n    config[\"pp\"] = 1\n    config[\"\
+    micro_batch_size\"] = 2\n    config[\"activation_checkpointing\"] = True\n   \
+    \ \n    return config\n"
+- config: *id007
+  metrics: *id008
+  score: -.inf
+  status: error
+  error_msg: "exit 1: --------------------\nFailures:\n[1]:\n  time      : 2026-05-04_04:03:40\n\
+    \  host      : nid001192-hsn0\n  rank      : 3 (local_rank: 3)\n  exitcode  :\
+    \ -11 (pid: 674822)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 674822\n--------------------------------------------------------\nRoot\
+    \ Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_04:03:40\n \
+    \ host      : nid001192-hsn0\n  rank      : 2 (local_rank: 2)\n  exitcode  : -11\
+    \ (pid: 674821)\n  error_file: <N/A>\n  traceback : Signal 11 (SIGSEGV) received\
+    \ by PID 674821\n========================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Best config so far: tp=4, dp=1, pp=1, mbs=2, checkpointing=False\
+    \ → 2.76\n    \n    Try tp=4, dp=1, pp=1, mbs=4, checkpointing=False\n    - Same\
+    \ 4 GPUs (all intra-node, 600 Gbps)\n    - Larger micro_batch_size=4 means fewer\
+    \ gradient accumulation steps\n      (32/(1*4) = 8 steps vs 32/(1*2) = 16 steps),\
+    \ potentially faster\n    - tp=4 splits model across 4 GPUs, so per-GPU memory\
+    \ is lower\n    - No checkpointing since we have headroom with tp=4\n    \"\"\"\
+    \n    config = {}\n    \n    # Parse config space\n    config_space = workload.get(\"\
+    config_space\", [])\n    valid_choices = {}\n    for dim in config_space:\n  \
+    \      valid_choices[dim[\"key\"]] = dim[\"choices\"]\n    \n    config[\"tp\"\
+    ] = 4\n    config[\"dp\"] = 1\n    config[\"pp\"] = 1\n    config[\"micro_batch_size\"\
+    ] = 4\n    config[\"activation_checkpointing\"] = False\n    \n    return config\n"
+- config: *id005
+  metrics: *id006
+  score: -.inf
+  status: error
+  error_msg: "exit 1: ors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-04_03:56:49\n\
+    \  host      : nid001192-hsn0\n  rank      : 1 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 667389)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Best config: tp=4, dp=1, pp=1, mbs=2, checkpointing=False → 2.76\n\
+    \    \n    Pattern from results:\n    - mbs=2, checkpointing=False: 2.76\n   \
+    \ - mbs=2, checkpointing=True: 2.736\n    - mbs=1, checkpointing=True: 2.697\n\
+    \    \n    Try mbs=1 without checkpointing - not yet tested.\n    No checkpointing\
+    \ consistently beats checkpointing (2.76 vs 2.736 for mbs=2).\n    But mbs=1 means\
+    \ more gradient accumulation steps (32 vs 16), so likely slower.\n    \n    Actually,\
+    \ since mbs=2 without checkpointing is already the best, let me try\n    tp=2,\
+    \ dp=1, pp=1, mbs=1, checkpointing=True - only 2 GPUs.\n    Run 7 (tp=2,dp=1,pp=1,mbs=2)\
+    \ failed, but mbs=1 uses less activation memory.\n    \n    Wait - that's risky.\
+    \ Let me think about what could beat 2.76.\n    \n    The score formula likely\
+    \ includes gpu_step_score which may factor in fewer GPUs\n    or faster step time.\
+    \ With 4 GPUs, we got 2.76.\n    \n    Let me try tp=2, dp=1, pp=1, mbs=1, checkpointing=True\
+    \ (2 GPUs).\n    If it works, fewer GPUs could give a much higher score.\n   \
+    \ \"\"\"\n    config = {}\n    \n    config_space = workload.get(\"config_space\"\
+    , [])\n    valid_choices = {}\n    for dim in config_space:\n        valid_choices[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    # Try 2 GPUs - if it works, could dramatically\
+    \ improve score\n    config[\"tp\"] = 2\n    config[\"dp\"] = 1\n    config[\"\
+    pp\"] = 1\n    config[\"micro_batch_size\"] = 1\n    config[\"activation_checkpointing\"\
+    ] = True\n    \n    return config\n"
