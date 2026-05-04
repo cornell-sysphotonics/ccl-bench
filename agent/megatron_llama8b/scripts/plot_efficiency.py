@@ -57,16 +57,26 @@ def discover_results(base_dir: str) -> list:
 
 def _derive(data: dict) -> dict:
     """Compute derived metrics for plotting."""
-    gpu_util = data.get("aggregate_gpu_utilization", 0)
+    gpu_util = data.get("aggregate_gpu_utilization", None)
     comm_frac = data.get("communication_fraction", 0)
     comm_overlap = data.get("communication_overlap_ratio", 0)
     mfu = data.get("mfu", 0)
 
-    idle = 100 - gpu_util
-    total_comm = gpu_util * (comm_frac / 100)
-    overlapped_comm = total_comm * comm_overlap
-    exposed_comm = total_comm * (1 - comm_overlap)
-    compute = gpu_util - total_comm
+    if gpu_util is None or gpu_util <= 0:
+        # No GPU utilization data (e.g., TPU traces)
+        # Estimate: assume high utilization, split by comm_fraction
+        # Use comm_fraction directly as % of total time
+        compute = 100 - comm_frac
+        exposed_comm = comm_frac * (1 - comm_overlap)
+        overlapped_comm = comm_frac * comm_overlap
+        idle = 0
+        gpu_util = 100
+    else:
+        idle = 100 - gpu_util
+        total_comm = gpu_util * (comm_frac / 100)
+        overlapped_comm = total_comm * comm_overlap
+        exposed_comm = total_comm * (1 - comm_overlap)
+        compute = gpu_util - total_comm
 
     return {
         "compute": max(compute, 0),
@@ -81,7 +91,14 @@ def _derive(data: dict) -> dict:
 def plot_single(data: dict, output_path: str):
     model = data.get("model", "Unknown")
     gpus = data.get("total_gpus", "?")
-    config = data.get("tp", "?")
+    tp = int(data.get("tp", 0))
+    pp = int(data.get("pp", 0))
+    dp = int(data.get("dp", 0))
+    ep = int(data.get("ep", 0))
+    config_parts = [f"TP={tp}", f"PP={pp}", f"DP={dp}"]
+    if ep > 1:
+        config_parts.append(f"EP={ep}")
+    config_str = ", ".join(config_parts)
     step_time = data.get("avg_step_time", 0)
     batch = int(data.get("batch", 0))
     seq = int(data.get("seq", 0))
@@ -89,8 +106,8 @@ def plot_single(data: dict, output_path: str):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5),
                                     gridspec_kw={"width_ratios": [1, 1.1]})
-    fig.suptitle(f"{model}  —  {gpus} GPUs  |  config: {config}  |  BS={batch}, seq={seq}  |  step: {step_time:.3f}s",
-                 fontsize=13, fontweight="bold", y=0.97)
+    fig.suptitle(f"{model}  —  {int(gpus)} GPUs ({config_str})  |  BS={batch}, seq={seq}  |  step: {step_time:.3f}s",
+                 fontsize=12, fontweight="bold", y=0.97)
     fig.subplots_adjust(top=0.85, bottom=0.08, left=0.10, right=0.95, wspace=0.35)
 
     # --- Efficiency funnel ---
@@ -136,13 +153,36 @@ def plot_comparison(datasets: list, output_path: str):
     n = len(models)
     derived = [_derive(d) for d in datasets]
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 5))
-    fig.suptitle("Hardware efficiency comparison (16× A100 GPUs, TP=4, PP=4)",
-                 fontsize=13, fontweight="bold", y=0.98)
-    fig.subplots_adjust(top=0.85, bottom=0.15, left=0.06, right=0.97, wspace=0.3)
+    show_load_imb = n >= 3
+    ncols = 4 if show_load_imb else 3
+    fig, axes = plt.subplots(1, ncols, figsize=(5.5 * ncols, 5))
+    ax1, ax2, ax_time = axes[0], axes[1], axes[2]
+    ax3 = axes[3] if show_load_imb else None
 
-    x = np.arange(n)
-    bw = 0.5 if n <= 3 else 0.35
+    fig.suptitle("Hardware efficiency comparison",
+                 fontsize=13, fontweight="bold", y=1.02)
+    # Build subtitle from common config
+    batch_vals = set(int(d.get("batch", 0)) for d in datasets)
+    seq_vals = set(int(d.get("seq", 0)) for d in datasets)
+    gpu_vals = set(int(d.get("total_gpus", 0)) for d in datasets)
+    tp_vals = set(int(d.get("tp", 0)) for d in datasets)
+    subtitle_parts = []
+    if len(gpu_vals) == 1:
+        subtitle_parts.append(f"{gpu_vals.pop()} devices")
+    if len(tp_vals) == 1:
+        subtitle_parts.append(f"TP={tp_vals.pop()}")
+    dp_vals = set(int(d.get("dp", 0)) for d in datasets)
+    if len(dp_vals) == 1 and dp_vals != {0} and dp_vals != {1}:
+        subtitle_parts.append(f"FSDP={dp_vals.pop()}")
+    if len(batch_vals) == 1 and len(seq_vals) == 1:
+        subtitle_parts.append(f"BS={batch_vals.pop()}, seq={seq_vals.pop()}")
+    if subtitle_parts:
+        fig.text(0.5, 0.96, "  |  ".join(subtitle_parts),
+                 ha="center", fontsize=10, color="#666666")
+    fig.subplots_adjust(top=0.88, bottom=0.15, left=0.05, right=0.97, wspace=0.35)
+
+    x = np.arange(n) * 0.6  # tighter spacing between bars
+    bw = 0.4 if n <= 3 else 0.3
     # Per-model colors (distinct from plot 2's semantic palette)
     model_colors = ["#5B8DBE", "#E8913A", "#6BB578", "#9B7FCC", "#D4537E"][:n]
 
@@ -159,42 +199,56 @@ def plot_comparison(datasets: list, output_path: str):
     ax1.spines[["top", "right"]].set_visible(False)
     ax1.set_ylim(0, max(mfu) * 1.4 + 2)
 
-    # --- 2. Stacked time breakdown ---
+    # --- 2. Step time ---
+    step_times = [d.get("avg_step_time", 0) for d in datasets]
+    bars_t = ax2.bar(x, step_times, color=model_colors, width=bw)
+    for bar, val in zip(bars_t, step_times):
+        ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.05,
+                 f"{val:.2f}s", ha="center", fontsize=11, fontweight="bold")
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(models, fontsize=9)
+    ax2.set_ylabel("Avg step time (seconds)")
+    ax2.set_title("Avg step time", fontsize=11, fontweight="bold")
+    ax2.spines[["top", "right"]].set_visible(False)
+    ax2.set_ylim(0, max(step_times) * 1.3)
+
+    # --- 3. Stacked time breakdown ---
     compute = [d["compute"] for d in derived]
     exposed = [d["exposed_comm"] for d in derived]
     overlapped = [d["overlapped_comm"] for d in derived]
     idle = [d["idle"] for d in derived]
 
-    ax2.bar(x, compute, color="#3266ad", width=bw, label="Compute")
-    ax2.bar(x, exposed, bottom=compute, color="#D85A30", width=bw, label="Exposed comm")
-    ax2.bar(x, overlapped,
+    ax_time.bar(x, compute, color="#3266ad", width=bw, label="Compute")
+    ax_time.bar(x, exposed, bottom=compute, color="#D85A30", width=bw, label="Exposed comm")
+    ax_time.bar(x, overlapped,
             bottom=[c + e for c, e in zip(compute, exposed)],
             color="#1D9E75", width=bw, label="Overlapped comm")
-    ax2.bar(x, idle,
+    ax_time.bar(x, idle,
             bottom=[c + e + o for c, e, o in zip(compute, exposed, overlapped)],
             color="#B4B2A9", width=bw, label="Idle")
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(models, fontsize=9)
-    ax2.set_ylabel("% of step time")
-    ax2.set_title("Step time breakdown", fontsize=11, fontweight="bold")
-    ax2.legend(fontsize=8, loc="upper center", ncol=4, bbox_to_anchor=(0.5, 1.02))
-    ax2.spines[["top", "right"]].set_visible(False)
-    ax2.set_ylim(0, 110)
+    ax_time.set_xticks(x)
+    ax_time.set_xticklabels(models, fontsize=9)
+    ax_time.set_ylabel("% of step time")
+    ax_time.set_title("Step time breakdown", fontsize=11, fontweight="bold")
+    ax_time.legend(fontsize=8, loc="center left", ncol=1, bbox_to_anchor=(1.02, 0.5))
+    ax_time.spines[["top", "right"]].set_visible(False)
+    ax_time.set_ylim(0, 110)
 
-    # --- 3. Load imbalance ---
-    load_imb = [d.get("load_imbalance_ratio", 1) for d in datasets]
-    bars3 = ax3.bar(x, load_imb, color=model_colors, width=bw)
-    for bar, val in zip(bars3, load_imb):
-        ax3.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
-                 f"{val:.2f}×", ha="center", fontsize=11, fontweight="bold")
-    ax3.set_xticks(x)
-    ax3.set_xticklabels(models, fontsize=9)
-    ax3.set_ylabel("Slowest / fastest rank")
-    ax3.set_title("Slowest / Fastest rank ratio", fontsize=11, fontweight="bold")
-    ax3.spines[["top", "right"]].set_visible(False)
-    ax3.axhline(y=1.0, color="#B4B2A9", linestyle="--", linewidth=0.8, label="Perfect balance")
-    ax3.legend(fontsize=8)
-    ax3.set_ylim(0, max(load_imb) * 1.3 + 0.1)
+    # --- 4. Straggler ratio (only for 3+ models) ---
+    if show_load_imb:
+        load_imb = [d.get("load_imbalance_ratio", 1) for d in datasets]
+        bars3 = ax3.bar(x, load_imb, color=model_colors, width=bw)
+        for bar, val in zip(bars3, load_imb):
+            ax3.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
+                     f"{val:.2f}×", ha="center", fontsize=11, fontweight="bold")
+        ax3.set_xticks(x)
+        ax3.set_xticklabels(models, fontsize=9)
+        ax3.set_ylabel("Ratio")
+        ax3.set_title("Slowest / Fastest rank ratio", fontsize=11, fontweight="bold")
+        ax3.spines[["top", "right"]].set_visible(False)
+        ax3.axhline(y=1.0, color="#B4B2A9", linestyle="--", linewidth=0.8, label="Perfect balance")
+        ax3.legend(fontsize=8)
+        ax3.set_ylim(0, max(load_imb) * 1.3 + 0.1)
 
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     print(f"Saved: {output_path}")

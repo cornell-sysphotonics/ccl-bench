@@ -1,0 +1,222 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": false}","{""gpu_step_score"": 0.5257689404253799}",0.5257689404253799,success,,0.5257689404253799,
+1,1,"{""tp"": 1, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:52:21
+  host      : nid001192-hsn0
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 661255)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",0.5257689404253799,17.1
+2,2,"{""tp"": 2, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:53:21
+  host      : nid001192-hsn0
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 663030)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",0.5257689404253799,19.1
+3,3,"{""tp"": 4, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": true}","{""gpu_step_score"": 1.0389363906521536}",1.0389363906521536,success,,1.0389363906521536,16.5
+4,4,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": true}","{""gpu_step_score"": 2.6965612935008023}",2.6965612935008023,success,,2.6965612935008023,14.6
+5,5,"{""tp"": 2, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:56:49
+  host      : nid001192-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 667389)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",2.6965612935008023,13.2
+6,6,"{""tp"": 1, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:58:20
+  host      : nid001192-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 668194)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",2.6965612935008023,18.7
+7,7,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: --------------------
+Failures:
+[1]:
+  time      : 2026-05-04_03:59:23
+  host      : nid001192-hsn0
+  rank      : 3 (local_rank: 3)
+  exitcode  : -11 (pid: 669069)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 669069
+--------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:59:23
+  host      : nid001192-hsn0
+  rank      : 2 (local_rank: 2)
+  exitcode  : -11 (pid: 669068)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 669068
+========================================================
+",2.6965612935008023,14.9
+8,8,"{""tp"": 1, ""dp"": 1, ""pp"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:58:20
+  host      : nid001192-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 668194)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",2.6965612935008023,25.9
+9,9,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": true}","{""gpu_step_score"": 2.7356439071662484}",2.7356439071662484,success,,2.7356439071662484,21.5
+10,10,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: --------------------
+Failures:
+[1]:
+  time      : 2026-05-04_03:59:23
+  host      : nid001192-hsn0
+  rank      : 3 (local_rank: 3)
+  exitcode  : -11 (pid: 669069)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 669069
+--------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:59:23
+  host      : nid001192-hsn0
+  rank      : 2 (local_rank: 2)
+  exitcode  : -11 (pid: 669068)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 669068
+========================================================
+",2.7356439071662484,15.5
+11,11,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": false}","{""gpu_step_score"": 2.759507647268889}",2.759507647268889,success,,2.759507647268889,24.3
+12,12,"{""tp"": 2, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:56:49
+  host      : nid001192-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 667389)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",2.759507647268889,15.4
+13,13,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": false}",{},-inf,error,"exit 1: --------------------
+Failures:
+[1]:
+  time      : 2026-05-04_04:03:40
+  host      : nid001192-hsn0
+  rank      : 3 (local_rank: 3)
+  exitcode  : -11 (pid: 674822)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 674822
+--------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_04:03:40
+  host      : nid001192-hsn0
+  rank      : 2 (local_rank: 2)
+  exitcode  : -11 (pid: 674821)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 674821
+========================================================
+",2.759507647268889,15.8
+14,14,"{""tp"": 2, ""dp"": 2, ""pp"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_04:04:42
+  host      : nid001192-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 676127)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",2.759507647268889,24.9
+15,15,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": false}",{},-inf,error,"exit 1: --------------------
+Failures:
+[1]:
+  time      : 2026-05-04_04:03:40
+  host      : nid001192-hsn0
+  rank      : 3 (local_rank: 3)
+  exitcode  : -11 (pid: 674822)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 674822
+--------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_04:03:40
+  host      : nid001192-hsn0
+  rank      : 2 (local_rank: 2)
+  exitcode  : -11 (pid: 674821)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 674821
+========================================================
+",2.759507647268889,17.2
+16,16,"{""tp"": 2, ""dp"": 1, ""pp"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: ors.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_03:56:49
+  host      : nid001192-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 667389)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",2.759507647268889,26.8

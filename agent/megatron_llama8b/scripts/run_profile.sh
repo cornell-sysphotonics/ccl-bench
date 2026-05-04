@@ -261,6 +261,97 @@ mixtral8x7b)
         --moe-grouped-gemm \
         --moe-token-dispatcher-type alltoall"
     ;;
+dsv2lite)
+    # DeepSeek-V2-Lite: 27 layers, 2048 hidden, MLA, 64 experts top-6
+    # 15.7B total, 2.4B active per token
+    TRACE_DIR="$TRACE_BASE/dsv2lite"
+    TP=4; PP=1; DP=4; EP=4
+    MBS=1; GBS=8; SEQ_LEN=1024
+    NUM_LAYERS=27; HIDDEN=2048; FFN_HIDDEN=10944
+    NUM_HEADS=16; NUM_KV_HEADS=16; HEAD_DIM=128
+    NUM_PARAMS=15700000000
+    NUM_PARAMS_ACTIVE=2400000000
+    NUM_PARAMS_EMBEDDING=262144000
+
+    MODEL_ARGS="--use-mcore-models \
+        --num-layers $NUM_LAYERS \
+        --hidden-size $HIDDEN \
+        --ffn-hidden-size $FFN_HIDDEN \
+        --num-attention-heads $NUM_HEADS \
+        --kv-channels 16 \
+        --seq-length $SEQ_LEN \
+        --max-position-embeddings $SEQ_LEN \
+        --position-embedding-type rope \
+        --no-rope-fusion \
+        --swiglu \
+        --bf16 \
+        --normalization RMSNorm \
+        --norm-epsilon 1e-6 \
+        --disable-bias-linear \
+        --no-masked-softmax-fusion \
+        --no-gradient-accumulation-fusion \
+        --no-bias-gelu-fusion \
+        --no-bias-dropout-fusion \
+        --untie-embeddings-and-output-weights \
+        --no-position-embedding \
+        --multi-latent-attention \
+        --kv-lora-rank 512 \
+        --v-head-dim 128 \
+        --qk-head-dim 128 \
+        --qk-layernorm \
+        --qk-pos-emb-head-dim 64 \
+        --rotary-base 10000 \
+        --rotary-scaling-factor 40 \
+        --mscale 0.707 \
+        --mscale-all-dim 0.707 \
+        --make-vocab-size-divisible-by 3200 \
+        --attention-softmax-in-fp32 \
+        --sequence-parallel"
+    MOE_ARGS="--num-experts 64 \
+        --moe-layer-freq '([0]+[1]*26)' \
+        --moe-ffn-hidden-size 1408 \
+        --moe-grouped-gemm \
+        --moe-router-topk 6 \
+        --moe-router-score-function softmax \
+        --moe-router-topk-scaling-factor 1.0 \
+        --moe-router-pre-softmax \
+        --moe-shared-expert-intermediate-size 2816 \
+        --moe-aux-loss-coeff 1e-3 \
+        --moe-token-dispatcher-type alltoall \
+        --moe-token-drop-policy probs \
+        --moe-router-load-balancing-type seq_aux_loss"
+    ;;
+llama8b_match)
+    # Llama-3.1-8B: BS=32, S=1024 matching TPU config
+    TRACE_DIR="$TRACE_BASE/llama8b_match"
+    TP=4; PP=1; DP=2; EP=1
+    MBS=1; GBS=32; SEQ_LEN=1024
+    NUM_LAYERS=32; HIDDEN=4096; FFN_HIDDEN=14336
+    NUM_HEADS=32; NUM_KV_HEADS=8; HEAD_DIM=128
+    NUM_PARAMS=8030261248
+    NUM_PARAMS_ACTIVE=$NUM_PARAMS
+    NUM_PARAMS_EMBEDDING=524288000
+
+    MODEL_ARGS="--use-mcore-models \
+        --num-layers $NUM_LAYERS \
+        --hidden-size $HIDDEN \
+        --ffn-hidden-size $FFN_HIDDEN \
+        --num-attention-heads $NUM_HEADS \
+        --group-query-attention \
+        --num-query-groups $NUM_KV_HEADS \
+        --kv-channels $HEAD_DIM \
+        --seq-length $SEQ_LEN \
+        --max-position-embeddings $SEQ_LEN \
+        --position-embedding-type rope \
+        --swiglu \
+        --bf16 \
+        --no-gradient-accumulation-fusion \
+        --no-masked-softmax-fusion \
+        --no-bias-gelu-fusion \
+        --no-bias-dropout-fusion \
+        --use-distributed-optimizer"
+    MOE_ARGS=""
+    ;;
 *)
     echo "Unknown model: $MODEL. Use llama8b, ds_moe16b, or ds_v3"
     exit 1
