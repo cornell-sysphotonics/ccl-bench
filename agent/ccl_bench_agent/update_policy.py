@@ -37,15 +37,15 @@ def generate_config(workload: dict, environment: dict) -> dict:
     \"""
     Args:
         workload:    Workload card fields — model_family, phase, batch_size, seq_len,
-                     num_heads, num_layers, precision, config_space (list of tunable
-                     dimensions with valid choices), run_script, trace_dir, etc.
+                     num_heads, num_layers, precision, moe (bool), config_space (list
+                     of tunable dimensions with valid choices), run_script, trace_dir.
         environment: Hardware/software descriptor — gpu_model, gpu_memory_gb,
                      total_gpus, gpus_per_node, intra/inter_node_bandwidth_gbps,
                      framework, framework_version.
 
     Returns:
         dict of configuration key-value pairs matching config_space keys, e.g.:
-          {"tp": 4, "dp": 8, "pp": 1, "micro_batch": 4, "compile_mode": "inductor"}
+          {"tp": 4, "dp": 8, "pp": 1, "micro_batch_size": 4, "activation_checkpointing": True}
     \"""
 ```
 
@@ -67,11 +67,78 @@ def generate_config(workload: dict, environment: dict) -> dict:
 score = weighted sum of CCL-Bench metrics (lower is better when `minimize`).
 Priority 1 — fix errors/timeouts. Priority 2 — improve the score.
 
-## Design guidance
+## Design guidance for adaptive policies
 
-- Write general logic, not a lookup table. The policy must generalise to unseen workloads.
-- Read `workload["config_space"]` to discover valid dimensions and their choices.
-  Each entry is a dict: `{"key": "tp", "type": "int", "choices": [1,2,4,8], "description": "..."}`.
+Write general, model-aware logic — NOT a fixed config dict. The policy should reason
+about the workload and hardware to pick the right parallelism strategy:
+
+### Key workload fields to use:
+- `workload["model_family"]` — model name (e.g., "llama-3.1-8b", "deepseek-v2-lite")
+- `workload["moe"]` — True if Mixture-of-Experts model
+- `workload["num_layers"]` — number of transformer layers (affects PP choices)
+- `workload["num_params"]` — total parameter count (affects memory requirements)
+- `workload["batch_size"]` — global batch size
+- `workload["seq_len"]` — sequence length
+- `workload["config_space"]` — list of tunable dimensions with valid choices
+
+### Key environment fields to use:
+- `environment["gpu_memory_gb"]` — GPU memory (e.g., 40 for A100-40GB)
+- `environment["total_gpus"]` — total GPUs available
+- `environment["gpus_per_node"]` — GPUs per node (e.g., 4)
+- `environment["inter_node_bandwidth_gbps"]` — inter-node bandwidth (affects TP/DP/EP tradeoffs)
+
+### Parallelism reasoning principles:
+1. **TP (tensor parallelism):** Keep TP within a node (tp <= gpus_per_node). Higher TP
+   reduces per-GPU memory but adds allreduce communication. On slow interconnects,
+   minimize cross-node TP.
+2. **PP (pipeline parallelism):** PP must divide num_layers evenly. PP adds pipeline
+   bubble overhead proportional to (PP-1)/num_microbatches. Use PP to reduce memory
+   when TP alone isn't enough.
+3. **DP (data parallelism):** Scales throughput but adds allreduce for gradients.
+   On slow interconnects, DP across nodes is expensive.
+4. **EP (expert parallelism, MoE only):** EP must divide num_experts and dp.
+   Distributes experts across GPUs. More EP = less per-GPU expert memory but more
+   alltoall communication for token routing. On slow interconnects, alltoall is
+   very expensive.
+5. **Memory estimation:** Total training memory per GPU ≈
+   (num_params × 12 bytes) / (tp × pp) + activation_memory.
+   Must fit in gpu_memory_gb. Use activation_checkpointing=True if tight.
+6. **micro_batch_size:** Larger = better GPU utilization but more activation memory.
+   Start with 1, try 2, then 4. If OOM, reduce.
+7. **tp × dp × pp** does NOT need to equal total_gpus. Using fewer GPUs can be
+   more efficient if the model fits.
+
+### MoE-specific guidance:
+- MoE models have sparse experts — only a subset are active per token
+- EP distributes experts across GPUs, reducing memory but adding alltoall communication
+- On slow interconnects (< 100 Gbps), alltoall for expert routing dominates step time
+- EP should divide both num_experts and dp
+- With EP, allgather/reducescatter for FSDP parameter sync can dominate — check if
+  reducing DP or increasing EP helps
+
+### Example adaptive policy structure:
+```python
+def generate_config(workload, environment):
+    gpu_mem = environment.get("gpu_memory_gb", 40)
+    gpus_per_node = environment.get("gpus_per_node", 4)
+    total_gpus = environment.get("total_gpus", 16)
+    is_moe = workload.get("moe", False)
+    num_layers = workload.get("num_layers", 32)
+    
+    # Parse config space for valid choices
+    config_space = {d["key"]: d["choices"] for d in workload.get("config_space", [])}
+    
+    # Start with TP fitting within a node
+    tp = min(gpus_per_node, max(config_space.get("tp", [1])))
+    
+    # Estimate memory and adjust parallelism
+    # ... model-specific logic ...
+    
+    return {"tp": tp, "dp": dp, "pp": pp, ...}
+```
+
+## Important constraints
+- Each entry in config_space is a dict: `{"key": "tp", "type": "int", "choices": [1,2,4], "description": "..."}`.
   Always use `dim["key"]` (not `dim["name"]`) to get the dimension name.
 - Each iteration should incorporate lessons learned from the history.
 - You MUST call `submit_config` exactly once per iteration.
@@ -134,7 +201,10 @@ def _build_message(
         f"## Workload\n"
         f"  {workload.get('model_family','?')} [{workload.get('phase','?')}]  "
         f"batch={workload.get('batch_size','?')}  seq={workload.get('seq_len','?')}  "
-        f"precision={workload.get('precision','?')}\n\n"
+        f"precision={workload.get('precision','?')}  "
+        f"moe={workload.get('moe', False)}  "
+        f"num_layers={workload.get('num_layers','?')}  "
+        f"num_params={workload.get('num_params','?')}\n\n"
         f"## Environment\n{env_str}\n\n"
         f"## Config Space\n"
         f"(Each entry is a dict with fields `key`, `type`, `choices`, `description`.\n"
@@ -147,6 +217,8 @@ def _build_message(
         f"```json\n{recent_json}\n```\n\n"
         f"Best so far:  score={best_score:.4g}\n\n"
         f"**Task:** fix failures first, then improve the score. "
+        f"Write an adaptive generate_config that reasons about the workload "
+        f"and hardware — not just a fixed config dict. "
         f"Submit via `submit_config`.\n"
     )
 

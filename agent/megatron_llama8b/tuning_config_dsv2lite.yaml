@@ -1,0 +1,36 @@
+config_space:
+  - key: tp
+    type: int
+    description: Tensor parallelism degree
+    choices: [1, 2, 4]
+
+  - key: pp
+    type: int
+    description: Pipeline parallelism degree. Note 27 layers only divisible by 1, 3, 9, 27.
+    choices: [1, 3, 9]
+
+  - key: dp
+    type: int
+    description: Data parallelism degree (FSDP). tp*dp*pp is total GPUs used.
+    choices: [1, 2, 4]
+
+  - key: ep
+    type: int
+    description: Expert parallelism degree. Must divide num_experts (64) and divide dp.
+    choices: [1, 2, 4]
+
+  - key: micro_batch_size
+    type: int
+    description: Micro-batch size per data-parallel rank
+    choices: [1, 2, 4]
+
+  - key: activation_checkpointing
+    type: bool
+    description: Recompute activations to save memory
+    choices: [true, false]
+
+optimization_goal:
+  direction: minimize
+  metrics:
+    - name: avg_step_time
+      weight: 1.0

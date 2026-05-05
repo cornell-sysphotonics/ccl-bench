@@ -1,0 +1,125 @@
+iteration,version,config,metrics,score,status,error_msg,best_score,search_time_s
+0,0,"{""tp"": 4, ""dp"": 1, ""pp"": 3, ""ep"": 1, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""gpu_step_score"": 1.4720827917192736}",1.4720827917192736,success,,1.4720827917192736,
+1,1,"{""tp"": 2, ""dp"": 1, ""pp"": 3, ""ep"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: "", line 650, in _assign_worker_ranks
+    ) = json.loads(store.get(f""{ASSIGNED_RANKS_PREFIX}{group_rank}""))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: Terminating StepId=52458582.1
+srun: error: nid001128: task 2: Exited with exit code 1
+srun: error: nid002593: task 3: Exited with exit code 1
+srun: error: nid001013: task 1: Terminated
+srun: Force Terminated StepId=52458582.1
+",1.4720827917192736,18.2
+2,2,"{""tp"": 4, ""dp"": 1, ""pp"": 1, ""ep"": 1, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: rs.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_20:05:23
+  host      : nid001012-hsn0
+  rank      : 1 (local_rank: 1)
+  exitcode  : 2 (pid: 1944827)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",1.4720827917192736,41.0
+3,3,"{""tp"": 4, ""dp"": 2, ""pp"": 1, ""ep"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: server/api.py"", line 650, in _assign_worker_ranks
+    ) = json.loads(store.get(f""{ASSIGNED_RANKS_PREFIX}{group_rank}""))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+srun: error: nid001013: task 1: Exited with exit code 1
+srun: Terminating StepId=52458582.2
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: error: nid002593: task 3: Terminated
+srun: error: nid001128: task 2: Terminated
+srun: Force Terminated StepId=52458582.2
+",1.4720827917192736,36.5
+4,4,"{""tp"": 2, ""dp"": 2, ""pp"": 3, ""ep"": 2, ""micro_batch_size"": 2, ""activation_checkpointing"": true}","{""gpu_step_score"": 1.6187166321295718}",1.6187166321295718,success,,1.6187166321295718,33.9
+5,5,"{""tp"": 2, ""dp"": 2, ""pp"": 3, ""ep"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": true}","{""gpu_step_score"": 1.3579000654935367}",1.3579000654935367,success,,1.6187166321295718,33.2
+6,6,"{""tp"": 2, ""dp"": 2, ""pp"": 3, ""ep"": 1, ""micro_batch_size"": 2, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_20:12:47
+  host      : nid001013-hsn0
+  rank      : 4 (local_rank: 0)
+  exitcode  : 1 (pid: 1931114)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid001128: task 2: Exited with exit code 1
+srun: Terminating StepId=52458582.5
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: error: nid001013: task 1: Exited with exit code 1
+srun: error: nid002593: task 3: Exited with exit code 1
+",1.6187166321295718,34.5
+7,7,"{""tp"": 2, ""dp"": 2, ""pp"": 3, ""ep"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": true}","{""gpu_step_score"": 1.9169501072799369}",1.9169501072799369,success,,1.9169501072799369,32.7
+8,8,"{""tp"": 4, ""dp"": 4, ""pp"": 1, ""ep"": 4, ""micro_batch_size"": 2, ""activation_checkpointing"": true}","{""gpu_step_score"": 0.9816253129717363}",0.9816253129717363,success,,1.9169501072799369,36.6
+9,9,"{""tp"": 2, ""dp"": 2, ""pp"": 3, ""ep"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": false}","{""gpu_step_score"": 1.9343023797704846}",1.9343023797704846,success,,1.9343023797704846,32.6
+10,10,"{""tp"": 1, ""dp"": 4, ""pp"": 3, ""ep"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": false}",{},-inf,error,"exit 1: "", line 650, in _assign_worker_ranks
+    ) = json.loads(store.get(f""{ASSIGNED_RANKS_PREFIX}{group_rank}""))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+srun: error: nid001128: task 2: Exited with exit code 1
+srun: Terminating StepId=52458582.9
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: error: nid001013: task 1: Exited with exit code 1
+srun: error: nid002593: task 3: Terminated
+srun: Force Terminated StepId=52458582.9
+",1.9343023797704846,34.1
+11,11,"{""tp"": 2, ""dp"": 4, ""pp"": 1, ""ep"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: elastic/agent/server/api.py"", line 650, in _assign_worker_ranks
+    ) = json.loads(store.get(f""{ASSIGNED_RANKS_PREFIX}{group_rank}""))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+srun: error: nid001013: task 1: Exited with exit code 1
+srun: Terminating StepId=52458582.10
+srun: error: nid001128: task 2: Exited with exit code 1
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: error: nid002593: task 3: Exited with exit code 1
+",1.9343023797704846,43.8
+12,12,"{""tp"": 1, ""dp"": 4, ""pp"": 3, ""ep"": 4, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},-inf,error,"exit 1:  Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_20:21:41
+  host      : nid001013-hsn0
+  rank      : 5 (local_rank: 1)
+  exitcode  : 1 (pid: 1940197)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: Terminating StepId=52458582.11
+srun: error: nid002593: task 3: Terminated
+srun: error: nid001128: task 2: Terminated
+srun: error: nid001013: task 1: Terminated
+srun: Force Terminated StepId=52458582.11
+",1.9343023797704846,51.4
+13,13,"{""tp"": 1, ""dp"": 4, ""pp"": 3, ""ep"": 2, ""micro_batch_size"": 4, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: elastic/agent/server/api.py"", line 650, in _assign_worker_ranks
+    ) = json.loads(store.get(f""{ASSIGNED_RANKS_PREFIX}{group_rank}""))
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+srun: error: nid001128: task 2: Exited with exit code 1
+srun: Terminating StepId=52458582.12
+srun: error: nid001013: task 1: Exited with exit code 1
+srun: error: nid001012: task 0: Exited with exit code 1
+srun: error: nid002593: task 3: Exited with exit code 1
+",1.9343023797704846,35.0
+14,14,"{""tp"": 2, ""dp"": 2, ""pp"": 1, ""ep"": 2, ""micro_batch_size"": 1, ""activation_checkpointing"": true}",{},-inf,error,"exit 1: rs.ChildFailedError: 
+============================================================
+pretrain_gpt.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_20:23:40
+  host      : nid001012-hsn0
+  rank      : 2 (local_rank: 2)
+  exitcode  : 2 (pid: 1962750)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+",1.9343023797704846,51.2
