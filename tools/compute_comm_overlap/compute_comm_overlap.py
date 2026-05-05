@@ -168,7 +168,9 @@ def _overlap_for_step(step_start: float, step_end: float, kernel_events: list) -
 
 _STEP_PATTERN = re.compile(r"ProfilerStep#(\d+)$")
 _VLLM_EXECUTE_CONTEXT_PREFIX = "execute_context_"
-_SGLANG_RUN_BATCH_PATTERN = re.compile(r"(^|:) run_batch$")
+# Matches "scheduler.py(N): run_batch" (typical) and bare "run_batch" (future-proof).
+# \b avoids matching substrings like "set_prefill_run_batch_start_time".
+_SGLANG_RUN_BATCH_PATTERN = re.compile(r"\brun_batch\b")
 _XLA_STEP_EVENT_NAME = "$core.py:331 step"
 
 
@@ -232,6 +234,18 @@ def _calc_json(directory: str) -> float:
             and e.get("ph") == "X"
             and e.get("cat") == "kernel"
         ]
+
+        if not kernel_events:
+            # vLLM/SGLang inference traces often capture only CPU-side events
+            # (no ProfilerActivity.CUDA).  GPU-level overlap requires an nsys
+            # trace; add "nsys" to metric_source.traces in the workload YAML.
+            print(
+                f"[compute_comm_overlap/json] {len(step_events)} step event(s) found in"
+                f" {os.path.basename(path)} but no GPU kernel events — cannot compute"
+                f" GPU-level overlap. Add 'nsys' to metric_source.traces for this metric.",
+                file=sys.stderr,
+            )
+            continue
 
         total_overlap_us = 0.0
         total_comm_us = 0.0

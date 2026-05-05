@@ -137,7 +137,30 @@ def comm_size_bytes(event: dict, fallback: int) -> int:
     return fallback
 
 
-def event_rank(event: dict, ranks: int) -> int | None:
+def build_pid_to_rank(events: list[dict], ranks: int) -> dict[int, int]:
+    """Build a pid→rank map from process_name metadata events.
+
+    TPU traces tag each device timeline with a process whose name is
+    '/device:TPU:N' (main core).  SparseCore pids are intentionally
+    excluded so they remain unranked and fall back to mirroring.
+    """
+    pid_to_rank: dict[int, int] = {}
+    for event in events:
+        if event.get("ph") != "M" or event.get("name") != "process_name":
+            continue
+        name = str(event.get("args", {}).get("name", ""))
+        m = re.search(r"/device:TPU:(\d+)$", name)
+        if m:
+            tpu_idx = int(m.group(1))
+            if 0 <= tpu_idx < ranks:
+                pid = event.get("pid")
+                if pid is not None:
+                    pid_to_rank[pid] = tpu_idx
+    return pid_to_rank
+
+
+def event_rank(event: dict, ranks: int,
+               pid_to_rank: dict[int, int] | None = None) -> int | None:
     match = RANK_PREFIX_RE.match(str(event.get("name", "")))
     if match:
         rank = int(match.group(1))
@@ -152,6 +175,10 @@ def event_rank(event: dict, ranks: int) -> int | None:
                 rank = int(match.group(0))
                 if 0 <= rank < ranks:
                     return rank
+    if pid_to_rank is not None:
+        pid = event.get("pid")
+        if pid is not None and pid in pid_to_rank:
+            return pid_to_rank[pid]
     return None
 
 
@@ -297,6 +324,11 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     events = load_events(trace_path)
+    pid_to_rank = build_pid_to_rank(events, args.ranks)
+    if pid_to_rank:
+        print(f"[gen_tpu_xla_chakra_et] pid→rank map: {pid_to_rank}")
+    else:
+        print("[gen_tpu_xla_chakra_et] No TPU pid→rank map found; unranked events mirrored to all ranks")
     windows = cluster_step_windows(
         events,
         marker=args.iteration_marker,
@@ -328,15 +360,16 @@ def main() -> None:
     events_by_rank = {rank: [] for rank in range(args.ranks)}
     unranked = []
     for event in selected_events:
-        rank = event_rank(event, args.ranks)
+        rank = event_rank(event, args.ranks, pid_to_rank)
         if rank is None:
             if comm_type(event) is not None:
                 unranked.append(event)
         else:
             events_by_rank[rank].append(event)
     if unranked:
-        # Some TPU traces only expose a single logical XLA timeline. Mirror it to
-        # every rank so AstraSim can model collective synchronization across chips.
+        # Fallback: traces with no per-chip pid map expose a single logical XLA
+        # timeline.  Mirror it to every rank so AstraSim can model collective
+        # synchronization across chips.
         for rank in range(args.ranks):
             events_by_rank[rank].extend(unranked)
 

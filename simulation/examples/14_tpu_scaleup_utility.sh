@@ -143,12 +143,12 @@ echo
 run_workload "WL1" "Qwen3-4B" "Inference" "batch=128 input=1024" \
     "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4" \
     "Qwen3-4B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
-    400 "jit_run_model" 0 0
+    400 "jit_run_model" 0 30000
 
 run_workload "WL2" "Llama-3.1-8B" "Inference" "batch=128 input=1024" \
     "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4" \
     "Llama-3.1-8B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
-    400 "jit_run_model" 0 0
+    400 "jit_run_model" 0 30000
 
 run_workload "WL4" "Llama-3.1-8B" "Training" "batch=8 sequence=512" \
     "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21" \
