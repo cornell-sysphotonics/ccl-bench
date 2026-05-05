@@ -108,6 +108,29 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
         inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
         return statistics.mean(inner) / 1e6  # µs → s (XLA trace dur in µs despite displayTimeUnit:ns)
 
+    # Second path: jit_train_step events (TorchXLA training traces).
+    # Each step has one event per device pid; use the min pid as representative.
+    # Guard: if YAML iteration > jit event count, multi-step fusing is in use
+    # (XLA batches multiple training steps per compiled call) — fall through to
+    # the wall_time/iteration fallback which uses the correct total count.
+    jit_events = sorted(
+        [e for e in events
+         if e.get("ph") == "X"
+         and isinstance(e.get("name"), str)
+         and e["name"].startswith("jit_train_step")
+         and "dur" in e],
+        key=lambda e: e.get("ts", 0),
+    )
+    if jit_events:
+        first_pid = min(e["pid"] for e in jit_events)
+        pid_events = [e for e in jit_events if e["pid"] == first_pid]
+        num_iter = yaml_data.get("workload", {}).get("model", {}).get("iteration") or 0
+        if not num_iter or num_iter <= len(pid_events):
+            pid_durs = [e["dur"] for e in pid_events]
+            inner = pid_durs[1:-1] if len(pid_durs) > 2 else pid_durs
+            if inner:
+                return statistics.mean(inner) / 1e6
+
     # Fallback: wall_time / iteration_count
     # XLA client traces for training record async dispatches only; real step time
     # = total profiled wall time / number of iterations.

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-03T02:34:11.960048+00:00",
+  "generated_at": "2026-05-05T18:36:23.950542+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -1492,17 +1492,17 @@
         ]
       },
       "metrics": {
-        "avg_step_time": 7.03735,
+        "avg_step_time": 0.970894,
         "mfu": 24.2178,
         "dominant_kernel_concentration": 43.5369,
         "average_memory_bandwidth": 94.479,
-        "memory_transfer_overhead": null,
+        "memory_transfer_overhead": 0.0,
         "communication_fraction": 3.93177,
         "total_communication_time": 8.13774,
         "bandwidth_utilization_allgather_group_6": 110.974,
         "bandwidth_utilization_allreduce_group_6": 32.7422,
         "bandwidth_utilization_reducescatter_group_6": null,
-        "compute_comm_overlap": null
+        "compute_comm_overlap": 54.3726
       }
     },
     {
@@ -7508,13 +7508,13 @@
         "mfu": 7.7847,
         "dominant_kernel_concentration": 41.4093,
         "average_memory_bandwidth": 139.922,
-        "memory_transfer_overhead": null,
+        "memory_transfer_overhead": 0.0,
         "communication_fraction": 1.96576,
         "total_communication_time": 0.0601107,
         "bandwidth_utilization_allgather_group_6": 109.609,
         "bandwidth_utilization_allreduce_group_6": 5.686,
         "bandwidth_utilization_reducescatter_group_6": 131.817,
-        "compute_comm_overlap": null
+        "compute_comm_overlap": 75.262
       }
     }
   ]
