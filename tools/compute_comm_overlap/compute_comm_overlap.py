@@ -325,6 +325,22 @@ def _calc_xla(directory: str) -> float:
             max_dur = max(e["dur"] for e in all_markers)
             step_events = [e for e in all_markers if e["dur"] > max_dur * 0.1]
 
+    # Second fallback: jit_train_step (TorchXLA training traces).
+    # Multiple pids per step; use min pid as representative step boundaries.
+    if not step_events:
+        jit_events = sorted(
+            [e for e in events
+             if isinstance(e, dict)
+             and e.get("ph") == "X"
+             and isinstance(e.get("name"), str)
+             and e["name"].startswith("jit_train_step")
+             and e.get("dur") is not None],
+            key=lambda e: e.get("ts", 0),
+        )
+        if jit_events:
+            first_pid = min(e["pid"] for e in jit_events)
+            step_events = [e for e in jit_events if e["pid"] == first_pid]
+
     if not step_events:
         print(
             f"[compute_comm_overlap/xla] No step events found in {json_files[0]}",

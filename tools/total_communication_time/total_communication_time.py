@@ -251,12 +251,43 @@ def _calc_tpu(directory: str) -> float:
     if total_s is None or total_s < 0:
         return -1
 
-    # Divide by iteration count from YAML to get per-step average
     yaml_data = _load_yaml(directory)
-    n_iter = yaml_data.get("workload", {}).get("model", {}).get("iteration", 1)
-    if n_iter and n_iter > 0:
-        return total_s / n_iter
-    return total_s
+    yaml_iter = yaml_data.get("workload", {}).get("model", {}).get("iteration", 1) or 1
+    n_steps = yaml_iter
+    n_devices = 1
+
+    try:
+        import json as _json
+        with open(trace_json, encoding="utf-8", errors="replace") as _f:
+            _data = _json.load(_f)
+        _events = _data.get("traceEvents", []) if isinstance(_data, dict) else []
+
+        # Count TPU device PIDs — comm_time-group-21 sums across all of them,
+        # so we divide by device count to match the GPU path's per-rank average.
+        tpu_pids = {
+            e["pid"] for e in _events
+            if isinstance(e, dict) and e.get("ph") == "M"
+            and e.get("name") == "process_name"
+            and "/device:TPU:" in str((e.get("args") or {}).get("name", ""))
+        }
+        if tpu_pids:
+            n_devices = len(tpu_pids)
+
+        # Step count: prefer jit_train_step events; fall back to YAML iteration.
+        jit = [e for e in _events
+               if isinstance(e, dict) and e.get("ph") == "X"
+               and isinstance(e.get("name"), str)
+               and e["name"].startswith("jit_train_step")]
+        if jit:
+            first_pid = min(e["pid"] for e in jit)
+            jit_count = sum(1 for e in jit if e["pid"] == first_pid)
+            if jit_count >= yaml_iter:
+                n_steps = jit_count
+    except Exception:
+        pass
+
+    denom = n_steps * n_devices
+    return total_s / denom if denom > 0 else total_s
 
 
 def metric_cal(directory: str) -> float:

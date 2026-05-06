@@ -273,6 +273,7 @@ def _calc_json_tpu(directory: str) -> float:
     dma_intervals: list = []
     compute_intervals: list = []
     total_step_us = 0.0
+    jit_step_events: list = []  # fallback for jit_train_step traces
 
     for path in json_files:
         events = _load_json_events(path)
@@ -297,6 +298,14 @@ def _calc_json_tpu(directory: str) -> float:
                 dur = e.get("dur")
                 if dur is not None:
                     total_step_us += float(dur)
+                continue
+
+            # TorchXLA training: jit_train_step as step denominator fallback.
+            # Collected here (before tpu_pids filter) since these are host-side.
+            if name.startswith("jit_train_step"):
+                dur = e.get("dur")
+                if dur is not None:
+                    jit_step_events.append((e.get("pid", 0), float(dur)))
                 continue
 
             if e.get("pid") not in tpu_pids:
@@ -326,6 +335,11 @@ def _calc_json_tpu(directory: str) -> float:
                 dur = float(dev_dur_ps)
                 if dur > 0:
                     compute_intervals.append((float(dev_ps), float(dev_ps) + dur))
+
+    # Use jit_train_step durations if $core.py:331 step was absent
+    if total_step_us <= 0 and jit_step_events:
+        first_pid = min(pid for pid, _ in jit_step_events)
+        total_step_us = sum(dur for pid, dur in jit_step_events if pid == first_pid)
 
     if total_step_us <= 0 or not dma_intervals:
         return -1.0
