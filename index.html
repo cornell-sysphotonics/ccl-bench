@@ -1257,14 +1257,7 @@ footer {
 
       <div class="file-list" id="file-list"></div>
 
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.6;">
-        <strong style="color:var(--text)">What happens on upload:</strong><br>
-        ① Your trace files are saved to the server<br>
-        ② A <code>workload_card.yaml</code> is auto-generated from the form fields above<br>
-        ③ Both are stored under <code>uploads/&lt;workload-name&gt;/</code>
-      </div>
-
-      <button class="upload-submit" id="upload-submit" onclick="submitUpload()" disabled>
+<button class="upload-submit" id="upload-submit" onclick="submitUpload()" disabled>
         Upload Trace Files &amp; Generate Workload Card
       </button>
 
@@ -2179,9 +2172,7 @@ function init() {
 init();
 
 // ── Upload Panel ──────────────────────────────────────────────────────────────
-const UPLOAD_SERVER_URL = window.location.port === '5000'
-  ? window.location.origin
-  : 'http://localhost:5000';
+const UPLOAD_SERVER_URL = window.location.origin;
 
 const uploadState = { files: [], currentStep: 0 };
 const TOTAL_STEPS = 5;
@@ -2438,20 +2429,9 @@ function submitUpload() {
       const resp = JSON.parse(xhr.responseText);
       if (xhr.status === 200 && resp.status === 'ok') {
         resultEl.className = 'upload-result active success';
-        const fileNames = resp.uploaded.map(f => f.filename).join(', ');
-        resultEl.innerHTML = `
-          <strong>✓ Upload successful!</strong><br>
-          <span style="font-size:12px">
-            Upload ID: <code>${esc(resp.upload_id)}</code><br>
-            Workload: <code>${esc(resp.group_name)}</code><br>
-            Files: ${esc(fileNames)}
-            ${resp.workload_card_generated ? '<br>✓ Workload card YAML generated' : ''}
-            ${resp.rejected && resp.rejected.length
-              ? '<br><span style="color:var(--amber)">Rejected: ' + resp.rejected.map(r => esc(r.original + ' – ' + r.reason)).join(', ') + '</span>'
-              : ''}
-          </span>`;
         uploadState.files = [];
         renderFileList();
+        pollResults(resp.upload_id, resultEl);
       } else {
         resultEl.className = 'upload-result active error';
         resultEl.innerHTML = `<strong>✗ Upload failed</strong><br><span style="font-size:12px">${esc(resp.message || 'Unknown error')}</span>`;
@@ -2481,6 +2461,66 @@ function submitUpload() {
   });
 
   xhr.send(formData);
+}
+
+function pollResults(uploadId, resultEl) {
+  let attempts = 0;
+  const maxAttempts = 100; // ~5 min at 3s intervals
+  const startTime = Date.now();
+
+  function updateWaiting() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    resultEl.innerHTML = `<span style="display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></span>
+      <strong>Analyzing trace… ${elapsed}s</strong>
+    </span>`;
+  }
+
+  updateWaiting();
+  const timer = setInterval(async () => {
+    if (++attempts > maxAttempts) { clearInterval(timer); return; }
+    updateWaiting();
+    try {
+      const r = await fetch(UPLOAD_SERVER_URL + '/api/results/' + uploadId);
+      const data = await r.json();
+      if (data.status === 'done') {
+        clearInterval(timer);
+        renderUploadResults(data.results, resultEl);
+      } else if (data.status === 'error') {
+        clearInterval(timer);
+        resultEl.className = 'upload-result active error';
+        resultEl.innerHTML = `<strong>✗ Processing failed</strong><br><span style="font-size:12px">${esc(data.error || 'Unknown error')}</span>`;
+      }
+    } catch (_) {}
+  }, 3000);
+}
+
+function renderUploadResults(results, resultEl) {
+  const metrics = results.metrics || {};
+  const info = results.metric_info || {};
+  const rows = Object.entries(metrics)
+    .filter(([, v]) => v !== null && v !== undefined)
+    .map(([m, v]) => {
+      const mi = info[m] || {};
+      const label = mi.label || m;
+      const unit = mi.unit || '';
+      const hib = mi.higher_is_better;
+      const th = mi.thresholds || {};
+      let color = '#64748b';
+      if (th.high !== undefined && th.mid !== undefined) {
+        const good = hib ? v >= th.high : v <= th.mid;
+        const bad  = hib ? v <= th.mid  : v >= th.high;
+        color = good ? '#16a34a' : bad ? '#dc2626' : '#d97706';
+      }
+      return `<tr><td style="padding:4px 8px;font-size:12px">${esc(label)}</td><td style="padding:4px 8px;font-size:12px;font-weight:600;color:${color}">${typeof v === 'number' ? v.toFixed(4) : esc(String(v))} ${esc(unit)}</td></tr>`;
+    }).join('');
+  if (!rows) {
+    resultEl.className = 'upload-result active error';
+    resultEl.innerHTML = `<strong>✗ No metrics could be computed</strong><br><span style="font-size:12px">Check that your trace file is a supported format and the workload card fields are filled correctly.</span>`;
+    return;
+  }
+  resultEl.className = 'upload-result active success';
+  resultEl.innerHTML = `<strong>✓ Results</strong><table style="margin-top:8px;border-collapse:collapse;width:100%">${rows}</table>`;
 }
 
 </script>
