@@ -3581,3 +3581,864 @@ runs:
     \ {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"\
     ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
     : activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 4
+    pp: 1
+    ep: 4
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics:
+    gpu_step_score: 1.0072704569794446
+  score: 1.0072704569794446
+  status: success
+  error_msg: null
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260505_094210/traces/20260505_094210_iter0
+  policy: "\"\"\"Seed: TP=4, DP=4, PP=1, EP=4 (16 GPUs).\n16-GPU baseline config.\
+    \ Composite score rewards fewer GPUs:\nScore = 0.5*(16/G) + 0.5*(2.633/T)\n\"\"\
+    \"\n\ndef generate_config(workload: dict, environment: dict) -> dict:\n    return\
+    \ {\n        \"tp\": 4,\n        \"dp\": 4,\n        \"pp\": 1,\n        \"ep\"\
+    : 4,\n        \"micro_batch_size\": 2,\n        \"activation_checkpointing\":\
+    \ True,\n    }\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 1
+    ep: 2
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: rors.ChildFailedError: \n============================================================\n\
+    pretrain_gpt.py FAILED\n------------------------------------------------------------\n\
+    Failures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\n\
+    Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-05_09:45:45\n\
+    \  host      : nid001720-hsn0\n  rank      : 0 (local_rank: 0)\n  exitcode  :\
+    \ 2 (pid: 72140)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator that reasons about workload and hardware.\n\
+    \    Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    So minimizing\
+    \ GPU count while keeping step time reasonable is key.\n    \"\"\"\n    gpu_mem\
+    \ = environment.get(\"gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"\
+    gpus_per_node\", 4)\n    total_gpus = environment.get(\"total_gpus\", 16)\n  \
+    \  is_moe = workload.get(\"moe\", False)\n    num_layers = workload.get(\"num_layers\"\
+    , 27)\n    batch_size = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"\
+    seq_len\", 1024)\n    \n    # Parse config space for valid choices\n    config_space\
+    \ = {}\n    for dim in workload.get(\"config_space\", []):\n        config_space[dim[\"\
+    key\"]] = dim[\"choices\"]\n    \n    tp_choices = sorted(config_space.get(\"\
+    tp\", [1, 2, 4]))\n    pp_choices = sorted(config_space.get(\"pp\", [1, 3, 9]))\n\
+    \    dp_choices = sorted(config_space.get(\"dp\", [1, 2, 4]))\n    ep_choices\
+    \ = sorted(config_space.get(\"ep\", [1, 2, 4]))\n    mbs_choices = sorted(config_space.get(\"\
+    micro_batch_size\", [1, 2, 4]))\n    ac_choices = config_space.get(\"activation_checkpointing\"\
+    , [True, False])\n    \n    # Strategy: minimize GPU count (tp*dp*pp) while fitting\
+    \ in memory\n    # For deepseek-v2-lite MoE model on A100-40GB:\n    # - Model\
+    \ is relatively small (lite variant)\n    # - Try minimal parallelism first\n\
+    \    \n    if is_moe:\n        # MoE models: need to balance expert parallelism\
+    \ with communication\n        # Try tp=2 for intra-node, dp=1 to minimize GPUs,\
+    \ pp=1\n        # With fewer GPUs, the gpu_step_score should be higher\n     \
+    \   \n        # Start with minimal config: tp=1, dp=1, pp=1 = 1 GPU\n        #\
+    \ But MoE with 64 experts might not fit on 1 GPU\n        \n        # Try tp=2,\
+    \ dp=2, pp=1 = 4 GPUs with ep=2\n        # This keeps everything within one node\
+    \ (4 GPUs/node)\n        tp = 2\n        dp = 2\n        pp = 1\n        ep =\
+    \ 2  # must divide dp and num_experts(64)\n        \n        # Ensure ep divides\
+    \ dp\n        if dp % ep != 0:\n            ep = 1\n        \n        micro_batch_size\
+    \ = 2\n        activation_checkpointing = True\n        \n    else:\n        #\
+    \ Dense models: standard parallelism\n        tp = min(2, max(tp_choices))\n \
+    \       pp = 1\n        dp = 1\n        ep = 1\n        micro_batch_size = 2\n\
+    \        activation_checkpointing = True\n    \n    # Validate choices against\
+    \ config space\n    if tp not in tp_choices:\n        tp = min(tp_choices, key=lambda\
+    \ x: abs(x - tp))\n    if pp not in pp_choices:\n        pp = min(pp_choices,\
+    \ key=lambda x: abs(x - pp))\n    if dp not in dp_choices:\n        dp = min(dp_choices,\
+    \ key=lambda x: abs(x - dp))\n    if ep not in ep_choices:\n        ep = min(ep_choices,\
+    \ key=lambda x: abs(x - ep))\n    if micro_batch_size not in mbs_choices:\n  \
+    \      micro_batch_size = min(mbs_choices, key=lambda x: abs(x - micro_batch_size))\n\
+    \    \n    # Ensure batch_size is divisible by dp * micro_batch_size\n    # batch_size\
+    \ = 8, dp=2, mbs=2 → gradient_acc_steps = 8/(2*2) = 2 ✓\n    while batch_size\
+    \ % (dp * micro_batch_size) != 0 and micro_batch_size > 1:\n        micro_batch_size\
+    \ = max(1, micro_batch_size // 2)\n        if micro_batch_size not in mbs_choices:\n\
+    \            micro_batch_size = min(mbs_choices)\n    \n    return {\n       \
+    \ \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"ep\": ep,\n\
+    \        \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 4
+    dp: 2
+    pp: 1
+    ep: 2
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: server/api.py\", line 650, in _assign_worker_ranks\n    ) =\
+    \ json.loads(store.get(f\"{ASSIGNED_RANKS_PREFIX}{group_rank}\"))\n          \
+    \         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.distributed.DistNetworkError:\
+    \ Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server\
+    \ shutdown or crash?\nsrun: error: nid001720: task 0: Exited with exit code 1\n\
+    srun: Terminating StepId=52489497.1\nsrun: error: nid002088: task 1: Exited with\
+    \ exit code 1\nsrun: error: nid002273: task 2: Terminated\nsrun: error: nid002445:\
+    \ task 3: Terminated\nsrun: Force Terminated StepId=52489497.1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    if is_moe:\n   \
+    \     # DeepSeek-V2-Lite MoE: 64 experts, 27 layers, ~16B total params\n     \
+    \   # Previous results:\n        # - tp=4, dp=4, pp=1, ep=4 (16 GPUs) → score\
+    \ 1.007 ✓\n        # - tp=2, dp=2, pp=1, ep=2 (4 GPUs) → FAILED (likely OOM)\n\
+    \        \n        # Try 8 GPUs: tp=4, dp=2, pp=1, ep=2\n        # tp=4 keeps\
+    \ tensor parallelism within a node for good bandwidth\n        # dp=2 means 2\
+    \ data parallel groups\n        # ep=2 divides dp=2 and num_experts=64\n     \
+    \   # 8 GPUs = 2 nodes, should give ~2x GPU efficiency vs 16 GPUs\n        \n\
+    \        tp = 4\n        dp = 2\n        pp = 1\n        ep = 2\n        micro_batch_size\
+    \ = 2\n        activation_checkpointing = True\n        \n        # Verify batch\
+    \ divisibility: batch=8, dp=2, mbs=2 → acc_steps=2 ✓\n        if batch_size %\
+    \ (dp * micro_batch_size) != 0:\n            # Fall back to mbs=1\n          \
+    \  micro_batch_size = 1\n            if batch_size % (dp * micro_batch_size) !=\
+    \ 0:\n                # Fall back to dp=1\n                dp = 1\n          \
+    \      ep = 1\n                micro_batch_size = 1\n        \n        # Verify\
+    \ ep divides dp\n        if dp % ep != 0:\n            ep = 1\n    \n    else:\n\
+    \        # Dense models\n        # Try to minimize GPUs while fitting model\n\
+    \        tp = min(2, max(tp_choices))\n        pp = 1\n        dp = 1\n      \
+    \  ep = 1\n        micro_batch_size = 2\n        activation_checkpointing = True\n\
+    \        \n        # Ensure batch divisibility\n        if batch_size % (dp *\
+    \ micro_batch_size) != 0:\n            micro_batch_size = 1\n    \n    # Validate\
+    \ all choices against config space\n    def nearest_valid(val, choices):\n   \
+    \     if val in choices:\n            return val\n        return min(choices,\
+    \ key=lambda x: abs(x - val))\n    \n    tp = nearest_valid(tp, tp_choices)\n\
+    \    pp = nearest_valid(pp, pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n\
+    \    ep = nearest_valid(ep, ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size,\
+    \ mbs_choices)\n    \n    # Final batch divisibility check\n    if batch_size\
+    \ % (dp * micro_batch_size) != 0:\n        # Try reducing micro_batch_size\n \
+    \       for mbs in sorted(mbs_choices):\n            if batch_size % (dp * mbs)\
+    \ == 0:\n                micro_batch_size = mbs\n                break\n     \
+    \   else:\n            micro_batch_size = mbs_choices[0]\n    \n    return {\n\
+    \        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"ep\"\
+    : ep,\n        \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 3
+    ep: 2
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics:
+    gpu_step_score: 1.3559266921430841
+  score: 1.3559266921430841
+  status: success
+  error_msg: null
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260505_094210/traces/20260505_094210_iter3
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History:\n\
+    \        # - tp=4, dp=4, pp=1, ep=4 (16 GPUs) → score 1.007 ✓\n        # - tp=2,\
+    \ dp=2, pp=1, ep=2 (4 GPUs) → FAILED (OOM likely)\n        # - tp=4, dp=2, pp=1,\
+    \ ep=2 (8 GPUs) → FAILED\n        #\n        # 4 and 8 GPU configs failed. The\
+    \ model needs significant parallelism.\n        # Let's try reducing GPUs with\
+    \ pipeline parallelism to help memory:\n        # tp=2, dp=2, pp=3, ep=2 (12 GPUs)\
+    \ - pp=3 divides 27 layers\n        # This uses 12 GPUs instead of 16, giving\
+    \ ~1.33x GPU efficiency boost\n        # PP=3 adds pipeline bubbles but reduces\
+    \ per-GPU memory by 3x for weights\n        #\n        # Memory per GPU: ~16B\
+    \ * 12 bytes / (tp=2 * pp=3) ≈ 32GB \n        # With activation checkpointing\
+    \ and mbs=1, should fit in 40GB\n        \n        tp = 2\n        dp = 2\n  \
+    \      pp = 3\n        ep = 2  # divides dp=2 and num_experts=64\n        micro_batch_size\
+    \ = 1  # conservative to avoid OOM\n        activation_checkpointing = True\n\
+    \        \n        # Check batch divisibility: batch=8, dp=2, mbs=1 → acc_steps=4\
+    \ ✓\n        if batch_size % (dp * micro_batch_size) != 0:\n            for mbs\
+    \ in sorted(mbs_choices):\n                if batch_size % (dp * mbs) == 0:\n\
+    \                    micro_batch_size = mbs\n                    break\n     \
+    \       else:\n                micro_batch_size = mbs_choices[0]\n        \n \
+    \       # Verify ep divides dp\n        if dp % ep != 0:\n            ep = 1\n\
+    \    \n    else:\n        # Dense models - try minimal parallelism\n        tp\
+    \ = min(2, max(tp_choices))\n        pp = 1\n        dp = 1\n        ep = 1\n\
+    \        micro_batch_size = 2\n        activation_checkpointing = True\n     \
+    \   \n        # Ensure batch divisibility\n        if batch_size % (dp * micro_batch_size)\
+    \ != 0:\n            micro_batch_size = 1\n    \n    # Validate all choices against\
+    \ config space\n    tp = nearest_valid(tp, tp_choices)\n    pp = nearest_valid(pp,\
+    \ pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n    ep = nearest_valid(ep,\
+    \ ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size, mbs_choices)\n\
+    \    \n    # Ensure total GPUs used doesn't exceed available\n    used_gpus =\
+    \ tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall back to known working\
+    \ config\n        tp = 4\n        dp = 4\n        pp = 1\n        ep = 4\n   \
+    \     micro_batch_size = 2\n        activation_checkpointing = True\n    \n  \
+    \  # Final batch divisibility check\n    if batch_size % (dp * micro_batch_size)\
+    \ != 0:\n        for mbs in sorted(mbs_choices):\n            if batch_size %\
+    \ (dp * mbs) == 0:\n                micro_batch_size = mbs\n                break\n\
+    \        else:\n            micro_batch_size = mbs_choices[0]\n    \n    return\
+    \ {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"\
+    ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 2
+    dp: 1
+    pp: 3
+    ep: 1
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: server/api.py\", line 650, in _assign_worker_ranks\n    ) =\
+    \ json.loads(store.get(f\"{ASSIGNED_RANKS_PREFIX}{group_rank}\"))\n          \
+    \         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.distributed.DistNetworkError:\
+    \ Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server\
+    \ shutdown or crash?\nsrun: error: nid001720: task 0: Exited with exit code 1\n\
+    srun: Terminating StepId=52489497.3\nsrun: error: nid002273: task 2: Exited with\
+    \ exit code 1\nsrun: error: nid002088: task 1: Terminated\nsrun: error: nid002445:\
+    \ task 3: Terminated\nsrun: Force Terminated StepId=52489497.3\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History:\n\
+    \        # - tp=4, dp=4, pp=1, ep=4 (16 GPUs) → score 1.007 ✓\n        # - tp=2,\
+    \ dp=2, pp=1, ep=2 (4 GPUs) → FAILED (OOM)\n        # - tp=4, dp=2, pp=1, ep=2\
+    \ (8 GPUs) → FAILED (OOM)\n        # - tp=2, dp=2, pp=3, ep=2 (12 GPUs) → score\
+    \ 1.356 ✓ BEST\n        #\n        # PP=3 is key for memory reduction. 12 GPUs\
+    \ worked well.\n        # Now try: tp=2, dp=1, pp=3, ep=1 → 6 GPUs\n        #\
+    \ This would give huge GPU efficiency boost if it fits.\n        # Memory: ~16B\
+    \ * 12bytes / (tp=2 * pp=3) ≈ 32GB base\n        # But with ep=1, all 64 experts\
+    \ on each GPU - might be tight.\n        # With activation checkpointing and mbs=1,\
+    \ worth trying.\n        #\n        # If dp=1, ep must be 1 (ep divides dp).\n\
+    \        # batch=8, dp=1, mbs=1 → acc_steps=8 → good pipeline fill with pp=3\n\
+    \        \n        tp = 2\n        dp = 1\n        pp = 3\n        ep = 1  # must\
+    \ divide dp=1, so ep=1\n        micro_batch_size = 1  # conservative for memory\n\
+    \        activation_checkpointing = True\n        \n        # Verify batch divisibility\n\
+    \        if batch_size % (dp * micro_batch_size) != 0:\n            for mbs in\
+    \ sorted(mbs_choices):\n                if batch_size % (dp * mbs) == 0:\n   \
+    \                 micro_batch_size = mbs\n                    break\n        \
+    \    else:\n                micro_batch_size = mbs_choices[0]\n    \n    else:\n\
+    \        # Dense models\n        # Try minimal parallelism, keeping within memory\n\
+    \        tp = min(2, max(tp_choices))\n        pp = 1\n        dp = 1\n      \
+    \  ep = 1\n        micro_batch_size = 2\n        activation_checkpointing = True\n\
+    \        \n        # Ensure batch divisibility\n        if batch_size % (dp *\
+    \ micro_batch_size) != 0:\n            micro_batch_size = 1\n    \n    # Validate\
+    \ all choices against config space\n    tp = nearest_valid(tp, tp_choices)\n \
+    \   pp = nearest_valid(pp, pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n\
+    \    ep = nearest_valid(ep, ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size,\
+    \ mbs_choices)\n    \n    # Ensure total GPUs used doesn't exceed available\n\
+    \    used_gpus = tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall\
+    \ back to best known config\n        tp = 2\n        dp = 2\n        pp = 3\n\
+    \        ep = 2\n        micro_batch_size = 1\n        activation_checkpointing\
+    \ = True\n    \n    # Final batch divisibility check\n    if batch_size % (dp\
+    \ * micro_batch_size) != 0:\n        for mbs in sorted(mbs_choices):\n       \
+    \     if batch_size % (dp * mbs) == 0:\n                micro_batch_size = mbs\n\
+    \                break\n        else:\n            micro_batch_size = mbs_choices[0]\n\
+    \    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config:
+    tp: 1
+    dp: 2
+    pp: 3
+    ep: 2
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: \", line 650, in _assign_worker_ranks\n    ) = json.loads(store.get(f\"\
+    {ASSIGNED_RANKS_PREFIX}{group_rank}\"))\n                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\
+    torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was\
+    \ likely closed. Did the remote server shutdown or crash?\nsrun: error: nid002273:\
+    \ task 2: Exited with exit code 1\nsrun: Terminating StepId=52489497.4\nsrun:\
+    \ error: nid001720: task 0: Exited with exit code 1\nsrun: error: nid002445: task\
+    \ 3: Exited with exit code 1\nsrun: error: nid002088: task 1: Terminated\nsrun:\
+    \ Force Terminated StepId=52489497.4\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History:\n\
+    \        # - tp=4, dp=4, pp=1, ep=4 (16 GPUs) → score 1.007\n        # - tp=2,\
+    \ dp=2, pp=1, ep=2 (4 GPUs) → FAILED (OOM, no PP)\n        # - tp=4, dp=2, pp=1,\
+    \ ep=2 (8 GPUs) → FAILED (OOM, no PP)\n        # - tp=2, dp=2, pp=3, ep=2 (12\
+    \ GPUs) → score 1.356 (BEST)\n        # - tp=2, dp=1, pp=3, ep=1 (6 GPUs) → FAILED\
+    \ (ep=1, all experts on each GPU)\n        #\n        # Key lessons:\n       \
+    \ # 1. PP=3 is essential for memory (splits 27 layers into 9 per stage)\n    \
+    \    # 2. ep >= 2 needed to distribute 64 experts (ep=1 OOMs)\n        # 3. Without\
+    \ PP, even 8 GPUs OOM\n        #\n        # Next try: tp=1, dp=2, pp=3, ep=2 →\
+    \ 6 GPUs\n        # This reduces TP overhead while keeping PP for memory and ep=2\
+    \ for experts.\n        # Memory: less TP splitting means more per-GPU, but PP=3\
+    \ divides by 3.\n        # With activation_checkpointing=True and mbs=1, should\
+    \ be feasible.\n        # \n        # Pipeline bubble: pp=3, batch=8, dp=2, mbs=1\
+    \ → acc_steps=4\n        # bubble = (3-1)/4 = 50%, same as best config but fewer\
+    \ GPUs\n        \n        tp = 1\n        dp = 2\n        pp = 3\n        ep =\
+    \ 2  # must divide dp=2 and num_experts=64\n        micro_batch_size = 1  # keep\
+    \ small for memory and pipeline efficiency\n        activation_checkpointing =\
+    \ True\n        \n        # Verify batch divisibility: batch=8, dp=2, mbs=1 →\
+    \ acc_steps=4 ✓\n        if batch_size % (dp * micro_batch_size) != 0:\n     \
+    \       for mbs in sorted(mbs_choices):\n                if batch_size % (dp *\
+    \ mbs) == 0:\n                    micro_batch_size = mbs\n                   \
+    \ break\n            else:\n                micro_batch_size = mbs_choices[0]\n\
+    \    \n    else:\n        # Dense models - general adaptive logic\n        # Start\
+    \ conservative with activation checkpointing\n        activation_checkpointing\
+    \ = True\n        \n        # Try to minimize GPU count\n        # For smaller\
+    \ models, try tp=2, pp=1, dp=1\n        tp = nearest_valid(2, tp_choices)\n  \
+    \      pp = nearest_valid(1, pp_choices)\n        dp = nearest_valid(1, dp_choices)\n\
+    \        ep = nearest_valid(1, ep_choices)\n        micro_batch_size = nearest_valid(2,\
+    \ mbs_choices)\n        \n        # Ensure batch divisibility\n        if batch_size\
+    \ % (dp * micro_batch_size) != 0:\n            micro_batch_size = 1\n    \n  \
+    \  # Validate all choices against config space\n    tp = nearest_valid(tp, tp_choices)\n\
+    \    pp = nearest_valid(pp, pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n\
+    \    ep = nearest_valid(ep, ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size,\
+    \ mbs_choices)\n    \n    # Ensure total GPUs used doesn't exceed available\n\
+    \    used_gpus = tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall\
+    \ back to best known config\n        tp = 2\n        dp = 2\n        pp = 3\n\
+    \        ep = 2\n        micro_batch_size = 1\n        activation_checkpointing\
+    \ = True\n    \n    # Final batch divisibility check\n    if batch_size % (dp\
+    \ * micro_batch_size) != 0:\n        for mbs in sorted(mbs_choices):\n       \
+    \     if batch_size % (dp * mbs) == 0:\n                micro_batch_size = mbs\n\
+    \                break\n        else:\n            micro_batch_size = mbs_choices[0]\n\
+    \    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config:
+    tp: 2
+    dp: 4
+    pp: 1
+    ep: 4
+    micro_batch_size: 1
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: Root Cause (first observed failure):\n[0]:\n  time      : 2026-05-05_10:16:03\n\
+    \  host      : nid002088-hsn0\n  rank      : 5 (local_rank: 1)\n  exitcode  :\
+    \ 1 (pid: 1705656)\n  error_file: <N/A>\n  traceback : To enable traceback see:\
+    \ https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n\
+    srun: error: nid001720: task 0: Exited with exit code 1\nsrun: Terminating StepId=52489497.5\n\
+    srun: error: nid002088: task 1: Exited with exit code 1\nsrun: error: nid002273:\
+    \ task 2: Exited with exit code 1\nsrun: error: nid002445: task 3: Exited with\
+    \ exit code 1\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History\
+    \ analysis:\n        # - tp=4, dp=4, pp=1, ep=4 (16 GPUs) → score 1.007\n    \
+    \    # - tp=2, dp=2, pp=1, ep=2 (4 GPUs) → FAILED (OOM without PP)\n        #\
+    \ - tp=4, dp=2, pp=1, ep=2 (8 GPUs) → FAILED (OOM without PP, mbs=2)\n       \
+    \ # - tp=2, dp=2, pp=3, ep=2 (12 GPUs) → score 1.356 (BEST)\n        # - tp=2,\
+    \ dp=1, pp=3, ep=1 (6 GPUs) → FAILED (ep=1 OOM with all experts)\n        # -\
+    \ tp=1, dp=2, pp=3, ep=2 (6 GPUs) → FAILED \n        #\n        # Key: PP=3 works,\
+    \ PP=1 OOMs. ep>=2 required.\n        # \n        # Next attempt: tp=4, dp=2,\
+    \ pp=1, ep=2, mbs=1 (8 GPUs)\n        # Previous try (run 3) used mbs=2 which\
+    \ may have caused OOM.\n        # With mbs=1 and tp=4, per-GPU params are smaller.\n\
+    \        # If this works, 8 GPUs → 0.5*(16/8) + time = 1.0 + time_component\n\
+    \        # \n        # But PP=1 failed even with 8 GPUs before... \n        #\
+    \ Let's try tp=4, dp=1, pp=3, ep=1 → 12 GPUs\n        # Wait, ep=1 failed before\
+    \ (run 5 with tp=2,dp=1,pp=3,ep=1)\n        #\n        # Actually, let's try tp=4,\
+    \ dp=2, pp=3, ep=2 → 24 GPUs (too many!)\n        # tp=2, dp=2, pp=3, ep=2 → 12\
+    \ GPUs was best. \n        #\n        # Try to get fewer GPUs: tp=2, dp=1, pp=3,\
+    \ ep=1 failed (ep=1 OOM)\n        # tp=1, dp=2, pp=3, ep=2 failed (tp=1 too little\
+    \ splitting)\n        #\n        # Let's try tp=4, dp=1, pp=3, ep=1 → 12 GPUs\
+    \ but tp=4 splits params more\n        # ep=1 failed with tp=2... but tp=4 gives\
+    \ 2x more param splitting\n        # Actually ep must divide dp, and dp=1, ep=1\
+    \ is valid. But 64 experts \n        # all on one GPU is the issue.\n        #\n\
+    \        # Let's try: tp=2, dp=2, pp=3, ep=2, mbs=2 → 12 GPUs\n        # mbs=2\
+    \ means acc_steps = 8/(2*2) = 2, bubble = (3-1)/2 = 100%\n        # That's terrible\
+    \ for pipeline efficiency. \n        #\n        # Better: try tp=2, dp=4, pp=3,\
+    \ ep=4 → 24 GPUs (exceeds 16!)\n        # \n        # Let me reconsider. With\
+    \ 12 GPUs and score 1.356, can we improve step time?\n        # Currently: tp=2,\
+    \ dp=2, pp=3, ep=2, mbs=1, ac=True\n        # acc_steps = 8/(2*1) = 4, bubble\
+    \ = 2/4 = 50%\n        # \n        # Try ac=False to speed up compute (no recomputation):\n\
+    \        # tp=2, dp=2, pp=3, ep=2, mbs=1, ac=False → might OOM\n        #\n  \
+    \      # Try mbs=2 with pp=1 and more GPUs for speed:\n        # tp=4, dp=4, pp=1,\
+    \ ep=4, mbs=1 → 16 GPUs (was run 1 with mbs=2, score 1.007)\n        # With mbs=1:\
+    \ acc_steps=8/(4*1)=2\n        #\n        # Let me try: tp=2, dp=4, pp=1, ep=4\
+    \ → 8 GPUs! dp=4, ep=4, ep divides dp ✓\n        # 8 GPUs, all within 2 nodes.\
+    \ ep=4 distributes experts well.\n        # PP=1 failed before but those had fewer\
+    \ expert parallelism.\n        # With ep=4, each GPU only has 64/4=16 experts\
+    \ → much less memory!\n        \n        tp = 2\n        dp = 4\n        pp =\
+    \ 1\n        ep = 4  # ep divides dp=4 ✓, ep divides 64 ✓\n        micro_batch_size\
+    \ = 1  # conservative for memory\n        activation_checkpointing = True\n  \
+    \      \n        # used_gpus = tp*dp*pp = 2*4*1 = 8\n        # batch=8, dp=4,\
+    \ mbs=1 → acc_steps = 8/(4*1) = 2 ✓\n        # 8 GPUs → score = 0.5*(16/8) + 0.5*(ref/T)\
+    \ = 1.0 + time_component\n        \n        # Verify batch divisibility\n    \
+    \    if batch_size % (dp * micro_batch_size) != 0:\n            for mbs in sorted(mbs_choices):\n\
+    \                if batch_size % (dp * mbs) == 0:\n                    micro_batch_size\
+    \ = mbs\n                    break\n            else:\n                micro_batch_size\
+    \ = mbs_choices[0]\n    \n    else:\n        # Dense models - general adaptive\
+    \ logic\n        activation_checkpointing = True\n        \n        tp = nearest_valid(2,\
+    \ tp_choices)\n        pp = nearest_valid(1, pp_choices)\n        dp = nearest_valid(1,\
+    \ dp_choices)\n        ep = nearest_valid(1, ep_choices)\n        micro_batch_size\
+    \ = nearest_valid(2, mbs_choices)\n        \n        # Ensure batch divisibility\n\
+    \        if batch_size % (dp * micro_batch_size) != 0:\n            micro_batch_size\
+    \ = 1\n    \n    # Validate all choices against config space\n    tp = nearest_valid(tp,\
+    \ tp_choices)\n    pp = nearest_valid(pp, pp_choices)\n    dp = nearest_valid(dp,\
+    \ dp_choices)\n    ep = nearest_valid(ep, ep_choices)\n    micro_batch_size =\
+    \ nearest_valid(micro_batch_size, mbs_choices)\n    \n    # Ensure total GPUs\
+    \ used doesn't exceed available\n    used_gpus = tp * dp * pp\n    if used_gpus\
+    \ > total_gpus:\n        # Fall back to best known config\n        tp = 2\n  \
+    \      dp = 2\n        pp = 3\n        ep = 2\n        micro_batch_size = 1\n\
+    \        activation_checkpointing = True\n    \n    # Final batch divisibility\
+    \ check\n    if batch_size % (dp * micro_batch_size) != 0:\n        for mbs in\
+    \ sorted(mbs_choices):\n            if batch_size % (dp * mbs) == 0:\n       \
+    \         micro_batch_size = mbs\n                break\n        else:\n     \
+    \       micro_batch_size = mbs_choices[0]\n    \n    return {\n        \"tp\"\
+    : tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"ep\": ep,\n       \
+    \ \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 3
+    ep: 2
+    micro_batch_size: 1
+    activation_checkpointing: false
+  metrics:
+    gpu_step_score: 1.3794925489849306
+  score: 1.3794925489849306
+  status: success
+  error_msg: null
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260505_094210/traces/20260505_094210_iter7
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # Proven\
+    \ working: tp=2, dp=2, pp=3, ep=2 (12 GPUs) → score 1.356\n        # \n      \
+    \  # History shows:\n        # - PP=1 always OOMs (runs 2,3,7)\n        # - EP=1\
+    \ OOMs (run 5 with tp=2,dp=1,pp=3)\n        # - Need PP>=3 and EP>=2\n       \
+    \ #\n        # Try: tp=1, dp=4, pp=3, ep=4 → 12 GPUs\n        # - ep=4 distributes\
+    \ 64 experts across 4 groups (16 experts/GPU)\n        # - tp=1 means no TP communication\
+    \ overhead at all\n        # - dp=4 means acc_steps = 8/(4*1) = 2 with mbs=1\n\
+    \        # - Pipeline bubble = (3-1)/2 = 100% (bad)\n        # - With mbs=2: acc_steps\
+    \ = 8/(4*2) = 1, bubble = (3-1)/1 = 200% (worse)\n        # \n        # Actually\
+    \ for dp=4, mbs=1: acc_steps = batch/(dp*mbs) = 8/(4*1) = 2\n        # bubble\
+    \ fraction = (pp-1)/acc_steps = 2/2 = 100%\n        #\n        # For dp=2, mbs=1:\
+    \ acc_steps = 8/(2*1) = 4, bubble = 2/4 = 50% (better!)\n        # \n        #\
+    \ So tp=2,dp=2,pp=3 is actually better for pipeline efficiency.\n        # Let's\
+    \ try to improve step time with the proven config.\n        #\n        # Try:\
+    \ tp=2, dp=2, pp=3, ep=2, mbs=1, ac=False → 12 GPUs\n        # Removing activation\
+    \ checkpointing speeds up compute but uses more memory.\n        # With tp=2,\
+    \ pp=3: model params split by 6. ~16B/6 ≈ 2.67B params/GPU.\n        # Training\
+    \ memory: ~2.67B * 12 bytes ≈ 32GB for params+grads+optimizer.\n        # Activations\
+    \ for seq=1024, mbs=1 might fit in remaining 8GB.\n        # Worth trying - could\
+    \ significantly speed up step time.\n        \n        tp = 2\n        dp = 2\n\
+    \        pp = 3\n        ep = 2\n        micro_batch_size = 1\n        activation_checkpointing\
+    \ = False  # Try without AC for faster step time\n        \n        # used_gpus\
+    \ = 2*2*3 = 12\n        # batch=8, dp=2, mbs=1 → acc_steps = 4, bubble = 50%\n\
+    \        \n    else:\n        # Dense models - general adaptive logic\n      \
+    \  activation_checkpointing = True\n        \n        tp = nearest_valid(2, tp_choices)\n\
+    \        pp = nearest_valid(1, pp_choices)\n        dp = nearest_valid(1, dp_choices)\n\
+    \        ep = nearest_valid(1, ep_choices)\n        micro_batch_size = nearest_valid(2,\
+    \ mbs_choices)\n        \n        # Ensure batch divisibility\n        if batch_size\
+    \ % (dp * micro_batch_size) != 0:\n            micro_batch_size = 1\n    \n  \
+    \  # Validate all choices against config space\n    tp = nearest_valid(tp, tp_choices)\n\
+    \    pp = nearest_valid(pp, pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n\
+    \    ep = nearest_valid(ep, ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size,\
+    \ mbs_choices)\n    \n    # Ensure total GPUs used doesn't exceed available\n\
+    \    used_gpus = tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall\
+    \ back to best known config\n        tp = 2\n        dp = 2\n        pp = 3\n\
+    \        ep = 2\n        micro_batch_size = 1\n        activation_checkpointing\
+    \ = True\n    \n    # Final batch divisibility check\n    if batch_size % (dp\
+    \ * micro_batch_size) != 0:\n        for mbs in sorted(mbs_choices):\n       \
+    \     if batch_size % (dp * mbs) == 0:\n                micro_batch_size = mbs\n\
+    \                break\n        else:\n            micro_batch_size = mbs_choices[0]\n\
+    \    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"
+- config:
+    tp: 2
+    dp: 2
+    pp: 3
+    ep: 2
+    micro_batch_size: 2
+    activation_checkpointing: false
+  metrics:
+    gpu_step_score: 1.6939446136195224
+  score: 1.6939446136195224
+  status: success
+  error_msg: null
+  trace_dir: /global/u1/b/byungsoo/cclbench-agent/ccl-bench/agent/ccl_bench_agent/runs/20260505_094210/traces/20260505_094210_iter8
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History\
+    \ analysis:\n        # - PP=1 always OOMs (runs 2,3,7) → need PP>=3\n        #\
+    \ - EP=1 OOMs (run 5) → need EP>=2\n        # - Best: tp=2, dp=2, pp=3, ep=2,\
+    \ ac=False → score 1.379 (12 GPUs)\n        # - Second: tp=2, dp=2, pp=3, ep=2,\
+    \ ac=True → score 1.356 (12 GPUs)\n        # - Baseline: tp=4, dp=4, pp=1, ep=4\
+    \ → score 1.007 (16 GPUs)\n        #\n        # Next experiment: try mbs=2 with\
+    \ ac=False\n        # batch=8, dp=2, mbs=2 → acc_steps = 2\n        # Pipeline\
+    \ bubble fraction = (3-1)/2 = 100% (worse than mbs=1's 50%)\n        # But each\
+    \ microbatch is larger → better GPU utilization per microbatch\n        # Net\
+    \ effect unclear - worth testing\n        #\n        # Alternative: try tp=4,\
+    \ dp=2, pp=3, ep=2 → 24 GPUs > 16, invalid\n        # tp=1, dp=4, pp=3, ep=4 →\
+    \ 12 GPUs, but tp=1 might OOM per-GPU\n        #   model_params/pp = 16B/3 ≈ 5.3B,\
+    \ with tp=1 that's all on one GPU\n        #   5.3B * 12 bytes ≈ 64GB → won't\
+    \ fit in 40GB\n        #\n        # So tp>=2 is necessary with pp=3.\n       \
+    \ # \n        # Let's try mbs=2 to see if throughput improves despite worse bubble\n\
+    \        \n        tp = 2\n        dp = 2\n        pp = 3\n        ep = 2\n  \
+    \      micro_batch_size = 2  # Try mbs=2 (prev best was mbs=1)\n        activation_checkpointing\
+    \ = False  # Confirmed works without AC\n        \n        # used_gpus = 2*2*3\
+    \ = 12\n        # batch=8, dp=2, mbs=2 → acc_steps = 2, bubble = (3-1)/2 = 100%\n\
+    \        # vs mbs=1: acc_steps=4, bubble=50%, but 4 smaller microbatches\n   \
+    \     \n    else:\n        # Dense models - general adaptive logic\n        activation_checkpointing\
+    \ = True\n        \n        tp = nearest_valid(2, tp_choices)\n        pp = nearest_valid(1,\
+    \ pp_choices)\n        dp = nearest_valid(1, dp_choices)\n        ep = nearest_valid(1,\
+    \ ep_choices)\n        micro_batch_size = nearest_valid(2, mbs_choices)\n    \
+    \    \n        # Estimate if model fits\n        # For larger models, increase\
+    \ parallelism\n        num_params = workload.get(\"num_params\", None)\n     \
+    \   if num_params and num_params > 10e9:\n            # Need more parallelism\
+    \ for large models\n            pp = nearest_valid(3, pp_choices)\n          \
+    \  dp = nearest_valid(2, dp_choices)\n    \n    # Validate all choices against\
+    \ config space\n    tp = nearest_valid(tp, tp_choices)\n    pp = nearest_valid(pp,\
+    \ pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n    ep = nearest_valid(ep,\
+    \ ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size, mbs_choices)\n\
+    \    \n    # Ensure total GPUs used doesn't exceed available\n    used_gpus =\
+    \ tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall back to best known\
+    \ config\n        tp = 2\n        dp = 2\n        pp = 3\n        ep = 2\n   \
+    \     micro_batch_size = 1\n        activation_checkpointing = False\n    \n \
+    \   # Final batch divisibility check\n    if batch_size % (dp * micro_batch_size)\
+    \ != 0:\n        for mbs in sorted(mbs_choices):\n            if batch_size %\
+    \ (dp * mbs) == 0:\n                micro_batch_size = mbs\n                break\n\
+    \        else:\n            micro_batch_size = mbs_choices[0]\n    \n    return\
+    \ {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"\
+    ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 2
+    dp: 1
+    pp: 3
+    ep: 1
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: "exit 1: \", line 650, in _assign_worker_ranks\n    ) = json.loads(store.get(f\"\
+    {ASSIGNED_RANKS_PREFIX}{group_rank}\"))\n                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\
+    torch.distributed.DistNetworkError: Failed to recv, got 0 bytes. Connection was\
+    \ likely closed. Did the remote server shutdown or crash?\nsrun: error: nid001720:\
+    \ task 0: Exited with exit code 1\nsrun: Terminating StepId=52489497.8\nsrun:\
+    \ error: nid002273: task 2: Exited with exit code 1\nsrun: error: nid002445: task\
+    \ 3: Exited with exit code 1\nsrun: error: nid002088: task 1: Terminated\nsrun:\
+    \ Force Terminated StepId=52489497.8\n"
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History\
+    \ analysis (9 runs):\n        # - PP=1 always OOMs → need PP>=3\n        # - EP=1\
+    \ with dp=2 failed (run 6) → ep must divide dp\n        # - TP=1 with PP=3 failed\
+    \ (run 5) → need TP>=2\n        # - Best: tp=2, dp=2, pp=3, ep=2, mbs=2, ac=False\
+    \ → score 1.694 (12 GPUs)\n        #\n        # Next experiment: try dp=1 to use\
+    \ only 6 GPUs (tp=2*dp=1*pp=3)\n        # With dp=1, no DP communication needed\
+    \ at all.\n        # ep=1 (must divide dp=1, so ep=1 is the only valid choice\
+    \ from [1,2,4])\n        # GPU efficiency: 16/6 = 2.667 vs 16/12 = 1.333\n   \
+    \     # Risk: without EP, all 64 experts on each GPU. Each GPU handles\n     \
+    \   # ~16B/3(pp) ≈ 5.3B params. With bf16 that's ~10.6GB for params.\n       \
+    \ # Optimizer states (Adam): 5.3B * 12 bytes ≈ 64GB... won't fit.\n        # Actually\
+    \ with tp=2: 5.3B/2 = 2.65B per GPU → 2.65B * 12 ≈ 32GB\n        # Plus activations.\
+    \ Tight on 40GB. Try with ac=True.\n        #\n        # Actually, MoE params:\
+    \ most params are in experts. With 64 experts,\n        # each expert is small\
+    \ but total is large. Without EP, all experts\n        # are replicated. With\
+    \ ep=1 and dp=1, each GPU has all experts\n        # for its pipeline stage, but\
+    \ only a fraction are activated per token.\n        #\n        # This might OOM.\
+    \ Let's try it with ac=True to be safe.\n        # If it fails, we'll go back\
+    \ to the best known config.\n        \n        tp = 2\n        dp = 1\n      \
+    \  pp = 3\n        ep = 1  # Only valid choice when dp=1 and ep must divide dp\n\
+    \        micro_batch_size = 2\n        activation_checkpointing = True  # Safety\
+    \ measure for tight memory\n        \n        # used_gpus = 2*1*3 = 6\n      \
+    \  # batch=8, dp=1, mbs=2 → acc_steps = 4\n        # pipeline bubble = (3-1)/4\
+    \ = 50%\n        \n    else:\n        # Dense models - general adaptive logic\n\
+    \        activation_checkpointing = True\n        \n        tp = nearest_valid(2,\
+    \ tp_choices)\n        pp = nearest_valid(1, pp_choices)\n        dp = nearest_valid(1,\
+    \ dp_choices)\n        ep = nearest_valid(1, ep_choices)\n        micro_batch_size\
+    \ = nearest_valid(2, mbs_choices)\n        \n        # Estimate if model fits\n\
+    \        num_params = workload.get(\"num_params\", None)\n        if num_params\
+    \ and num_params > 10e9:\n            pp = nearest_valid(3, pp_choices)\n    \
+    \        dp = nearest_valid(2, dp_choices)\n    \n    # Validate all choices against\
+    \ config space\n    tp = nearest_valid(tp, tp_choices)\n    pp = nearest_valid(pp,\
+    \ pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n    ep = nearest_valid(ep,\
+    \ ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size, mbs_choices)\n\
+    \    \n    # Ensure total GPUs used doesn't exceed available\n    used_gpus =\
+    \ tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall back to best known\
+    \ config\n        tp = 2\n        dp = 2\n        pp = 3\n        ep = 2\n   \
+    \     micro_batch_size = 2\n        activation_checkpointing = False\n    \n \
+    \   # Final batch divisibility check\n    if batch_size % (dp * micro_batch_size)\
+    \ != 0:\n        for mbs in sorted(mbs_choices):\n            if batch_size %\
+    \ (dp * mbs) == 0:\n                micro_batch_size = mbs\n                break\n\
+    \        else:\n            micro_batch_size = mbs_choices[0]\n    \n    return\
+    \ {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"\
+    ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n        \"activation_checkpointing\"\
+    : activation_checkpointing,\n    }\n"
+- config:
+    tp: 1
+    dp: 2
+    pp: 3
+    ep: 2
+    micro_batch_size: 2
+    activation_checkpointing: true
+  metrics: {}
+  score: -.inf
+  status: error
+  error_msg: 'exit 1: :34:59.040567865 ProcessGroupNCCL.cpp:5072] Guessing device
+    ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous.
+    You can specify device_id in init_process_group()
+
+    srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+
+    [2026-05-05T17:42:16.832] error: *** STEP 52489497.9 ON nid001720 CANCELLED AT
+    2026-05-05T17:42:16 DUE TO TIME LIMIT ***
+
+    srun: error: nid001720: task 0: Terminated
+
+    srun: Terminating StepId=52489497.9
+
+    srun: error: nid002088: task 1: Terminated
+
+    srun: error: nid002273: task 2: Terminated
+
+    srun: error: nid002445: task 3: Terminated
+
+    '
+  trace_dir: null
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"\n    Adaptive config generator for LLM training workloads.\n    \n  \
+    \  Key insight: gpu_step_score rewards using fewer GPUs efficiently.\n    Score\
+    \ ≈ 0.5*(total_gpus/used_gpus) + 0.5*(reference_time/step_time)\n    \n    Strategy:\
+    \ Find the minimum GPU count that fits the model in memory,\n    then optimize\
+    \ step time within that constraint.\n    \"\"\"\n    gpu_mem = environment.get(\"\
+    gpu_memory_gb\", 40)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    total_gpus = environment.get(\"total_gpus\", 16)\n    is_moe = workload.get(\"\
+    moe\", False)\n    num_layers = workload.get(\"num_layers\", None)\n    batch_size\
+    \ = workload.get(\"batch_size\", 8)\n    seq_len = workload.get(\"seq_len\", 1024)\n\
+    \    model_family = workload.get(\"model_family\", \"\")\n    \n    # Parse config\
+    \ space for valid choices\n    config_space = {}\n    for dim in workload.get(\"\
+    config_space\", []):\n        config_space[dim[\"key\"]] = dim[\"choices\"]\n\
+    \    \n    tp_choices = sorted(config_space.get(\"tp\", [1, 2, 4]))\n    pp_choices\
+    \ = sorted(config_space.get(\"pp\", [1, 3, 9]))\n    dp_choices = sorted(config_space.get(\"\
+    dp\", [1, 2, 4]))\n    ep_choices = sorted(config_space.get(\"ep\", [1, 2, 4]))\n\
+    \    mbs_choices = sorted(config_space.get(\"micro_batch_size\", [1, 2, 4]))\n\
+    \    ac_choices = config_space.get(\"activation_checkpointing\", [True, False])\n\
+    \    \n    # Default num_layers based on model family\n    if num_layers is None:\n\
+    \        if \"deepseek-v2-lite\" in model_family.lower():\n            num_layers\
+    \ = 27\n        elif \"deepseek\" in model_family.lower():\n            num_layers\
+    \ = 60\n        elif \"llama\" in model_family.lower():\n            num_layers\
+    \ = 32\n        else:\n            num_layers = 32\n    \n    def nearest_valid(val,\
+    \ choices):\n        if val in choices:\n            return val\n        return\
+    \ min(choices, key=lambda x: abs(x - val))\n    \n    if is_moe:\n        # DeepSeek-V2-Lite\
+    \ MoE: ~16B total params, 64 experts, 27 layers\n        # \n        # History\
+    \ analysis (10 runs):\n        # Best: tp=2, dp=2, pp=3, ep=2, mbs=2, ac=False\
+    \ → 1.694 (12 GPUs)\n        # \n        # Key findings:\n        # - PP>=3 needed\
+    \ (PP=1 OOMs)\n        # - EP must be >=2 when dp>=2 (ep=1 causes assignment errors)\n\
+    \        # - dp=1 with ep=1 also fails\n        # - ac=False >> ac=True (1.694\
+    \ vs 1.379!)\n        # - mbs=2 > mbs=1 (better GPU utilization beats pipeline\
+    \ bubble)\n        #\n        # Next: Try tp=1, dp=2, pp=3, ep=2 = 6 GPUs\n  \
+    \      # This would give GPU efficiency 16/6 = 2.67 vs 16/12 = 1.33\n        #\
+    \ With tp=1, each GPU handles more params per layer but PP=3 splits layers\n \
+    \       # Memory: ~16B params / (tp=1 * pp=3) = 5.3B per stage\n        # With\
+    \ EP=2 and dp=2, experts are split across 2 GPUs\n        # So expert params per\
+    \ GPU halved. Dense params stay same.\n        # 5.3B * ~6 bytes (bf16 + optimizer\
+    \ approx) might be tight...\n        # \n        # Previous run 5 (tp=1, dp=1,\
+    \ pp=3, ep=1) failed, but that was dp=1/ep=1.\n        # tp=1, dp=2, pp=3, ep=2\
+    \ is different - it has proper EP.\n        # \n        # Risk: tp=1 means no\
+    \ tensor parallelism to reduce per-GPU memory.\n        # Let's try it with ac=True\
+    \ as safety, and mbs=2.\n        \n        tp = 1\n        dp = 2\n        pp\
+    \ = 3\n        ep = 2\n        micro_batch_size = 2\n        activation_checkpointing\
+    \ = True  # Safety for tp=1 (more memory per GPU)\n        \n        # used_gpus\
+    \ = 1*2*3 = 6\n        # batch=8, dp=2, mbs=2 → acc_steps = 2\n        # pipeline\
+    \ bubble = (3-1)/2 = 100%\n        \n    else:\n        # Dense models - general\
+    \ adaptive logic\n        activation_checkpointing = True\n        \n        tp\
+    \ = nearest_valid(2, tp_choices)\n        pp = nearest_valid(1, pp_choices)\n\
+    \        dp = nearest_valid(1, dp_choices)\n        ep = nearest_valid(1, ep_choices)\n\
+    \        micro_batch_size = nearest_valid(2, mbs_choices)\n        \n        #\
+    \ Estimate if model fits\n        num_params = workload.get(\"num_params\", None)\n\
+    \        if num_params and num_params > 10e9:\n            pp = nearest_valid(3,\
+    \ pp_choices)\n            dp = nearest_valid(2, dp_choices)\n    \n    # Validate\
+    \ all choices against config space\n    tp = nearest_valid(tp, tp_choices)\n \
+    \   pp = nearest_valid(pp, pp_choices)\n    dp = nearest_valid(dp, dp_choices)\n\
+    \    ep = nearest_valid(ep, ep_choices)\n    micro_batch_size = nearest_valid(micro_batch_size,\
+    \ mbs_choices)\n    \n    # Ensure total GPUs used doesn't exceed available\n\
+    \    used_gpus = tp * dp * pp\n    if used_gpus > total_gpus:\n        # Fall\
+    \ back to best known config\n        tp = 2\n        dp = 2\n        pp = 3\n\
+    \        ep = 2\n        micro_batch_size = 2\n        activation_checkpointing\
+    \ = False\n    \n    # Final batch divisibility check\n    if batch_size % (dp\
+    \ * micro_batch_size) != 0:\n        for mbs in sorted(mbs_choices):\n       \
+    \     if batch_size % (dp * mbs) == 0:\n                micro_batch_size = mbs\n\
+    \                break\n        else:\n            micro_batch_size = mbs_choices[0]\n\
+    \    \n    return {\n        \"tp\": tp,\n        \"dp\": dp,\n        \"pp\"\
+    : pp,\n        \"ep\": ep,\n        \"micro_batch_size\": micro_batch_size,\n\
+    \        \"activation_checkpointing\": activation_checkpointing,\n    }\n"

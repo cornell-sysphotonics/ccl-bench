@@ -32,7 +32,7 @@ rankN_trace.json  ──►  gen_chakra_et.py  ──►  chakra_trace.*.et
 Docker must be running with the `astra-sim:latest` image available. To build it:
 
 ```bash
-cd agent/experiments/tools/astra-sim-hybrid-parallelism
+cd plug-ins/astra-sim-hybrid-parallelism
 docker build -t astra-sim:latest .
 ```
 

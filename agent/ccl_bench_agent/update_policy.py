@@ -24,7 +24,7 @@ import anthropic
 
 
 SYSTEM_PROMPT = """\
-You are a configuration optimization agent for LLM infrastructure (CCL-Bench / ADRS).
+You are a configuration optimization agent for LLM infrastructure (CCL-Bench).
 
 Your goal: write and iteratively refine a Python function `generate_config` that maps
 workload cards and environment descriptors to configuration key-value pairs optimizing
@@ -51,7 +51,7 @@ def generate_config(workload: dict, environment: dict) -> dict:
 
 ## Context you receive
 
-- The current `generate_config` source.
+- The current `generate_config` source policy.
 - Full execution history: every config tried, its measured metrics, and its score.
   Use this to understand what worked, what failed, and why.
 - A summary table of all runs with scores.
@@ -69,7 +69,7 @@ Priority 1 — fix errors/timeouts. Priority 2 — improve the score.
 
 ## Design guidance for adaptive policies
 
-Write general, model-aware logic — NOT a fixed config dict. The policy should reason
+Write general, model-aware, environment-aware logic — NOT a fixed config dict. The policy should reason
 about the workload and hardware to pick the right parallelism strategy:
 
 ### Key workload fields to use:

@@ -140,7 +140,7 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
             [sys.executable, "tools/main.py", "--trace", trace_dir, "--metric", metric],
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=1800,
         )
         if result.returncode != 0:
             snippet = result.stderr.strip()[:300]
@@ -163,7 +163,7 @@ def run_metric(trace_dir: str, metric: str) -> float | str | None:
             return raw              # return raw string for non-numeric metrics
 
     except subprocess.TimeoutExpired:
-        print("    [timeout after 120s]")
+        print("    [timeout after 1800s]")
         return None
     except Exception as e:
         print(f"    [error] {e}")

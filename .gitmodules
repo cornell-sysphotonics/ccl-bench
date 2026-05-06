@@ -1,6 +1,6 @@
-[submodule "agent/experiments/tools/astra-sim-hybrid-parallelism"]
-	path = agent/experiments/tools/astra-sim-hybrid-parallelism
-	url = git@github.com:EricDinging/astra-sim-hybrid-parallelism.git
+[submodule "plug-ins/astra-sim-hybrid-parallelism"]
+	path = plug-ins/astra-sim-hybrid-parallelism
+	url = https://github.com/astra-sim/astra-sim.git
 [submodule "agent/torchtitan"]
 	path = agent/torchtitan
 	url = https://github.com/EricDinging/torchtitan-opus.git
