@@ -23,8 +23,9 @@ import anthropic
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 AGENT_DIR    = Path(__file__).parent.parent.parent
+REPO_ROOT    = AGENT_DIR.parent
 WORKLOAD_NAME = "llama_2"
-EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples" / WORKLOAD_NAME
+EXAMPLE_DIR  = REPO_ROOT / "plug-ins/astra-sim-hybrid-parallelism/examples" / WORKLOAD_NAME
 NETWORK_YML  = EXAMPLE_DIR / "network.yml"
 API_KEY_FILE = AGENT_DIR / "API_KEY"
 DEFAULT_PROMPT = Path(__file__).parent / "exp_agent_prompt.txt"
@@ -126,9 +127,10 @@ def run_simulation(tp: int, dp: int, pp: int, micro_batch: int | None = None) ->
         "docker", "run", "--rm",
         "--shm-size=8g",
         "-v", f"{AGENT_DIR}:/agent",
-        "-w", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}",
+        "-v", f"{REPO_ROOT}/plug-ins:/plug-ins",
+        "-w", f"/plug-ins/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}",
         "astra-sim:latest",
-        "bash", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}/run.sh",
+        "bash", f"/plug-ins/astra-sim-hybrid-parallelism/examples/{WORKLOAD_NAME}/run.sh",
         "-t", str(tp), "-d", str(dp), "-p", str(pp),
     ]
     if micro_batch is not None:

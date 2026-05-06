@@ -527,6 +527,11 @@
       "id": "communication",
       "label": "Communication",
       "description": "Collective communication performance, overlap, and bandwidth"
+    },
+    {
+      "id": "what_if",
+      "label": "What-If Simulation",
+      "description": "Astra-sim what-if metrics: simulated sensitivity to hardware knob changes"
     }
   ],
   "metric_info": {
@@ -669,7 +674,7 @@
     "memory_transfer_overhead": {
       "required_update": false,
       "label": "Mem Transfer OH (%)",
-      "description": "Percentage of execution time spent exclusively on memory transfers — memcpy/DMA intervals that do NOT overlap with any compute kernel. Overlapping transfers are unioned before subtraction so concurrent copies are not double-counted. GPU/NSYS: non-overlapped CUDA memcpy time over trace span. GPU JSON: per-rank non-overlapped copy-like kernel time over rank kernel span. TPU: non-overlapped DMA time (copy-start/copy-done device-clock pairs, minus concurrent leaf compute ops) over total step time.",
+      "description": "Percentage of execution time spent exclusively on memory transfers \u2014 memcpy/DMA intervals that do NOT overlap with any compute kernel. Overlapping transfers are unioned before subtraction so concurrent copies are not double-counted. GPU/NSYS: non-overlapped CUDA memcpy time over trace span. GPU JSON: per-rank non-overlapped copy-like kernel time over rank kernel span. TPU: non-overlapped DMA time (copy-start/copy-done device-clock pairs, minus concurrent leaf compute ops) over total step time.",
       "higher_is_better": false,
       "unit": "%",
       "category": "memory",
@@ -809,6 +814,21 @@
       "thresholds": {
         "high": 50,
         "mid": 20
+      },
+      "required_update": false
+    },
+    "scale_up_bw_utility": {
+      "label": "Scale-Up BW Utility (%)",
+      "description": "Percent step-time improvement from doubling scale-up (intra-node) bandwidth, estimated via Astra-sim comm-only simulation. High values indicate the workload is sensitive to intra-node interconnect bandwidth (e.g. NVLink); low values indicate it is compute-bound or communication-light.",
+      "higher_is_better": true,
+      "unit": "%",
+      "category": "what_if",
+      "trace_types": [
+        "json"
+      ],
+      "thresholds": {
+        "high": 10,
+        "mid": 2
       },
       "required_update": true
     }

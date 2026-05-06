@@ -22,7 +22,8 @@ import anthropic
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 AGENT_DIR    = Path(__file__).parent.parent.parent
-EXAMPLE_DIR  = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples/llama"
+REPO_ROOT    = AGENT_DIR.parent
+EXAMPLE_DIR  = REPO_ROOT / "plug-ins/astra-sim-hybrid-parallelism/examples/llama"
 NETWORK_YML  = EXAMPLE_DIR / "network.yml"
 API_KEY_FILE = AGENT_DIR / "API_KEY"
 DEFAULT_PROMPT = Path(__file__).parent / "exp_agent_prompt.txt"
@@ -94,9 +95,10 @@ def run_simulation(tp: int, dp: int, pp: int) -> dict:
         "docker", "run", "--rm",
         "--shm-size=8g",
         "-v", f"{AGENT_DIR}:/agent",
-        "-w", "/agent/tools/astra-sim-hybrid-parallelism/examples/llama",
+        "-v", f"{REPO_ROOT}/plug-ins:/plug-ins",
+        "-w", "/plug-ins/astra-sim-hybrid-parallelism/examples/llama",
         "astra-sim:latest",
-        "bash", "/agent/tools/astra-sim-hybrid-parallelism/examples/llama/run.sh",
+        "bash", "/plug-ins/astra-sim-hybrid-parallelism/examples/llama/run.sh",
         "-t", str(tp), "-d", str(dp), "-p", str(pp),
     ]
 

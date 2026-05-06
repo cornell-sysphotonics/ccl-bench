@@ -24,6 +24,7 @@ import yaml
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 AGENT_DIR       = Path(__file__).parent.parent.parent
+REPO_ROOT       = AGENT_DIR.parent
 API_KEY_FILE    = AGENT_DIR / "API_KEY"
 DEFAULT_CONFIG  = Path(__file__).parent / "experiment.yaml"
 
@@ -155,7 +156,7 @@ def run_simulation(tp: int, dp: int, pp: int, cfg: dict) -> dict:
     workload_name = cfg["simulation"]["workload_name"]
     env           = cfg["environment"]
     wl            = cfg["workload"]
-    example_dir   = AGENT_DIR / "tools/astra-sim-hybrid-parallelism/examples" / workload_name
+    example_dir   = REPO_ROOT / "plug-ins/astra-sim-hybrid-parallelism/examples" / workload_name
     network_yml   = example_dir / "network.yml"
 
     _update_network_yml(network_yml, tp, dp, pp)
@@ -183,10 +184,11 @@ def run_simulation(tp: int, dp: int, pp: int, cfg: dict) -> dict:
         "docker", "run", "--rm",
         "--shm-size=8g",
         "-v", f"{AGENT_DIR}:/agent",
-        "-w", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{workload_name}",
+        "-v", f"{REPO_ROOT}/plug-ins:/plug-ins",
+        "-w", f"/plug-ins/astra-sim-hybrid-parallelism/examples/{workload_name}",
         *env_flags,
         "astra-sim:latest",
-        "bash", f"/agent/tools/astra-sim-hybrid-parallelism/examples/{workload_name}/run.sh",
+        "bash", f"/plug-ins/astra-sim-hybrid-parallelism/examples/{workload_name}/run.sh",
         "-t", str(tp), "-d", str(dp), "-p", str(pp),
         "-m", str(env["gpu_memory_gb"]),   # GPU memory limit enforced inside run.sh
     ]

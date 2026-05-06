@@ -339,6 +339,9 @@ if __name__ == "__main__":
     elif metric_name == "gpu_step_score":
         from gpu_step_score.gpu_step_score import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "scale_up_bw_utility":
+        from scale_up_bw_utility.scale_up_bw_utility import metric_cal
+        metric_cal_func = metric_cal
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     metric = metric_cal_func(trace_directory)
