@@ -830,7 +830,7 @@
         "high": 10,
         "mid": 2
       },
-      "required_update": true
+      "required_update": false
     }
   }
 }

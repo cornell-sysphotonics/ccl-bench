@@ -114,7 +114,7 @@ def _run_simulation(trace_dir: str, output_dir: str,
         cmd += ["--reuse-et-from", reuse_from]
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
         combined = result.stdout + result.stderr
         match = re.search(r"Simulated step time:\s*([\d.]+)\s*ms", combined)
         if match:
@@ -126,7 +126,7 @@ def _run_simulation(trace_dir: str, output_dir: str,
         )
         return None
     except subprocess.TimeoutExpired:
-        print("Error: simulation timed out after 1800 s", file=sys.stderr)
+        print("Error: simulation timed out after 3600 s", file=sys.stderr)
         return None
     except Exception as e:
         print(f"Error running simulation: {e}", file=sys.stderr)

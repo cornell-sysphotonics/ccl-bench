@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-06T17:50:16.167799+00:00",
+  "generated_at": "2026-05-06T18:32:17.152521+00:00",
   "all_metrics": [
     "average_memory_bandwidth",
     "avg_step_time",
@@ -484,7 +484,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 38.6209,
         "compute_comm_overlap": 48.0783,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 2.74443
       }
     },
     {
@@ -554,7 +554,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 37.4681,
         "compute_comm_overlap": 45.2674,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 3.02334
       }
     },
     {
@@ -624,7 +624,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 38.4655,
         "compute_comm_overlap": 0.00325058,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.199816
       }
     },
     {
@@ -694,7 +694,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 34.6939,
         "compute_comm_overlap": 0.00421244,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.194534
       }
     },
     {
@@ -764,7 +764,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 111.616,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.606814
       }
     },
     {
@@ -834,7 +834,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 105.392,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.561668
       }
     },
     {
@@ -904,7 +904,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 123.469,
         "compute_comm_overlap": 76.7495,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 4.48159
       }
     },
     {
@@ -974,7 +974,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 144.167,
         "compute_comm_overlap": 80.2494,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 4.35171
       }
     },
     {
@@ -1671,7 +1671,7 @@
         "bandwidth_utilization_alltoall_group_6": 48.3478,
         "bandwidth_utilization_reducescatter_group_6": 27.4131,
         "compute_comm_overlap": 5.27335,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0911974
       }
     },
     {
@@ -1741,7 +1741,7 @@
         "bandwidth_utilization_alltoall_group_6": 16.5042,
         "bandwidth_utilization_reducescatter_group_6": 20.9983,
         "compute_comm_overlap": 3.4265,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0908104
       }
     },
     {
@@ -1811,7 +1811,7 @@
         "bandwidth_utilization_alltoall_group_6": 2.04143,
         "bandwidth_utilization_reducescatter_group_6": 93.804,
         "compute_comm_overlap": 6.3137,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.577118
       }
     },
     {
@@ -1881,7 +1881,7 @@
         "bandwidth_utilization_alltoall_group_6": 1.9454,
         "bandwidth_utilization_reducescatter_group_6": 105.889,
         "compute_comm_overlap": 1.68029,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 1.22486
       }
     },
     {
@@ -1951,7 +1951,7 @@
         "bandwidth_utilization_alltoall_group_6": 58.1729,
         "bandwidth_utilization_reducescatter_group_6": 88.5209,
         "compute_comm_overlap": 4.54054,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.153666
       }
     },
     {
@@ -2019,7 +2019,7 @@
         "bandwidth_utilization_alltoall_group_6": 2.37341,
         "bandwidth_utilization_reducescatter_group_6": 105.204,
         "compute_comm_overlap": 0.348396,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 2.94401
       }
     },
     {
@@ -3528,7 +3528,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0291509
       }
     },
     {
@@ -3604,7 +3604,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.300644
       }
     },
     {
@@ -3680,7 +3680,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.013338
       }
     },
     {
@@ -3756,7 +3756,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.102701
       }
     },
     {
@@ -3832,7 +3832,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0369392
       }
     },
     {
@@ -3908,7 +3908,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.15418
       }
     },
     {
@@ -3984,7 +3984,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0380647
       }
     },
     {
@@ -4060,7 +4060,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.163635
       }
     },
     {
@@ -4136,7 +4136,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0347941
       }
     },
     {
@@ -4212,7 +4212,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.256037
       }
     },
     {
@@ -4288,7 +4288,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0542391
       }
     },
     {
@@ -4364,7 +4364,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.285281
       }
     },
     {
@@ -4440,7 +4440,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0288559
       }
     },
     {
@@ -4516,7 +4516,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.311133
       }
     },
     {
@@ -4592,7 +4592,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0130024
       }
     },
     {
@@ -4668,7 +4668,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.118189
       }
     },
     {
@@ -4747,7 +4747,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0451159
       }
     },
     {
@@ -4826,7 +4826,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0752526
       }
     },
     {
@@ -4905,7 +4905,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0634578
       }
     },
     {
@@ -4984,7 +4984,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.0336939
       }
     },
     {
@@ -6966,7 +6966,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 4.996,
         "compute_comm_overlap": 7.91066,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 4.0994
       }
     },
     {
@@ -7037,7 +7037,7 @@
         "bandwidth_utilization_alltoall_group_6": null,
         "bandwidth_utilization_reducescatter_group_6": 5.08792,
         "compute_comm_overlap": 8.15231,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 4.10367
       }
     },
     {
@@ -7108,7 +7108,7 @@
         "bandwidth_utilization_alltoall_group_6": 14.0626,
         "bandwidth_utilization_reducescatter_group_6": 2.60329,
         "compute_comm_overlap": 4.93864,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.866504
       }
     },
     {
@@ -7179,7 +7179,7 @@
         "bandwidth_utilization_alltoall_group_6": 19.4023,
         "bandwidth_utilization_reducescatter_group_6": 4.29507,
         "compute_comm_overlap": 4.30647,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.857726
       }
     },
     {
@@ -7250,7 +7250,7 @@
         "bandwidth_utilization_alltoall_group_6": 21.475,
         "bandwidth_utilization_reducescatter_group_6": 6.80934,
         "compute_comm_overlap": 4.55871,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.556047
       }
     },
     {
@@ -7321,7 +7321,7 @@
         "bandwidth_utilization_alltoall_group_6": 18.11,
         "bandwidth_utilization_reducescatter_group_6": 10.5579,
         "compute_comm_overlap": 3.80108,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.572258
       }
     },
     {
@@ -7392,7 +7392,7 @@
         "bandwidth_utilization_alltoall_group_6": 1.48056,
         "bandwidth_utilization_reducescatter_group_6": 77.7193,
         "compute_comm_overlap": 2.76243,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 1.1001
       }
     },
     {
@@ -7463,7 +7463,7 @@
         "bandwidth_utilization_alltoall_group_6": 1.58349,
         "bandwidth_utilization_reducescatter_group_6": 77.4394,
         "compute_comm_overlap": 2.84199,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 1.14387
       }
     },
     {
@@ -7540,7 +7540,7 @@
         "bandwidth_utilization_reducescatter_group_6": null,
         "bandwidth_utilization_peertopeer_group_6": null,
         "compute_comm_overlap": 0.0,
-        "scale_up_bw_utility": null
+        "scale_up_bw_utility": 0.00695512
       }
     },
     {
