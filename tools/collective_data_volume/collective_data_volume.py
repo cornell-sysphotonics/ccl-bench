@@ -29,7 +29,8 @@ from pathlib import Path
 
 import yaml
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _TOOLS_DIR)
 from json_sampling import select_json_files
 
 # ── dtype byte widths (matches NCCL kernel argument strings) ──────────────────
@@ -72,24 +73,58 @@ def _get_trace_types(directory: str) -> list:
 # ── Event loading with partial-parse fallback ─────────────────────────────────
 
 def _load_events(trace_path: str) -> list:
-    with open(trace_path, "r", encoding="utf-8", errors="replace") as f:
-        raw = f.read()
+    """Load traceEvents from a JSON trace file; handles truncated/corrupted files."""
     try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        # Truncate trailing garbage and retry
-        last_close = raw.rfind("}")
-        if last_close == -1:
-            return []
+        with open(trace_path, encoding="utf-8", errors="replace") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
         try:
-            data = json.loads(raw[: last_close + 1])
-        except json.JSONDecodeError:
+            with open(trace_path, encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            idx = content.find('"traceEvents"')
+            if idx == -1:
+                return []
+            bracket = content.find('[', idx)
+            if bracket == -1:
+                return []
+            return _parse_array_streaming(content, bracket)
+        except Exception:
             return []
-    if isinstance(data, dict) and "traceEvents" in data:
-        return data["traceEvents"]
-    if isinstance(data, list):
-        return data
-    return []
+    if isinstance(data, dict):
+        return data.get("traceEvents", [])
+    return data if isinstance(data, list) else []
+
+
+def _parse_array_streaming(content: str, array_start: int) -> list:
+    """
+    Parse a JSON array element-by-element starting at *array_start*.
+    Skips any element that fails to parse (handles isolated corruption).
+    """
+    decoder = json.JSONDecoder()
+    events = []
+    pos = array_start + 1  # skip '['
+    length = len(content)
+    while pos < length:
+        # Skip whitespace and commas between elements
+        while pos < length and content[pos] in ' \t\n\r,':
+            pos += 1
+        if pos >= length or content[pos] == ']':
+            break
+        if content[pos] != '{':
+            # Non-object token — skip to next comma or bracket
+            pos += 1
+            continue
+        try:
+            obj, end_pos = decoder.raw_decode(content, pos)
+            events.append(obj)
+            pos = end_pos
+        except json.JSONDecodeError:
+            # Skip to the next '},' boundary and continue
+            next_sep = content.find('},', pos)
+            if next_sep == -1:
+                break
+            pos = next_sep + 2
+    return events
 
 
 # ── GPU JSON backend ──────────────────────────────────────────────────────────
