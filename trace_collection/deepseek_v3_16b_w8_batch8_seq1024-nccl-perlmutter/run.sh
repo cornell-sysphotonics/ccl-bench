@@ -1,0 +1,27 @@
+#!/bin/bash
+# Run script for deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter
+# Framework: TorchTitan  |  Model: deepseek-v3-16b  |  TP=2  DP_shard=4  PP=1  EP=4
+set -euo pipefail
+
+NUM_NODES=2
+GPUS_PER_NODE=4
+MASTER_ADDR=${MASTER_ADDR:-localhost}
+MASTER_PORT=${MASTER_PORT:-6000}
+NODE_RANK=${NODE_RANK:-0}
+
+# Activate torchtitan environment and run
+torchrun \
+  --nproc_per_node=$GPUS_PER_NODE \
+  --nnodes=$NUM_NODES \
+  --node_rank=$NODE_RANK \
+  --master_addr=$MASTER_ADDR \
+  --master_port=$MASTER_PORT \
+  torchtitan/train.py \
+  --job.config_file trace_collection/deepseek_v3_16b_w8_batch8_seq1024-nccl-perlmutter/workload.toml \
+  --parallelism.tensor_parallel_degree 2 \
+  --parallelism.data_parallel_shard_degree 4 \
+  --parallelism.data_parallel_replicate_degree 1 \
+  --parallelism.pipeline_parallel_degree 1 \
+  --parallelism.expert_parallel_degree 4 \
+  --profiling.enable_profiling true \
+  --profiling.save_traces_folder ./profile_traces
