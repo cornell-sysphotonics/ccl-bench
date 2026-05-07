@@ -77,6 +77,11 @@
       "required_update": false
     },
     {
+      "trace": "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-tp4-batch128",
+      "metrics": "auto",
+      "required_update": false
+    },
+    {
       "trace": "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4",
       "metrics": "auto",
       "required_update": false

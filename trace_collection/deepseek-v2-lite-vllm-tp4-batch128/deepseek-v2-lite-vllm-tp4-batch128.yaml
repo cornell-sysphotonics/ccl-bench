@@ -1,0 +1,68 @@
+version: 1
+
+description: >
+  DeepSeek-V2-Lite inference on Google Cloud TPU v6e hardware using vLLM with
+  the TPU TorchXLA/JAX backend. This run uses TP=4, batch size 128, input
+  length 1024, and output length 128. The TPU profiler trace captures ten
+  active profile iterations after five warmup iterations.
+
+hf_url: https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite
+
+trace_url: /data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-tp4-batch128
+
+workload:
+  model:
+    phase: inference
+    moe: true
+    granularity: model_fwd
+    model_family: deepseek-v2-lite
+    precision: bf16
+    epochs: 1
+    iteration: 10
+  data:
+    batch_size: 128
+    seq_len: 1152
+    input_len: 1024
+    output_len: 128
+    dataset: synthetic
+  hardware:
+    network_topo:
+      topology: torus
+      bandwidth_gbps:
+        - N/A
+        - 800
+    xpu_spec:
+      type: TPU
+      model: tpu_v6e
+      total_count: 4
+      count_per_node: 4
+    driver_version: v2-alpha-tpuv6e
+
+Model-executor:
+  framework:
+    name: vllm
+    compiler_tool_selection: xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    pp: 1
+    cp: 1
+    ep: 1
+  communication_library:
+    name: xla
+    version:
+    env:
+      NEW_MODEL_DESIGN: "1"
+      PJRT_DEVICE: "TPU"
+      VLLM_TPU_ADDITIONAL_CONFIG: '{"sharding":{"sharding_strategy":{"enable_dp_attention":true}}}'
+  protocol_selection:
+    - xla_collectives
+    - ici
+
+metric_source:
+  traces:
+    - json_tpu
+  metrics_specific_trace:
+    - communication_trace
+    - kernel_trace
