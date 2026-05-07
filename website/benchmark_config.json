@@ -867,6 +867,91 @@
         "mid": 2
       },
       "required_update": false
+    },
+    "collective_vol_allreduce_gb": {
+      "label": "AllReduce Volume (GB)",
+      "description": "Total AllReduce data volume from rank 0 over one profiled step, derived from NCCL kernel message sizes (GPU) or XLA bytes_accessed (TPU).",
+      "unit": "GB",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "tpu_profiler",
+        "json_tpu"
+      ],
+      "higher_is_better": false,
+      "thresholds": {
+        "high": 10,
+        "mid": 1
+      },
+      "required_update": true
+    },
+    "collective_vol_allgather_gb": {
+      "label": "AllGather Volume (GB)",
+      "description": "Total AllGather data volume from rank 0 over one profiled step.",
+      "unit": "GB",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "tpu_profiler",
+        "json_tpu"
+      ],
+      "higher_is_better": false,
+      "thresholds": {
+        "high": 10,
+        "mid": 1
+      },
+      "required_update": true
+    },
+    "collective_vol_reducescatter_gb": {
+      "label": "ReduceScatter Volume (GB)",
+      "description": "Total ReduceScatter data volume from rank 0 over one profiled step.",
+      "unit": "GB",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "tpu_profiler",
+        "json_tpu"
+      ],
+      "higher_is_better": false,
+      "thresholds": {
+        "high": 10,
+        "mid": 1
+      },
+      "required_update": true
+    },
+    "collective_vol_alltoall_gb": {
+      "label": "AllToAll Volume (GB)",
+      "description": "Total AllToAll (expert dispatch/combine) data volume from rank 0 over one profiled step. High values indicate MoE routing traffic.",
+      "unit": "GB",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "tpu_profiler",
+        "json_tpu"
+      ],
+      "higher_is_better": false,
+      "thresholds": {
+        "high": 5,
+        "mid": 0.5
+      },
+      "required_update": true
+    },
+    "collective_vol_total_gb": {
+      "label": "Total Collective Volume (GB)",
+      "description": "Sum of AllReduce + AllGather + ReduceScatter + AllToAll data volumes from rank 0 over one profiled step.",
+      "unit": "GB",
+      "category": "communication",
+      "trace_types": [
+        "json",
+        "tpu_profiler",
+        "json_tpu"
+      ],
+      "higher_is_better": false,
+      "thresholds": {
+        "high": 20,
+        "mid": 2
+      },
+      "required_update": true
     }
   }
 }

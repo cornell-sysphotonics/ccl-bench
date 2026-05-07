@@ -345,6 +345,21 @@ if __name__ == "__main__":
     elif metric_name == "scale_up_bw_utility":
         from scale_up_bw_utility.scale_up_bw_utility import metric_cal
         metric_cal_func = metric_cal
+    elif metric_name == "collective_vol_allreduce_gb":
+        from collective_data_volume.collective_data_volume import metric_cal_allreduce
+        metric_cal_func = metric_cal_allreduce
+    elif metric_name == "collective_vol_allgather_gb":
+        from collective_data_volume.collective_data_volume import metric_cal_allgather
+        metric_cal_func = metric_cal_allgather
+    elif metric_name == "collective_vol_reducescatter_gb":
+        from collective_data_volume.collective_data_volume import metric_cal_reducescatter
+        metric_cal_func = metric_cal_reducescatter
+    elif metric_name == "collective_vol_alltoall_gb":
+        from collective_data_volume.collective_data_volume import metric_cal_alltoall
+        metric_cal_func = metric_cal_alltoall
+    elif metric_name == "collective_vol_total_gb":
+        from collective_data_volume.collective_data_volume import metric_cal_total
+        metric_cal_func = metric_cal_total
     else:
         raise ValueError(f"Unsupported metric name: {metric_name}")
     metric = metric_cal_func(trace_directory)
