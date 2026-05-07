@@ -11,8 +11,6 @@ REPO=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 OUT_ROOT="$REPO/simulation/examples/tpu_scaleup_utility"
 SUMMARY="$OUT_ROOT/tpu_scaleup_utility_summary.tsv"
 
-TPU_CHIPS=8
-TPU_RING_DIMS=8
 LATENCY_NS=100
 COLLECTIVE_ALGO=ring
 COMPUTE_MODEL=kernels
@@ -60,6 +58,8 @@ run_tpu_pipeline() {
     local iteration_marker="$6"
     local iteration_index="$7"
     local min_iteration_duration_us="$8"
+    local tpu_chips="$9"
+    local tpu_ring_dims="${10}"
 
     local reuse_args=()
     if [ -n "$reuse_from" ]; then
@@ -74,8 +74,8 @@ run_tpu_pipeline() {
         --output-dir "$outdir" \
         "${reuse_args[@]}" \
         --compute-model "$COMPUTE_MODEL" \
-        --tpu-ranks "$TPU_CHIPS" \
-        --tpu-torus-dims "$TPU_RING_DIMS" \
+        --tpu-ranks "$tpu_chips" \
+        --tpu-torus-dims "$tpu_ring_dims" \
         --tpu-iteration-marker "$iteration_marker" \
         --tpu-iteration-index "$iteration_index" \
         --tpu-min-iteration-duration-us "$min_iteration_duration_us" \
@@ -98,6 +98,8 @@ run_workload() {
     local iteration_marker="$8"
     local iteration_index="$9"
     local min_iteration_duration_us="${10}"
+    local tpu_chips="${11}"
+    local tpu_ring_dims="${12}"
 
     local double_scaleup_bw slug base_out scaleup_out
     double_scaleup_bw=$(awk -v bw="$base_scaleup_bw" 'BEGIN { printf "%.6g", bw * 2.0 }')
@@ -108,7 +110,7 @@ run_workload() {
     echo "=== ${workload_id}: ${model} ${phase} (${batch_or_seq}) ==="
     echo "Trace dir: $trace_dir"
     echo "Trace JSON: $trace_json"
-    echo "Scale-up domain: ${TPU_CHIPS}, topology: Ring, baseline ICI: ${base_scaleup_bw} GB/s"
+    echo "Scale-up domain: ${tpu_chips}, topology: Ring, baseline ICI: ${base_scaleup_bw} GB/s"
     echo
 
     if [ ! -d "$trace_dir" ]; then
@@ -117,9 +119,11 @@ run_workload() {
     fi
 
     run_tpu_pipeline "$trace_dir" "$trace_json" "$base_out" "" \
-        "$base_scaleup_bw" "$iteration_marker" "$iteration_index" "$min_iteration_duration_us"
+        "$base_scaleup_bw" "$iteration_marker" "$iteration_index" "$min_iteration_duration_us" \
+        "$tpu_chips" "$tpu_ring_dims"
     run_tpu_pipeline "$trace_dir" "$trace_json" "$scaleup_out" "$base_out" \
-        "$double_scaleup_bw" "$iteration_marker" "$iteration_index" "$min_iteration_duration_us"
+        "$double_scaleup_bw" "$iteration_marker" "$iteration_index" "$min_iteration_duration_us" \
+        "$tpu_chips" "$tpu_ring_dims"
 
     local base_step base_comm scaleup_step scaleup_score
     base_step=$(extract_step_ms "$base_out/simulation.log")
@@ -129,36 +133,41 @@ run_workload() {
 
     printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
         "$workload_id" "$model" "$phase" "$batch_or_seq" \
-        "$trace_dir" "$trace_json" "$base_scaleup_bw" "$TPU_CHIPS" \
+        "$trace_dir" "$trace_json" "$base_scaleup_bw" "$tpu_chips" \
         "$base_step" "$base_comm" "$scaleup_step" "$scaleup_score" >> "$SUMMARY"
     echo
 }
 
 echo "=== TPU Scale-up Utility Calculation ==="
 echo "Summary TSV: $SUMMARY"
-echo "Topology: Ring, scale-up domain: $TPU_CHIPS TPU chips"
+echo "Topology: Ring, scale-up domain: workload-specific TPU chip count"
 echo "Score: percent step-time improvement per 2x scale-up bandwidth"
 echo
 
 run_workload "WL1" "Qwen3-4B" "Inference" "batch=128 input=1024" \
     "/data/ccl-bench_trace_collection/Qwen3-4B-torchxla-vllm-tp8-tpu-group-4" \
     "Qwen3-4B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
-    400 "jit_run_model" 0 30000
+    100 "jit_run_model" 0 30000 8 8
 
 run_workload "WL2" "Llama-3.1-8B" "Inference" "batch=128 input=1024" \
     "/data/ccl-bench_trace_collection/Llama-3.1-8B-torchxla-vllm-tp8-tpu-group-4" \
     "Llama-3.1-8B-torchxla-vllm-tp8-batch-128-tpu-group-4.json" \
-    400 "jit_run_model" 0 30000
+    100 "jit_run_model" 0 30000 8 8
+
+run_workload "WL3" "DeepSeek-V2-Lite" "Inference" "batch=128 input=1024 output=128" \
+    "/data/ccl-bench_trace_collection/deepseek-v2-lite-vllm-tp4-batch128" \
+    "deepseek-v2-lite-vllm-tp4-batch128.json" \
+    100 "jit_step_fun" 0 30000 4 4
 
 run_workload "WL4" "Llama-3.1-8B" "Training" "batch=8 sequence=512" \
     "/data/ccl-bench_trace_collection/llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21" \
     "llama-3.1-8b-torchxla_fsdp_v6e-8-tpu-group_21.trace.json" \
-    400 "SyncTensorsGraph" 1 1000000
+    100 "SyncTensorsGraph" 1 1000000 8 8
 
 run_workload "WL5" "DeepSeek-V2-16B" "Training" "batch=8 sequence=1024" \
     "/data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu" \
     "t1v-n-975c9bdd-w-0.trace.json" \
-    400 "jit_train_step" 0 100000
+    100 "jit_train_step" 0 100000 8 8
 
 echo "=== TPU Scale-up Utility Summary ==="
 awk '
