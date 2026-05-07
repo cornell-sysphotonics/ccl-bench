@@ -50,12 +50,11 @@ python simulation/mock_pipeline.py \
     --trace-dir /tmp/mock_trace \
     --intra-bandwidth 400 --bandwidth 50
 
-# Run the full demo (all three scenarios):
-bash simulation/examples/00_mock.sh
+# Run individual analytical what-if commands with mock_pipeline.py as needed.
 ```
 
-The mock traces are also compatible with `pipeline.py --mode comm-only` once
-Docker is available, so they serve as test fixtures for the full pipeline.
+The mock traces are also compatible with `pipeline.py --mode comm-only`, so they
+serve as test fixtures for the full AstraSim pipeline.
 
 ## Prerequisites (full AstraSim pipeline)
 
@@ -98,6 +97,9 @@ python simulation/pipeline.py --mode tpu-xla \
     --trace-dir /data/ccl-bench_trace_collection/deepseek-v2-16b-maxtext-train-tp2-ep4-dp1-tpu \
     --compute-model kernels --tpu-ranks 8 --tpu-torus-dims 2,4 \
     --tpu-iteration-index 1 --bandwidth 3200 --latency 100
+
+# Synthetic trace smoke test through AstraSim
+bash simulation/examples/00_mock.sh
 ```
 
 Run from the repo root (`/home/dd687/ccl-bench/`).
@@ -108,7 +110,7 @@ Ready-to-run scripts are in `simulation/examples/`:
 
 | Script | What it shows |
 |--------|---------------|
-| `00_mock.sh` | **No Docker** — synthetic traces + analytical pipeline; baseline vs 2× inter-BW vs H100 NVLink |
+| `00_mock.sh` | Synthetic traces through the AstraSim pipeline; baseline vs 2× inter-BW vs H100 NVLink |
 | `01_baseline.sh` | Single baseline run, ep4-dp2-tp4, A100 defaults |
 | `02_bandwidth_sweep.sh` | Step time vs scale-out bandwidth (50→800 GB/s) |
 | `03_algo_compare.sh` | `ring` vs `halving_doubling` vs `doubleBinaryTree` |
@@ -265,10 +267,3 @@ Full-fidelity traces (for `--mode full`):
 ```
 trace_collection_backlog/llama-3.1-8b-torchtitan-perlmutter/
 ```
-
-## Known Limitations
-
-- **PP/control SendRecv ops not simulated**: `ncclDevKernel_SendRecv` `all_to_allv` payload events are simulated, but tiny PP barrier/control exchanges are excluded. Variable-size `all_to_allv` payloads are normalized to the largest rank-local payload for each logical instance because AstraSim collective nodes require a single shared `comm_size` across participating ranks.
-- **Node-contiguous rank assumption**: Two-tier topology assumes contiguous rank blocks per node. If a trace uses a different rank placement, adjust `--gpus-per-node` or reorder/remap the trace ranks before simulation.
-- **Overlap is approximate**: `--compute-model gap` serializes compute gaps with communication inside one rank-local collective chain. `--compute-model kernels --kernel-dependency-mode rank` adds rank-local compute↔communication edges and positive rank-local idle gaps unless doing so would invert the global collective order, but it still does not reconstruct the full PyTorch dependency graph. `--kernel-dependency-mode stream` preserves per-stream event ordering and per-stream idle gaps, so compute and communication can overlap when they are on independent streams.
-- **TPU/XLA simulation is experimental**: The TPU MaxText example converts one XLA step to Chakra directly and models non-collective HLO/device events as compute kernels, but payload sizes, rank mapping, and overlap are limited by what the TPU Chrome trace exposes.

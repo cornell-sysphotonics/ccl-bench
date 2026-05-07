@@ -2,7 +2,7 @@
 
 ![CCL-Bench logo](./assets/logo.png)
 
-CCL-Bench is a trace-based benchmark for LLM systems. Each benchmark row is backed by workload metadata and profiler artifacts, so results can be recomputed, audited, and extended as new models, frameworks, hardware, and collective communication libraries are added.
+CCL-Bench is a trace-based benchmark for LLM infrastructure. Each benchmark row is backed by workload metadata and profiler artifacts, so results can be recomputed, audited, and extended as new models, frameworks, hardware, and collective communication libraries are added.
 
 The project is organized around three layers:
 
@@ -54,7 +54,7 @@ Then open `http://localhost:8081`.
 
 ## Adding A Benchmark Row
 
-1. Select a standard workload from `workloads/` or `trace_collection/workload.md`.
+1. Select a standard workload from `workload_suite/` or `trace_collection/workload.md`.
 2. Collect profiler artifacts outside the repository. Keep the final trace directory name stable.
 3. Fill in `workload_card_template.yaml` and store the card with the trace artifacts.
 4. Add the lightweight workload card under `trace_collection/<workload_name>/` when it is useful for review and reproducibility.

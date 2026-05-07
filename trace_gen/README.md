@@ -9,13 +9,13 @@ Trace collection method: Eric
 Collect traces from steady-state execution, not from startup or first-use compilation.
 
 For training workloads, run at least five warm-up iterations first so CUDA kernels
-can compile and memory allocation can settle [55]. Then collect at least five
+can compile and memory allocation can settle. Then collect at least five
 training iterations, or steps, per workload in steady state. Record the collected
 iteration count in the workload card so downstream analyses can quantify the
 variance behind a published number.
 
 For inference workloads, first send a small number of warm-up batches so the
-serving engine completes CUDA graph capture and KV-cache initialization [70].
+serving engine completes CUDA graph capture and KV-cache initialization.
 Then collect traces that cover both the prefill pass, meaning prompt processing,
 and at least 128 steady-state decode steps, meaning autoregressive token
 generation.
