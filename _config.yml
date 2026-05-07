@@ -26,6 +26,7 @@ exclude:
   - "*.ipynb"
   - agent
   - pipeline
+  - plug-ins
   - tools
   - trace_collection
   - trace_collection_backlog
