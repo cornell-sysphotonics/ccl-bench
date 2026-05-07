@@ -92,6 +92,24 @@ Do not commit:
 - local API keys, credentials, or machine-specific scratch paths;
 - large intermediate logs that are not part of the artifact.
 
+## Trace Storage Location
+
+The canonical shared trace directory on Perlmutter is `/data/ccl-bench_trace_collection`.
+This path appears in three places and must be updated consistently if you move traces
+to a different mount point or machine:
+
+| Location | How to change |
+| --- | --- |
+| `website/benchmark_config.json` — every `"trace":` path | Update each path prefix to match your local mount point. The paths must resolve on whichever machine runs `python website/generate_data.py`. |
+| `agent/ccl_bench_agent/tuning_config.yaml` — `publish_dir` | Set `publish_dir` to the desired destination. CCL-Search copies per-iteration traces there. Leave empty to skip publishing. |
+| `README.md` — example path in the intro paragraph | Documentation only; no functional effect. |
+
+If you are running on a different cluster, set `publish_dir` in `tuning_config.yaml` and
+update the `"trace":` paths in `benchmark_config.json` before regenerating the website.
+
 ## Development Notes
 
-The agent and simulation directories are useful for private tuning and what-if studies, but the public artifact path is trace-first: workload card, profiler data, metric tool, and website row. Keep benchmark rows reproducible without requiring a private agent workflow.
+CCL-Search (`agent/`) and the simulation pipeline (`simulation/`) are first-class
+contributions: CCL-Search automates configuration tuning and records every trial as a
+benchmark entry; the simulation pipeline converts traces to Chakra execution graphs for
+Astra-Sim what-if analysis. Both require the shared trace directory to be accessible.

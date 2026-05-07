@@ -1,5 +1,5 @@
 """
-update_policy step — ADRS agent loop, step 4.
+update_policy step — CCL-Search loop, step 4.
 
 Given the execution history and the current generate_config program, asks the
 LLM to produce an improved version. The LLM sees all past run records (configs
@@ -24,7 +24,7 @@ import anthropic
 
 
 SYSTEM_PROMPT = """\
-You are a configuration optimization agent for LLM infrastructure (CCL-Bench).
+You are CCL-Search, a configuration optimization agent for LLM infrastructure built on CCL-Bench.
 
 Your goal: write and iteratively refine a Python function `generate_config` that maps
 workload cards and environment descriptors to configuration key-value pairs optimizing

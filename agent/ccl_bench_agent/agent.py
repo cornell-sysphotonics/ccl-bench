@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """
-CCL-Bench ADRS Configuration Tuning Agent.
+CCL-Search: Configuration Optimization Agent for CCL-Bench.
 
 Iteratively synthesizes a Python program `generate_config` that maps workload
 cards and environment descriptors to optimal configuration key-value pairs.
 
-ADRS loop (each step is a standalone file):
+CCL-Search loop (each step is a standalone file):
   1. generate_config(workload, environment) → config dict   [generate_config.py]
   2. execute(workload, config)              → RunResult     [execute.py]
   3. compute_metric(run_result, goal)       → metric dict   [compute_metric.py]
   4. update_policy(gc_code, history, ...)   → new gc_code   [update_policy.py]
   5. update_history(history, record, ...)   → (in-place)    [update_history.py]
 
-Run records are appended to the workload card after every execution so the
-populated card (with traces) can be uploaded to the CCL-Bench platform.
+After each iteration the trace directory and workload card are copied to
+`publish_dir` (from tuning_config.yaml) so every trial becomes a CCL-Bench
+benchmark entry without requiring the web upload server.
 
 Usage:
     python agent.py [--card PATH] [--tuning PATH] [--seed PATH]
@@ -23,6 +24,7 @@ Usage:
 import argparse
 import importlib.util
 import json
+import shutil
 import sys
 import time
 from datetime import datetime
@@ -162,6 +164,45 @@ def _is_better(new: float, old: float, direction: str) -> bool:
 
 
 
+# ── Per-iteration publish ──────────────────────────────────────────────────────
+
+def _publish_iteration(
+    record: dict,
+    workload: dict,
+    card: dict,
+    card_path: Path,
+    publish_dir: str,
+    iteration: int,
+) -> None:
+    """Copy trace files and workload card to the shared benchmark directory."""
+    if not publish_dir:
+        return
+    if record.get("status") != "success":
+        return
+
+    trace_dir = record.get("trace_dir")
+    if not trace_dir:
+        return
+    src = Path(trace_dir)
+    if not src.is_dir():
+        return
+
+    model = workload.get("model_family", "unknown").replace(" ", "-").lower()
+    config_str = "_".join(f"{k}{v}" for k, v in sorted(record.get("config", {}).items()))
+    dest_name = f"{model}-ccl-search-iter{iteration:02d}-{config_str}"
+    dest = Path(publish_dir) / dest_name
+    dest.mkdir(parents=True, exist_ok=True)
+
+    n = 0
+    for f in src.iterdir():
+        if f.is_file():
+            shutil.copy2(f, dest / f.name)
+            n += 1
+
+    shutil.copy2(card_path, dest / "workload_card.yaml")
+    print(f"    [publish] iter={iteration}  {n} trace file(s) → {dest}")
+
+
 # ── Single-iteration runner ────────────────────────────────────────────────────
 
 def run_once(gc_path: Path, workload: dict, environment: dict,
@@ -242,7 +283,7 @@ def _log_csv(
 def run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
               max_iterations: int = 15, patience: int = 5,
               output_root: Path | None = None) -> Path:
-    """ADRS config tuning loop. Returns path of the best generate_config program."""
+    """CCL-Search loop. Returns path of the best generate_config program."""
     _init_output_dir(output_root or DEFAULT_OUTPUT)
     tee = _Tee(sys.stdout, AGENT_LOG)
     sys.stdout = tee
@@ -266,6 +307,7 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
     workload    = _flatten_workload(card, tuning)
     environment = _flatten_environment(card)
     direction   = tuning["optimization_goal"].get("direction", "minimize")
+    publish_dir = tuning.get("publish_dir", "")
 
     current_path = seed_path
     current_code = seed_path.read_text()
@@ -278,6 +320,7 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
     seed_record = run_once(current_path, workload, environment, tuning,
                            dest_trace_dir=seed_dest)
     update_history(history, seed_record, card, card_path)          # step 5
+    _publish_iteration(seed_record, workload, card, card_path, publish_dir, 0)
 
     best_score = (seed_record["score"]
                   if seed_record["status"] == "success"
@@ -325,8 +368,9 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
         record = run_once(gc_path, workload, environment, tuning,
                           dest_trace_dir=iter_dest)
 
-        # step 5 — update history
+        # step 5 — update history and publish to shared disk
         update_history(history, record, card, card_path)
+        _publish_iteration(record, workload, card, card_path, publish_dir, iteration)
 
         score    = record.get("score", _sentinel(direction))
         improved = (record["status"] == "success"
@@ -356,7 +400,7 @@ def _run_agent(card_path: Path, tuning_path: Path, seed_path: Path,
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="CCL-Bench ADRS Config Tuning Agent")
+    parser = argparse.ArgumentParser(description="CCL-Search: Configuration Optimization Agent for CCL-Bench")
     parser.add_argument("--card",           default=str(DEFAULT_CARD))
     parser.add_argument("--tuning",         default=str(DEFAULT_TUNING))
     parser.add_argument("--seed",           default=str(DEFAULT_SEED))
@@ -375,7 +419,7 @@ def main() -> None:
     goal        = tuning["optimization_goal"]
 
     print("=" * 65)
-    print("CCL-Bench ADRS Configuration Tuning Agent")
+    print("CCL-Search: Configuration Optimization Agent")
     print("=" * 65)
     print(f"Card:       {card_path.name}")
     print(f"Tuning:     {tuning_path.name}")
@@ -386,6 +430,8 @@ def main() -> None:
                        for mc in goal.get("metrics", [])))
     print(f"Seed:       {args.seed}")
     print(f"Max iters:  {args.max_iterations}  patience={args.patience}")
+    publish_dir = tuning.get("publish_dir", "")
+    print(f"Publish to: {publish_dir or '(not set — skipping disk publish)'}")
     print("=" * 65)
 
     best = run_agent(

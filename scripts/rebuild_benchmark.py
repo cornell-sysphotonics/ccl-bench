@@ -9,7 +9,7 @@ import yaml
 import shutil
 from pathlib import Path
 
-REPO = Path("/home/dd687/ccl-bench")
+REPO = Path(__file__).resolve().parent.parent
 BENCH = REPO / "benchmark"
 DEPLOY = REPO / "deployment"
 TC = REPO / "trace_collection"

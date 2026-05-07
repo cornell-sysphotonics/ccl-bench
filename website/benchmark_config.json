@@ -817,6 +817,37 @@
       },
       "required_update": false
     },
+    "load_imbalance_ratio": {
+      "label": "Load Imbalance (ratio)",
+      "description": "Max-to-min GPU active time across ranks; 1.0 = perfectly balanced. High values indicate stragglers or uneven work distribution.",
+      "higher_is_better": false,
+      "unit": "ratio",
+      "category": "communication",
+      "trace_types": [
+        "nsys",
+        "json"
+      ],
+      "thresholds": {
+        "high": 1.5,
+        "mid": 1.1
+      },
+      "required_update": false
+    },
+    "straggler": {
+      "label": "Straggler (ratio)",
+      "description": "Straggler delay ratio: (max - min) total NCCL kernel time across ranks divided by max. 0.0 = no straggler; higher values indicate one or more slow ranks.",
+      "higher_is_better": false,
+      "unit": "ratio",
+      "category": "communication",
+      "trace_types": [
+        "json"
+      ],
+      "thresholds": {
+        "high": 0.2,
+        "mid": 0.05
+      },
+      "required_update": false
+    },
     "scale_up_bw_utility": {
       "label": "Scale-Up BW Utility (%)",
       "description": "Percent step-time improvement from doubling scale-up (intra-node) bandwidth, estimated via Astra-sim comm-only simulation. High values indicate the workload is sensitive to intra-node interconnect bandwidth (e.g. NVLink); low values indicate it is compute-bound or communication-light.",

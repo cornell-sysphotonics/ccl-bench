@@ -314,8 +314,11 @@ if __name__ == "__main__":
         metric_cal_func = metric_cal
     elif metric_name == "throughput_group_6":
         from throughput_group_6.throughput_group_6 import metric_cal
+    elif metric_name == "straggler":
+        from straggler.straggler_metrics import metric_cal as _straggler_cal
+        metric_cal_func = lambda d: _straggler_cal(d)[0]
     elif metric_name == "straggler_metrics":
-        # group 5
+        # group 5 — legacy: prints both delay and slowdown
         from straggler.straggler_metrics import metric_cal
         delay, slowdown = metric_cal(trace_directory)
         print("Straggler Delay: ", delay)

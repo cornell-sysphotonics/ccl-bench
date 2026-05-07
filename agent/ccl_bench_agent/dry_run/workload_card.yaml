@@ -1,0 +1,185 @@
+version: 1
+description: 'CCL-Search dry-run example: Llama-3.1-8B training on a 4-GPU single-node
+  setup. Uses a synthetic trace generator (mock_run.sh) instead of real hardware.
+  No cluster, GPU, or network connection required.
+
+  '
+hf_url: https://huggingface.co/meta-llama/Meta-Llama-3.1-8B
+trace_url: ''
+contributor: ''
+contact: ''
+workload:
+  model:
+    phase: training
+    moe: false
+    granularity: model_fwd_bwd_pass
+    model_family: llama-3.1-8b
+    precision: bf16
+    epochs: 1
+    iteration: 5
+    model_arch:
+      num_params: 8030261248
+      num_params_embedding: 524288000
+      num_layers: 32
+      num_heads: 32
+      num_kv_heads: 8
+      head_dim: 128
+  data:
+    batch_size: 4
+    seq_len: 512
+    dataset: synthetic
+  hardware:
+    network_topo:
+      topology: nvlink
+      bandwidth_gbps:
+      - 600
+      - 0
+    xpu_spec:
+      type: GPU
+      model: generic_gpu_40gb
+      memory_gb: 40
+      total_count: 4
+      count_per_node: 4
+    driver_version: generic
+Model-executor:
+  framework:
+    name: torchtitan
+    version: '2.0'
+    run_script: dry_run/mock_run.sh
+    trace_dir: /tmp/ccl-bench-dry-run
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: null
+    pp: null
+    cp: 1
+    ep: 1
+    pp_mb: 1
+  communication_library:
+    name: NCCL
+metric_source:
+  traces:
+  - json
+runs:
+- config:
+    tp: 4
+    dp: 1
+    pp: 1
+    micro_batch: 4
+    compile_mode: eager
+    activation_checkpointing: false
+  metrics:
+    avg_step_time: 0.283386
+  score: 0.283386
+  status: success
+  error_msg: null
+  trace_dir: /home/dd687/ccl-bench/agent/ccl_bench_agent/runs/20260507_010329/traces/20260507_010329_iter0
+  policy: "\"\"\"\nSeed configuration policy for the CCL-Bench ADRS agent.\n\nThe\
+    \ agent iteratively refines `generate_config`. Each version is a self-contained\n\
+    Python program: given a workload card and environment, it returns a dict of\n\
+    configuration key-value pairs.\n\nExecution history is passed only to update_policy\
+    \ (the LLM step), not here.\ngenerate_config is a pure function of workload and\
+    \ environment.\n\"\"\"\n\n\ndef generate_config(workload: dict, environment: dict)\
+    \ -> dict:\n    \"\"\"Return a configuration dict for the given workload and environment.\n\
+    \n    Args:\n        workload:    Workload card fields — model_family, phase,\
+    \ batch_size, seq_len,\n                     num_heads, num_layers, precision,\
+    \ config_space (list of tunable\n                     dimensions with valid choices),\
+    \ run_script, trace_dir, etc.\n        environment: Hardware/software descriptor\
+    \ — gpu_model, gpu_memory_gb,\n                     total_gpus, gpus_per_node,\
+    \ intra/inter_node_bandwidth_gbps,\n                     framework, framework_version.\n\
+    \n    Returns:\n        dict of configuration key-value pairs matching config_space\
+    \ keys, e.g.:\n          {\"tp\": 4, \"dp\": 8, \"pp\": 1, \"micro_batch\": 4,\
+    \ \"compile_mode\": \"inductor\"}\n    \"\"\"\n    total_gpus    = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 8)\n\
+    \    batch_size    = workload.get(\"batch_size\", 1)\n\n    # Baseline: fill one\
+    \ node with TP (low-latency intra-node),\n    # scale data parallelism across\
+    \ nodes.\n    tp = min(gpus_per_node, 8)\n    dp = max(1, total_gpus // tp)\n\
+    \    pp = 1\n    micro_batch = max(1, batch_size // dp)\n\n    return {\n    \
+    \    \"tp\": tp,\n        \"dp\": dp,\n        \"pp\": pp,\n        \"micro_batch\"\
+    : micro_batch,\n        \"compile_mode\": \"eager\",\n        \"activation_checkpointing\"\
+    : False,\n    }\n"
+- config:
+    tp: 4
+    dp: 1
+    pp: 1
+    micro_batch: 4
+    activation_checkpointing: true
+  metrics:
+    avg_step_time: 0.375695
+  score: 0.375695
+  status: success
+  error_msg: null
+  trace_dir: /home/dd687/ccl-bench/agent/ccl_bench_agent/runs/20260507_010329/traces/20260507_010329_iter1
+  policy: "\ndef generate_config(workload: dict, environment: dict) -> dict:\n   \
+    \ \"\"\"Adaptive configuration policy that reasons about workload and hardware.\"\
+    \"\"\n    \n    # Extract environment info\n    total_gpus = environment.get(\"\
+    total_gpus\", 1)\n    gpus_per_node = environment.get(\"gpus_per_node\", 4)\n\
+    \    gpu_mem = environment.get(\"gpu_memory_gb\", 40)\n    intra_bw = environment.get(\"\
+    intra_node_bandwidth_gbps\", 600)\n    inter_bw = environment.get(\"inter_node_bandwidth_gbps\"\
+    , 0)\n    \n    # Extract workload info\n    model_family = workload.get(\"model_family\"\
+    , \"\")\n    batch_size = workload.get(\"batch_size\", 1)\n    seq_len = workload.get(\"\
+    seq_len\", 512)\n    is_moe = workload.get(\"moe\", False)\n    num_layers = workload.get(\"\
+    num_layers\", 32)\n    num_params = workload.get(\"num_params\", None)\n    \n\
+    \    # Parse config space for valid choices\n    config_space = {}\n    for dim\
+    \ in workload.get(\"config_space\", []):\n        config_space[dim[\"key\"]] =\
+    \ dim[\"choices\"]\n    \n    # Estimate model size in billions\n    model_size_b\
+    \ = None\n    if num_params:\n        model_size_b = num_params / 1e9\n    elif\
+    \ \"8b\" in model_family.lower():\n        model_size_b = 8\n    elif \"70b\"\
+    \ in model_family.lower():\n        model_size_b = 70\n    elif \"13b\" in model_family.lower():\n\
+    \        model_size_b = 13\n    elif \"7b\" in model_family.lower():\n       \
+    \ model_size_b = 7\n    elif \"3b\" in model_family.lower():\n        model_size_b\
+    \ = 3\n    elif \"1b\" in model_family.lower():\n        model_size_b = 1\n  \
+    \  else:\n        model_size_b = 8  # default guess\n    \n    # Memory estimation:\
+    \ bf16 training ~= 2 bytes/param for weights + optimizer states\n    # Rough:\
+    \ ~16-20 bytes per param for training (weights + grads + optimizer)\n    # With\
+    \ bf16 mixed precision: ~18 bytes per param\n    bytes_per_param_training = 18\n\
+    \    total_training_mem_gb = (model_size_b * 1e9 * bytes_per_param_training) /\
+    \ (1024**3)\n    \n    # Helper to pick closest valid choice\n    def pick_closest(choices,\
+    \ target):\n        return min(choices, key=lambda x: abs(x - target))\n    \n\
+    \    def pick_le(choices, target):\n        \"\"\"Pick largest choice <= target,\
+    \ or smallest if none.\"\"\"\n        valid = [c for c in sorted(choices) if c\
+    \ <= target]\n        return valid[-1] if valid else min(choices)\n    \n    #\
+    \ Determine number of nodes\n    num_nodes = max(1, total_gpus // gpus_per_node)\n\
+    \    \n    # Strategy: minimize communication overhead\n    # For single-node:\
+    \ prefer lower TP (less allreduce) if model fits in memory\n    # For multi-node:\
+    \ keep TP within node, use DP across nodes\n    \n    tp_choices = sorted(config_space.get(\"\
+    tp\", [1, 2, 4]))\n    dp_choices = sorted(config_space.get(\"dp\", [1, 2, 4]))\n\
+    \    pp_choices = sorted(config_space.get(\"pp\", [1, 2, 4]))\n    mb_choices\
+    \ = sorted(config_space.get(\"micro_batch\", [1, 2, 4]))\n    ac_choices = config_space.get(\"\
+    activation_checkpointing\", [True, False])\n    \n    # Start with minimum TP\
+    \ needed for memory\n    # Per-GPU memory with TP: total_training_mem_gb / tp\
+    \ (rough)\n    best_tp = 1\n    for tp_cand in tp_choices:\n        mem_per_gpu\
+    \ = total_training_mem_gb / tp_cand\n        # Activation memory rough estimate:\
+    \ batch * seq * hidden * layers / (tp * pp)\n        # For 8B model: hidden=4096,\
+    \ ~2GB activations per micro-batch at seq=512\n        act_mem_estimate = (batch_size\
+    \ * seq_len * 4096 * 2) / (tp_cand * 1024**3) * (num_layers or 32) * 0.5\n   \
+    \     if mem_per_gpu + act_mem_estimate < gpu_mem * 0.85:\n            best_tp\
+    \ = tp_cand\n            break\n    else:\n        best_tp = max(tp_choices)\n\
+    \    \n    # Ensure TP stays within node\n    best_tp = min(best_tp, gpus_per_node)\n\
+    \    best_tp = pick_closest(tp_choices, best_tp)\n    \n    # PP: use only if\
+    \ needed for memory\n    mem_per_gpu_with_tp = total_training_mem_gb / best_tp\n\
+    \    best_pp = 1\n    if mem_per_gpu_with_tp > gpu_mem * 0.7:\n        # Need\
+    \ PP to further split model\n        for pp_cand in sorted(pp_choices):\n    \
+    \        if pp_cand > 1 and mem_per_gpu_with_tp / pp_cand < gpu_mem * 0.7:\n \
+    \               best_pp = pp_cand\n                break\n        else:\n    \
+    \        best_pp = max(pp_choices)\n    best_pp = pick_closest(pp_choices, best_pp)\n\
+    \    \n    # DP: use remaining GPUs\n    target_dp = total_gpus // (best_tp *\
+    \ best_pp)\n    target_dp = max(1, target_dp)\n    best_dp = pick_closest(dp_choices,\
+    \ target_dp)\n    \n    # For this specific case (4 GPUs, 8B model, single node\
+    \ with NVLink):\n    # tp=2, dp=2 should reduce TP communication vs tp=4 while\
+    \ still fitting in memory\n    # Let's verify the product doesn't exceed total_gpus\n\
+    \    while best_tp * best_dp * best_pp > total_gpus:\n        if best_dp > 1:\n\
+    \            best_dp = pick_le(dp_choices, best_dp - 1)\n        elif best_pp\
+    \ > 1:\n            best_pp = pick_le(pp_choices, best_pp - 1)\n        else:\n\
+    \            break\n    \n    # Micro-batch: larger is better for throughput (less\
+    \ overhead)\n    # but must fit in memory and batch_size must be divisible\n \
+    \   per_replica_batch = max(1, batch_size // best_dp)\n    # micro_batch should\
+    \ divide per_replica_batch\n    best_mb = 1\n    for mb_cand in sorted(mb_choices,\
+    \ reverse=True):\n        if mb_cand <= per_replica_batch:\n            best_mb\
+    \ = mb_cand\n            break\n    \n    # Activation checkpointing: enable if\
+    \ memory is tight\n    act_ckpt = False\n    effective_mem = total_training_mem_gb\
+    \ / (best_tp * best_pp)\n    if effective_mem > gpu_mem * 0.6:\n        act_ckpt\
+    \ = True\n    \n    if act_ckpt not in ac_choices:\n        act_ckpt = ac_choices[0]\n\
+    \    \n    config = {\n        \"tp\": best_tp,\n        \"dp\": best_dp,\n  \
+    \      \"pp\": best_pp,\n        \"micro_batch\": best_mb,\n        \"activation_checkpointing\"\
+    : act_ckpt,\n    }\n    \n    return config\n"

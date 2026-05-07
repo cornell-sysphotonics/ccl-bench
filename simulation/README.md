@@ -27,7 +27,37 @@ rankN_trace.json  ──►  gen_chakra_et.py  ──►  chakra_trace.*.et
 | `full` | `pytorch_et_N.json` + `kineto_trace_N.json` | Full op-graph fidelity via `chakra_trace_link` |
 | `tpu-xla` | single TPU `*.trace.json` (JAX/XLA Chrome JSON) | One XLA iteration replayed as HLO/device kernels plus XLA collectives |
 
-## Prerequisites
+## Quick Start (no Docker required)
+
+`mock_trace_gen.py` + `mock_pipeline.py` provide a full what-if simulation
+without Docker, AstraSim, or real traces.  They use the same trace format and
+network parameters as the full pipeline, so results can later be validated
+against AstraSim.
+
+```bash
+# Generate 8-rank synthetic traces for Llama-3.1-8B (tp=4, dp=2)
+python simulation/mock_trace_gen.py \
+    --output-dir /tmp/mock_trace \
+    --tp 4 --dp 2 --layers 32
+
+# Baseline: A100 NVLink (400 GB/s) + Slingshot (25 GB/s)
+python simulation/mock_pipeline.py \
+    --trace-dir /tmp/mock_trace \
+    --intra-bandwidth 400 --bandwidth 25
+
+# What-if: 2× scale-out bandwidth
+python simulation/mock_pipeline.py \
+    --trace-dir /tmp/mock_trace \
+    --intra-bandwidth 400 --bandwidth 50
+
+# Run the full demo (all three scenarios):
+bash simulation/examples/00_mock.sh
+```
+
+The mock traces are also compatible with `pipeline.py --mode comm-only` once
+Docker is available, so they serve as test fixtures for the full pipeline.
+
+## Prerequisites (full AstraSim pipeline)
 
 Docker must be running with the `astra-sim:latest` image available. To build it:
 
@@ -40,7 +70,7 @@ The image is ~14 GB and takes 20–40 minutes to build. It includes AstraSim, Ch
 
 No host Python packages are required beyond the standard library — all heavy lifting happens inside Docker.
 
-## Quick Start
+## Quick Start (full pipeline)
 
 ```bash
 # Baseline: deepseek-v3-16b on A100 Slingshot
@@ -78,6 +108,7 @@ Ready-to-run scripts are in `simulation/examples/`:
 
 | Script | What it shows |
 |--------|---------------|
+| `00_mock.sh` | **No Docker** — synthetic traces + analytical pipeline; baseline vs 2× inter-BW vs H100 NVLink |
 | `01_baseline.sh` | Single baseline run, ep4-dp2-tp4, A100 defaults |
 | `02_bandwidth_sweep.sh` | Step time vs scale-out bandwidth (50→800 GB/s) |
 | `03_algo_compare.sh` | `ring` vs `halving_doubling` vs `doubleBinaryTree` |

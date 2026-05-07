@@ -10,7 +10,7 @@ import os
 import copy
 from pathlib import Path
 
-REPO = Path("/home/dd687/ccl-bench")
+REPO = Path(__file__).resolve().parent.parent
 TC = REPO / "trace_collection"
 DEPLOY = REPO / "deployment"
 

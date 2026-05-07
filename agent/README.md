@@ -1,10 +1,10 @@
-# CCL-Bench Agent
+# CCL-Search
 
-An ADRS (Automated Distributed Runtime Search) loop that uses Claude to
-iteratively discover the best parallelism and compiler configuration for a
-given workload.  Each iteration runs a real training/inference job, measures
-a CCL-Bench metric from the collected traces, and asks Claude to improve
-`generate_config` based on the results.
+A configuration search loop that uses Claude to iteratively discover the best
+parallelism and compiler configuration for a given workload.  Each iteration
+runs a real training/inference job, measures a CCL-Bench metric from the
+collected traces, and asks Claude to improve `generate_config` based on the
+results.
 
 ---
 
@@ -12,7 +12,7 @@ a CCL-Bench metric from the collected traces, and asks Claude to improve
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                       ADRS loop (agent.py)                      │
+│                    CCL-Search loop (agent.py)                   │
 │                                                                 │
 │  seed generate_config.py                                        │
 │         │                                                       │
@@ -48,12 +48,12 @@ a CCL-Bench metric from the collected traces, and asks Claude to improve
 ### Step 1 — Create an experiment folder
 
 Each deployment lives in its own folder under `agent/`.  Use the
-Perlmutter/torchtitan experiment as a reference:
+dry-run example as a reference (no hardware required):
 
 ```
 agent/
   ccl_bench_agent/          ← shared agent code (do not modify)
-  perlmutter_torchtitan_llama8b/   ← reference experiment
+  ccl_bench_agent/dry_run/  ← reference example (synthetic traces, no hardware)
   your_experiment/          ← your new experiment
     workload_card.yaml
     tuning_config.yaml
@@ -121,18 +121,18 @@ the login or head node) **and** from the compute nodes running the job.
 
 | Filesystem | Suitable? | Notes |
 |---|---|---|
-| Lustre / GPFS (`$PSCRATCH`, `$SCRATCH`) | **Yes** | Shared across all nodes; use this on Perlmutter |
+| Lustre / GPFS (shared scratch) | **Yes** | Shared across all nodes; use the cluster's shared scratch filesystem |
 | `/tmp` | **No** | Node-local; traces written on compute nodes are invisible on login node |
 | NFS home (`$HOME`) | Sometimes | Available but may be slow for large traces |
 
-On Perlmutter set `trace_dir` under `$PSCRATCH`:
+Set `trace_dir` to a path on your cluster's shared filesystem:
 ```yaml
-trace_dir: /pscratch/sd/<letter>/<username>/ccl-bench-traces/your_experiment/
+trace_dir: /shared/scratch/<username>/ccl-bench-traces/your_experiment/
 ```
 
 Also update the default in your run script:
 ```bash
-TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/yourname/ccl-bench-traces/your_experiment"}
+TRACE_DIR=${TRACE_DIR:-"/shared/scratch/yourname/ccl-bench-traces/your_experiment"}
 ```
 
 ### Step 3 — Write `tuning_config.yaml`
@@ -196,7 +196,7 @@ set -e
 
 TP=${TP:-1}
 DP=${DP:-1}
-TRACE_DIR=${TRACE_DIR:-"/pscratch/sd/e/yourname/ccl-bench-traces/your_experiment"}
+TRACE_DIR=${TRACE_DIR:-"/shared/scratch/yourname/ccl-bench-traces/your_experiment"}
 
 mkdir -p "$TRACE_DIR"
 
@@ -373,7 +373,7 @@ python upload_traces.py --card ... --include-failed
 python upload_traces.py \
   --server    http://your-server:5000 \
   --card      ../your_experiment/workload_card.yaml \
-  --trace-dir /pscratch/sd/e/yourname/ccl-bench-traces/run1 \
+  --trace-dir /shared/scratch/yourname/ccl-bench-traces/run1 \
   --group     "tp4_dp4_manual" \
   --desc      "manual rerun"
 ```
@@ -391,28 +391,111 @@ description and the workload card attached as JSON.
 
 ---
 
-## Example: Perlmutter / torchtitan / Llama-3.1-8B
+## Example: Simulation (no hardware required)
 
-See `agent/perlmutter_torchtitan_llama8b/` for a complete working example.
+`ccl_bench_agent/dry_run/` contains a complete self-contained simulation that
+runs without any GPU, cluster, or network connection.  A synthetic trace
+generator (`mock_trace_gen.py`) models Llama-3.1-8B step time on a 4-GPU
+single-node setup using a parametric formula:
+
+| Component | Formula | Notes |
+|---|---|---|
+| TP compute | `1.1 / tp` | Linear speedup |
+| TP comm | `tp × 0.008` | AllReduce cost grows with group size |
+| DP grad sync | `0.04 × (1 − 1/dp)` | Only when `dp > 1` |
+| PP bubble | `(pp−1) × 0.08 / micro_batch` | Idle time between pipeline stages |
+| Activation ckpt | `+0.10` | ~10 % re-compute overhead |
+
+Memory constraint: OOM (exit 1) if `80 GB / (tp × pp) > 40 GB per GPU`.
+
+Expected optimum: `tp=4, dp=1, pp=1, micro_batch=1, act_ckpt=false` → ~0.31 s.
+
+### Prerequisites
 
 ```bash
-# Launch via the convenience wrapper (handles venv + API key):
-bash agent/perlmutter_torchtitan_llama8b/run_agent.sh
-
-# Or directly:
-cd agent/ccl_bench_agent
-python agent.py \
-  --card    ../perlmutter_torchtitan_llama8b/workload_card.yaml \
-  --tuning  ../perlmutter_torchtitan_llama8b/tuning_config.yaml \
-  --seed    ../perlmutter_torchtitan_llama8b/generate_config.py
+pip install anthropic pyyaml
+export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-The run script (`scripts/train_llama8b.sh`) handles single-node `torchrun`
-and multi-node `srun + torchrun` automatically, flattens the torchtitan
-profiler traces from their nested `profile_traces/iteration_N/` structure
-into the flat `$TRACE_DIR/` layout that `avg_step_time` expects, and writes
-`trace_meta.yaml`.  Traces are written to `$PSCRATCH` so they are visible
-from the login node.
+### Running
+
+```bash
+# Run from anywhere — the script cd-s into ccl_bench_agent/ automatically:
+bash agent/ccl_bench_agent/dry_run/run.sh
+```
+
+### Sample session
+
+```
+=================================================================
+CCL-Search: Configuration Optimization Agent
+=================================================================
+Card:       workload_card.yaml
+Tuning:     tuning_config.yaml
+Workload:   llama-3.1-8b  [training]
+Hardware:   4 × generic_gpu_40gb
+Objective:  minimize  avg_step_time × 1.0
+Seed:       generate_config.py
+Max iters:  10  patience=4
+Publish to: (not set — skipping disk publish)
+=================================================================
+
+[agent] Run dir → runs/20260507_120000
+
+[eval] Seed generate_config...
+    config → activation_checkpointing=False  dp=1  micro_batch=1  pp=1  tp=1
+    [mock] tp=1 dp=1 pp=1 micro_batch=1 act_ckpt=False → step_time=1.187s
+    score=1.187  (avg_step_time=1.187)
+
+[agent] Seed: status=success, score=1.187
+[agent] Loop: max=10, patience=4
+
+=================================================================
+  ITERATION 1/10
+=================================================================
+    config → activation_checkpointing=False  dp=1  micro_batch=1  pp=1  tp=2
+    [mock] tp=2 dp=1 pp=1 micro_batch=1 act_ckpt=False → step_time=0.586s
+    score=0.5861  (avg_step_time=0.5861)
+    IMPROVED — best score=0.5861
+
+=================================================================
+  ITERATION 2/10
+=================================================================
+    config → activation_checkpointing=False  dp=1  micro_batch=1  pp=1  tp=4
+    [mock] tp=4 dp=1 pp=1 micro_batch=1 act_ckpt=False → step_time=0.317s
+    score=0.3170  (avg_step_time=0.317)
+    IMPROVED — best score=0.317
+
+=================================================================
+  ITERATION 3/10
+=================================================================
+    config → activation_checkpointing=True  dp=1  micro_batch=1  pp=1  tp=4
+    [mock] tp=4 dp=1 pp=1 micro_batch=1 act_ckpt=True → step_time=0.419s
+    score=0.4190  (avg_step_time=0.419)
+    no improvement — best score=0.317
+
+=================================================================
+  ITERATION 4/10
+=================================================================
+    config → activation_checkpointing=False  dp=1  micro_batch=2  pp=2  tp=4
+    [mock] tp=4 dp=1 pp=2 micro_batch=2 act_ckpt=False → step_time=0.364s
+    score=0.3640  (avg_step_time=0.364)
+    no improvement — best score=0.317
+
+...
+
+[agent] Early stop: 4 non-improving iterations.
+
+[agent] Results CSV → runs/20260507_120000/results.csv
+[agent] Workload card → dry_run/workload_card.yaml
+
+Best → runs/20260507_120000/policies/generate_config_v2.py
+```
+
+The agent converges to `tp=4` within 2 iterations, then spends the remaining
+patience budget confirming that adding activation checkpointing or pipeline
+stages makes things worse.  No real hardware or network calls are made — every
+"job" is a ~1 ms Python invocation of `mock_trace_gen.py`.
 
 ---
 
@@ -421,7 +504,7 @@ from the login node.
 ```
 agent/
   ccl_bench_agent/
-    agent.py            — ADRS loop orchestrator; entry point
+    agent.py            — CCL-Search loop orchestrator; entry point
     execute.py          — step 2: runs run_script, returns RunResult
     compute_metric.py   — step 3: calls tools/main.py to score traces
     update_policy.py    — step 4: asks Claude to improve generate_config
@@ -442,13 +525,12 @@ agent/
           ...
     run_cache.json      — persisted result cache
 
-  perlmutter_torchtitan_llama8b/   — reference experiment
-    workload_card.yaml
-    tuning_config.yaml
-    generate_config.py
-    run_agent.sh        — convenience launcher (handles venv + API key)
-    scripts/
-      train_llama8b.sh
+  ccl_bench_agent/dry_run/   — reference example (no hardware)
+    mock_trace_gen.py   — synthetic trace generator
+    mock_run.sh         — run script wrapper
+    workload_card.yaml  — generic Llama-3.1-8B on 4-GPU
+    tuning_config.yaml  — search space (tp/dp/pp/micro_batch/act_ckpt)
+    run.sh              — convenience launcher
 
   torchtitan/           — torchtitan source (framework backend)
 

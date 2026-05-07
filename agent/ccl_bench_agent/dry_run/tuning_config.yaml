@@ -1,0 +1,38 @@
+# CCL-Search Tuning Configuration — Dry Run Example
+#
+# Optimizes parallelism for Llama-3.1-8B on a 4-GPU single-node setup.
+# The mock_trace_gen.py model has:
+#   - OOM if tp * pp < 2  (80 GB model / (tp*pp) must fit in 40 GB per GPU)
+#   - Optimal: tp=4, dp=1, pp=1, micro_batch=1, activation_checkpointing=false
+#     → ~0.31 s step time (varies ±8 % across runs due to noise)
+
+# Disable disk publishing for the dry run.
+publish_dir: ''
+
+config_space:
+  - key: tp
+    type: int
+    description: Tensor parallelism degree (splits each matmul across tp GPUs)
+    choices: [1, 2, 4]
+  - key: dp
+    type: int
+    description: Data parallelism degree (gradient sync across dp replicas)
+    choices: [1, 2, 4]
+  - key: pp
+    type: int
+    description: Pipeline parallelism degree (adds bubble = (pp-1)/num_microbatches)
+    choices: [1, 2, 4]
+  - key: micro_batch
+    type: int
+    description: Micro-batch size for pipeline stages (larger reduces PP bubble)
+    choices: [1, 2, 4]
+  - key: activation_checkpointing
+    type: bool
+    description: Re-compute activations to save memory at ~10 % compute cost
+    choices: [true, false]
+
+optimization_goal:
+  direction: minimize
+  metrics:
+    - name: avg_step_time
+      weight: 1.0

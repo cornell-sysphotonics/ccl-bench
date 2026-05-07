@@ -1,7 +1,15 @@
-# CCL-Bench ADRS Tuning Configuration
+# CCL-Search Tuning Configuration
 #
 # Defines the search space and optimization objective for a tuning run.
 # Kept separate from the workload card so the card stays in standard CCL-Bench format.
+
+# ── Publish directory ─────────────────────────────────────────────────────────
+# After each successful iteration, CCL-Search copies the trace directory and
+# workload card here so each trial becomes a self-contained CCL-Bench entry.
+# Default: /data/ccl-bench_trace_collection  (Perlmutter shared scratch)
+# Change this to match the shared trace storage path on your cluster.
+# Leave empty ("") to disable publishing (traces stay in the local run dir).
+publish_dir: /data/ccl-bench_trace_collection
 
 # ── Configuration search space ────────────────────────────────────────────────
 # Keys are passed to run_script as uppercase env vars (e.g. tp=4 → TP=4).
