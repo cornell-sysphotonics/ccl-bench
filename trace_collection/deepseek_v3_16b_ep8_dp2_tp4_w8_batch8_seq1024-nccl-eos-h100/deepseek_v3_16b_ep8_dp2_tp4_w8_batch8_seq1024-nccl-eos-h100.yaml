@@ -1,0 +1,68 @@
+version: 1
+
+description: >
+  Matched Hopper rerun of the EP8 WL5 row: DeepSeek-V3-16B training on 8 NVIDIA H100
+  GPUs across 2 Eos nodes using TorchTitan. The A100 workload and execution
+  plan are held fixed: BF16, global batch size 8, sequence length 1024,
+  six steps, TP=4, DP-shard=2, EP=8, PP=1, and NCCL.
+
+hf_url: https://huggingface.co/deepseek-ai/deepseek-moe-16b-base
+trace_url: /lustre/fsw/nvr_nrg_misc/erding/ccl-bench/deepseek_v3_16b_ep8_dp2_tp4_w8_batch8_seq1024-nccl-eos-h100
+contributor: Eric Ding
+
+workload:
+  model:
+    phase: training
+    moe: true
+    granularity: model_fwd_bwd_pass
+    model_family: deepseek-v3-16b
+    precision: bf16
+    epochs: 1
+    iteration: 6
+    model_arch:
+      num_params: 16380544000
+      num_params_embedding: 204800000
+      num_layers: 28
+      num_heads: 16
+      head_dim: 128
+  data:
+    batch_size: 8
+    seq_len: 1024
+    dataset: c4_test
+  hardware:
+    network_topo:
+      topology: eos_infiniband
+    xpu_spec:
+      type: GPU
+      model: nvidia_h100
+      total_count: 8
+      count_per_node: 4
+    driver_version: recorded_at_runtime
+
+Model-executor:
+  framework:
+    name: torchtitan
+    compiler_tool_selection: pytorch-2.12, triton
+    source_commit: 4a57715f34338416d467dfc5fb54a9b69c938db5
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 2
+    tp: 4
+    pp: 1
+    cp: 1
+    ep: 8
+    pp_mb: 1
+  communication_library:
+    name: NCCL
+    version: recorded_at_runtime
+    env:
+      NCCL_DEBUG: INFO
+  protocol_selection:
+    - infiniband
+    - nvlink
+
+metric_source:
+  traces:
+    - json
+  metrics_specific_trace:
+    -
