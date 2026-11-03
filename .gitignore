@@ -112,5 +112,4 @@ tpu_bw_sweep_deepseekv2_maxtext
 utility_calculation*
 tpu_scaleup_utility
 cluster_performance_sweep
-scripts
 trace_collection_bad
