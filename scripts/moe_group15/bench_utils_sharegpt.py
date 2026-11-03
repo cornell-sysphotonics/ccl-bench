@@ -105,7 +105,7 @@ async def async_request_tgi(
                     output.success = True
                     output.generated_text = data["generated_text"]
                 else:
-                    output.error = response.reason or ""
+                    output.error = f"{response.status} {await response.text()}"
                     output.success = False
         except Exception:
             output.success = False
@@ -171,7 +171,7 @@ async def async_request_trt_llm(
                     output.success = True
 
                 else:
-                    output.error = response.reason or ""
+                    output.error = f"{response.status} {await response.text()}"
                     output.success = False
         except Exception:
             output.success = False
@@ -215,7 +215,7 @@ async def async_request_deepspeed_mii(
                     output.generated_text = parsed_resp["text"][0]
                     output.success = True
                 else:
-                    output.error = response.reason or ""
+                    output.error = f"{response.status} {await response.text()}"
                     output.success = False
         except Exception:
             output.success = False
@@ -295,7 +295,7 @@ async def async_request_openai_completions(
                     output.latency = latency
                     output.start_time = st
                 else:
-                    output.error = response.reason or ""
+                    output.error = f"{response.status} {await response.text()}"
                     output.success = False
         except Exception:
             output.success = False
@@ -379,7 +379,7 @@ async def async_request_openai_chat_completions(
                     output.success = True
                     output.latency = latency
                 else:
-                    output.error = response.reason or ""
+                    output.error = f"{response.status} {await response.text()}"
                     output.success = False
         except Exception:
             output.success = False

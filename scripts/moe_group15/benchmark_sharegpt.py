@@ -47,8 +47,12 @@ from bench_utils_sharegpt import (ASYNC_REQUEST_FUNCS, RequestFuncInput,
                                   RequestFuncOutput)
 from tqdm.asyncio import tqdm
 from transformers import PreTrainedTokenizerBase
+from transformers import AutoTokenizer
 
-from vllm.transformers_utils.tokenizer import get_tokenizer
+def get_tokenizer(tokenizer_name, tokenizer_mode="auto", trust_remote_code=False, **kwargs):
+        return AutoTokenizer.from_pretrained(
+                        tokenizer_name, trust_remote_code=trust_remote_code
+                            )
 
 
 # Length limits used when sampling ShareGPT conversations. The first prompt must
