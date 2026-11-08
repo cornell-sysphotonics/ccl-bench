@@ -1,0 +1,66 @@
+version: 1
+description: >
+  Colocated MoE inference of Qwen/Qwen3-30B-A3B on one TPU v6e VM (4 chips), vLLM TPU (JAX) backend, TP=4 with expert parallelism (--enable-expert-parallel).
+  Profiled window: decode, 128 requests, 8-token prompts, 14 generated tokens (one short prefill step, then full-batch decode steps)
+hf_url: https://huggingface.co/Qwen/Qwen3-30B-A3B
+trace_url:  # TODO: set to the Drive/shared-store link of the uploaded trace
+contributor: Team3
+contact: km936@cornell.edu
+workload:
+  model:
+    phase: inference
+    moe: true
+    granularity: model_fwd
+    model_family: qwen-3-30b-a3b
+    precision: bf16
+    epochs: 1
+    iteration: 1
+    model_arch:   # from the Qwen3-30B-A3B config.json
+      num_params: 30532122624
+      num_params_embedding: 311164928   # vocab 151936 x hidden 2048
+      num_layers: 48
+      num_heads: 32
+      head_dim: 128
+  data:
+    batch_size: 128
+    seq_len: 22
+    input_len: 8
+    output_len: 14
+    dataset: random
+  hardware:
+    network_topo:
+      topology: torus
+      bandwidth_gbps:
+        - N/A
+        - 800  # copied from the group-4 card; NOT verified for v6e-4
+    xpu_spec:
+      type: TPU
+      model: tpu_v6e
+      total_count: 4
+      count_per_node: 4
+    driver_version: ubuntu-accel-2204-amd64-tpu-v5e-v5p-v6e
+Model-executor:
+  framework:
+    name: vllm
+    compiler_tool_selection: xla
+  model_plan_parallelization:
+    dp_replicate: 1
+    dp_shard: 1
+    tp: 4
+    ep: 4
+    pp: 1
+    cp: 1
+  communication_library:
+    name: xla
+    version:
+    env:
+      PJRT_DEVICE: "TPU"
+  protocol_selection:
+    - xla_collectives
+    - ici
+metric_source:
+  traces:
+    - json_tpu
+  metrics_specific_trace:
+    - communication_trace
+    - kernel_trace
