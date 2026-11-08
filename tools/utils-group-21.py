@@ -137,7 +137,16 @@ def trace_events_to_df(trace) -> pd.DataFrame:
     return df
 
 
-def classify_row(name: str, cat: str) -> str:
+# XLA/TPU traces put the collective kind in args.hlo_category while the event NAME can be generic (e.g. 'psum').
+# Looking at the name only misses almost all communication on TPU (found on vLLM-JAX v6e traces).
+HLO_COMM_CATEGORIES = {"all-reduce", "all-gather", "all-to-all", "reduce-scatter", "collective-permute", "ragged-all-to-all"}
+
+
+def classify_row(name: str, cat: str, args=None) -> str:
+    if isinstance(args, dict) and str(args.get("hlo_category", "")).lower() in HLO_COMM_CATEGORIES:
+        return "comm"
+    if str(name).startswith("$"):   # host-side events ('$uniproc_executor', '$socket'): not device communication
+        return "other"
     s = f"{name} {cat}".lower()
     if any(
         k in s
@@ -162,7 +171,7 @@ def classify_row(name: str, cat: str) -> str:
 
 def add_kind_column(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df["kind"] = df.apply(lambda r: classify_row(r["name"], r["cat"]), axis=1)
+    df["kind"] = df.apply(lambda r: classify_row(r["name"], r["cat"], r["args"]), axis=1)
     return df
 
 

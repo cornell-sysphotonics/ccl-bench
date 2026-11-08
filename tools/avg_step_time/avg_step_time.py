@@ -108,7 +108,19 @@ def _calc_xla(directory: str, yaml_data: dict) -> float:
         inner = durs_us[1:-1] if len(durs_us) > 2 else durs_us
         return statistics.mean(inner) / 1e6  # µs → s (XLA trace dur in µs despite displayTimeUnit:ns)
 
-    # Fallback: wall_time / iteration_count
+    # Fallback A: device-side model step. vLLM-JAX/TPU traces have no '$core.py:331 step' host events; the model
+    # forward is the 'jit_step_fun*' XLA module on each '/device:TPU:<n>' chip. Mean duration over all steps and chips.
+    dev_pids = {e["pid"] for e in events if e.get("ph") == "M" and e.get("name") == "process_name"
+                and re.fullmatch(r"/device:TPU:\d+", e.get("args", {}).get("name", ""))}
+    mod_tids = {(e["pid"], e.get("tid")) for e in events if e.get("ph") == "M" and e.get("name") == "thread_name"
+                and e.get("args", {}).get("name") == "XLA Modules"}
+    dev_steps = [float(e["dur"]) for e in events
+                 if e.get("ph") == "X" and e.get("pid") in dev_pids and (e["pid"], e.get("tid")) in mod_tids
+                 and str(e.get("name", "")).startswith("jit_step_fun") and e.get("dur") is not None]
+    if dev_steps:
+        return statistics.mean(dev_steps) / 1e6   # us -> s
+
+    # Fallback B: wall_time / iteration_count
     # XLA client traces for training record async dispatches only; real step time
     # = total profiled wall time / number of iterations.
     num_iter = yaml_data.get("workload", {}).get("model", {}).get("iteration")
