@@ -32,7 +32,7 @@ workload:
       topology: torus
       bandwidth_gbps:
         - N/A
-        - 800  # copied from the group-4 card; NOT verified for v6e-4
+        - 800  # GBps, bidirectional per chip (Cloud TPU v6e docs); field is nominally Gbps, unit convention to be confirmed with maintainers
     xpu_spec:
       type: TPU
       model: tpu_v6e
