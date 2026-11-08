@@ -149,7 +149,9 @@ def _calc_tpu(directory: str) -> float:
         print(f"Error: No TPU device events found in {directory}", file=sys.stderr)
         return -1
 
-    return (global_max - global_min) / 1e9   # ns → s
+    # Chrome-trace ts/dur from the TPU profiler are in MICROseconds (displayTimeUnit says ns, but the values are us).
+    # The old divisor 1e9 made every result 1000x too small.
+    return (global_max - global_min) / 1e6   # us -> s
 
 
 def _calc_nsys(directory: str) -> float:

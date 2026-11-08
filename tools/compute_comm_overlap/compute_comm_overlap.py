@@ -325,6 +325,21 @@ def _calc_xla(directory: str) -> float:
             max_dur = max(e["dur"] for e in all_markers)
             step_events = [e for e in all_markers if e["dur"] > max_dur * 0.1]
 
+    # Fallback 2: device steps of vLLM-JAX/TPU traces ('jit_step_fun*' on the XLA Modules thread of TPU:0). Overlap is then
+    # computed on that one chip, with collectives identified by args.hlo_category (name can be generic, e.g. 'psum').
+    dev_chip = None
+    if not step_events:
+        pid0 = next((e["pid"] for e in events if isinstance(e, dict) and e.get("ph") == "M" and e.get("name") == "process_name"
+                     and e.get("args", {}).get("name") == "/device:TPU:0"), None)
+        tids = {e.get("tid") for e in events if isinstance(e, dict) and e.get("ph") == "M" and e.get("name") == "thread_name"
+                and e.get("pid") == pid0 and e.get("args", {}).get("name") == "XLA Modules"}
+        if pid0 is not None and tids:
+            step_events = sorted([e for e in events if isinstance(e, dict) and e.get("ph") == "X" and e.get("pid") == pid0
+                                  and e.get("tid") in tids and str(e.get("name", "")).startswith("jit_step_fun")],
+                                 key=lambda e: e.get("ts", 0))
+            if step_events:
+                dev_chip = pid0
+
     if not step_events:
         print(
             f"[compute_comm_overlap/xla] No step events found in {json_files[0]}",
@@ -345,6 +360,11 @@ def _calc_xla(directory: str) -> float:
         and e.get("dur") is not None
     ]
 
+    if dev_chip is not None:
+        all_dur_events = [e for e in all_dur_events if e.get("pid") == dev_chip]
+        inner = step_events   # profile windows have few steps: keep all of them
+
+    _COMM_CATS = {"all-reduce", "all-gather", "all-to-all", "reduce-scatter", "collective-permute", "ragged-all-to-all"}
     total_overlap_us = 0.0
     total_comm_us = 0.0
     for step in inner:
@@ -363,6 +383,13 @@ def _calc_xla(directory: str) -> float:
             if s >= en:
                 continue
             name = e.get("name", "")
+            if dev_chip is not None:
+                cat = str((e.get("args") or {}).get("hlo_category", "")).lower()
+                if cat in _COMM_CATS:
+                    comm_ivs.append((s, en))
+                elif cat and cat not in ("async-start", "async-done", "async-update", "copy-start", "copy-done"):
+                    compute_ivs.append((s, en))
+                continue
             if _is_comm_xla(name):
                 comm_ivs.append((s, en))
             elif _is_xla_compute(name):

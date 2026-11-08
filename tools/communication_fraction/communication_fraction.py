@@ -246,15 +246,18 @@ def _calc_tpu(directory: str) -> float:
     events = data.get("traceEvents", []) if isinstance(data, dict) else []
 
     # Identify TPU device PIDs from process_name metadata events
+    # Chip processes are named exactly '/device:TPU:<n>'. '/device:TPU:0 SparseCore 0' etc. are separate hardware
+    # tracks and must not be mixed in. Only the 'XLA Ops' thread is summed: 'XLA Modules' / 'Steps' threads contain
+    # the same time again as nested spans, which would inflate the denominator.
     tpu_pids: set = set()
+    xla_ops_tids: set = set()
     for e in events:
-        if (
-            isinstance(e, dict)
-            and e.get("ph") == "M"
-            and e.get("name") == "process_name"
-            and "/device:TPU:" in e.get("args", {}).get("name", "")
-        ):
+        if not (isinstance(e, dict) and e.get("ph") == "M"):
+            continue
+        if e.get("name") == "process_name" and re.fullmatch(r"/device:TPU:\d+", e.get("args", {}).get("name", "")):
             tpu_pids.add(e["pid"])
+        elif e.get("name") == "thread_name" and e.get("args", {}).get("name") == "XLA Ops":
+            xla_ops_tids.add((e["pid"], e.get("tid")))
 
     # Per-device accumulation: comm time and total time
     device_total: dict = {}
@@ -265,6 +268,8 @@ def _calc_tpu(directory: str) -> float:
             continue
         pid = e.get("pid")
         if tpu_pids and pid not in tpu_pids:
+            continue
+        if xla_ops_tids and (pid, e.get("tid")) not in xla_ops_tids:
             continue
 
         # Prefer device_duration_ps (picoseconds → nanoseconds) for precision
