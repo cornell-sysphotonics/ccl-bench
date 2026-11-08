@@ -3,7 +3,7 @@ description: >
   Colocated MoE inference of Qwen/Qwen3-30B-A3B on one TPU v6e VM (4 chips), vLLM TPU (JAX) backend, TP=4 (tensor-parallel experts).
   Profiled window: decode, 192 requests, 8-token prompts, 14 generated tokens (one short prefill step, then full-batch decode steps)
 hf_url: https://huggingface.co/Qwen/Qwen3-30B-A3B
-trace_url:  # TODO: set to the Drive/shared-store link of the uploaded trace
+trace_url: https://drive.google.com/drive/folders/1AdK2gNfhYss9KW0f9xDx9Jvr4Gnhy66Y?usp=sharing  # subfolder: Qwen3-30B-A3B-vllm-tp4-tpu-v6e4-decode-bs192/
 contributor: Team3
 contact: km936@cornell.edu
 workload:
